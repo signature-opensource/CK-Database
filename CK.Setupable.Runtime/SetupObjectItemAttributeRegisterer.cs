@@ -27,7 +27,6 @@ namespace CK.Setup
         {
             _state = state;
             Container = item;
-            StObj = stObj;
             _candidate = candidate;
             HasError = _state.Memory[typeof( SetupObjectItemAttributeRegisterer )] != null;
         }
@@ -38,19 +37,9 @@ namespace CK.Setup
         public IActivityMonitor Monitor => _state.Monitor;
 
         /// <summary>
-        /// Gets the dynamic initializer shared state.
-        /// </summary>
-        public IStObjSetupDynamicInitializerState State => _state;
-
-        /// <summary>
         /// Gets the container that attempts to register the item.
         /// </summary>
         public readonly IMutableSetupItem Container;
-
-        /// <summary>
-        /// Gets the stObj associated to the <see cref="Container"/>.
-        /// </summary>
-        public readonly IStObjResult StObj;
 
         public bool HasError { get; private set; }
 
@@ -99,8 +88,8 @@ namespace CK.Setup
             {
                 if( replace )
                 {
-                    // Replace from another package: memorze it as the best one so far, 
-                    // otherwise skip it, except if it has been define in the same package..
+                    // Replace from another package: memorize it as the best one so far, 
+                    // otherwise skip it, except if it has been defined in the same package..
                     if( best.LastContainerSeen != Container )
                     {
                         best.LastDefiner = _candidate;

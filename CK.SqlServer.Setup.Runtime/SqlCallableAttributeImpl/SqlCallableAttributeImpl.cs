@@ -31,15 +31,15 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="t">Type to challenge.</param>
         /// <returns>True if this type can be mapped to a basic Sql type.</returns>
-        static public bool IsNetTypeMapped(Type t)
+        static public bool IsNetTypeMapped( Type t )
         {
-            if (t == null) throw new ArgumentNullException();
-            if (t == typeof(object)) return false;
-            var nT = Nullable.GetUnderlyingType(t);
-            if (nT != null) t = nT;
-            if (t == typeof(char)) return true;
-            if (t.GetTypeInfo().IsEnum) t = t.GetTypeInfo().GetEnumUnderlyingType();
-            return SqlHelper.HasDirectMapping(t);
+            if( t == null ) throw new ArgumentNullException();
+            if( t == typeof( object ) ) return false;
+            var nT = Nullable.GetUnderlyingType( t );
+            if( nT != null ) t = nT;
+            if( t == typeof( char ) ) return true;
+            if( t.GetTypeInfo().IsEnum ) t = t.GetTypeInfo().GetEnumUnderlyingType();
+            return SqlHelper.HasDirectMapping( t );
         }
 
     }

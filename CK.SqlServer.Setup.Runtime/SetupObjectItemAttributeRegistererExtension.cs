@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.SqlServer.Setup;
 using System;
 using System.Collections.Generic;
@@ -10,12 +10,12 @@ namespace CK.Setup
 {
     public static class SetupObjectItemAttributeRegistererExtension
     {
-
         /// <summary>
         /// Builds a Sql context-location-name (with the <see cref="SqlContextLocName.Schema"/>) from a setup object 
         /// name (typically from an attribute) and its <see cref="SqlPackageBase"/> container that provides
         /// ambient context, location and schema if the <paramref name="attributeName"/> does not define them.
-        /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/>, the name 
+        /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/> and the name is does not have
+        /// a transform argument, we consider it to be the default transformation of the (target) name by the container.
         /// </summary>
         /// <param name="this">This registerer.</param>
         /// <param name="b">The behavior (define, replace or transform).</param>

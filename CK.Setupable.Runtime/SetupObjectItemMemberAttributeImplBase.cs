@@ -142,7 +142,7 @@ namespace CK.Setup
         /// The transformation target if this setup item is a transformer.
         /// </param>
         /// <returns>
-        /// A new SetupObject or null if it can not be created. If an errr occurred, it must 
+        /// A new SetupObject or null if it can not be created. If an error occurred, it must 
         /// be logged to the monitor.
         /// </returns>
         protected abstract SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );

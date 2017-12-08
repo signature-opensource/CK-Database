@@ -19,6 +19,11 @@ namespace CK.Setup
         readonly int _maxObjectCount;
         List<BestCreator> _theBest;
 
+        /// <summary>
+        /// Internal interface that enables code factorization between SetupObjectItemAttributeImplBase
+        /// that handles multiple objects and SetupObjectItemMemberAttributeImplBase that handles only one
+        /// object: both implement it and the SetupObjectItemAttributeRegisterer, created internally uses it. 
+        /// </summary>
         internal interface ISetupItemCreator : IStObjSetupDynamicInitializer
         {
             IContextLocNaming BuildFullName( SetupObjectItemAttributeRegisterer r, SetupObjectItemBehavior b, string name );
