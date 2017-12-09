@@ -80,7 +80,7 @@ namespace CK.SqlServer.Setup
             {
                 SqlBaseItem sqlItem = null;
 
-                string methodKey = $"Method:{m.Module.MetadataToken}.{m.MetadataToken}";
+                string methodKey = $"Method:{m.Module.ModuleVersionId}.{m.MetadataToken}";
 
                 // SetupObjectItem is initialized by DynamicItemInitialize.
                 // If it is null, we are be in a "second run" (a SetupFolder).
