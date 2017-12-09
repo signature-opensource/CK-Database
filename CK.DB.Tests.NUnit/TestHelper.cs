@@ -413,9 +413,9 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the assembly name that will be emitted from configuration file application settings (first "DynamicAssemblyName" key).
+        /// Gets the assembly name that will be emitted from configuration file application settings (first "GeneratedAssemblyName" key).
         /// </summary>
-        public static string DynamicAssemblyName => AppSettings.Default["DynamicAssemblyName"];
+        public static string GeneratedAssemblyName => AppSettings.Default["GeneratedAssemblyName"];
 
         /// <summary>
         /// Gets or sets the build configuration (Debug/Release).
@@ -445,7 +445,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the configuration that <see cref="StObjMap"/> will use.
-        /// This configuration uses <see cref="DynamicAssemblyName"/>, <see cref="AssembliesToSetup"/>
+        /// This configuration uses <see cref="GeneratedAssemblyName"/>, <see cref="AssembliesToSetup"/>
         /// and <see cref="DatabaseTestConnectionString"/> by default.
         /// </summary>
         public static StObjEngineConfiguration Config
@@ -459,7 +459,7 @@ namespace CK.Core
                     {
                         _config.Assemblies.Add( a );
                     }
-                    _config.GeneratedAssemblyName = DynamicAssemblyName;
+                    _config.GeneratedAssemblyName = GeneratedAssemblyName;
 
                     var cSetupable = new SetupableAspectConfiguration();
                     _config.Aspects.Add( cSetupable );

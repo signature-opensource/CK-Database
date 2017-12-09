@@ -630,11 +630,11 @@ namespace CKSetup
         static StObjEngineConfiguration BuildSetupConfig(
             string connectionString,
             IEnumerable<string> assembliesToSetup,
-            string dynamicAssemblyName )
+            string generatedAssemblyName )
         {
             var config = new StObjEngineConfiguration();
             config.Assemblies.AddRange( assembliesToSetup );
-            config.GeneratedAssemblyName = dynamicAssemblyName;
+            config.GeneratedAssemblyName = generatedAssemblyName;
 
             var setupable = new SetupableAspectConfiguration();
             config.Aspects.Add( setupable );
