@@ -171,7 +171,7 @@ namespace CK.Setup
 
         bool SecondaryGenerationRun( StObjCollectorResult r, string dllName, NormalizedFolder f )
         {
-            using( _monitor.OpenInfo( $"Generating assembly for folder {f.Directory}." ) )
+            using( _monitor.OpenInfo( $"Generating assembly for folder '{f.Directory}'." ) )
             {
                 StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
                 if( rFolder == null ) return false;

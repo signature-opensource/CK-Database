@@ -85,6 +85,13 @@ namespace CKSetup
                     monitor.Fatal( ex );
                     return false;
                 }
+                finally
+                {
+                    if( workingDir.StartsWith( Path.GetTempPath() ) )
+                    {
+                        DeleteTemporaryWorkingFolder( monitor, workingDir );
+                    }
+                }
             }
         }
 
@@ -161,6 +168,34 @@ namespace CKSetup
             }
             Directory.CreateDirectory( workingDir );
             return workingDir;
+        }
+
+        static void DeleteTemporaryWorkingFolder( IActivityMonitor monitor, string workingDir )
+        {
+            using( monitor.OpenInfo( $"Deleting temporary working directory." ) )
+            {
+                int retryCount = 0;
+                for(; ; )
+                {
+                    try
+                    {
+                        Directory.Delete( workingDir, true );
+                    }
+                    catch( Exception ex )
+                    {
+                        if( ++retryCount < 3 )
+                        {
+                            monitor.Warn( $"Error while deleting folder. Retrying (count = {retryCount}).", ex );
+                            System.Threading.Thread.Sleep( 500 );
+                        }
+                        else
+                        {
+                            monitor.Error( $"Unable to delete folder '{workingDir}'.", ex );
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         static bool RunSetupRunner(
