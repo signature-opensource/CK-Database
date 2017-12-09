@@ -209,7 +209,7 @@ namespace CK.Core
         /// <summary>
         /// Gets a list of optional <see cref="SetupFolder"/>.
         /// Their assemblies and explicit classes must be subsets of <see cref="Assemblies"/> and <see cref="Types"/>
-        /// for <see cref="CheckValid"/> to succeed.
+        /// for this configuration to be valid.
         /// </summary>
         public IList<SetupFolder> SetupFolders { get; }
 
