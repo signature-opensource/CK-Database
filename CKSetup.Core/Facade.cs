@@ -1,11 +1,13 @@
 using CK.Core;
 using CK.Setup;
 using CK.Text;
+using CSemVer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -40,7 +42,9 @@ namespace CKSetup
                     if( folders == null ) return false;
                     workingDir = GetWorkingDirectory( monitor, config.WorkingDirectory, folders );
                     if( workingDir == null ) return false;
+
                     var manualDependencies = config.Dependencies.Append( new SetupDependency( "CKSetup.Runner" ) );
+
                     if( !archive.ExtractRuntimeDependencies( workingDir, folders, missingImporter, manualDependencies ) ) return false;
                     using( monitor.OpenInfo( $"Copying {dedupFiles.Count} files from bin folders." ) )
                     {
@@ -76,6 +80,7 @@ namespace CKSetup
                         }
                         ckSetup.Add( binPaths );
                         root.Add( ckSetup );
+                        monitor.Debug( root.ToString() );
                         new XDocument( root ).Save( Path.Combine( workingDir, "CKSetup.Runner.Config.xml" ) );
                     }
                     return RunSetupRunner( monitor, workingDir );
@@ -87,7 +92,7 @@ namespace CKSetup
                 }
                 finally
                 {
-                    if( workingDir.StartsWith( Path.GetTempPath() ) )
+                    if( workingDir != null && workingDir.StartsWith( Path.GetTempPath() ) )
                     {
                         DeleteTemporaryWorkingFolder( monitor, workingDir );
                     }
@@ -163,7 +168,7 @@ namespace CKSetup
             }
             else
             {
-                workingDir = Path.GetTempPath() + Guid.NewGuid().ToString( "N" ) + Path.DirectorySeparatorChar;
+                workingDir = $"{Path.GetTempPath()}CKSetup{Path.DirectorySeparatorChar}{Guid.NewGuid().ToString( "N" )}{Path.DirectorySeparatorChar}";
                 monitor.Info( $"Created temporary working directory: {workingDir}." );
             }
             Directory.CreateDirectory( workingDir );
@@ -180,6 +185,7 @@ namespace CKSetup
                     try
                     {
                         Directory.Delete( workingDir, true );
+                        break;
                     }
                     catch( Exception ex )
                     {

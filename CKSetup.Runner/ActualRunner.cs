@@ -15,7 +15,8 @@ namespace CKSetup.Runner
     {
         static public int Run( StringBuilder rawLogText, string[] args )
         {
-            IActivityMonitor monitor = CreateMonitor( rawLogText, args );
+            ActivityMonitorAnonymousPipeLogSenderClient pipeClient;
+            IActivityMonitor monitor = CreateMonitor( rawLogText, args, out pipeClient );
             using( monitor.OpenLog( LogLevel.Info, "Starting CKSetup.Runner" ) )
             {
                 try
@@ -52,18 +53,21 @@ namespace CKSetup.Runner
                             monitor.Log( LogLevel.Trace, rawLogText.ToString() );
                         }
                     }
+                    pipeClient?.Dispose();
                 }
             }
         }
 
-        static IActivityMonitor CreateMonitor( StringBuilder rawLogText, string[] args )
+        static IActivityMonitor CreateMonitor( StringBuilder rawLogText, string[] args, out ActivityMonitorAnonymousPipeLogSenderClient pipeClient )
         {
+            pipeClient = null;
             var monitor = new ActivityMonitor();
             foreach( var a in args )
             {
                 if( a.StartsWith( "/logPipe:" ) && a.Length > 9 )
                 {
-                    monitor.Output.RegisterClient( new ActivityMonitorAnonymousPipeLogSenderClient( a.Substring( 9 ) ) );
+                    pipeClient = new ActivityMonitorAnonymousPipeLogSenderClient( a.Substring( 9 ) );
+                    monitor.Output.RegisterClient( pipeClient );
                 }
                 else
                 {
