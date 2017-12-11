@@ -43,7 +43,7 @@ namespace CKSetup
                     workingDir = GetWorkingDirectory( monitor, config.WorkingDirectory, folders );
                     if( workingDir == null ) return false;
 
-                    var manualDependencies = config.Dependencies.Append( new SetupDependency( "CKSetup.Runner" ) );
+                    var manualDependencies = config.Dependencies.Append( new SetupDependency( "CKSetup.Runner", SVersion.Parse( "5.0.0-d06-00-develop-0026") ) );
 
                     if( !archive.ExtractRuntimeDependencies( workingDir, folders, missingImporter, manualDependencies ) ) return false;
                     using( monitor.OpenInfo( $"Copying {dedupFiles.Count} files from bin folders." ) )

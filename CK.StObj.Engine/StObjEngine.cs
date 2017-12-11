@@ -230,8 +230,9 @@ namespace CK.Setup
                         foreach( var b in binPaths.Elements( "BinPath" ) )
                         {
                             var directory = (string)b.Attribute( "BinPath" );
-                            var assemblies = b.Elements( "Model" ).Select( e => e.Value );
-                            assemblies = assemblies.Concat( b.Elements( "ModelDependent" ).Select( e => e.Value ) );
+                            var assemblies = b.Elements()
+                                                .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
+                                                .Select( e => e.Value );
                             var f = new SetupFolder();
                             f.Directory = directory;
                             f.Assemblies.AddRange( assemblies );
