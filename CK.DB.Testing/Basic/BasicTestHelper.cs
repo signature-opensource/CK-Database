@@ -109,6 +109,6 @@ namespace CK.Testing
         /// <summary>
         /// Gets the <see cref="IBasicTestHelper"/> default implementation.
         /// </summary>
-        public static IBasicTestHelper TestHelper { get; } = new BasicTestHelper();
+        public static IBasicTestHelper TestHelper { get; } = TestHelperResolver.Default.Resolve<IBasicTestHelper>();
     }
 }

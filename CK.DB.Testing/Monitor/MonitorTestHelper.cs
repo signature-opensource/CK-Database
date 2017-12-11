@@ -25,6 +25,7 @@ namespace CK.Testing
             _config = config;
             _basic = basic;
             LogFile.RootLogPath = basic.LogFolder;
+            LogToConsole = _config.GetBoolean( "Monitor/LogToConsole" ) ?? false;
         }
 
         public IActivityMonitor Monitor

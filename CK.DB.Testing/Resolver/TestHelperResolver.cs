@@ -18,6 +18,7 @@ namespace CK.Testing
         {
             _container = new SimpleServiceContainer();
             _container.Add<ITestHelperConfiguration>( config );
+            _config = config;
             TransientMode = config.GetBoolean( "Resolver/TransientMode" ) ?? false;
         }
 

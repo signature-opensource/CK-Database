@@ -15,7 +15,7 @@ namespace CK.Testing
 
         /// <summary>
         /// Gets or sets whether <see cref="Monitor"/> will log into the console.
-        /// Initially configurable by "Monitor::LogToConsole" = "true", otherwise defaults to false.
+        /// Initially configurable by "Monitor/LogToConsole" = "true", otherwise defaults to false.
         /// </summary>
         bool LogToConsole { get; set; }
 
