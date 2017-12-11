@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>CK.Testing</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CK.Text" Version="6.0.2" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="9.0.0" />
+  </ItemGroup>
+  
+</Project>
