@@ -124,7 +124,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
                 Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create test database on local server: {0}.", ConnectionString );
-                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
                 m.ExecuteScripts( install, TestHelper.Monitor );
 
                 SqlCallContext c = new SqlCallContext( m );

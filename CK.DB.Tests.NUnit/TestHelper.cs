@@ -91,9 +91,11 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the path to the project folder.
+        /// Gets the path to the test project folder.
+        /// This is usually where files and folders specific to the test should be (like a
+        /// "TestScripts" folder).
         /// </summary>
-        public static string ProjectFolder
+        public static string TestProjectFolder
         {
             get
             {
@@ -272,11 +274,11 @@ namespace CK.Core
         /// <returns>The loaded assembly.</returns>
         static public Assembly LoadAssemblyFromAppContextBaseDirectory( string assemblyName )
         {
-#if NET461
+//#if NET461
             return Assembly.Load( new AssemblyName( assemblyName ) );
-#else
-            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
-#endif
+//#else
+//            return Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
+//#endif
         }
 
 

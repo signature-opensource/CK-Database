@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             if( !_installedDone )
             {
                 m.EnsureCKCoreIsInstalled( TestHelper.Monitor );
-                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/ErrorHandling.Install.sql" ) ) );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/ErrorHandling.Install.sql" ) ) );
                 m.ExecuteScripts( install, TestHelper.Monitor );
                 _installedDone = true;
             }
@@ -42,7 +42,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
         {
             using( SqlManager m = CreateInstallContext() )
             {
-                var microTests = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/ErrorHandling.MicroTests.sql" ) ) );
+                var microTests = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/ErrorHandling.MicroTests.sql" ) ) );
                 foreach( string s in microTests.Where( script => script.Contains( "bug" ) ) )
                 {
                     bool errorExpected = s.Contains( "EXCEPTION" );
