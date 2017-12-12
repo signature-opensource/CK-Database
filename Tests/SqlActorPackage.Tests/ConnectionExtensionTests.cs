@@ -105,7 +105,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void using_extension_methods_thows_a_SqlDetailedException()
         {
-            var c = new SqlConnection( TestHelper.ConnectionStringMaster );
+            var c = new SqlConnection( TestHelper.MasterConnectionString );
             Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteNonQuery( c ) );
             Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteScalar<int>( c ) );
             Assert.Throws<SqlDetailedException>( () => new SqlCommand( "bug" ).ExecuteRow<int>( c, r => 0 ) );
@@ -123,7 +123,7 @@ namespace SqlActorPackage.Tests
 
         async Task AssertThrows( Func<SqlConnection,Task> run )
         {
-            var c = new SqlConnection( TestHelper.ConnectionStringMaster );
+            var c = new SqlConnection( TestHelper.MasterConnectionString );
             try
             {
                 await run( c );
@@ -140,7 +140,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void reading_big_text_with_execute_scalar_fails()
         {
-            var con = new SqlConnection( TestHelper.ConnectionStringMaster );
+            var con = new SqlConnection( TestHelper.MasterConnectionString );
             string read;
 
             SqlCommand cFailXml = new SqlCommand( "select * from sys.objects for xml path" );

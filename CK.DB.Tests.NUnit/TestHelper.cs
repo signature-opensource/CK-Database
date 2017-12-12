@@ -326,7 +326,7 @@ namespace CK.Core
         /// the <see cref="AppSettings.Default"/>["CK_DB_TEST_MASTER_CONNECTION_STRING"] in configuration 
         /// file end then, if none are defined, this defaults to "Server=.;Database=master;Integrated Security=SSPI".
         /// </summary>
-        public static string ConnectionStringMaster => EnsureMasterConnection().ToString();
+        public static string MasterConnectionString => EnsureMasterConnection().ToString();
 
         static SqlConnectionStringBuilder EnsureMasterConnection()
         {
@@ -368,7 +368,7 @@ namespace CK.Core
         public static string DatabaseTestConnectionString => GetConnectionString( DatabaseTestName );
 
         /// <summary>
-        /// Gets the connection string based on <see cref="ConnectionStringMaster"/> to the given database.
+        /// Gets the connection string based on <see cref="MasterConnectionString"/> to the given database.
         /// </summary>
         /// <param name="dbName">Name of the database.</param>
         /// <returns>The connection string to the database.</returns>

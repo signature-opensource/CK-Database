@@ -1,6 +1,7 @@
 using CK.Core;
 using CK.Text;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +10,12 @@ using System.Xml.Linq;
 
 namespace CK.Testing
 {
+
+    /// <summary>
+    /// Simple configuration that reads its content from the first "Test.config" or "App.Config"
+    /// in current execution path and parent paths and from environment variables that start
+    /// with "TestHelper::" prefix.
+    /// </summary>
     public class TestHelperConfiguration : ITestHelperConfiguration
     {
         readonly Dictionary<string, string> _config;
@@ -21,6 +28,7 @@ namespace CK.Testing
             _container.Add<ITestHelperConfiguration>( this );
             var root = new NormalizedPath( AppContext.BaseDirectory );
             SimpleReadFromAppSetting( root.FindClosestFile( "Test.config", "App.config" ) );
+            SimpleReadFromEnvironment();
         }
 
         /// <summary>
@@ -40,6 +48,11 @@ namespace CK.Testing
             return defaultValue;
         }
 
+        void Add( string key, string value )
+        {
+            _config[key.Replace( "::", FileUtil.DirectorySeparatorString )] = value;
+        }
+
         void SimpleReadFromAppSetting( NormalizedPath appConfigFile )
         {
             if( !appConfigFile.IsEmpty )
@@ -47,9 +60,19 @@ namespace CK.Testing
                 XDocument doc = XDocument.Load( appConfigFile );
                 foreach( var e in doc.Root.Descendants( "appSettings" ).Elements( "add" ) )
                 {
-                    _config[(string)e.AttributeRequired( "key" )] = (string)e.AttributeRequired( "value" );
+                    Add( e.AttributeRequired( "key" ).Value, e.AttributeRequired( "value" ).Value );
                 }
             }
+        }
+
+        void SimpleReadFromEnvironment()
+        {
+            var env = Environment.GetEnvironmentVariables()
+                        .Cast<DictionaryEntry>()
+                        .Select( e => ((string)e.Key, (string)e.Value) )
+                        .Where( t => t.Item1.StartsWith( "TestHelper::", StringComparison.OrdinalIgnoreCase ) );
+
+            foreach( var kv in env ) Add( kv.Item1, kv.Item2 );
         }
 
         public static ITestHelperConfiguration Default { get; } = new TestHelperConfiguration();

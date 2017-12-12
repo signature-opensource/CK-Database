@@ -15,6 +15,12 @@ namespace CK.Testing
         string BuildConfiguration { get;}
 
         /// <summary>
+        /// Gets the name of the running test project that must be the name of the <see cref="Assembly.GetEntryAssembly()"/>
+        /// otherwise an exception is thrown.
+        /// </summary>
+        string TestProjectName { get; }
+
+        /// <summary>
         /// Gets the path to the root folder: where the .git folder is.
         /// </summary>
         NormalizedPath RepositoryFolder { get; }

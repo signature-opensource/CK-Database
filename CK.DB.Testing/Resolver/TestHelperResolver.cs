@@ -71,13 +71,26 @@ namespace CK.Testing
             }
             if( t.IsInterface && t.Name[0] == 'I' )
             {
-                typeName = $"{t.Namespace}.{t.Name.Substring( 1 )}, {t.Assembly.FullName}";
+                var cName = t.Name.Substring( 1 );
+                string fullName = $"{t.Namespace}.{cName}, {t.Assembly.FullName}";
+                Type found = SimpleTypeFinder.WeakResolver( fullName, false );
+                if( found == null && cName.EndsWith( "Core" ) )
+                {
+                    fullName = $"{t.Namespace}.{cName.Remove( cName.Length - 4 )}, {t.Assembly.FullName}";
+                    found = SimpleTypeFinder.WeakResolver( fullName, false );
+                }
+                if( found != null && t.IsAssignableFrom( found ) )
+                {
+                    return found;
+                }
+                if( typeof( ITestHelper ).IsAssignableFrom( t ) )
+                {
+                    // Generates a combination.
+                    throw new NotImplementedException();
+                }
             }
-            if( typeName == null && throwOnError )
-            {
-                throw new Exception( $"Unable to locate an implementation for {t.AssemblyQualifiedName}." );
-            }
-            return SimpleTypeFinder.WeakResolver( typeName, throwOnError );
+            if( !throwOnError ) return null;
+            throw new Exception( $"Unable to locate an implementation for {t.AssemblyQualifiedName}." );
         }
 
         object Create( ISimpleServiceContainer container, Type t, bool throwOnError )

@@ -11,19 +11,17 @@ namespace CK.Testing
 {
 
     /// <summary>
-    /// Provides default implementation of <see cref="IMonitorTestHelper"/>.
+    /// Provides default implementation of <see cref="IMonitorTestHelperCore"/>.
     /// </summary>
-    public class MonitorTestHelper : IMonitorTestHelper
+    public class MonitorTestHelper : IMonitorTestHelperCore
     {
         IActivityMonitor _monitor;
         ActivityMonitorConsoleClient _console;
         readonly ITestHelperConfiguration _config;
-        readonly IBasicTestHelper _basic;
 
         public MonitorTestHelper( ITestHelperConfiguration config, IBasicTestHelper basic )
         {
             _config = config;
-            _basic = basic;
             LogFile.RootLogPath = basic.LogFolder;
             LogToConsole = _config.GetBoolean( "Monitor/LogToConsole" ) ?? false;
         }
@@ -61,18 +59,6 @@ namespace CK.Testing
                 }
             }
         }
-
-        public string BuildConfiguration => _basic.BuildConfiguration;
-
-        public NormalizedPath RepositoryFolder => _basic.RepositoryFolder;
-
-        public NormalizedPath SolutionFolder => _basic.SolutionFolder;
-
-        public NormalizedPath LogFolder => _basic.LogFolder;
-
-        public NormalizedPath TestProjectFolder => _basic.TestProjectFolder;
-
-        public NormalizedPath BinFolder => _basic.BinFolder;
 
         /// <summary>
         /// Gets the <see cref="IBasicTestHelper"/> default implementation.

@@ -18,34 +18,34 @@ namespace CK.Testing
         NormalizedPath _binFolder;
         string _buildConfiguration;
         NormalizedPath _testProjectFolder;
-        NormalizedPath _testProjectName;
+        string _testProjectName;
         NormalizedPath _repositoryFolder;
         NormalizedPath _solutionFolder;
         NormalizedPath _logFolder;
 
-        public string BuildConfiguration => Initalize();
+        string IBasicTestHelper.BuildConfiguration => Initalize( ref _buildConfiguration );
 
-        public NormalizedPath RepositoryFolder => InitalizePaths( ref _repositoryFolder );
+        string IBasicTestHelper.TestProjectName => Initalize( ref _testProjectName );
 
-        public NormalizedPath SolutionFolder => InitalizePaths( ref _solutionFolder );
+        NormalizedPath IBasicTestHelper.RepositoryFolder => Initalize( ref _repositoryFolder );
 
-        public NormalizedPath LogFolder => InitalizePaths( ref _logFolder );
+        NormalizedPath IBasicTestHelper.SolutionFolder => Initalize( ref _solutionFolder );
 
-        public NormalizedPath TestProjectFolder => InitalizePaths( ref _testProjectFolder );
+        NormalizedPath IBasicTestHelper.LogFolder => Initalize( ref _logFolder );
 
-        public NormalizedPath TestProjectName => InitalizePaths( ref _testProjectName );
+        NormalizedPath IBasicTestHelper.TestProjectFolder => Initalize( ref _testProjectFolder );
 
-        public NormalizedPath BinFolder => InitalizePaths( ref _binFolder );
+        NormalizedPath IBasicTestHelper.BinFolder => Initalize( ref _binFolder );
 
-        NormalizedPath InitalizePaths( ref NormalizedPath varPath )
+        NormalizedPath Initalize( ref NormalizedPath varPath )
         {
-            Initalize();
+            Initalize( ref _buildConfiguration );
             return varPath;
         }
 
-        string Initalize()
+        string Initalize( ref string varString )
         {
-            if( _buildConfiguration != null ) return _buildConfiguration;
+            if( _buildConfiguration != null ) return varString;
             string p = _binFolder = AppContext.BaseDirectory;
             string buildConfDir = null;
             foreach( var config in _allowedConfigurations )
@@ -94,7 +94,7 @@ namespace CK.Testing
             }
             _solutionFolder = Path.GetDirectoryName( testsFolder );
             _logFolder = Path.Combine( testsFolder, "Logs" );
-            return _buildConfiguration;
+            return varString;
         }
 
         static string FindAbove( string path, string folderName )

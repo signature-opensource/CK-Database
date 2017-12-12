@@ -40,7 +40,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
 
             Assert.That( TestHelper.RunStObjEngine( c ), Is.False );
 
-            using( var db = new SqlConnection( TestHelper.ConnectionStringMaster ) )
+            using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {
                 db.Open();
                 using( var cmd = new SqlCommand( "select DB_Name()", db ) )
@@ -59,7 +59,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
 
             using( var removal = new SqlManager( TestHelper.Monitor ) )
             {
-                removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
+                removal.OpenFromConnectionString( TestHelper.MasterConnectionString );
                 Assert.That( removal.ExecuteScalar(
                                         @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
                                           select 'Done';" ), Is.EqualTo( "Done" ) );
@@ -77,7 +77,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
                 {
                     SqlConnection.ClearPool( c );
                 }
-                removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
+                removal.OpenFromConnectionString( TestHelper.MasterConnectionString );
                 Assert.That( removal.ExecuteScalar(
                                         @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
                                           select 'Done';" ), Is.EqualTo( "Done" ) );
