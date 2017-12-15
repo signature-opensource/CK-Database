@@ -79,7 +79,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the path to the log folder. It is the 'Tests/Logs' folder of the solution. 
+        /// Gets the path to the log folder. It is the 'Logs' folder of the test project. 
         /// </summary>
         public static string LogFolder
         {
@@ -522,7 +522,7 @@ namespace CK.Core
                 throw new InvalidOperationException( $"A parent 'Tests' folder must exist above '{_projectFolder}'." );
             }
             _solutionFolder = Path.GetDirectoryName( testsFolder );
-            _logFolder = Path.Combine( testsFolder, "Logs" );
+            _logFolder = Path.Combine( _projectFolder, "Logs" );
         }
 
         static string FindAbove( string path, string folderName )

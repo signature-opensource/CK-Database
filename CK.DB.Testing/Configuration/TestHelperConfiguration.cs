@@ -18,12 +18,12 @@ namespace CK.Testing
     /// </summary>
     public class TestHelperConfiguration : ITestHelperConfiguration
     {
-        readonly Dictionary<string, string> _config;
+        readonly Dictionary<NormalizedPath, string> _config;
         readonly SimpleServiceContainer _container;
 
         public TestHelperConfiguration()
         {
-            _config = new Dictionary<string, string>();
+            _config = new Dictionary<NormalizedPath, string>();
             _container = new SimpleServiceContainer();
             _container.Add<ITestHelperConfiguration>( this );
             var root = new NormalizedPath( AppContext.BaseDirectory );
@@ -69,7 +69,7 @@ namespace CK.Testing
         {
             var env = Environment.GetEnvironmentVariables()
                         .Cast<DictionaryEntry>()
-                        .Select( e => ((string)e.Key, (string)e.Value) )
+                        .Select( e => Tuple.Create((string)e.Key, (string)e.Value) )
                         .Where( t => t.Item1.StartsWith( "TestHelper::", StringComparison.OrdinalIgnoreCase ) );
 
             foreach( var kv in env ) Add( kv.Item1, kv.Item2 );

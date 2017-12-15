@@ -31,7 +31,7 @@ namespace CK.Testing
         NormalizedPath SolutionFolder { get; }
 
         /// <summary>
-        /// Gets the path to the log folder. It is the 'Tests/Logs' folder of the solution. 
+        /// Gets the path to the log folder. It is the 'Logs' folder of the test project. 
         /// </summary>
         NormalizedPath LogFolder { get; }
 

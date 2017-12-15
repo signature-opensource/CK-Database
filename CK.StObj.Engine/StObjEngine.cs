@@ -187,13 +187,13 @@ namespace CK.Setup
             {
                 string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
                 var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
-                if( g.GeneratedFileName.Count > 0 )
+                if( g.GeneratedFileNames.Count > 0 )
                 {
                     foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )
                     {
                         using( _monitor.OpenInfo( $"Copying generated files to folder: '{f.Directory}'." ) )
                         {
-                            foreach( var file in g.GeneratedFileName )
+                            foreach( var file in g.GeneratedFileNames )
                             {
                                 try
                                 {

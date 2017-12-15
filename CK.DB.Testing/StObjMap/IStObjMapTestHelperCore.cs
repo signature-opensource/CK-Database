@@ -6,7 +6,7 @@ namespace CK.Testing
     /// <summary>
     /// Gives access to one or more StObjMaps by loading them from existing generated assemblies.
     /// </summary>
-    public interface IStObjMapTestHelperCore : ITestHelper
+    public interface IStObjMapTestHelperCore
     {
         /// <summary>
         /// Gets the generated assembly name from "StObjMap/GeneratedAssemblyName" configuration.

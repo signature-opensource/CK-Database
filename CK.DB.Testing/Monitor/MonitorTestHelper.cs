@@ -22,8 +22,12 @@ namespace CK.Testing
         public MonitorTestHelper( ITestHelperConfiguration config, IBasicTestHelper basic )
         {
             _config = config;
-            LogFile.RootLogPath = basic.LogFolder;
-            LogToConsole = _config.GetBoolean( "Monitor/LogToConsole" ) ?? false;
+            this.WithWeakAssemblyResolver( () =>
+            {
+                LogFile.RootLogPath = basic.LogFolder;
+                LogToConsole = _config.GetBoolean( "Monitor/LogToConsole" ) ?? false;
+                return 0;
+            } );
         }
 
         public IActivityMonitor Monitor
@@ -63,7 +67,7 @@ namespace CK.Testing
         /// <summary>
         /// Gets the <see cref="IBasicTestHelper"/> default implementation.
         /// </summary>
-        public static IMonitorTestHelper TestHelper { get; } = TestHelperResolver.Default.Resolve<IMonitorTestHelper>();
+        public static IMonitorTestHelper TestHelper => TestHelperResolver.Default.Resolve<IMonitorTestHelper>();
 
     }
 }

@@ -47,13 +47,13 @@ namespace CK.Testing
         object Resolve( ISimpleServiceContainer container, Type t, bool throwOnError )
         {
             object result = container.GetService( t );
-            if( result == null )
+            if( result == null && t != typeof(ITestHelper) && t != typeof(IMixinTestHelper) )
             {
                 if( !t.IsClass || t.IsAbstract )
                 {
                     Type tMapped = MapType( t, throwOnError );
-                    result = Create( container, t, throwOnError );
-                    if( result != null ) container.Add( tMapped, result );
+                    result = Create( container, tMapped, throwOnError );
+                    if( result != null && !tMapped.Assembly.IsDynamic ) container.Add( tMapped, result );
                 }
                 else result = Create( container, t, throwOnError );
                 if( result != null ) container.Add( t, result );
@@ -63,11 +63,17 @@ namespace CK.Testing
 
         Type MapType( Type t, bool throwOnError )
         {
+            Debug.Assert( t != typeof( ITestHelper ) && t != typeof( IMixinTestHelper ) );
             string typeName = _config.Get( "TestHelper/" + t.FullName );
             if( typeName != null )
             {
                 // Always throw when config is used.
-                return SimpleTypeFinder.WeakResolver( typeName, true );
+                Type fromConfig = SimpleTypeFinder.WeakResolver( typeName, true );
+                if( typeof(IMixinTestHelper).IsAssignableFrom(fromConfig))
+                {
+                    throw new Exception( $"Mapped type '{fromConfig.FullName}' is a Mixin. It can not be explicitely implemented." );
+                }
+                return fromConfig;
             }
             if( t.IsInterface && t.Name[0] == 'I' )
             {
@@ -83,10 +89,13 @@ namespace CK.Testing
                 {
                     return found;
                 }
-                if( typeof( ITestHelper ).IsAssignableFrom( t ) )
+                if( typeof( IMixinTestHelper ).IsAssignableFrom( t ) )
                 {
-                    // Generates a combination.
-                    throw new NotImplementedException();
+                    if( t.GetMembers().Length > 0 )
+                    {
+                        throw new Exception( $"Interface '{t.FullName}' is a Mixin. It can not have members of its own." );
+                    }
+                    return MixinType.Create( t );
                 }
             }
             if( !throwOnError ) return null;
@@ -97,7 +106,7 @@ namespace CK.Testing
         {
             Debug.Assert( t != null && t.IsClass && !t.IsAbstract );
             var longestCtor = t.GetConstructors()
-                                .Select( x => ValueTuple.Create( x, x.GetParameters() ) )
+                                .Select( x => Tuple.Create( x, x.GetParameters() ) )
                                 .OrderByDescending( x => x.Item2.Length )
                                 .Select( x => new
                                 {

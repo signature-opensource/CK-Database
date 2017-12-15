@@ -40,7 +40,7 @@ namespace CK.Testing
         /// <summary>
         /// Gets the <see cref="IStObjMapTestHelper"/> default implementation.
         /// </summary>
-        public static IStObjMapTestHelper TestHelper { get; } = TestHelperResolver.Default.Resolve<IStObjMapTestHelper>();
+        public static IStObjMapTestHelper TestHelper => TestHelperResolver.Default.Resolve<IStObjMapTestHelper>();
 
     }
 }

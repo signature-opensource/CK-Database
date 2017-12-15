@@ -7,7 +7,7 @@ namespace CK.Testing
     /// <summary>
     /// Support sql database related helpers.
     /// </summary>
-    public interface ISqlServerTestHelperCore : ITestHelper
+    public interface ISqlServerTestHelperCore
     {
         /// <summary>
         /// Gets the connection string to the master database from "SqlServer/MasterConnectionString" configuration.

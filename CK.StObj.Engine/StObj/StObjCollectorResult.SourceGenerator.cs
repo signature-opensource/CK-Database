@@ -16,76 +16,23 @@ namespace CK.Setup
 {
     public partial class StObjCollectorResult
     {
-        public class DefaultAssemblyResolver : CK.CodeGen.IAssemblyResolver
-        {
-            public string GetAssemblyFilePath( Assembly a ) => new Uri( a.CodeBase ).LocalPath;
-
-            public IEnumerable<AssemblyName> GetReferencedAssemblies( Assembly a ) => a.GetReferencedAssemblies();
-
-            public Assembly LoadByName( AssemblyName n ) => Assembly.Load( n );
-        }
-
-        static bool HandleCreateResult( IActivityMonitor monitor, string sourceCode, GenerateResult result )
-        {
-            using( monitor.OpenInfo( "Code Generation information." ) )
-            {
-                if( result.LoadFailures.Count > 0 )
-                {
-                    using( monitor.OpenWarn( $"{result.LoadFailures.Count} assembly load failure(s)." ) )
-                        foreach( var e in result.LoadFailures )
-                            if( e.SuccessfulWeakFallback != null ) monitor.Warn( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
-                            else monitor.Error( $"'{e.Name}' load failed." );
-                }
-                if( result.Success ) monitor.Trace( "Source code generation and compilation succeeded." );
-                else
-                {
-                    using( monitor.OpenError( "Generation failed." ) )
-                    {
-                        if( result.EmitError != null )
-                        {
-                            monitor.Error( result.EmitError );
-                        }
-                        if( result.EmitResult != null )
-                        {
-                            if( !result.EmitResult.Success )
-                            {
-                                using( monitor.OpenError( $"{result.EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
-                                {
-                                    foreach( var diag in result.EmitResult.Diagnostics )
-                                    {
-                                        monitor.Trace( diag.ToString() );
-                                    }
-                                }
-                                var withNumber = sourceCode
-                                                    .Split( new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries )
-                                                    .Select( (line,i) => $"{i+1,4} - {line}" )
-                                                    .Concatenate(Environment.NewLine);
-                                monitor.Trace( withNumber );
-                            }
-                        }
-                    }
-                }
-                if( result.AssemblyLoadError != null )
-                {
-                    monitor.Error( "Generated assembly load failed.", result.AssemblyLoadError );
-                }
-                else if( result.Assembly != null )
-                {
-                    monitor.Trace( "Generated assembly successfuly loaded." );
-                }
-            }
-            return result.Success;
-        }
-
         public struct CodeGenerateResult
         {
+            /// <summary>
+            /// Gets whether the generation succeeded.
+            /// </summary>
             public readonly bool Success;
-            public readonly IReadOnlyList<string> GeneratedFileName;
+
+            /// <summary>
+            /// Gets the list of files that have been generated: the assembly itself and
+            /// any source code or other files.
+            /// </summary>
+            public readonly IReadOnlyList<string> GeneratedFileNames;
 
             internal CodeGenerateResult( bool success, IReadOnlyList<string> fileNames )
             {
                 Success = success;
-                GeneratedFileName = fileNames;
+                GeneratedFileNames = fileNames;
             }
         }
 
@@ -122,7 +69,7 @@ namespace CK.Setup
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.Modules.AddRange( _tempAssembly.SourceModules );
-                    var result = g.Generate( ws, finalFilePath, new DefaultAssemblyResolver() );
+                    var result = g.Generate( ws, finalFilePath );
                     if( saveSource && result.Sources != null )
                     {
                         for( int i = 0; i < result.Sources.Count; ++i )

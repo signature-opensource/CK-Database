@@ -36,7 +36,7 @@ namespace CK.Testing
         /// <summary>
         /// Gets the <see cref="ICKSqlServerTestHelper"/> default implementation.
         /// </summary>
-        public static ICKSqlServerTestHelper TestHelper { get; } = TestHelperResolver.Default.Resolve<ICKSqlServerTestHelper>();
+        public static ICKSqlServerTestHelper TestHelper => TestHelperResolver.Default.Resolve<ICKSqlServerTestHelper>();
 
     }
 }

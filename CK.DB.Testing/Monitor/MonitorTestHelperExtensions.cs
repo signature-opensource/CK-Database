@@ -16,18 +16,6 @@ namespace CK.Testing
         /// <returns>The action result.</returns>
         public static T WithWeakAssemblyResolver<T>( this IMonitorTestHelperCore @this, Func<T> action )
         {
-            T result = default(T);
-            WithWeakAssemblyResolver( @this, () => result = action() );
-            return result;
-        }
-
-        /// <summary>
-        /// Runs code inside a standard "weak assembly resolver".
-        /// </summary>
-        /// <param name="this">This test helper.</param>
-        /// <param name="action">The action. Must not be null.</param>
-        public static void WithWeakAssemblyResolver<T>( this IMonitorTestHelperCore @this, Action action )
-        {
             if( action == null ) throw new ArgumentNullException( nameof( action ) );
             ResolveEventHandler loadHook = ( sender, arg ) =>
             {
@@ -35,13 +23,13 @@ namespace CK.Testing
                 var resolved = failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
                         ? Assembly.Load( new AssemblyName( failed.Name ) )
                         : null;
-                @this.Monitor.Info( $"Assembly load conflict: {arg.Name} => {(resolved != null ? resolved.FullName : "(null)")}" );
+                //@this.Monitor.Info( $"Assembly load conflict: {arg.Name} => {(resolved != null ? resolved.FullName : "(null)")}" );
                 return resolved;
             };
             AppDomain.CurrentDomain.AssemblyResolve += loadHook;
             try
             {
-                action();
+                return action();
             }
             finally
             {

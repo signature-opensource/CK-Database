@@ -4,9 +4,9 @@ using System;
 namespace CK.Testing
 {
     /// <summary>
-    /// Combines <see cref="IMonitorTestHelperCore"/> and <see cref="IBasicTestHelper"/>.
+    /// Mixin of <see cref="IMonitorTestHelperCore"/> and <see cref="IBasicTestHelper"/>.
     /// </summary>
-    public interface IMonitorTestHelper : IMonitorTestHelperCore, IBasicTestHelper
+    public interface IMonitorTestHelper : IMixinTestHelper, IMonitorTestHelperCore, IBasicTestHelper
     {
     }
 }

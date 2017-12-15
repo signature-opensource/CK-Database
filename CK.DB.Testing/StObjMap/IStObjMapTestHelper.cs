@@ -4,9 +4,9 @@ using System;
 namespace CK.Testing
 {
     /// <summary>
-    /// Combines <see cref="IStObjMapTestHelperCore"/> and <see cref="IMonitorTestHelper"/>.
+    /// Mixin of <see cref="IStObjMapTestHelperCore"/> and <see cref="IMonitorTestHelper"/>.
     /// </summary>
-    public interface IStObjMapTestHelper : IStObjMapTestHelperCore, IMonitorTestHelper
+    public interface IStObjMapTestHelper : IMixinTestHelper, IStObjMapTestHelperCore, IMonitorTestHelper
     {
     }
 }

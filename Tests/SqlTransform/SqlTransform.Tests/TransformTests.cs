@@ -60,8 +60,9 @@ namespace SqlTransform.Tests
         [Test]
         public void calling_SimpleTransformTest_method()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
-            var p2 = TestHelper.StObjMap.Default.Obtain<CKLevel2.Package>();
+            var b = CK.Testing.BasicTestHelper.TestHelper;
+            var p = CK.Testing.StObjMapTestHelper.TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            var p2 = CK.Testing.StObjMapTestHelper.TestHelper.StObjMap.Default.Obtain<CKLevel2.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string s;

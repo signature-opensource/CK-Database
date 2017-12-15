@@ -5,9 +5,9 @@ using System.Collections.Generic;
 namespace CK.Testing
 {
     /// <summary>
-    /// Combines <see cref="ISqlServerTestHelperCore"/> and <see cref="IMonitorTestHelper"/>.
+    /// Mixin of <see cref="ISqlServerTestHelperCore"/> and <see cref="IMonitorTestHelper"/>.
     /// </summary>
-    public interface ISqlServerTestHelper : ISqlServerTestHelperCore, IMonitorTestHelper
+    public interface ISqlServerTestHelper : IMixinTestHelper, ISqlServerTestHelperCore, IMonitorTestHelper
     {
     }
 }

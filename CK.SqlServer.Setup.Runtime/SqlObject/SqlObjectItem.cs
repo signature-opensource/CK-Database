@@ -79,9 +79,16 @@ namespace CK.SqlServer.Setup
             var alterOrCreate = SqlObject as ISqlServerAlterOrCreateStatement;
             if( alterOrCreate != null )
             {
-                if( alreadyExists != alterOrCreate.IsAlterKeyword )
+                if( alreadyExists )
                 {
-                    alterOrCreate = alterOrCreate.ToggleAlterKeyword();
+                    if( alterOrCreate.StatementPrefix != CreateOrAlterStatementPrefix.Alter )
+                    {
+                        alterOrCreate = alterOrCreate.WithStatementPrefix( CreateOrAlterStatementPrefix.Alter );
+                    }
+                }
+                else if( alterOrCreate.StatementPrefix != CreateOrAlterStatementPrefix.Create )
+                {
+                    alterOrCreate = alterOrCreate.WithStatementPrefix( CreateOrAlterStatementPrefix.Create );
                 }
                 alterOrCreate.Write( b );
             }

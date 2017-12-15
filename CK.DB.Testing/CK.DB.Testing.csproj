@@ -1,17 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <Description>Contains test helpers.</Description>
     <RootNamespace>CK.Testing</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="6.0.2" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="9.0.0" />
+    <PackageReference Include="CK.Text" Version="6.1.0" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="9.0.1" />
+    <PackageReference Include="CK.Reflection" Version="6.0.1" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.2" />
   </ItemGroup>
   
   <ItemGroup>
@@ -20,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="SqlServer\" />
-    <Folder Include="Resolver\" />
   </ItemGroup>
   
 </Project>

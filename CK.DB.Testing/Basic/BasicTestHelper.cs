@@ -93,7 +93,7 @@ namespace CK.Testing
                 throw new InvalidOperationException( $"A parent 'Tests' folder must exist above '{_testProjectFolder}'." );
             }
             _solutionFolder = Path.GetDirectoryName( testsFolder );
-            _logFolder = Path.Combine( testsFolder, "Logs" );
+            _logFolder = Path.Combine( _testProjectFolder, "Logs" );
             return varString;
         }
 
@@ -109,6 +109,6 @@ namespace CK.Testing
         /// <summary>
         /// Gets the <see cref="IBasicTestHelper"/> default implementation.
         /// </summary>
-        public static IBasicTestHelper TestHelper { get; } = TestHelperResolver.Default.Resolve<IBasicTestHelper>();
+        public static IBasicTestHelper TestHelper => TestHelperResolver.Default.Resolve<IBasicTestHelper>();
     }
 }
