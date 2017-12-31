@@ -1,4 +1,5 @@
 using CK.Core;
+using CK.Monitoring.InterProcess;
 using CK.Setup;
 using CK.Text;
 using CSemVer;
@@ -43,9 +44,20 @@ namespace CKSetup
                     workingDir = GetWorkingDirectory( monitor, config.WorkingDirectory, folders );
                     if( workingDir == null ) return false;
 
-                    var manualDependencies = config.Dependencies.Append( new SetupDependency( "CKSetup.Runner", SVersion.Parse( "5.0.0-d06-00-develop-0026") ) );
+                    IEnumerable<SetupDependency> manualDependencies = config.Dependencies;
 
+                    var thisAssembly = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute( Assembly.GetExecutingAssembly(), typeof( AssemblyInformationalVersionAttribute ) );
+                    var thisVersion = new InformationalVersion( thisAssembly?.InformationalVersion );
+                    if( thisVersion.SemVersion != null && thisVersion.SemVersion != SVersion.ZeroVersion )
+                    {
+                        manualDependencies = manualDependencies.Append( new SetupDependency( "CKSetup.Runner", SVersion.Parse( "5.0.0-d06-00-develop-0026" ) ) );
+                    }
+                    else
+                    {
+                        manualDependencies = manualDependencies.Append( new SetupDependency( "CKSetup.Runner", SVersion.ZeroVersion ) );
+                    }
                     if( !archive.ExtractRuntimeDependencies( workingDir, folders, missingImporter, manualDependencies ) ) return false;
+
                     using( monitor.OpenInfo( $"Copying {dedupFiles.Count} files from bin folders." ) )
                     {
                         foreach( var f in dedupFiles.Values )
@@ -302,7 +314,7 @@ namespace CKSetup
             cmdStartInfo.UseShellExecute = false;
             cmdStartInfo.CreateNoWindow = true;
             cmdStartInfo.FileName = fileName;
-            using( var logReceiver = LogReceiver.Start( m, true ) )
+            using( var logReceiver = SimpleLogPipeReceiver.Start( m, true ) )
             {
                 cmdStartInfo.Arguments = arguments;
                 cmdStartInfo.Arguments += " /logPipe:" + logReceiver.PipeName;
@@ -611,7 +623,7 @@ namespace CKSetup
             cmdStartInfo.UseShellExecute = false;
             cmdStartInfo.CreateNoWindow = true;
             cmdStartInfo.FileName = fileName;
-            using( var logReceiver = usePipeLogs ? LogReceiver.Start( m, true ) : null )
+            using( var logReceiver = usePipeLogs ? SimpleLogPipeReceiver.Start( m, true ) : null )
             {
                 cmdStartInfo.Arguments = arguments;
                 if( usePipeLogs ) cmdStartInfo.Arguments += " /logPipe:" + logReceiver.PipeName;

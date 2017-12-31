@@ -22,7 +22,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="../CKSetup/CKSetup.csproj" />
+    <PackageReference Include="CKSetup.Core" Version="6.0.0-a00-00-develop-0006" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="CK.AspNet" Version="$(CKAspNetVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" />

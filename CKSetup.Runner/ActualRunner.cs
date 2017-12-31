@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using CK.Monitoring.InterProcess;
 
 #if !NET461
 using Microsoft.Extensions.DependencyModel;
@@ -15,7 +16,7 @@ namespace CKSetup.Runner
     {
         static public int Run( StringBuilder rawLogText, string[] args )
         {
-            ActivityMonitorAnonymousPipeLogSenderClient pipeClient;
+            SimplePipeSenderActivityMonitorClient pipeClient;
             IActivityMonitor monitor = CreateMonitor( rawLogText, args, out pipeClient );
             using( monitor.OpenLog( LogLevel.Info, "Starting CKSetup.Runner" ) )
             {
@@ -58,7 +59,7 @@ namespace CKSetup.Runner
             }
         }
 
-        static IActivityMonitor CreateMonitor( StringBuilder rawLogText, string[] args, out ActivityMonitorAnonymousPipeLogSenderClient pipeClient )
+        static IActivityMonitor CreateMonitor( StringBuilder rawLogText, string[] args, out SimplePipeSenderActivityMonitorClient pipeClient )
         {
             pipeClient = null;
             var monitor = new ActivityMonitor();
@@ -66,7 +67,7 @@ namespace CKSetup.Runner
             {
                 if( a.StartsWith( "/logPipe:" ) && a.Length > 9 )
                 {
-                    pipeClient = new ActivityMonitorAnonymousPipeLogSenderClient( a.Substring( 9 ) );
+                    pipeClient = new SimplePipeSenderActivityMonitorClient( a.Substring( 9 ) );
                     monitor.Output.RegisterClient( pipeClient );
                 }
                 else

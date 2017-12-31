@@ -22,7 +22,7 @@ namespace CK.SqlServer
         /// </summary>
         public const string ReturnParameterName = "RETURN_VALUE";
 
-        static Regex _rGo = new Regex( @"^GO(?:\s|$)+", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
+        static readonly Regex _rGo = new Regex( @"^\w+GO(?:\s|$)+", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
         /// <summary>
         /// Writes the command as a text with its parameters. Handles stored procedure calls as well as simple text commands.
@@ -294,13 +294,12 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Splits a script that may contain 'GO' separators (must be on the first column).
+        /// Splits a script that may contain 'GO' separators (that must be alone of their line).
         /// </summary>
         /// <param name="script">Script to split.</param>
         /// <returns>Zero (if the <paramref name="script"/> was null empty) or more scripts.</returns>
         /// <remarks>
-        /// The 'GO' may be lowercase but must always be on the first column of the line (i.e. 
-        /// there must be no white space nor tabs before it).
+        /// The 'GO' may be lowercase but must always be alone on its line.
         /// </remarks>
         static public IEnumerable<string> SplitGoSeparator( string script )
         {

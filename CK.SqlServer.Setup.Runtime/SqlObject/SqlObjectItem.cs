@@ -81,12 +81,9 @@ namespace CK.SqlServer.Setup
             {
                 if( alreadyExists )
                 {
-                    if( alterOrCreate.StatementPrefix != CreateOrAlterStatementPrefix.Alter )
-                    {
-                        alterOrCreate = alterOrCreate.WithStatementPrefix( CreateOrAlterStatementPrefix.Alter );
-                    }
+                    alterOrCreate = alterOrCreate.WithStatementPrefix( CreateOrAlterStatementPrefix.Alter );
                 }
-                else if( alterOrCreate.StatementPrefix != CreateOrAlterStatementPrefix.Create )
+                else 
                 {
                     alterOrCreate = alterOrCreate.WithStatementPrefix( CreateOrAlterStatementPrefix.Create );
                 }
