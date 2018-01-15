@@ -5,10 +5,6 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />

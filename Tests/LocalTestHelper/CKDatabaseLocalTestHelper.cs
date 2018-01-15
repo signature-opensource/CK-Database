@@ -51,11 +51,6 @@ namespace CK.Testing
             yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage/bin/{_dbSetup.BuildConfiguration}/net461" );
             yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp2.0" );
             yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage.Runtime/bin/{_dbSetup.BuildConfiguration}/net461" );
-
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/net461" );
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp2.0" );
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage.Runtime/bin/{_dbSetup.BuildConfiguration}/net461" );
         }
 
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.SqlZonePackageComponentsPaths => GetSqlZonePackageComponentsPaths();

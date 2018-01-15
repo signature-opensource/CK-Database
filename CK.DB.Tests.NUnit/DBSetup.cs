@@ -24,7 +24,7 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void existing_generated_dll_load()
+        public void generated_dll_load_existing()
         {
             TestHelper.LogToConsole = true;
             Assert.That( TestHelper.LoadStObjMap( TestHelper.GeneratedAssemblyName ) != null, "Generated Assembly must exist and a StObjMap must be loaded." );
@@ -32,7 +32,16 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void existing_generated_dll_delete()
+        public void toggle_CKSetup_LaunchDebug()
+        {
+            TestHelper.LogToConsole = true;
+            TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
+            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
+        }
+
+        [Test]
+        [Explicit]
+        public void generated_dll_delete_existing()
         {
             TestHelper.LogToConsole = true;
             var p = TestHelper.BinFolder.AppendPart( TestHelper.GeneratedAssemblyName + ".dll" );
@@ -83,15 +92,6 @@ namespace CK.DB.Tests
         {
             TestHelper.LogToConsole = true;
             Assert.That( TestHelper.RunDBSetup( null, true, true, true ), "DBSetup failed." );
-        }
-
-        [Test]
-        [Explicit]
-        public void toggle_CKSetup_LaunchDebug()
-        {
-            TestHelper.LogToConsole = true;
-            TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
-            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
         }
 
 

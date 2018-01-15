@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using CK.Core;
 using CK.Testing.DBSetup;
+using CK.Text;
 using CKSetup;
 
 namespace CK.Testing
@@ -74,7 +76,15 @@ namespace CK.Testing
                                 <IgnoreMissingDependencyIsError>true</IgnoreMissingDependencyIsError>
                             </Aspect>
                         </StObjEngineConfiguration>" );
-                    return _ckSetup.WithWeakAssemblyResolver( () => _ckSetup.CKSetup.Run( conf ) );
+                    if( !_ckSetup.WithWeakAssemblyResolver( () => _ckSetup.CKSetup.Run( conf ) ) ) return false;
+                    string genDllName = _stObjMap.GeneratedAssemblyName + ".dll";
+                    var firstGen = new NormalizedPath( conf.BinPaths[0] ).AppendPart( genDllName );
+                    if( firstGen != _stObjMap.BinFolder.AppendPart( genDllName ) && File.Exists( firstGen ) )
+                    {
+                        _stObjMap.Monitor.Info( $"Copying generated '{genDllName}' from first BinPath ({conf.BinPaths[0]}) to bin folder." );
+                        File.Copy( firstGen, Path.Combine( AppContext.BaseDirectory, genDllName ), true );
+                    }
+                    return true;
                 }
                 catch( Exception ex )
                 {

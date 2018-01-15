@@ -1,15 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\..\Common\Shared.props" />
+
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <!--<RuntimeIdentifier>win</RuntimeIdentifier>-->
   </PropertyGroup>
-
-  <Import Project="..\..\..\Common\Shared.props" />
-
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />

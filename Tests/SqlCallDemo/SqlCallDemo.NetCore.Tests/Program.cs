@@ -13,8 +13,6 @@ namespace SqlCallDemo.NetCore.Tests
                 = CultureInfo.CurrentUICulture
                 = CultureInfo.DefaultThreadCurrentCulture
                 = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
-            //Core.TestHelper.LogToConsole = true;
-            //Core.TestHelper.Monitor.MinimalFilter = LogFilter.Debug;
             return new AutoRun( Assembly.GetEntryAssembly() ).Execute( args );
         }
     }

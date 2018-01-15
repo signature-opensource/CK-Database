@@ -11,6 +11,7 @@ namespace LocalTestHelper
         [Test]
         public void delete_netcore_published_folders()
         {
+            TestHelper.LogToConsole = true;
             TestHelper.DeleteAllLocalComponentsPublishedFolders();
         }
     }
