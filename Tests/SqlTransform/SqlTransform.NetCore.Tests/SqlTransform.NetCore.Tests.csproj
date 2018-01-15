@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
-    <ProjectReference Include="..\..\..\Tests\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
-    <ProjectReference Include="..\..\..\Tests\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
+    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
   </ItemGroup>
 
   <ItemGroup>

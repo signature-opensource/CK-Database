@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
-    <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
+    <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
 
 

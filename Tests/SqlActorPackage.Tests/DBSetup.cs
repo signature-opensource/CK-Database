@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
-namespace From.CKDBNUnit
+namespace From.LocalTestHelper
 {
     [TestFixture]
-    public class DBSetup : CK.DB.Tests.DBSetup
+    public class DBSetup : global::LocalTestHelper.DBSetup
     {
     }
 }

@@ -8,6 +8,7 @@ using CK.SqlServer.Setup;
 using FluentAssertions;
 using CK.SqlServer;
 using CK.SqlServer.Parser;
+using CK.Testing;
 
 namespace CK.Core
 {
@@ -48,53 +49,7 @@ namespace CK.Core
         /// <returns>A disposable object that will restore the original object.</returns>
         public static IDisposable TemporaryTransform( this SqlDatabase @this, string transformer )
         {
-            var tResult = TestHelper.SqlServerParser.ParseTransformer( transformer );
-            if( tResult.IsError )
-            {
-                throw new ArgumentException( "Invalid transformation: " + tResult.ErrorMessage, nameof( transformer ) );
-            }
-            ISqlServerTransformer t = tResult.Result;
-            string targetName = t.TargetSchemaName;
-            if( targetName == null )
-            {
-                throw new ArgumentException( "Transfomer must target a Sql object.", nameof( transformer ) );
-            }
-            string origin = @this.GetObjectDefinition( targetName );
-            var oResult = TestHelper.SqlServerParser.ParseObject( origin );
-            if( oResult.IsError )
-            {
-                throw new Exception( "Unable to parse object definition: " + oResult.ErrorMessage );
-            }
-            ISqlServerObject o = oResult.Result;
-            ISqlServerObject oT = t.SafeTransform( TestHelper.Monitor, o );
-            if( oT == null )
-            {
-                throw new Exception( "Unable to apply transformer." );
-            }
-            string oType;
-            switch( o.ObjectType )
-            {
-                case SqlServerObjectType.Procedure: oType = "procedure"; break;
-                case SqlServerObjectType.View: oType = "view"; break;
-                default: oType = "function"; break;
-            }
-            void Restore()
-            {
-                var safe = SqlHelper.SqlEncodeStringContent( o.SchemaName );
-                @this.ExecuteNonQuery( $"if OBJECT_ID('{safe}') is not null drop {oType} {o.SchemaName};" );
-                @this.ExecuteNonQuery( origin );
-            }
-            try
-            {
-                @this.ExecuteNonQuery( $"drop {oType} {o.SchemaName};" );
-                @this.ExecuteNonQuery( oT.ToFullString() );
-                return Util.CreateDisposableAction( Restore );
-            }
-            catch
-            {
-                Restore();
-                throw;
-            }
+            return SqlTransformerTestHelper.TestHelper.TemporaryTransform( @this.ConnectionString, transformer );
         }
 
         /// <summary>

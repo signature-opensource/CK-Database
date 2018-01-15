@@ -1,5 +1,6 @@
 using CK.Core;
 using CK.Setup;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -35,18 +37,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 <Aspect Type=""CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model"" >
                 </Aspect>
                 <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"" >
-                    <DefaultDatabaseConnectionString>{TestHelper.DatabaseTestConnectionString}</DefaultDatabaseConnectionString>
+                    <DefaultDatabaseConnectionString>{TestHelper.GetConnectionString()}</DefaultDatabaseConnectionString>
                 </Aspect>
             </C>" );
 
-            bool result = TestHelper.WithWeakAssemblyResolver( () =>
-            {
-                var e = new StObjEngine( TestHelper.Monitor, config );
-                return e.Run();
-            } );
-            Assert.That( result, Is.True );
+            TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, config ).Run() )
+                .Should().BeTrue();
             string generatedFile = Path.Combine( actorGeneratedPath, "SqlActorPackage_SetupFolder.dll" );
-            Assert.That( File.Exists( generatedFile ) );
+            File.Exists( generatedFile ).Should().BeTrue();
         }
     }
 }

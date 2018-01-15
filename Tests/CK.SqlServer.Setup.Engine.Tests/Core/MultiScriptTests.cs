@@ -1,20 +1,5 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\Core\MultiScriptTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using System.IO;
-using System.Data.SqlClient;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using CK.Core;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {

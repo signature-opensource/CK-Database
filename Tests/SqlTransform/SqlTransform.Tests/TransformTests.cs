@@ -2,13 +2,10 @@ using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlTransform.Tests
 {
@@ -18,27 +15,27 @@ namespace SqlTransform.Tests
 
         internal static SqlCommand GeneratedCreateCommand()
         {
-            SqlCommand command = new SqlCommand("CK.sSimpleReplaceTest")
+            SqlCommand command = new SqlCommand( "CK.sSimpleReplaceTest" )
             {
                 CommandType = CommandType.StoredProcedure
             };
             SqlParameterCollection parameters = command.Parameters;
-            SqlParameter parameter1 = new SqlParameter("@TextParam", SqlDbType.NVarChar, 0x80)
+            SqlParameter parameter1 = new SqlParameter( "@TextParam", SqlDbType.NVarChar, 0x80 )
             {
                 Direction = ParameterDirection.InputOutput
             };
-            parameters.Add(parameter1);
-            parameters.Add(new SqlParameter("@Added", SqlDbType.Int));
+            parameters.Add( parameter1 );
+            parameters.Add( new SqlParameter( "@Added", SqlDbType.Int ) );
             return command;
         }
 
-        public string SimpleReplaceTestGenerated(ISqlCallContext context1, string text1, string extraConnectionString)
+        public string SimpleReplaceTestGenerated( ISqlCallContext context1, string text1, string extraConnectionString )
         {
             SqlCommand command;
             SqlParameterCollection parameters = (command = GeneratedCreateCommand()).Parameters;
             parameters[0].Value = (object)text1 ?? DBNull.Value;
             parameters[1].Value = 0;
-            context1.Executor.ExecuteNonQuery(extraConnectionString, (SqlCommand)command);
+            context1.Executor.ExecuteNonQuery( extraConnectionString, (SqlCommand)command );
             return parameters[0].Value == DBNull.Value ? (string)null : (string)parameters[0].Value;
         }
 
@@ -48,9 +45,9 @@ namespace SqlTransform.Tests
             var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                SimpleReplaceTestGenerated(ctx, "Pouf!", p.Database.ConnectionString);
-                
-                var aFromType = typeof(string).GetTypeInfo().Assembly;
+                SimpleReplaceTestGenerated( ctx, "Pouf!", p.Database.ConnectionString );
+
+                var aFromType = typeof( string ).GetTypeInfo().Assembly;
 
                 string s = p.SimpleReplaceTest( ctx, "Hello!" );
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );
@@ -60,9 +57,8 @@ namespace SqlTransform.Tests
         [Test]
         public void calling_SimpleTransformTest_method()
         {
-            var b = CK.Testing.BasicTestHelper.TestHelper;
-            var p = CK.Testing.StObjMapTestHelper.TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
-            var p2 = CK.Testing.StObjMapTestHelper.TestHelper.StObjMap.Default.Obtain<CKLevel2.Package>();
+            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            var p2 = TestHelper.StObjMap.Default.Obtain<CKLevel2.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string s;

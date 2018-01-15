@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
+using FluentAssertions;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using System;
+using System.Collections.Generic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlZonePackage.Tests
 {
@@ -18,16 +17,16 @@ namespace SqlZonePackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
-            Assert.That( textA, Does.StartWith( 
+            textA.Should().StartWith( 
                 "--Injected from SqlZonePackage.Zone.UserHome.CmdUserToBeOverriden (n°2/2)."
                 + Environment.NewLine
-                + "--Injected from UserHome.CmdUserToBeOverriden (n°1/2)." ) );
+                + "--Injected from UserHome.CmdUserToBeOverriden (n°1/2)." );
 
             var textB = a.Database.GetObjectDefinition( "CK.sUserToBeOverridenIndirect" );
-            Assert.That( textB, Does.StartWith( 
+            textB.Should().StartWith( 
                 "--Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2)."
                 + Environment.NewLine
-                + "--Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." ) );
+                + "--Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." );
 
         }
 

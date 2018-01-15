@@ -8,6 +8,7 @@
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {

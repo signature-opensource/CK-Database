@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
-using System.Diagnostics;
-using NUnit.Framework.Constraints;
+using static CK.Testing.CKDatabaseLocalTestHelper;
 
 namespace SqlActorPackage.Tests
 {

@@ -9,12 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
-    <ProjectReference Include="..\SqlCallDemo\SqlCallDemo.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.9.0" />
+    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj" />
     <PackageReference Include="NUnitLite" Version="3.9.0" />
   </ItemGroup>
 
@@ -24,10 +20,5 @@
       <Visible>true</Visible>
     </Compile>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="..\SqlCallDemo.Tests\SqlCallDemo.Tests.GeneratedSrc.dll.cs" />
-  </ItemGroup>
-
 
 </Project>

@@ -257,3 +257,6 @@ Tests/CKSetup.Tests/TestOutput/
 CKSetupRemoteStore/Store/
 CKSetupRemoteStore/Logs/
 Tests/CKSetup.Core.Tests/TestOutput/
+Tests/LocalTestHelper/LocalTestStore/
+Tests/SqlCallDemo/SqlCallDemo.NetCore.Tests/SetupWorkingDir/
+Tests/SqlTransform/SqlTransform.Tests/TestStores/

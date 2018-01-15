@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using CK.SqlServer;
 using SqlCallDemo.ProviderDemo;
 using CK.Core;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests.ProviderDemo
 {

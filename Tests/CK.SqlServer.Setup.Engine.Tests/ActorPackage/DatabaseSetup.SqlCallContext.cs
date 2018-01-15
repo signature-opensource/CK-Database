@@ -1,9 +1,7 @@
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {

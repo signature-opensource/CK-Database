@@ -87,6 +87,11 @@ namespace CK.Core
             static public readonly XName GenerateAppContextAssembly = XNamespace.None + "GenerateAppContextAssembly";
 
             /// <summary>
+            /// The GenerateSourceFiles element name.
+            /// </summary>
+            static public readonly XName GenerateSourceFiles = XNamespace.None + "GenerateSourceFiles";
+
+            /// <summary>
             /// The TraceDependencySorterInput element name.
             /// </summary>
             static public readonly XName TraceDependencySorterInput = XNamespace.None + "TraceDependencySorterInput";
@@ -114,6 +119,7 @@ namespace CK.Core
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
             GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
+            GenerateSourceFiles = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
@@ -152,6 +158,7 @@ namespace CK.Core
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
                    !GenerateAppContextAssembly ? new XElement( XmlNames.GenerateAppContextAssembly, "false" ) : null,
+                   GenerateSourceFiles ? new XElement( XmlNames.GenerateSourceFiles, "true" ) : null,
                    GeneratedAssemblyName != DefaultGeneratedAssemblyName
                         ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName )
                         : null,
@@ -184,6 +191,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets or sets whether generated source files should be generated alongside the <see cref="GeneratedAssemblyName"/>.
+        /// Defaults to false.
         /// </summary>
         public bool GenerateSourceFiles { get; set; }
 

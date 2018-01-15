@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,8 @@ using NUnit.Framework.Constraints;
 using System.Data.SqlClient;
 using CK.SqlServer;
 using System.Data;
+using static CK.Testing.CKDatabaseLocalTestHelper;
+using FluentAssertions;
 
 namespace SqlActorPackage.Tests
 {
@@ -131,9 +133,9 @@ namespace SqlActorPackage.Tests
             }
             catch( SqlDetailedException ex )
             {
-                Assert.That( ex.Message, Does.Contain( "bug" ) );
+                ex.Message.Should().Contain( "bug" );
             }
-            Assert.That( c.State, Is.EqualTo( ConnectionState.Closed ) );
+            c.State.Should().Be( ConnectionState.Closed );
         }
 
 

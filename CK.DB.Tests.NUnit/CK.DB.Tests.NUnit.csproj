@@ -3,28 +3,22 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>Contains NUnit test helpers.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
-    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
-    <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
-    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <PackageReference Include="CK.Testing.SqlServer" Version="0.1.0-a06" />
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
+    <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="$(CKSqlServerParserVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Include="NUnitLite" Version="3.9.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="NUnit" Version="3.9.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System" />
   </ItemGroup>
 
   <ItemGroup>

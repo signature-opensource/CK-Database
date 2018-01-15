@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using CK.Core;
 using CK.Testing.Monitoring;
+using CK.Testing.StObjMap;
 using CK.Text;
 
 namespace CK.Testing
@@ -20,6 +21,7 @@ namespace CK.Testing
         readonly IMonitorTestHelper _monitor;
         readonly string _generatedAssemblyName;
         IStObjMap _map;
+        event EventHandler _stObjMapLoading;
 
         public StObjMapTestHelper( ITestHelperConfiguration config, IMonitorTestHelper monitor )
         {
@@ -28,13 +30,24 @@ namespace CK.Testing
             _generatedAssemblyName = _config.Get( "StObjMap/GeneratedAssemblyName", StObjEngineConfiguration.DefaultGeneratedAssemblyName );
         }
 
+        event EventHandler IStObjMapTestHelperCore.StObjMapLoading
+        {
+            add => _stObjMapLoading += value;
+            remove => _stObjMapLoading -= value;
+        }
+
         string StObjMap.IStObjMapTestHelperCore.GeneratedAssemblyName => _generatedAssemblyName;
 
         IStObjMap StObjMap.IStObjMapTestHelperCore.StObjMap
         {
             get
             {
-                return _map ?? (_map = DoLoadStObjMap( _generatedAssemblyName, true ) );
+                if( _map == null )
+                {
+                    _stObjMapLoading?.Invoke( this, EventArgs.Empty );
+                    _map = DoLoadStObjMap( _generatedAssemblyName, true );
+                }
+                return _map;
             }
         }
 
@@ -66,7 +79,6 @@ namespace CK.Testing
                 }
             }
         }
-
 
         /// <summary>
         /// Gets the <see cref="IStObjMapTestHelper"/> default implementation.

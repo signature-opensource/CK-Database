@@ -1,8 +1,0 @@
-﻿{
-  "profiles": {
-    "CKSetup": {
-      "commandName": "Project",
-      "commandLineArgs": "setup \"Server=.;Database=Test\" -p \"C:\\Dev\\CK-Database-Projects\\CK-DB\\IntegrationTests\\Tests\\AllPackages\\bin\\Debug\\net461\""
-    }
-  }
-}

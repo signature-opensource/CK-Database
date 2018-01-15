@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
+    <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
+    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />

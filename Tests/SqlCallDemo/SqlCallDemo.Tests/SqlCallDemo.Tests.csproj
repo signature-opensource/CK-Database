@@ -1,22 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <Import Project="..\..\..\Common\Shared.props" />
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Common\Shared.props" />
-
-  <ItemGroup>
-    <Compile Remove="SqlCallDemo.Tests.GeneratedSrc.dll.cs" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
-    <ProjectReference Include="..\..\..\Tests\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj" />
+    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj" />
   </ItemGroup>
 
 </Project>

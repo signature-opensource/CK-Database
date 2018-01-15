@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
-using NUnit.Framework;
 using FluentAssertions;
+using NUnit.Framework;
+using System.Data.SqlClient;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.Core
 {
@@ -28,17 +24,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         [Test]
         public void an_invalid_database_name_does_not_DBSetup_master()
         {
-            var c = new StObjEngineConfiguration();
-            c.Assemblies.Add( "SqlActorPackage" );
-
-            var setupable = new SetupableAspectConfiguration();
-            c.Aspects.Add( setupable );
-
-            var sql = new SqlSetupAspectConfiguration();
-            sql.DefaultDatabaseConnectionString = InvalidConnectionString;
-            c.Aspects.Add( sql );
-
-            Assert.That( TestHelper.RunStObjEngine( c ), Is.False );
+            TestHelper.RunDBSetup( InvalidConnectionString ).Should().BeFalse();
 
             using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {

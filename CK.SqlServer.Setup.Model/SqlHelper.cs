@@ -22,7 +22,7 @@ namespace CK.SqlServer
         /// </summary>
         public const string ReturnParameterName = "RETURN_VALUE";
 
-        static readonly Regex _rGo = new Regex( @"^\w+GO(?:\s|$)+", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
+        static readonly Regex _rGo = new Regex( @"^\s*GO(?:\s|$)+", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
         /// <summary>
         /// Writes the command as a text with its parameters. Handles stored procedure calls as well as simple text commands.

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using SqlCallDemo.ComplexType;
+using System;
+using System.Threading.Tasks;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests
 {

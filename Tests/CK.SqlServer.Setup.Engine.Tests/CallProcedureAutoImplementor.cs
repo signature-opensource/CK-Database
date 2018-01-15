@@ -7,6 +7,8 @@ using CK.Core;
 using System.Data.SqlClient;
 using System.Data;
 using System.IO;
+using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -42,7 +44,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class CallProcedureAutoImplementor
     {
-        readonly static string ConnectionString = TestHelper.DatabaseTestConnectionString;
+        readonly static string ConnectionString = TestHelper.GetConnectionString();
 
         class ManualCall
         {
@@ -125,7 +127,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
             {
                 Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create test database on local server: {0}.", ConnectionString );
                 var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.Monitor );
+                m.ExecuteScripts( install, TestHelper.Monitor )
+                    .Should().BeTrue();
 
                 SqlCallContext c = new SqlCallContext( m );
                 ManualCall manual = new ManualCall();

@@ -165,61 +165,35 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        string ckSetupExe = "CKSetup/bin/" + configuration + "/net461/CKSetup.exe";
-                        string storePath = releasesDir.Path.Combine( "TempStore" ).FullPath;
-                        var args = new ProcessArgumentBuilder()
-                                    .Append( "store" )
-                                    .Append( "add" );
-
-                        args.Append( GetNet461BinFolder( "CKSetup.Runner", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.StObj.Runner", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.StObj.Model", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.StObj.Runtime", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.StObj.Engine", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.Setupable.Model", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.Setupable.Runtime", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.Setupable.Engine", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ) );
-                        args.Append( GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ) );
-                        args.Append( GetNet461BinFolder( "CKSetup", configuration ) );
-
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CKSetup.Runner", configuration ) ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runner", configuration ) ) );
-                        args.Append( GetNetCoreBinFolder( "CK.StObj.Model", configuration ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ) );
-                        args.Append( GetNetCoreBinFolder( "CK.Setupable.Model", configuration ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) ) );
-                        args.Append( GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) ) );
-                        args.Append( EnsurePublishPath( GetNetCoreBinFolder( "CKSetup", configuration ) ) );
-
-                        args.AppendSwitchQuoted( "--store", storePath )
-                            .AppendSwitchQuoted( "-v", "Debug" );
-
-                        Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
+                        if( !Cake.CKSetupAddComponentFoldersToStore( new[]
                         {
-                            Arguments = args
-                        } ).WaitForExit();
-                        args.Clear();
-                        args.Append( "store" )
-                            .Append( "push" )
-                            .AppendSwitch( "-r", "http://cksetup.invenietis.net" )
-                            .AppendSwitchSecret( "-k", apiKey )
-                            .AppendSwitchQuoted( "--store", storePath )
-                            .AppendSwitchQuoted( "-v", "Debug" );
-                        var p = Cake.ProcessRunner.Start( ckSetupExe, new ProcessSettings()
+                            GetNet461BinFolder( "CK.StObj.Model", configuration ),
+                            GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
+                            GetNet461BinFolder( "CK.StObj.Engine", configuration ),
+                            GetNet461BinFolder( "CK.Setupable.Model", configuration ),
+                            GetNet461BinFolder( "CK.Setupable.Runtime", configuration ),
+                            GetNet461BinFolder( "CK.Setupable.Engine", configuration ),
+                            GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ),
+                            GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                            GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
+
+                            GetNetCoreBinFolder( "CK.StObj.Model", configuration ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ),
+                            GetNetCoreBinFolder( "CK.Setupable.Model", configuration ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) ),
+                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) ),
+                            EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) )
+                        } ) )
                         {
-                            Arguments = args
-                        } );
-                        p.WaitForExit();
-                        int result = p.GetExitCode();
-                        if( result != 0 )
+                            Cake.TerminateWithError( "Error while registering components." );
+                        }
+
+                        if( !Cake.CKSetupPushLocalStoreToRemote( apiKey ) )
                         {
-                            Cake.TerminateWithError( $"CKSetup.exe terminates with failure exit code: {result}" );
+                            Cake.TerminateWithError( "Error while pushing components to remote store." );
                         }
                     }
                     else Cake.Information( "Skipped push to http:/cksetup.invenietis.net." );

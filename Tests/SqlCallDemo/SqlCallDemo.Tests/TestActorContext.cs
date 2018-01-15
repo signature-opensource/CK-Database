@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CK.SqlServer;
-using CK.SqlServer.Setup;
 using CK.Core;
+using CK.SqlServer;
+using System;
+using System.Data.SqlClient;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo
 {

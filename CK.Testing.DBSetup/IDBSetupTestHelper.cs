@@ -2,7 +2,10 @@ using System;
 
 namespace CK.Testing
 {
-    public interface IDBSetupTestHelper : IMixinTestHelper, ICKSetupTestHelper, IStObjMapTestHelper, DBSetup.IDBSetupTestHelperCore
+    /// <summary>
+    /// Mixin that supports DBSetup based on <see cref="ICKSetupTestHelper"/>.
+    /// </summary>
+    public interface IDBSetupTestHelper : IMixinTestHelper, ISqlServerTestHelper, ICKSetupTestHelper, IStObjMapTestHelper, DBSetup.IDBSetupTestHelperCore
     {
     }
 }

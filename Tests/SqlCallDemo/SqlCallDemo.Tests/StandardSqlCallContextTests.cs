@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
+using System;
+using System.Data.SqlClient;
+using System.Threading;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -60,7 +56,7 @@ namespace SqlCallDemo.Tests
                     CancellationTokenSource source = new CancellationTokenSource();
                     source.CancelAfter( connectionString == null ? 1000 : 30*1000 );
                     c.Executor
-                        .ExecuteNonQueryAsyncTyped( connectionString ?? TestHelper.DatabaseTestConnectionString, command, resultBuilder, source.Token )
+                        .ExecuteNonQueryAsyncTyped( connectionString ?? TestHelper.GetConnectionString(), command, resultBuilder, source.Token )
                         .Wait();
                 }
                 catch( AggregateException ex )

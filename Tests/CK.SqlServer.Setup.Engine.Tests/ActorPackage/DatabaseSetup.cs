@@ -4,8 +4,9 @@ using System.Data.SqlClient;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
-using System.Diagnostics;
 using System.Reflection;
+using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -50,10 +51,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             c.Aspects.Add( setupable );
 
             var sql = new SqlSetupAspectConfiguration();
-            sql.DefaultDatabaseConnectionString = TestHelper.DatabaseTestConnectionString;
+            sql.DefaultDatabaseConnectionString = TestHelper.GetConnectionString();
             c.Aspects.Add( sql );
 
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
                 if( resetFirst )
                 {
@@ -63,9 +64,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
                 }
             }
 
-            Assert.That( TestHelper.RunStObjEngine( c ) );
+            TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, c ).Run() )
+                .Should().BeTrue();
 
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
                 var a = Assembly.Load( new AssemblyName( dllName ) );
                 IStObjMap m = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
@@ -75,7 +77,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             if( !doRevert ) return;
 
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
                 Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
                 db.SchemaDropAllObjects( "bad schema name", true );
@@ -89,10 +91,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
             {
-                Assert.That( TestHelper.RunStObjEngine( c ) );
+                TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, c ).Run() )
+                    .Should().BeTrue();
             }
 
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
                 var a = Assembly.Load( new AssemblyName( dllName + ".Reverted" ) );
                 IStObjMap m = StObjContextRoot.Load( a, null, TestHelper.Monitor );

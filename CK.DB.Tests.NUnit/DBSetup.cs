@@ -7,6 +7,8 @@ using CK.Core;
 using NUnit.Framework;
 using CK.SqlServer.Setup;
 using System.Diagnostics;
+using static CK.Testing.DBSetupTestHelper;
+using System.IO;
 
 namespace CK.DB.Tests
 {
@@ -22,10 +24,24 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void manual_load_existing_generated_dll()
+        public void existing_generated_dll_load()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.LoadStObjMapFromExistingGeneratedAssembly() != null, "Generated Assembly must exist and a StObjMap must be loaded." );
+            Assert.That( TestHelper.LoadStObjMap( TestHelper.GeneratedAssemblyName ) != null, "Generated Assembly must exist and a StObjMap must be loaded." );
+        }
+
+        [Test]
+        [Explicit]
+        public void existing_generated_dll_delete()
+        {
+            TestHelper.LogToConsole = true;
+            var p = TestHelper.BinFolder.AppendPart( TestHelper.GeneratedAssemblyName + ".dll" );
+            if( File.Exists( p ) )
+            {
+                File.Delete( p );
+                TestHelper.Monitor.Info( $"Generated assembly '{TestHelper.GeneratedAssemblyName}.dll' removed." );
+            }
+            else TestHelper.Monitor.Info( $"Generated assembly '{TestHelper.GeneratedAssemblyName}.dll' not found." );
         }
 
         [Test]
@@ -39,10 +55,10 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void reset_database_by_clearing_all_used_schemas()
+        public void drop_database()
         {
             TestHelper.LogToConsole = true;
-            TestHelper.ClearDatabaseUsedSchemas();
+            TestHelper.DropDatabase();
         }
 
         [Test]
@@ -58,16 +74,26 @@ namespace CK.DB.Tests
         public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.RunDBSetup( true, true ), "DBSetup failed." );
+            Assert.That( TestHelper.RunDBSetup( null, true, true ), "DBSetup failed." );
         }
 
         [Test]
         [Explicit]
-        public void reverse_db_setup_with_StObj_and_Setup_graph_ordering_trace()
+        public void db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.RunDBSetup( true, true, true ), "DBSetup failed." );
+            Assert.That( TestHelper.RunDBSetup( null, true, true, true ), "DBSetup failed." );
         }
+
+        [Test]
+        [Explicit]
+        public void toggle_CKSetup_LaunchDebug()
+        {
+            TestHelper.LogToConsole = true;
+            TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
+            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
+        }
+
 
     }
 }
