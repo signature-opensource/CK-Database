@@ -58,13 +58,13 @@
       <HintPath>..\packages\CK.Text.6.2.0\lib\net461\CK.Text.dll</HintPath>
     </Reference>
     <Reference Include="CKSetup.Cake, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CKSetup.Cake.6.0.0-a00-00-develop-0044\lib\net461\CKSetup.Cake.dll</HintPath>
+      <HintPath>..\packages\CKSetup.Cake.6.0.0-a00-00-develop-0046\lib\net461\CKSetup.Cake.dll</HintPath>
     </Reference>
     <Reference Include="CKSetup.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CKSetup.Core.6.0.0-a00-00-develop-0044\lib\net461\CKSetup.Core.dll</HintPath>
+      <HintPath>..\packages\CKSetup.Core.6.0.0-a00-00-develop-0046\lib\net461\CKSetup.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Code.Cake, Version=0.18.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Code.Cake.0.18.1-Cexplore-0005\lib\net45\Code.Cake.dll</HintPath>
+    <Reference Include="Code.Cake, Version=0.19.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Code.Cake.0.19.0\lib\net45\Code.Cake.dll</HintPath>
     </Reference>
     <Reference Include="CSemVer, Version=1.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CSemVer.1.1.0\lib\net461\CSemVer.dll</HintPath>

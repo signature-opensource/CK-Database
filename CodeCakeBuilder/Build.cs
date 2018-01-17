@@ -165,7 +165,7 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        if( !Cake.CKSetupAddComponentFoldersToStore( new[]
+                        if( !Cake.CKSet( new[]
                         {
                             GetNet461BinFolder( "CK.StObj.Model", configuration ),
                             GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
@@ -178,14 +178,14 @@ namespace CodeCake
                             GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
 
                             GetNetCoreBinFolder( "CK.StObj.Model", configuration ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ) ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ),
+                            GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ),
+                            GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ,
                             GetNetCoreBinFolder( "CK.Setupable.Model", configuration ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ) ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ) ),
+                            GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ),
+                            GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ),
                             GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ) ),
-                            EnsurePublishPath( GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration ) )
+                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration )
                         } ) )
                         {
                             Cake.TerminateWithError( "Error while registering components." );
@@ -317,46 +317,6 @@ namespace CodeCake
             return pathToFramework;
         }
 
-        string EnsurePublishPath( string pathToFramework )
-        {
-            var publishPath = System.IO.Path.Combine( pathToFramework, "publish" );
-            if( !Directory.Exists( publishPath ) )
-            {
-                var framework = System.IO.Path.GetFileName( pathToFramework );
-                var pathToConfiguration = System.IO.Path.GetDirectoryName( pathToFramework );
-                var configuration = System.IO.Path.GetFileName( pathToConfiguration );
-                var projectPath = System.IO.Path.GetDirectoryName( System.IO.Path.GetDirectoryName( pathToConfiguration ) );
-                var projectName = System.IO.Path.GetFileName( projectPath );
-                var pI = new ProcessStartInfo()
-                {
-                    WorkingDirectory = projectPath,
-                    FileName = "dotnet",
-                    Arguments = $"publish -c {configuration} -f {framework}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    RedirectStandardInput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                Cake.Information( $"Publishing {projectName}: dotnet {pI.Arguments}" );
-                using( Process cmdProcess = new Process() )
-                {
-                    cmdProcess.StartInfo = pI;
-                    cmdProcess.ErrorDataReceived += ( o, e ) => { if( !string.IsNullOrEmpty( e.Data ) ) Cake.Error( e.Data ); };
-                    cmdProcess.OutputDataReceived += ( o, e ) => { if( e.Data != null ) Cake.Information( e.Data ); };
-                    cmdProcess.Start();
-                    cmdProcess.BeginErrorReadLine();
-                    cmdProcess.BeginOutputReadLine();
-                    cmdProcess.WaitForExit();
-                    if( cmdProcess.ExitCode != 0 )
-                    {
-                        Cake.Error( $"Process returned ExitCode {cmdProcess.ExitCode}." );
-                        return null;
-                    }
-                }
-            }
-            return publishPath;
-        }
 
     }
 }
