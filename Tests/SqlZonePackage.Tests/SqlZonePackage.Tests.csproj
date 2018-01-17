@@ -7,10 +7,6 @@
   <Import Project="..\..\Common\Shared.props" />
 
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage\SqlZonePackage.csproj" />
   </ItemGroup>

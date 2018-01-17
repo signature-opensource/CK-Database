@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6E913090-EA34-4A90-8DBB-1501F9981F53}"
-	ProjectSection(SolutionItems) = preProject
-		Tests\TestHelper.config = Tests\TestHelper.config
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BasicModels", "BasicModels", "{BC5282AF-0E6A-41FF-B4C3-07D44A55E0BE}"
 EndProject
@@ -24,6 +21,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlCallDemo", "SqlCallDemo", "{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlTransform", "SqlTransform", "{CBCECF22-8C57-45FB-BD64-93C2E23331F8}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\SqlTransform\TestHelper.config = Tests\SqlTransform\TestHelper.config
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Model", "Model", "{68CE5112-727D-4462-9359-3557B8A8A7F6}"
 EndProject
