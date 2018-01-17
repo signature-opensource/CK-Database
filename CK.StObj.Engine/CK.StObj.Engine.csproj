@@ -10,10 +10,6 @@
     </Description>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <EmbeddedResource Include="AutoImplementor\DynamicKeyPair.snk;PEVerify\PEVerify.exe;PEVerify\pevrfyrc.dll" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
     <PackageReference Include="CK.Core" Version="$(CKCoreVersion)" />
