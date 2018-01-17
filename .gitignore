@@ -260,3 +260,4 @@ Tests/CKSetup.Core.Tests/TestOutput/
 Tests/LocalTestHelper/LocalTestStore/
 Tests/SqlCallDemo/SqlCallDemo.NetCore.Tests/SetupWorkingDir/
 Tests/SqlTransform/SqlTransform.Tests/TestStores/
+Tests/CK.SqlServer.Setup.Engine.Tests/TestStores/
