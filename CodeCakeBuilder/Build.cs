@@ -165,7 +165,7 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        if( !Cake.CKSet( new[]
+                        if( !Cake.CKSetupPublishAndAddComponentFoldersToStore( new[]
                         {
                             GetNet461BinFolder( "CK.StObj.Model", configuration ),
                             GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
