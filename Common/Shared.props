@@ -42,7 +42,7 @@
     <CKAspNetVersion>1.3.2</CKAspNetVersion>
     <CKMonitoringVersion>8.3.2</CKMonitoringVersion>
     <CKSetupDependencyVersion>6.0.4</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>7.0.1-Cdevelop-0006</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>7.0.1-Cdevelop-0005</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>5.0.0</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.1</CKReflectionVersion>
     <CKCodeGenVersion>0.1.1</CKCodeGenVersion>
