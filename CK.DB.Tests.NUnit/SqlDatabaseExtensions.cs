@@ -49,7 +49,7 @@ namespace CK.Core
         /// <returns>A disposable object that will restore the original object.</returns>
         public static IDisposable TemporaryTransform( this SqlDatabase @this, string transformer )
         {
-            return SqlTransformerTestHelper.TestHelper.TemporaryTransform( @this.ConnectionString, transformer );
+            return SqlTransformTestHelper.TestHelper.TemporaryTransform( @this.ConnectionString, transformer );
         }
 
         /// <summary>

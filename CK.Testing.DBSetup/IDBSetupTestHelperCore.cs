@@ -1,3 +1,4 @@
+using CK.Testing.SqlServer;
 using System;
 
 namespace CK.Testing.DBSetup
@@ -17,10 +18,10 @@ namespace CK.Testing.DBSetup
         /// when the StObjMap is not yet initialized.
         /// This method uses CKSetup.Core (thanks to <see cref="ICKSetupTestHelper"/>).
         /// </summary>
-        /// <param name="connectionString">Defaults to the default database (<see cref="SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).</param>
+        /// <param name="db">Defaults to the default database (<see cref="SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).</param>
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
-        bool RunDBSetup( string connectionString = null, bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false );
+        bool RunDBSetup( ISqlServerDatabaseOptions db = null, bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false );
     }
 }

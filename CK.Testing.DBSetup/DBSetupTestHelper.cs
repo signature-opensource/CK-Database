@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using CK.Core;
 using CK.Testing.DBSetup;
+using CK.Testing.SqlServer;
 using CK.Text;
 using CKSetup;
 
@@ -43,18 +44,19 @@ namespace CK.Testing
 
         bool IDBSetupTestHelperCore.GenerateSourceFiles { get => _generateSourceFiles; set => _generateSourceFiles = value; }
 
-        bool IDBSetupTestHelperCore.RunDBSetup( string connectionString, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        bool IDBSetupTestHelperCore.RunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
-            return DoRunDBSetup( connectionString, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
+            return DoRunDBSetup( db, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
         }
 
-        bool DoRunDBSetup( string connectionString, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        bool DoRunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
-            if( connectionString == null ) connectionString = _sqlServer.GetConnectionString();
-            using( _ckSetup.Monitor.OpenInfo( $"Running DBSetup on {connectionString}." ) )
+            if( db == null ) db = _sqlServer.DefaultDatabaseOptions;
+            using( _ckSetup.Monitor.OpenInfo( $"Running DBSetup on {db}." ) )
             {
                 try
                 {
+                    _sqlServer.EnsureDatabase( db );
                     var conf = new SetupConfiguration();
                     conf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
                     conf.Configuration = XElement.Parse( $@"
@@ -71,7 +73,7 @@ namespace CK.Testing
                                 <RevertOrderingNames>{revertNames}</RevertOrderingNames>
                             </Aspect>
                             <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"" >
-                                <DefaultDatabaseConnectionString>{_sqlServer.GetConnectionString()}</DefaultDatabaseConnectionString>
+                                <DefaultDatabaseConnectionString>{_sqlServer.GetConnectionString( db.DatabaseName )}</DefaultDatabaseConnectionString>
                                 <GlobalResolution>false</GlobalResolution>
                                 <IgnoreMissingDependencyIsError>true</IgnoreMissingDependencyIsError>
                             </Aspect>

@@ -10,21 +10,20 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
     [TestFixture]
     public class SqlManagerTests
     {
-        static readonly string InvalidConnectionString = TestHelper.GetConnectionString( "INVALID-NAME-TEST" );
-
         [Test]
         public void SqlManager_OpenOrCreate_catch_any_errors_when_a_Monitor_is_set()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( InvalidConnectionString, true ), Is.False );
+                Assert.That( m.OpenFromConnectionString( TestHelper.GetConnectionString( "INVALID-NAME-TEST" ), true ), Is.False );
             }
         }
 
         [Test]
         public void an_invalid_database_name_does_not_DBSetup_master()
         {
-            TestHelper.RunDBSetup( InvalidConnectionString ).Should().BeFalse();
+            var badTarget = TestHelper.GetDatabaseOptions( "INVALID-NAME-TEST" );
+            TestHelper.RunDBSetup( badTarget ).Should().BeFalse();
 
             using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {
