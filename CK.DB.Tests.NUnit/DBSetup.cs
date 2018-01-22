@@ -12,6 +12,7 @@ using System.IO;
 using CKSetup;
 using System.Threading;
 using FluentAssertions;
+using CK.Testing;
 
 namespace CK.DB.Tests
 {
@@ -100,15 +101,72 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void assembly_load_conflicts_display()
+        public void display_information()
         {
-            TestHelper.LogToConsole = true;
+            Console.WriteLine( "-------------- TestHelper -------------" );
+            DumpProperties( String.Empty, TestHelper );
+            DumpProperties( "CKSetup.", TestHelper.CKSetup );
+
+            Console.WriteLine();
+            Console.WriteLine( "------------ Configuration ------------" );
+            var conf = TestHelperResolver.Default.Resolve<ITestHelperConfiguration>();
+            foreach( var cG in conf.ConfigurationValues.GroupBy( e => e.Value.BasePath ).OrderBy( x => x ) )
+            {
+                Console.WriteLine( $"- Base path: {cG.Key}" );
+                foreach( var c in cG.OrderBy( x => x.Key ) )
+                {
+                    Console.WriteLine( $" - {c.Key} = {c.Value.Value}" );
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine( "---------- Assembly conflicts ----------" );
             AssemblyLoadConflict[] currents = WeakAssemblyNameResolver.GetAssemblyConflicts();
             Console.WriteLine( $"{currents.Length} assembly load conflicts occurred:" );
             foreach( var c in currents )
             {
                 Console.Write( ">>> " );
                 Console.WriteLine( c.ToString() );
+            }
+            Console.WriteLine();
+            Console.WriteLine( "---------- Loaded Assemblies ----------" );
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Console.WriteLine( $"{assemblies.Length} assemblies loaded:" );
+            foreach( var a in assemblies )
+            {
+                Console.WriteLine( a.ToString() );
+            }
+        }
+
+        void DumpProperties( string prefix, object o )
+        {
+            foreach( var p in o.GetType().GetProperties() )
+            {
+                if( p.PropertyType.IsValueType || p.PropertyType == typeof(string) )
+                {
+                    Console.WriteLine( $"{prefix}{p.Name} = {p.GetValue( o ) ?? "<null>"}" );
+                }
+                else if( typeof( System.Collections.IEnumerable ).IsAssignableFrom( p.PropertyType ) )
+                {
+                    Console.Write( $"{prefix}{p.Name} = " );
+                    var items = p.GetValue( o ) as System.Collections.IEnumerable;
+                    if( items == null ) Console.WriteLine( "<null>" );
+                    else
+                    {
+                        var wPrefix = new String( ' ', prefix.Length + p.Name.Length + 3 );
+                        Console.WriteLine( $"[" );
+                        foreach( var item in items )
+                        {
+                            Type t = item.GetType();
+                            if( t.IsValueType || t == typeof( string ) )
+                            {
+                                Console.Write( wPrefix );
+                                Console.WriteLine( item );
+                            }
+                        }
+                        Console.WriteLine( $"{wPrefix}]" );
+                    }
+                }
             }
         }
 
