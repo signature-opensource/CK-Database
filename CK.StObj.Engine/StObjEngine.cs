@@ -176,7 +176,7 @@ namespace CK.Setup
                 StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
                 if( rFolder == null ) return false;
                 string finalPath = Path.Combine( f.Directory, dllName );
-                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion );
                 return g.Success;
             }
         }
@@ -186,7 +186,7 @@ namespace CK.Setup
             using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
             {
                 string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
-                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles );
+                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion );
                 if( g.GeneratedFileNames.Count > 0 )
                 {
                     foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )

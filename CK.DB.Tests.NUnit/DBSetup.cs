@@ -9,6 +9,9 @@ using CK.SqlServer.Setup;
 using System.Diagnostics;
 using static CK.Testing.DBSetupTestHelper;
 using System.IO;
+using CKSetup;
+using System.Threading;
+using FluentAssertions;
 
 namespace CK.DB.Tests
 {
@@ -24,14 +27,6 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void generated_dll_load_existing()
-        {
-            TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.LoadStObjMap( TestHelper.GeneratedAssemblyName ) != null, "Generated Assembly must exist and a StObjMap must be loaded." );
-        }
-
-        [Test]
-        [Explicit]
         public void toggle_CKSetup_LaunchDebug()
         {
             TestHelper.LogToConsole = true;
@@ -41,16 +36,22 @@ namespace CK.DB.Tests
 
         [Test]
         [Explicit]
-        public void generated_dll_delete_existing()
+        public void StObjMap_reset()
         {
             TestHelper.LogToConsole = true;
-            var p = TestHelper.BinFolder.AppendPart( TestHelper.GeneratedAssemblyName + ".dll" );
-            if( File.Exists( p ) )
+            TestHelper.ResetStObjMap();
+            foreach( var p in TestHelper.CKSetup.DefaultBinPaths )
             {
-                File.Delete( p );
-                TestHelper.Monitor.Info( $"Generated assembly '{TestHelper.GeneratedAssemblyName}.dll' removed." );
+                TestHelper.DeleteGeneratedAssemblies( p );
             }
-            else TestHelper.Monitor.Info( $"Generated assembly '{TestHelper.GeneratedAssemblyName}.dll' not found." );
+        }
+
+        [Test]
+        [Explicit]
+        public void StObjMap_load()
+        {
+            TestHelper.LogToConsole = true;
+            TestHelper.StObjMap.Should().NotBeNull( "StObjMap loading failed." );
         }
 
         [Test]
@@ -75,7 +76,8 @@ namespace CK.DB.Tests
         public void db_setup()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.RunDBSetup(), "DBSetup failed.");
+            var r = TestHelper.RunDBSetup();
+            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed.");
         }
 
         [Test]
@@ -83,7 +85,8 @@ namespace CK.DB.Tests
         public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.RunDBSetup( null, true, true ), "DBSetup failed." );
+            var r = TestHelper.RunDBSetup( null, true, true );
+            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
         }
 
         [Test]
@@ -91,9 +94,23 @@ namespace CK.DB.Tests
         public void db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace()
         {
             TestHelper.LogToConsole = true;
-            Assert.That( TestHelper.RunDBSetup( null, true, true, true ), "DBSetup failed." );
+            var r = TestHelper.RunDBSetup( null, true, true, true );
+            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
         }
 
+        [Test]
+        [Explicit]
+        public void assembly_load_conflicts_display()
+        {
+            TestHelper.LogToConsole = true;
+            AssemblyLoadConflict[] currents = WeakAssemblyNameResolver.GetAssemblyConflicts();
+            Console.WriteLine( $"{currents.Length} assembly load conflicts occurred:" );
+            foreach( var c in currents )
+            {
+                Console.Write( ">>> " );
+                Console.WriteLine( c.ToString() );
+            }
+        }
 
     }
 }

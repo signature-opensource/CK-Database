@@ -1,5 +1,6 @@
 using CK.Core;
 using CK.SqlServer;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Data;
@@ -76,7 +77,7 @@ namespace SqlTransform.Tests
             using( var ctx = new SqlStandardCallContext() )
             {
                 string s = p.SimplY4TemplateTest( ctx );
-                Assert.That( s, Does.Match( @"HashCode = \d+" ) );
+                s.Should().MatchRegex( @"HashCode = \d+" );
             }
         }
     }

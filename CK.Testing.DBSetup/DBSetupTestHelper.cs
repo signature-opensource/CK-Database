@@ -44,20 +44,24 @@ namespace CK.Testing
 
         bool IDBSetupTestHelperCore.GenerateSourceFiles { get => _generateSourceFiles; set => _generateSourceFiles = value; }
 
-        bool IDBSetupTestHelperCore.RunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        CKSetupRunResult IDBSetupTestHelperCore.RunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
             return DoRunDBSetup( db, traceStObjGraphOrdering, traceSetupGraphOrdering, revertNames );
         }
 
-        bool DoRunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
+        CKSetupRunResult DoRunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
             if( db == null ) db = _sqlServer.DefaultDatabaseOptions;
             using( _ckSetup.Monitor.OpenInfo( $"Running DBSetup on {db}." ) )
             {
                 try
                 {
-                    _sqlServer.EnsureDatabase( db );
                     var conf = new SetupConfiguration();
+                    bool forceSetup = _ckSetup.CKSetup.DefaultForceSetup
+                                        || _sqlServer.EnsureDatabase( db )
+                                        || _ckSetup.CKSetup.DefaultBinPaths
+                                                    .Select( p => p.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" ) )
+                                                    .Any( p => !File.Exists( p ) );
                     conf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
                     conf.Configuration = XElement.Parse( $@"
                         <StObjEngineConfiguration>
@@ -78,15 +82,18 @@ namespace CK.Testing
                                 <IgnoreMissingDependencyIsError>true</IgnoreMissingDependencyIsError>
                             </Aspect>
                         </StObjEngineConfiguration>" );
-                    if( !_ckSetup.WithWeakAssemblyResolver( () => _ckSetup.CKSetup.Run( conf ) ) ) return false;
-                    string genDllName = _stObjMap.GeneratedAssemblyName + ".dll";
-                    var firstGen = new NormalizedPath( conf.BinPaths[0] ).AppendPart( genDllName );
-                    if( firstGen != _stObjMap.BinFolder.AppendPart( genDllName ) && File.Exists( firstGen ) )
+                    var result = _ckSetup.CKSetup.Run( conf, forceSetup: forceSetup );
+                    if( result != CKSetupRunResult.Failed )
                     {
-                        _stObjMap.Monitor.Info( $"Copying generated '{genDllName}' from first BinPath ({conf.BinPaths[0]}) to bin folder." );
-                        File.Copy( firstGen, Path.Combine( AppContext.BaseDirectory, genDllName ), true );
+                        string genDllName = _stObjMap.GeneratedAssemblyName + ".dll";
+                        var firstGen = new NormalizedPath( conf.BinPaths[0] ).AppendPart( genDllName );
+                        if( firstGen != _stObjMap.BinFolder.AppendPart( genDllName ) && File.Exists( firstGen ) )
+                        {
+                            _stObjMap.Monitor.Info( $"Copying generated '{genDllName}' from first BinPath ({conf.BinPaths[0]}) to bin folder." );
+                            File.Copy( firstGen, Path.Combine( AppContext.BaseDirectory, genDllName ), true );
+                        }
                     }
-                    return true;
+                    return result;
                 }
                 catch( Exception ex )
                 {

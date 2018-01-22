@@ -63,6 +63,7 @@ namespace CK.SqlServer.Setup
             try
             {
                 _oCon = new SqlConnection( connectionString );
+                CheckAction( "opening", _oCon.Database );
                 if( clearPoolFirst ) SqlConnection.ClearPool( _oCon );
                 if( _monitor != null )
                 {
@@ -263,7 +264,7 @@ namespace CK.SqlServer.Setup
         {
             if( dbName == null || dbName.Length == 0 || _protectedDatabaseNames.Contains( dbName ) )
             {
-                throw new Exception( String.Format( "Attempt to {0} database '{1}'.", action, dbName ) );
+                throw new Exception( $"Attempt to {action} database '{dbName}'." );
             }
         }
 

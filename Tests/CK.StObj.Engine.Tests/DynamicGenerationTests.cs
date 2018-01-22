@@ -95,7 +95,7 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( r.HasFatalError, Is.False );
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false, null );
                 var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
                 IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.Default.ToLeafType( typeof( A ) ) ) );
@@ -180,7 +180,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false, null );
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
@@ -294,7 +294,7 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null );
 
                 {
                     var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );

@@ -1,4 +1,5 @@
 using CK.Testing.SqlServer;
+using CKSetup;
 using System;
 
 namespace CK.Testing.DBSetup
@@ -13,15 +14,16 @@ namespace CK.Testing.DBSetup
 
         /// <summary>
         /// Runs the database setup in <see cref="IBasicTestHelper.BinFolder"/> on the default database
-        /// (see <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
-        /// Automatically called by <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.StObjMap"/>
+        /// (see <see cref="ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+        /// Automatically called by <see cref="StObjMap.IStObjMapTestHelperCore.StObjMap"/>
         /// when the StObjMap is not yet initialized.
         /// This method uses CKSetup.Core (thanks to <see cref="ICKSetupTestHelper"/>).
         /// </summary>
-        /// <param name="db">Defaults to the default database (<see cref="SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).</param>
+        /// <param name="db">Defaults to the default database (<see cref="ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).</param>
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
-        bool RunDBSetup( ISqlServerDatabaseOptions db = null, bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false );
+        /// <returns>The result.</returns>
+        CKSetupRunResult RunDBSetup( ISqlServerDatabaseOptions db = null, bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false );
     }
 }

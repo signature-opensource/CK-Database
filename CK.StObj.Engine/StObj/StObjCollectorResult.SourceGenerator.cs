@@ -51,7 +51,7 @@ namespace CK.Setup
                 using( monitor.OpenInfo( "Generating source code." ) )
                 using( monitor.CollectEntries( entries => errorSummary = entries ) )
                 {
-                    GenerateContextSource( monitor, _tempAssembly );
+                   GenerateContextSource( monitor, _tempAssembly );
                 }
                 if( errorSummary != null )
                 {

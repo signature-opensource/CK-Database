@@ -20,10 +20,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         }
 
         [Test]
-        public void an_invalid_database_name_does_not_DBSetup_master()
+        public void DBSetup_can_not_touch_master_model_tempdb_or_msdb()
         {
-            var badTarget = TestHelper.GetDatabaseOptions( "INVALID-NAME-TEST" );
-            TestHelper.RunDBSetup( badTarget ).Should().BeFalse();
+            var badTarget = TestHelper.GetDatabaseOptions( "master" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
 
             using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {
@@ -35,40 +35,15 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
                     cmd.ExecuteScalar().Should().Be( 0 );
                 }
             }
-        }
 
-        [Test]
-        public void an_auto_created_database_does_not_leave_opened_connections()
-        {
-            string autoTest = TestHelper.GetConnectionString( "TEST_AUTOCREATE" );
+            badTarget = TestHelper.GetDatabaseOptions( "msdb" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
 
-            using( var removal = new SqlManager( TestHelper.Monitor ) )
-            {
-                removal.OpenFromConnectionString( TestHelper.MasterConnectionString );
-                Assert.That( removal.ExecuteScalar(
-                                        @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
-                                          select 'Done';" ), Is.EqualTo( "Done" ) );
-            }
+            badTarget = TestHelper.GetDatabaseOptions( "model" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
 
-            using( var creator = new SqlManager( TestHelper.Monitor ) )
-            {
-                Assert.That( creator.OpenFromConnectionString( autoTest, true ) );
-                Assert.That( creator.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 1 ) );
-            }
-
-            using( var removal = new SqlManager( TestHelper.Monitor ) )
-            {
-                using( var c = new SqlConnection( autoTest ) )
-                {
-                    SqlConnection.ClearPool( c );
-                }
-                removal.OpenFromConnectionString( TestHelper.MasterConnectionString );
-                Assert.That( removal.ExecuteScalar(
-                                        @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
-                                          select 'Done';" ), Is.EqualTo( "Done" ) );
-                Assert.That( removal.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 0 ) );
-            }
-
+            badTarget = TestHelper.GetDatabaseOptions( "tempdb" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
         }
 
     }

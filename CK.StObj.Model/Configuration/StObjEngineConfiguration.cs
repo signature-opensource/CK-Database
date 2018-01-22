@@ -106,6 +106,11 @@ namespace CK.Core
             /// </summary>
             static public readonly XName GeneratedAssemblyName = XNamespace.None + "GeneratedAssemblyName";
 
+            /// <summary>
+            /// The InformationalVersion element name.
+            /// </summary>
+            static public readonly XName InformationalVersion = XNamespace.None + "InformationalVersion";
+
         }
 
         /// <summary>
@@ -119,6 +124,7 @@ namespace CK.Core
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
             GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
+            InformationalVersion = e.Element( XmlNames.InformationalVersion )?.Value;
             GenerateSourceFiles = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
@@ -162,6 +168,9 @@ namespace CK.Core
                    GeneratedAssemblyName != DefaultGeneratedAssemblyName
                         ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName )
                         : null,
+                   InformationalVersion != null
+                        ? new XElement( XmlNames.InformationalVersion, InformationalVersion )
+                        : null,
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ),
@@ -188,6 +197,13 @@ namespace CK.Core
             get => String.IsNullOrWhiteSpace(_generatedAssemblyName) ? DefaultGeneratedAssemblyName : _generatedAssemblyName;
             set => _generatedAssemblyName = value;
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="System.Diagnostics.FileVersionInfo.ProductVersion"/> of
+        /// the <see cref="GeneratedAssemblyName"/> assembly or assemblies.
+        /// Defaults to null (no <see cref="System.Reflection.AssemblyInformationalVersionAttribute"/> should be generated).
+        /// </summary>
+        public string InformationalVersion { get; set; }
 
         /// <summary>
         /// Gets or sets whether generated source files should be generated alongside the <see cref="GeneratedAssemblyName"/>.
