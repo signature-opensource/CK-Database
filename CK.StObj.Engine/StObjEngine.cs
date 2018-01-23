@@ -136,10 +136,9 @@ namespace CK.Setup
                         // OR there is only one folder (the root), OR one of the SetupFolder is actually the
                         // same as the root, then we must produce (compile) the assembly of the root.
                         //
-                        // The only case where the configuration's GenerateAppContextAssembly set to false
-                        // is honored is when there are multiple folders and none of them contains the whole
-                        // (unified) set of components.
-                        bool actualGenerationRequired = _config.GenerateAppContextAssembly
+                        // The only case where the compilation is skipped is when there are multiple folders
+                        // and none of them contains the whole (unified) set of components.
+                        bool actualGenerationRequired = _config.ForceAppContextAssemblyGeneration
                                                         || normalizedFolders.Count == 1
                                                         || normalizedFolders.Any( f => f.SameAsRoot );
                         _status.Success = FirstGenerationRun( normalizedFolders, r, dllName, skipCompilation: !actualGenerationRequired );

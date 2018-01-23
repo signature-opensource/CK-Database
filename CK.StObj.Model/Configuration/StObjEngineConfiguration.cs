@@ -24,7 +24,6 @@ namespace CK.Core
         /// </summary>
         public StObjEngineConfiguration()
         {
-            GenerateAppContextAssembly = true;
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
             Aspects = new List<IStObjEngineAspectConfiguration>();
@@ -84,7 +83,7 @@ namespace CK.Core
             /// <summary>
             /// The GenerateAppContextAssembly element name.
             /// </summary>
-            static public readonly XName GenerateAppContextAssembly = XNamespace.None + "GenerateAppContextAssembly";
+            static public readonly XName ForceAppContextAssemblyGeneration = XNamespace.None + "GenerateAppContextAssembly";
 
             /// <summary>
             /// The GenerateSourceFiles element name.
@@ -122,7 +121,7 @@ namespace CK.Core
             TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            GenerateAppContextAssembly = !string.Equals( e.Element( XmlNames.GenerateAppContextAssembly )?.Value, "false", StringComparison.OrdinalIgnoreCase );
+            ForceAppContextAssemblyGeneration = string.Equals( e.Element( XmlNames.ForceAppContextAssemblyGeneration )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
             InformationalVersion = e.Element( XmlNames.InformationalVersion )?.Value;
             GenerateSourceFiles = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
@@ -163,7 +162,7 @@ namespace CK.Core
             e.Add( TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
-                   !GenerateAppContextAssembly ? new XElement( XmlNames.GenerateAppContextAssembly, "false" ) : null,
+                   ForceAppContextAssemblyGeneration ? new XElement( XmlNames.ForceAppContextAssemblyGeneration, "true" ) : null,
                    GenerateSourceFiles ? new XElement( XmlNames.GenerateSourceFiles, "true" ) : null,
                    GeneratedAssemblyName != DefaultGeneratedAssemblyName
                         ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName )
@@ -238,13 +237,13 @@ namespace CK.Core
         public IList<SetupFolder> SetupFolders { get; }
 
         /// <summary>
-        /// Whether the final assembly in the <see cref="AppContext.BaseDirectory"/> should be generated.
-        /// Defaults to true.
-        /// The only case where the configuration's GenerateAppContextAssembly set to false
-        /// is actually honored (by skipping the compilation step) is when there are multiple <see cref="SetupFolder"/>
+        /// Whether the final assembly in the <see cref="AppContext.BaseDirectory"/> should always be generated.
+        /// Defaults to false.
+        /// The only case where this default configuration (false) is ignored is actually honored (by
+        /// skipping the compilation step) is when there are multiple <see cref="SetupFolder"/>
         /// and none of them contains the whole (unified) set of components.
         /// </summary>
-        public bool GenerateAppContextAssembly { get; set; }
+        public bool ForceAppContextAssemblyGeneration { get; set; }
 
         /// <summary>
         /// Gets the list of all configuration aspects that must participate to setup.
