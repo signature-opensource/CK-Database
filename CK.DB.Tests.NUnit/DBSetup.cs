@@ -41,6 +41,7 @@ namespace CK.DB.Tests
         {
             TestHelper.LogToConsole = true;
             TestHelper.ResetStObjMap();
+            TestHelper.DeleteGeneratedAssemblies( TestHelper.BinFolder );
             foreach( var p in TestHelper.CKSetup.DefaultBinPaths )
             {
                 TestHelper.DeleteGeneratedAssemblies( p );

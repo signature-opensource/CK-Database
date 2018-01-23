@@ -36,7 +36,7 @@ namespace CK.Setup
             }
         }
 
-        CodeGenerateResult GenerateSourceCode( IActivityMonitor monitor, string finalFilePath, bool saveSource )
+        CodeGenerateResult GenerateSourceCode( IActivityMonitor monitor, string finalFilePath, bool saveSource, bool skipCompilation )
         {
             List<string> generatedFileNames = new List<string>();
             try
@@ -64,7 +64,11 @@ namespace CK.Setup
                     }
                     return new CodeGenerateResult( false, generatedFileNames );
                 }
-
+                if( skipCompilation )
+                {
+                    monitor.OpenInfo( "Compilation is skipped." );
+                    return new CodeGenerateResult( true, generatedFileNames );
+                }
                 using( monitor.OpenInfo( "Compiling source code." ) )
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );

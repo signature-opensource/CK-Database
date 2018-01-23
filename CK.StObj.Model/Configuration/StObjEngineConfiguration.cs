@@ -240,6 +240,9 @@ namespace CK.Core
         /// <summary>
         /// Whether the final assembly in the <see cref="AppContext.BaseDirectory"/> should be generated.
         /// Defaults to true.
+        /// The only case where the configuration's GenerateAppContextAssembly set to false
+        /// is actually honored (by skipping the compilation step) is when there are multiple <see cref="SetupFolder"/>
+        /// and none of them contains the whole (unified) set of components.
         /// </summary>
         public bool GenerateAppContextAssembly { get; set; }
 

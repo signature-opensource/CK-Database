@@ -132,10 +132,18 @@ namespace CK.Setup
                         string dllName = _config.GeneratedAssemblyName;
                         if( !dllName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) dllName += ".dll";
 
-                        if( _config.GenerateAppContextAssembly || normalizedFolders.Any( f => f.SameAsRoot ) )
-                        {
-                            _status.Success = FirstGenerationRun( normalizedFolders, r, dllName );
-                        }
+                        // If configuration states that the assembly in the root must be generated
+                        // OR there is only one folder (the root), OR one of the SetupFolder is actually the
+                        // same as the root, then we must produce (compile) the assembly of the root.
+                        //
+                        // The only case where the configuration's GenerateAppContextAssembly set to false
+                        // is honored is when there are multiple folders and none of them contains the whole
+                        // (unified) set of components.
+                        bool actualGenerationRequired = _config.GenerateAppContextAssembly
+                                                        || normalizedFolders.Count == 1
+                                                        || normalizedFolders.Any( f => f.SameAsRoot );
+                        _status.Success = FirstGenerationRun( normalizedFolders, r, dllName, skipCompilation: !actualGenerationRequired );
+
                         if( _status.Success )
                         {
                             foreach( var f in normalizedFolders.Skip( 1 ).Where( f => !f.SameAsRoot ) )
@@ -181,12 +189,12 @@ namespace CK.Setup
             }
         }
 
-        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName )
+        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName, bool skipCompilation )
         {
             using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
             {
                 string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
-                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion );
+                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion, skipCompilation );
                 if( g.GeneratedFileNames.Count > 0 )
                 {
                     foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )
