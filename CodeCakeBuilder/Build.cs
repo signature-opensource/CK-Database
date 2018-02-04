@@ -201,7 +201,6 @@ namespace CodeCake
 
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-All-NuGet-Packages" )
-                .IsDependentOn( "Push-Runtimes-and-Engines" )
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                  {
@@ -251,35 +250,6 @@ namespace CodeCake
                          Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
                      }
                  } );
-
-            // This is an independent task that must be run manually:
-            //
-            //      -target=Build-And-Push-CKRemoteStore-WebSite
-            //
-            // This task does the build.
-            // The appsettings.json is not included in the project.
-            // (the <ExcludeFilesFromDeployment>appsettings.json</ExcludeFilesFromDeployment> in
-            // pubxml seems to be ignored).
-            Task( "Build-And-Push-CKRemoteStore-WebSite" )
-                .WithCriteria( () => gitInfo.IsValid )
-                .Does( () =>
-                {
-                    var publishPwd = Cake.InteractiveEnvironmentVariable( "PUBLISH_CKSetupRemoteStore_PWD" );
-                    if( !String.IsNullOrWhiteSpace( publishPwd ) )
-                    {
-                        var conf = new MSBuildSettings();
-                        conf.Configuration = configuration;
-                        conf.Targets.Add( "Build" );
-                        conf.Targets.Add( "Publish" );
-                        conf.WithProperty( "DeployOnBuild", "true" )
-                            .WithProperty( "PublishProfile", "CustomProfile" )
-                            .WithProperty( "UserName", "ci@invenietis.net" )
-                            .WithProperty( "Password", publishPwd );
-                        conf.AddVersionArguments( gitInfo );
-
-                        Cake.MSBuild( "CKSetupRemoteStore/CKSetupRemoteStore.csproj", conf );
-                    }
-                } );
 
             // The Default task for this script can be set here.
             Task( "Default" )

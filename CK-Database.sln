@@ -85,13 +85,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTransform.NetCore.Tests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlCallDemo.NetCore.Tests", "Tests\SqlCallDemo\SqlCallDemo.NetCore.Tests\SqlCallDemo.NetCore.Tests.csproj", "{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CKSetupRemoteStore", "CKSetupRemoteStore\CKSetupRemoteStore.csproj", "{A93E24CA-0678-4AD5-B2A6-F15132AE512A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.StObjMap", "CK.Testing.StObjMap\CK.Testing.StObjMap.csproj", "{0C0FDC63-80B5-4979-A726-4B7854C9AF01}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.DBSetup", "CK.Testing.DBSetup\CK.Testing.DBSetup.csproj", "{BBF1F43E-8432-4E48-84EA-1B6ABA89E371}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalTestHelper", "Tests\LocalTestHelper\LocalTestHelper.csproj", "{0FF79953-075C-40FB-9A19-EA30F0573DCA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.AspNet", "CK.DB.AspNet\CK.DB.AspNet.csproj", "{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -451,18 +451,6 @@ Global
 		{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}.Release|x86.ActiveCfg = Release|Any CPU
 		{7B7BF017-1943-47AE-AE8A-BEF9983C88F3}.Release|x86.Build.0 = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Debug|x86.Build.0 = Debug|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|x86.ActiveCfg = Release|Any CPU
-		{A93E24CA-0678-4AD5-B2A6-F15132AE512A}.Release|x86.Build.0 = Release|Any CPU
 		{0C0FDC63-80B5-4979-A726-4B7854C9AF01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0C0FDC63-80B5-4979-A726-4B7854C9AF01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C0FDC63-80B5-4979-A726-4B7854C9AF01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -499,6 +487,18 @@ Global
 		{0FF79953-075C-40FB-9A19-EA30F0573DCA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0FF79953-075C-40FB-9A19-EA30F0573DCA}.Release|x86.ActiveCfg = Release|Any CPU
 		{0FF79953-075C-40FB-9A19-EA30F0573DCA}.Release|x86.Build.0 = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Debug|x86.Build.0 = Debug|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -529,7 +529,7 @@ Global
 		{0FF79953-075C-40FB-9A19-EA30F0573DCA} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
 	EndGlobalSection
 EndGlobal

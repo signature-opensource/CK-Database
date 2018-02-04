@@ -37,19 +37,19 @@
 
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>9.1.1</CKCoreVersion>
-    <CKActivityMonitorVersion>9.0.3</CKActivityMonitorVersion>
-    <CKAspNetVersion>1.3.2</CKAspNetVersion>
-    <CKMonitoringVersion>8.3.2</CKMonitoringVersion>
-    <CKSetupDependencyVersion>6.0.4</CKSetupDependencyVersion>
-    <CKSqlServerParserVersion>7.0.1-Cdevelop-0010</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>5.0.0</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>6.0.1</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.1</CKCodeGenVersion>
+    <CKCoreVersion>9.1.2</CKCoreVersion>
+    <CKActivityMonitorVersion>9.0.4</CKActivityMonitorVersion>
+    <CKMonitoringVersion>8.3.3</CKMonitoringVersion>
+    <CKSetupDependencyVersion>6.0.5</CKSetupDependencyVersion>
+    <CKAspNetVersion>1.3.3</CKAspNetVersion>
+    <CKSqlServerParserVersion>7.0.1</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>5.0.1</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>6.0.2</CKReflectionVersion>
+    <CKCodeGenVersion>0.1.2</CKCodeGenVersion>
     <YodiiScriptVersion>0.5.2</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
-    <CKSetupVersion>6.0.0-a00-00-develop-0061</CKSetupVersion>
-    <CKTestingVersion>0.1.0-b21</CKTestingVersion>
+    <CKSetupVersion>6.0.0-r</CKSetupVersion>
+    <CKTestingVersion>0.1.0</CKTestingVersion>
     <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
   </PropertyGroup>
