@@ -253,7 +253,8 @@ namespace CodeCake
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-NuGet-Packages" );
+                .IsDependentOn( "Push-NuGet-Packages" )
+                .IsDependentOn( "Push-Runtimes-and-Engines" );
         }
 
         void PushNuGetPackages( string apiKeyName, string pushUrl, string pushSymbolUrl, IEnumerable<FilePath> nugetPackages )
