@@ -56,19 +56,19 @@ namespace CK.Testing
             {
                 try
                 {
-                    var conf = new SetupConfiguration();
                     bool forceSetup = _ckSetup.CKSetup.DefaultForceSetup
                                         || _sqlServer.EnsureDatabase( db )
-                                        || _ckSetup.CKSetup.DefaultBinPaths
-                                                    .Select( p => p.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" ) )
-                                                    .Any( p => !File.Exists( p ) );
+                                        || _ckSetup.CKSetup.FinalDefaultBinPaths
+                                             .Select( p => p.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" ) )
+                                             .Any( p => !File.Exists( p ) );
+
+                    var conf = new SetupConfiguration();
                     conf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
                     conf.Configuration = XElement.Parse( $@"
                         <StObjEngineConfiguration>
                             <TraceDependencySorterInput>{traceStObjGraphOrdering}</TraceDependencySorterInput>
                             <TraceDependencySorterOutput>{traceStObjGraphOrdering}</TraceDependencySorterOutput>
                             <RevertOrderingNames>{revertNames}</RevertOrderingNames>
-                            <GenerateAppContextAssembly>true</GenerateAppContextAssembly>
                             <GenerateSourceFiles>{_generateSourceFiles}</GenerateSourceFiles>
                             <GeneratedAssemblyName>{_stObjMap.GeneratedAssemblyName}</GeneratedAssemblyName>
                             <Aspect Type=""CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model"" >

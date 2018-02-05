@@ -204,6 +204,7 @@ namespace CK.Setup
                             {
                                 try
                                 {
+                                    _monitor.Info( file );
                                     File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( f.Directory, file ), true );
                                 }
                                 catch( Exception ex )

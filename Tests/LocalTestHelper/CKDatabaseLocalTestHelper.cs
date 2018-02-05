@@ -72,15 +72,16 @@ namespace CK.Testing
 
         void OnInitializeStorePath( object sender, CKSetup.StorePathInitializationEventArgs e )
         {
-            if( e.StorePath.Equals( _dbSetup.SolutionFolder.Combine("Tests/LocalTestHelper/LocalTestStore") ) )
+            if( e.StorePath == _dbSetup.SolutionFolder.Combine("Tests/LocalTestHelper/LocalTestStore") )
             {
                 using( _dbSetup.Monitor.OpenInfo( $"LocalHelper initializing Tests/LocalTestHelper/LocalTestStore." ) )
                 {
-                    _dbSetup.CKSetup.RemoveComponentsFromStore( c => c.Version == CSemVer.SVersion.ZeroVersion,
-                        storePath: e.StorePath );
+                    _dbSetup.CKSetup.RemoveComponentsFromStore(
+                                        c => c.Version == CSemVer.SVersion.ZeroVersion,
+                                        storePath: e.StorePath );
                     if( !_dbSetup.CKSetup.PublishAndAddComponentFoldersToStore(
-                        GetAllLocalComponentsPaths().Select( p => p.ToString() ),
-                        storePath: e.StorePath ) )
+                                            GetAllLocalComponentsPaths().Select( p => p.ToString() ),
+                                            storePath: e.StorePath ) )
                     {
                         throw new InvalidOperationException( "Unable to add CK-Database components to Tests/LocalTestHelper/LocalTestStore." );
                     }
