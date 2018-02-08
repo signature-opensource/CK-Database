@@ -168,8 +168,6 @@ namespace CK.SqlServer.Setup
             return text;
         }
 
-
-
         /// <summary>
         /// Generates '.sql', '.y4' and '.tql' candidate files based on <see cref="GetResourceNameCandidates"/>.
         /// </summary>

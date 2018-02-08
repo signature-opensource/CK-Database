@@ -14,7 +14,7 @@ namespace CK.SqlServer.Setup
     /// This attribute implementation associates a <see cref="SqlBaseItem"/> to an abstract method 
     /// that is emitted thanks to <see cref="DoImplement"/>.
     /// Any kind of SqlBaseItem can be handled by this base class thanks to the 
-    /// overridable <see cref="CreateSqlBaseItem"/> factory method.
+    /// overridable <see cref="CreateSqlBaseItem"/> factory method or the more basic <see cref="CreateSetupObjectItem"/>.
     /// </summary>
     public abstract class SqlBaseItemMethodAttributeImplBase : SetupObjectItemMemberAttributeImplBase, IAutoImplementorMethod
     {
@@ -47,9 +47,23 @@ namespace CK.SqlServer.Setup
             return SqlBaseItemAttributeImpl.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
         }
 
+        /// <summary>
+        /// Creates the <see cref="SetupObjectItem"/>.
+        /// This is called only once the potential replacements have been analysed and resolved.
+        /// This implementation simply calls the centralized <see cref="SqlBaseItem.CreateStandardSqlBaseItem"/> helper.
+        /// </summary>
+        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+        /// <param name="firstContainer">
+        /// The first container that defined this object.
+        /// Actual container if the object has been replaced is provided by 
+        /// <see cref="SetupObjectItemAttributeImplBase.Registerer">Registerer</see>.Container.
+        /// </param>
+        /// <param name="name">Full name of the object to create.</param>
+        /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
+        /// <returns>The created object or null if an error occurred and has been logged.</returns>
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            return SqlBaseItem.Create(
+            return SqlBaseItem.CreateStandardSqlBaseItem(
                 _parser,
                 r,
                 (SqlContextLocName)name,

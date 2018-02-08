@@ -81,6 +81,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Creates the <see cref="SetupObjectItem"/>.
         /// This is called only once the potential replacements have been analysed and resolved.
+        /// This implementation simply calls the centralized <see cref="SqlBaseItem.CreateStandardSqlBaseItem"/> helper.
         /// </summary>
         /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="firstContainer">
@@ -93,7 +94,7 @@ namespace CK.SqlServer.Setup
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
         protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
-            return SqlBaseItem.Create(
+            return SqlBaseItem.CreateStandardSqlBaseItem(
                 _parser, 
                 r, 
                 (SqlContextLocName)name, 

@@ -123,7 +123,7 @@ namespace CK.SqlServer.Setup
         /// created based on the actual resource text.
         /// </param>
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
-        public static SqlBaseItem Create(
+        public static SqlBaseItem CreateStandardSqlBaseItem(
                 ISqlServerParser parser,
                 SetupObjectItemAttributeRegisterer r,
                 SqlContextLocName name,
