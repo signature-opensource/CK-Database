@@ -13,10 +13,17 @@ using System.IO;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// File based implementation of <see cref="ISetupableAspect"/>.
+    /// </summary>
     public class FileSetupScript : ISetupScript
     {
         string _cached;
 
+        /// <summary>
+        /// Initialized a new <see cref="FileSetupScript"/>.
+        /// </summary>
+        /// <param name="n">The name.</param>
         public FileSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
@@ -24,8 +31,15 @@ namespace CK.Setup
             Name = n;
         }
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public ParsedFileName Name { get; }
 
+        /// <summary>
+        /// Reads the file content from <see cref="ParsedFileName.ExtraPath"/>/<see cref="ParsedFileName.Name"/>.
+        /// </summary>
+        /// <returns>The file content.</returns>
         public string GetScript()
         {
             if( _cached == null )
@@ -36,6 +50,10 @@ namespace CK.Setup
             return _cached;
         }
 
+        /// <summary>
+        /// Overridden to return the path and name.
+        /// </summary>
+        /// <returns>The path and name.</returns>
         public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }

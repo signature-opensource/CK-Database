@@ -23,7 +23,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Provides a way to register any number of <see cref="IDependentItem"/>, <see cref="IDependentItemDiscoverer"/>
-        /// (an object can be both)and/or <see cref="IEnumerable"/> of such objects (recursively) that
+        /// (an object can be both)and/or IEnumerable of such objects (recursively) that
         /// must participate to Setup.
         /// </summary>
         IList<object> ExternalItems { get; }

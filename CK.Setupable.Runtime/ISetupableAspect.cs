@@ -4,6 +4,9 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Setupable aspect contract.
+    /// </summary>
     public interface ISetupableAspect
     {
         /// <summary>

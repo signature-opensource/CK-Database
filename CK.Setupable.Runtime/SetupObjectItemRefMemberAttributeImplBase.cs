@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +9,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Implementation of <see cref="SetupObjectItemRefMemberAttributeBase"/>.
+    /// </summary>
     public abstract class SetupObjectItemRefMemberAttributeImplBase : IAttributeAmbientContextBoundInitializer
     {
         readonly SetupObjectItemRefMemberAttributeBase _attribute;

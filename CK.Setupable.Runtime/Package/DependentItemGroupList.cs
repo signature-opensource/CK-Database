@@ -12,6 +12,9 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Mutable list of <see cref="IDependentItemGroupRef"/>.
+    /// </summary>
     public class DependentItemGroupList : List<IDependentItemGroupRef>, IDependentItemGroupList
     {
         /// <summary>

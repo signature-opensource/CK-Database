@@ -6,6 +6,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Supports extension methods on <see cref="IDriverList"/>.
+    /// </summary>
     public static class DriverListExtension
     {
         /// <summary>

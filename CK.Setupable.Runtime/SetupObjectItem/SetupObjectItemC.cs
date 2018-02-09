@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,8 +33,19 @@ namespace CK.Setup
         {
         }
 
+        /// <summary>
+        /// Gets the transform target item if this item has associated <see cref="SetupObjectItem.Transformers"/>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// </summary>
         public new SetupObjectItemC TransformTarget => (SetupObjectItemC)base.TransformTarget;
 
+        /// <summary>
+        /// Called by <see cref="SetupObjectItem.AddTransformer"/> to initialize the initial 
+        /// transform target as a clone of this object.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if an error occured.</returns>
         protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
             if( !base.OnTransformTargetCreated( monitor ) ) return false;

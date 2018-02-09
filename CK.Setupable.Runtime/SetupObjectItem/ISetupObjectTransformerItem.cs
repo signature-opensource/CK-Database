@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,13 +15,13 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets the source object for this transformer.
-        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
+        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer"/>.
         /// </summary>
         IMutableSetupBaseItem Source { get; set; }
 
         /// <summary>
         /// Gets the target transformed object.
-        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer(ISetupObjectTransformerItem)"/>.
+        /// This should be set only by dedicated methods like <see cref="SetupObjectItem.AddTransformer"/>.
         /// </summary>
         IMutableSetupBaseItem Target { get; set; }
 

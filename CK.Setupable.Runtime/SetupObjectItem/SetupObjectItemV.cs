@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,8 +36,19 @@ namespace CK.Setup
             _previousNames = previousNames != null ? previousNames.ToList() : null;
         }
 
+        /// <summary>
+        /// Gets the transform target item if this item has associated <see cref="SetupObjectItem.Transformers"/>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// </summary>
         public new SetupObjectItemV TransformTarget => (SetupObjectItemV)base.TransformTarget;
 
+        /// <summary>
+        /// Called by <see cref="SetupObjectItem.AddTransformer"/> to initialize the initial 
+        /// transform target as a clone of this object.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if an error occured.</returns>
         protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
             if( !base.OnTransformTargetCreated( monitor ) ) return false;
@@ -57,7 +68,6 @@ namespace CK.Setup
         /// Gets a mutable list of previous version name.
         /// </summary>
         public IList<VersionedName> PreviousNames => _previousNames ?? (_previousNames = new List<VersionedName>());
-
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {

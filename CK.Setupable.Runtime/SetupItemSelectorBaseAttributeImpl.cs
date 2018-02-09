@@ -18,6 +18,10 @@ namespace CK.Setup
     {
         readonly SetupItemSelectorBaseAttribute _attribute;
 
+        /// <summary>
+        /// Initializes a new <see cref="SetupItemSelectorBaseAttributeImpl{T}"/>.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
         protected SetupItemSelectorBaseAttributeImpl( SetupItemSelectorBaseAttribute a )
         {
             _attribute = a;

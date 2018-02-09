@@ -14,19 +14,34 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Resource based implementation of <see cref="ISetupScript"/>.
+    /// </summary>
     public class ResSetupScript : ISetupScript
     {
         string _cached;
 
+        /// <summary>
+        /// Initializes a new <see cref="ResSetupScript"/>.
+        /// </summary>
+        /// <param name="n">The name.</param>
         public ResSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( !(n.ExtraPath is ResourceLocator) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a ResourceLocator.", "n" );
+            if( !(n.ExtraPath is ResourceLocator) ) throw new ArgumentException( "ParsedFileName.ExtractPath must be a ResourceLocator.", "n" );
             Name = n;
         }
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public ParsedFileName Name { get; }
 
+        /// <summary>
+        /// Reads the resource content based on <see cref="ParsedFileName.ExtraPath"/> that is a <see cref="ResourceLocator"/>
+        /// and the <see cref="ParsedFileName.FileName"/>.
+        /// </summary>
+        /// <returns>The resource as a string.</returns>
         public string GetScript()
         {
             if( _cached == null )
@@ -37,6 +52,10 @@ namespace CK.Setup
             return _cached;
         }
 
+        /// <summary>
+        /// Overridden to return the path and name.
+        /// </summary>
+        /// <returns>The path and name.</returns>
         public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }

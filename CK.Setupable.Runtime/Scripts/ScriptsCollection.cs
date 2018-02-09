@@ -177,6 +177,10 @@ namespace CK.Setup
             return new ScriptVector( coveringScripts, noVersion );
         }
 
+        /// <summary>
+        /// Gets the setup scripts.
+        /// </summary>
+        /// <returns>The setup scripts.</returns>
         public IEnumerator<ISetupScript> GetEnumerator() => _scripts.Values.GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();

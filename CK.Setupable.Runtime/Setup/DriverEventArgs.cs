@@ -14,7 +14,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Event argument for the <see cref="ISetupEngine.DriverEvent"/>.
+    /// Event argument for the <see cref="ISetupableAspect.DriverEvent"/>.
     /// </summary>
     public class DriverEventArgs : EventArgs
     {

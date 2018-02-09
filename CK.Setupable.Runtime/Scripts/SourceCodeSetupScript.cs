@@ -15,6 +15,9 @@ using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Source code implementation of <see cref="ISetupScript"/>.
+    /// </summary>
     public class SourceCodeSetupScript : ISetupScript
     {
         string _script;
@@ -54,10 +57,22 @@ namespace CK.Setup
             return new SourceCodeSetupScript( name, script );
         }
 
+        /// <summary>
+        /// Gets the name: built from the path of the source code file and the line number of the call
+        /// to <see cref="CreateFromSourceCode(IContextLocNaming, string, string, SetupCallGroupStep, Version, Version, string, int)"/>.
+        /// </summary>
         public ParsedFileName Name { get; }
 
+        /// <summary>
+        /// Gets the script content.
+        /// </summary>
+        /// <returns>The script.</returns>
         public string GetScript() => _script;
 
+        /// <summary>
+        /// Overridden to return a "Inline Script" with the <see cref="ParsedFileName.FileName"/>.
+        /// </summary>
+        /// <returns>The path and name.</returns>
         public override string ToString() => $@"Inline script - {Name.FileName}";
 
     }

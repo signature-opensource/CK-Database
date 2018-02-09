@@ -13,6 +13,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Factory for <see cref="SetupItemDriver"/>.
+    /// </summary>
     public interface ISetupDriverFactory
     {
         /// <summary>

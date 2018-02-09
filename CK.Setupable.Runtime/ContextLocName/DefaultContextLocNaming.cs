@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setupable.Runtime\ContextLocName\DefaultContextLocNaming.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -574,6 +574,14 @@ namespace CK.Core
             return true;
         }
 
+        /// <summary>
+        /// Combines this name with a known contextual set of information.
+        /// </summary>
+        /// <param name="curContext">The current context.</param>
+        /// <param name="curLoc">The current location.</param>
+        /// <param name="context">The resulting context.</param>
+        /// <param name="location">The resulting location.</param>
+        /// <returns>True on success, false on error.</returns>
         static public bool Combine( string curContext, string curLoc, ref string context, ref string location )
         {
             return DoCombine( curContext, curLoc, ref context, ref location, null );

@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CK.Setup
 {
     /// <summary>
-    /// Helper class (that can be specialized: see <see cref="OnUnknownProperty"/>)
+    /// Helper class (that can be specialized: see <see cref="SetupConfigReader.OnUnknownProperty(StringMatcher, string)"/>)
     /// that applies a textual configuration '"SetupConfig": {...}' from a string to a target setup item
     /// or to a transformer and its target object.
     /// </summary>

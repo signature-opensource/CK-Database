@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Event argument for registration step.
-    /// Adds registering capacity to <see cref="ISetupEngine.SetupEvent"/>.
+    /// Adds registering capacity to <see cref="ISetupableAspect.RegisterSetupEvent"/>.
     /// </summary>
     public class RegisterSetupEventArgs : SetupEventArgs
     {

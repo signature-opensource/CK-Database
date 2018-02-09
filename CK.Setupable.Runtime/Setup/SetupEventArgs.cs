@@ -14,7 +14,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Event argument for <see cref="ISetupEngine.SetupEvent"/>.
+    /// Event argument for <see cref="ISetupableAspect.SetupEvent"/>.
     /// </summary>
     public class SetupEventArgs : EventArgs
     {

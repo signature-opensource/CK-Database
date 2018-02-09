@@ -89,7 +89,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Extension point: called when <see cref="ApplyProperty"/> failed.
+        /// Extension point: called when <see cref="ApplyProperty(StringMatcher, string)"/> failed.
         /// By default sets a "Unknown property" error on the <see cref="StringMatcher"/>.
         /// </summary>
         /// <param name="m">The string matcher.</param>

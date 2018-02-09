@@ -105,6 +105,12 @@ namespace CK.Setup
             set { base.ItemKind = value; }
         }
 
+        /// <summary>
+        /// Called by the <see cref="DependencySorter"/>.
+        /// The object return that is associated to this item is its driver type.
+        /// </summary>
+        /// <param name="m">The monitor to use.</param>
+        /// <returns>The driver type.</returns>
         protected override object StartDependencySort( IActivityMonitor m )
         {
             return _driverType;

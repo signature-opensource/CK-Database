@@ -13,6 +13,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Base contract for <see cref="IStObjSetupData"/> and <see cref="IMutableStObjSetupData"/>.
+    /// </summary>
     public interface IStObjSetupDataBase
     {
         /// <summary>

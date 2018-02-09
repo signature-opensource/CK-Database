@@ -40,7 +40,7 @@ namespace CK.Setup
         /// <summary>
         /// Step n°1 - Entering the Setupable level: StObjSetupData are created for each StObj and this method allows to configure their setup item and 
         /// driver type to use, versions, requirements and other properties related to the three-steps setup phasis.
-        /// This empty implementation of <see cref="IStObjSetupConfigurator.ConfigureDependentItem"/> calls <see cref="Previous"/> if it is not null.
+        /// This empty implementation of <see cref="IStObjSetupConfigurator.ConfigureDependentItem"/> calls <see cref="Next"/> if it is not null.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Mutable data (typically initialized by attributes and other direct code-first approaches).</param>
