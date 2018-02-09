@@ -43,6 +43,12 @@ namespace CK.Setup
 
         public bool HasError { get; private set; }
 
+        /// <summary>
+        /// Sets an error that can be null (no error is traced but HasError becomes true).
+        /// Memory is marked as having processed the object.
+        /// </summary>
+        /// <param name="msg">Optional message to trace as error.</param>
+        /// <returns>Always null.</returns>
         BestCreator SetError( string msg )
         {
             if( msg != null ) _state.Monitor.Error( msg );
@@ -56,7 +62,7 @@ namespace CK.Setup
             var n = _candidate.BuildFullName( Container, b, name );
             if( n == null )
             {
-                return SetError( "Invalid name: " + _candidate.GetDetailedName( this, name ) );
+                return SetError( "Invalid name: " + _candidate.GetDetailedName( Container, name ) );
             }
             bool replace = b == SetupObjectItemBehavior.Replace;
             var key = new BestCreator( n );
@@ -65,7 +71,7 @@ namespace CK.Setup
             {
                 if( replace )
                 {
-                    return SetError( $"Object {_candidate.GetDetailedName( this, name )} is not defined. It can not be replaced." );
+                    return SetError( $"Object {_candidate.GetDetailedName( Container, name )} is not defined. It can not be replaced." );
                 }
                 BestCreator bestT = null;
                 string transformArg = n.TransformArg;
@@ -76,7 +82,7 @@ namespace CK.Setup
                     bestT = (BestCreator)_state.Memory[keyT];
                     if( bestT == null )
                     {
-                        return SetError( $"Transformer {_candidate.GetDetailedName( this, name )}'s target is not defined." );
+                        return SetError( $"Transformer {_candidate.GetDetailedName( Container, name )}'s target is not defined." );
                     }
                 }
                 _state.Memory[key] = best = key;
@@ -97,7 +103,7 @@ namespace CK.Setup
                     }
                     else if( best.FirstContainer == Container )
                     {
-                        return SetError( $"Object {_candidate.GetDetailedName( this, name )} is both defined and replaced by the same package." );
+                        return SetError( $"Object {_candidate.GetDetailedName( Container, name )} is both defined and replaced by the same package." );
                     }
                 }
                 else
@@ -106,7 +112,7 @@ namespace CK.Setup
                     // Otherwise, we keep the candidate. 
                     if( best.LastContainerSeen != Container )
                     {
-                        return SetError( $"Object {_candidate.GetDetailedName( this, name )} is already defined." );
+                        return SetError( $"Object {_candidate.GetDetailedName( Container, name )} is already defined." );
                     }
                 }
             }
@@ -131,7 +137,7 @@ namespace CK.Setup
         SetupObjectItem DoCreateSetupObjectItem( IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             SetupObjectItem o;
-            using( _state.Monitor.OpenInfo( $"Handling: {_candidate.GetDetailedName( this, name.FullName )}" ) )
+            using( _state.Monitor.OpenInfo( $"Handling: {_candidate.GetDetailedName( Container, name.FullName )}" ) )
             using( _state.Monitor.OnError( () => SetError( null ) ) )
             {
                 o = _candidate.CreateSetupObjectItem( this, firstContainer, name, transformArgument );

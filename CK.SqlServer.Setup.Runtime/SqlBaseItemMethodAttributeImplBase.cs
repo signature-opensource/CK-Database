@@ -37,6 +37,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Must build the full name of the item based on the raw attribute name, whether this is
         /// a definition, a replacement or a transformation and the container of the item.
+        /// This method simply calls the <see cref="SqlBaseItem.SqlBuildFullName"/> static helper.
         /// </summary>
         /// <param name="container">The item's container.</param>
         /// <param name="b">The behavior (Define, Replace or Transform).</param>
@@ -44,7 +45,7 @@ namespace CK.SqlServer.Setup
         /// <returns>The context-location-name for the item.</returns>
         protected override IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string attributeName )
         {
-            return SqlBaseItemAttributeImpl.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
+            return SqlBaseItem.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
         }
 
         /// <summary>

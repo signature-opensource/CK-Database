@@ -104,6 +104,63 @@ namespace CK.SqlServer.Setup
         public virtual SetupConfigReader CreateConfigReader() => new SetupConfigReader( this );
 
         /// <summary>
+        /// Builds a Sql context-location-name (with the <see cref="SqlContextLocName.Schema"/>) from a setup object 
+        /// name (typically from an attribute) and its <see cref="SqlPackageBaseItem"/> container that provides
+        /// ambient context, location and schema if the <paramref name="attributeName"/> does not define them.
+        /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/> and the name does not have
+        /// a transform argument, we consider it to be the default transformation of the (target) name by the container.
+        /// </summary>
+        /// <param name="container">The item's container.</param>
+        /// <param name="b">The behavior (define, replace or transform).</param>
+        /// <param name="attributeName">Name of the object defined in the attribute.</param>
+        /// <returns>The Sql context-location-name.</returns>
+        public static SqlContextLocName SqlBuildFullName( SqlPackageBaseItem container, SetupObjectItemBehavior b, string attributeName )
+        {
+            var name = new SqlContextLocName( attributeName );
+            if( name.Context == null ) name.Context = container.Context;
+            if( name.Location == null ) name.Location = container.Location;
+            if( name.Schema == null ) name.Schema = container.ActualObject.Schema;
+            // Now handling transformation.
+            if( name.TransformArg != null )
+            {
+                // The provided name is a transformation: resolves context/location/schema from container 
+                // on the target component if they are not define.
+                var target = new SqlContextLocName( name.TransformArg );
+                if( target.Context == null ) target.Context = name.Context;
+                if( target.Location == null ) target.Location = name.Location;
+                if( target.Schema == null ) target.Schema = name.Schema;
+                name.TransformArg = target.FullName;
+            }
+            else if( b == SetupObjectItemBehavior.Transform )
+            {
+                // The name is not the name of a transformation however it should be:
+                // we consider it to be the default transformation of the (target) name by the container.
+                name = new SqlContextLocName( container.Context, container.Location, container.Name + '(' + name.FullName + ')' );
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// Builds a Sql context-location-name with a default schema and its <see cref="SqlPackageBaseItem"/> container
+        /// that provides ambient context and location.
+        /// If a schema exists, it is kept. Potential transform argument may exist and is left as-is.
+        /// It is up to the caller to check (if needed) that the resulting name is not a transformer name and/or
+        /// has the default (expected) schema.
+        /// </summary>
+        /// <param name="container">The item's container.</param>
+        /// <param name="attributeName">Name of the object (typically) defined in the attribute.</param>
+        /// <param name="defaultSchema">Default schema that will be set if none are specified.</param>
+        /// <returns>The Sql context-location-name.</returns>
+        static public SqlContextLocName SqlBuildFullNameWithDefaultSchema( SqlPackageBaseItem container, string attributeName, string defaultSchema )
+        {
+            var name = new SqlContextLocName( attributeName );
+            if( name.Context == null ) name.Context = container.Context;
+            if( name.Location == null ) name.Location = container.Location;
+            if( String.IsNullOrEmpty(name.Schema) ) name.Schema = defaultSchema;
+            return name;
+        }
+
+        /// <summary>
         /// Factory method that handles resource loading (based on name and containing package of the object),
         /// parsing of the resource text and creation of a <see cref="SqlBaseItem"/> either from an optional 
         /// factory method or based on the resource text content and its initialization thanks to <see cref="Initialize"/>.
@@ -206,6 +263,8 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Factory for <see cref="SqlBaseItem"/>.
+        /// Depending on the text type (<see cref="ISqlServerStoredProcedure"/> for instance), the
+        /// specialized <see cref="SqlBaseItem"/> is created (ie. <see cref="SqlProcedureItem"/>).
         /// </summary>
         /// <param name="name">The object name.</param>
         /// <param name="oText">The parsed text.</param>

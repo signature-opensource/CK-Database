@@ -43,7 +43,7 @@ namespace CK.Setup
             /// <returns>The newly created item.</returns>
             SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
-            string GetDetailedName( SetupObjectItemAttributeRegisterer r, string name );
+            string GetDetailedName( ISetupItem container, string name );
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace CK.Setup
                 var names = Attribute.NameOrCommaSeparatedObjectNames.Split( ',' );
                 if( _maxObjectCount != 0 && names.Length > _maxObjectCount )
                 {
-                    state.Monitor.Error( $"At most {_maxObjectCount} names allowed:  '{GetDetailedName(r, Attribute.NameOrCommaSeparatedObjectNames)}'." );
+                    state.Monitor.Error( $"At most {_maxObjectCount} names allowed:  '{GetDetailedName(r.Container, Attribute.NameOrCommaSeparatedObjectNames)}'." );
                     return;
                 }
                 HashSet<string> already = new HashSet<string>();
@@ -190,7 +190,7 @@ namespace CK.Setup
             if( !r.HasError && _theBest.Count > 0 ) state.PushAction( DynamicItemCreateAfterFollowing );
         }
 
-        string ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeRegisterer r, string name ) => GetDetailedName( r, name );
+        string ISetupItemCreator.GetDetailedName( ISetupItem container, string name ) => GetDetailedName( container, name );
 
         IContextLocNaming ISetupItemCreator.BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name )
         {
@@ -205,15 +205,15 @@ namespace CK.Setup
         /// <summary>
         /// Helper method used by the kernel that generates a clear string that gives  
         /// detailed information about the location of the name beeing processed like
-        /// '{name} in {Attribute} attribute of {holding class}'.
+        /// '{name} in {Attribute} attribute of {container.FullName}'.
         /// This is exposed as a protected method so that specialized classes can easily emit log messages.
         /// </summary>
-        /// <param name="r">The current registerer.</param>
+        /// <param name="container">The container that attempts to register the object.</param>
         /// <param name="name">The object's name that is processed.</param>
         /// <returns>Detailed information.</returns>
-        protected string GetDetailedName( SetupObjectItemAttributeRegisterer r, string name )
+        protected virtual string GetDetailedName( ISetupItem container, string name )
         {
-            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'"; 
+            return $"'{name}' in {Attribute.GetShortTypeName()} attribute of '{container.FullName}'"; 
         }
 
         /// <summary>

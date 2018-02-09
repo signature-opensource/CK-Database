@@ -358,7 +358,7 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ObjectType.Name}'.", ex );
+                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ObjectType.FullName}'.", ex );
                             Debug.Assert( success == false, "OnError did the job..." );
                         }
                     }

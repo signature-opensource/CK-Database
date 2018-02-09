@@ -91,7 +91,7 @@ namespace CK.Setup
         /// </summary>
         public SetupObjectItem SetupObjectItem => _theBest?.Item; 
 
-        string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( SetupObjectItemAttributeRegisterer r, string name ) => GetDetailedName( r );
+        string SetupObjectItemAttributeImplBase.ISetupItemCreator.GetDetailedName( ISetupItem container, string name ) => GetDetailedName( container );
 
         IContextLocNaming SetupObjectItemAttributeImplBase.ISetupItemCreator.BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string name )
         {
@@ -106,14 +106,14 @@ namespace CK.Setup
         /// <summary>
         /// Helper method used by the kernel that generates a clear string that gives  
         /// detailed information about the location of the object beeing processed like
-        /// '{ObjectName} in {member} [Attribute] attribute of {holding class}'.
+        /// '{ObjectName} in {member} [Attribute] attribute of {container.FullName}'.
         /// This is exposed as a protected method so that specialized classes can easily emit log messages.
         /// </summary>
-        /// <param name="r">The current registerer.</param>
+        /// <param name="container">The container that attempts to register the object.</param>
         /// <returns>Detailed information.</returns>
-        protected string GetDetailedName( SetupObjectItemAttributeRegisterer r )
+        protected virtual string GetDetailedName( ISetupItem container )
         {
-            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{r.Container.FullName}'";
+            return $"'{ObjectName}' in '{Member.Name}' {Attribute.GetShortTypeName()} attribute of '{container.FullName}'";
         }
 
 
