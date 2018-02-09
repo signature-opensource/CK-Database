@@ -457,6 +457,16 @@ namespace CK.Core
             return DoResolve( input, 0, input.Length, current.Context, current.Location, throwError );
         }
 
+        /// <summary>
+        /// Updates the <paramref name="input"/> (starting at a specified index) with the [curContext] and the curLoc^ if the
+        /// input does not specify them.
+        /// </summary>
+        /// <param name="input">The input location to resolve.</param>
+        /// <param name="startIndex">Statting index to consider in input.</param>
+        /// <param name="curContext">Context to update if missing.</param>
+        /// <param name="curLoc">Location to update if missing.</param>
+        /// <param name="throwError">True to throw error if any parts have a syntax error. Otherwise returns null.</param>
+        /// <returns>The updated input.</returns>
         public static string Resolve( string input, int startIndex, string curContext, string curLoc, bool throwError = true )
         {
             if( input == null ) throw new ArgumentNullException( "input" );
@@ -464,6 +474,17 @@ namespace CK.Core
             return DoResolve( input, startIndex, input.Length - startIndex, curContext, curLoc, throwError );
         }
 
+        /// <summary>
+        /// Updates a substring of the <paramref name="input"/> with the [curContext] and the curLoc^ if the
+        /// input does not specify them.
+        /// </summary>
+        /// <param name="input">The input location to resolve.</param>
+        /// <param name="startIndex">Statting index to consider in input.</param>
+        /// <param name="count">Number of characters from startIndex to consider.</param>
+        /// <param name="curContext">Context to update if missing.</param>
+        /// <param name="curLoc">Location to update if missing.</param>
+        /// <param name="throwError">True to throw error if any parts have a syntax error. Otherwise returns null.</param>
+        /// <returns>The updated input.</returns>
         public static string Resolve( string input, int startIndex, int count, string curContext, string curLoc, bool throwError = true )
         {
             if( input == null ) throw new ArgumentNullException( "input" );

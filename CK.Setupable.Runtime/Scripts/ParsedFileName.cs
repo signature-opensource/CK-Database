@@ -158,14 +158,9 @@ namespace CK.Setup
         public SetupCallGroupStep SetupStep => _step;
 
         /// <summary>
-        /// Gets the combination of <see cref="P:SetupStep"/> and <see cref="IsContent"/> as a <see cref="SetupCallGroupStep"/>.
-        /// </summary>
-        public SetupCallGroupStep CallContainerStep => _step;
-
-        /// <summary>
         /// Computes a key that identifies this <see cref="ParsedFileName"/>: it is a combination
         /// of the <see cref="Extension"/> (or <see cref="FileName"/> if <see cref="IsFromSourceCode"/> is true), 
-        /// <see cref="ParsedFileName.FullName"/>, <see cref="ParsedFileName.CallContainerStep"/>, 
+        /// <see cref="ParsedFileName.FullName"/>, <see cref="ParsedFileName.SetupStep"/>, 
         /// <see cref="ParsedFileName.FromVersion"/> and <see cref="ParsedFileName.Version"/>.
         /// </summary>
         /// <param name="suffix">Optional suffix to append to the key (avoids another concatenation).</param>
@@ -175,7 +170,7 @@ namespace CK.Setup
         /// </returns>
         public string GetScriptKey( string suffix = null )
         {
-            return $"{(IsFromSourceCode ? FileName : Extension)}|{FullName}|{CallContainerStep}|{FromVersion}|{Version}|{suffix}";
+            return $"{(IsFromSourceCode ? FileName : Extension)}|{FullName}|{SetupStep}|{FromVersion}|{Version}|{suffix}";
         }
 
         /// <summary>
@@ -344,6 +339,10 @@ namespace CK.Setup
             return true; 
         }
 
+        /// <summary>
+        /// Overridden to return the <see cref="FileName"/>.
+        /// </summary>
+        /// <returns>The file name.</returns>
         public override string ToString() => FileName;
 
     }

@@ -23,7 +23,7 @@ namespace CK.Setup
         }
         
         /// <summary>
-        /// Initializes a new <see cref="SetupObjectItemCV"/>.
+        /// Initializes a new <see cref="SetupObjectItemV"/>.
         /// </summary>
         /// <param name="name">Initial name of this item. Can not be null.</param>
         /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>

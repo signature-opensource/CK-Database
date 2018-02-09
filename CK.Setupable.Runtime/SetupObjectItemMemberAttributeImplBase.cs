@@ -121,7 +121,7 @@ namespace CK.Setup
         /// Must build the <see cref="IContextLocNaming"/> name of the future <see cref="SetupObjectItem"/> with the help of the owner object and the name in the attribute.
         /// This is called for each name in <see cref="SetupObjectItemAttributeBase.NameOrCommaSeparatedObjectNames"/>.
         /// </summary>
-        /// <param name="r">Registerer context object.</param>
+        /// <param name="container">Container object.</param>
         /// <param name="b">Registration behavior.</param>
         /// <param name="name">The raw name.</param>
         /// <returns>The name of the SetupObjectItem.</returns>
@@ -135,7 +135,7 @@ namespace CK.Setup
         /// <param name="r">Registerer context object.</param>
         /// <param name="firstContainer">
         /// The first container in which the item has been defined.
-        /// When there is no replacement, this is the same as <see cref="SetupObjectItemAttributeImplBase.Registerer.Container"/>.
+        /// When there is no replacement, this is the same as <see cref="SetupObjectItemAttributeRegisterer.Container"/>.
         /// </param>
         /// <param name="name">The name from <see cref="BuildFullName"/> method.</param>
         /// <param name="transformArgument">

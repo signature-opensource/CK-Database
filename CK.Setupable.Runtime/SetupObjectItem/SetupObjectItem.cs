@@ -54,6 +54,7 @@ namespace CK.Setup
         /// </summary>
         public SetupObjectItem TransformSource => _sourceWhenTransformed;
 
+        /// <summary>
         /// Gets or sets whether explicit requirements to objects applies to their 
         /// eventual transformed object if any.
         /// </summary>

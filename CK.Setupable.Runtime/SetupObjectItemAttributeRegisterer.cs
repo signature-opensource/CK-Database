@@ -41,6 +41,9 @@ namespace CK.Setup
         /// </summary>
         public readonly IMutableSetupItem Container;
 
+        /// <summary>
+        /// Gets whether <see cref="SetError(string)"/> has been called.
+        /// </summary>
         public bool HasError { get; private set; }
 
         /// <summary>

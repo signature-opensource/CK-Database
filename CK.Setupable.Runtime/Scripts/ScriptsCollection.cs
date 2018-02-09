@@ -39,6 +39,9 @@ namespace CK.Setup
         }
         static readonly CompareScript _cmp = new CompareScript();
 
+        /// <summary>
+        /// Initializes a new empty <see cref="ScriptsCollection"/>.
+        /// </summary>
         public ScriptsCollection()
         {
             _scripts = new Dictionary<ISetupScript, ISetupScript>( _cmp );
@@ -95,9 +98,8 @@ namespace CK.Setup
         /// <param name="name">Name of the object. This is used as a prefix for the resource names.</param>
         /// <param name="fileSuffix">Keeps only resources that ends with this suffix. This is typically the extension: ".sql".</param>
         /// <param name="onExisting">
-        /// Optional conflict resolver that takes the new <paramref name="script"/> and 
-        /// the existing one (in this order) and returns one of them (returning the second -exisiting- one is
-        /// the same as returning null).
+        /// Optional conflict resolver that takes the new script and the existing one (in this order) and returns
+        /// one of them (returning the second -exisiting- one is the same as returning null).
         /// </param>
         /// <returns>The number of scripts that have been added.</returns>
         public int AddFromResources( 
@@ -135,18 +137,18 @@ namespace CK.Setup
         /// <returns>The list of version or null if no scripts must be executed.</returns>
         public ScriptVector GetScriptVector( SetupCallGroupStep step, Version from, Version to )
         {
-            Debug.Assert( _scripts.Values.Where( s => s.Name.CallContainerStep == step ).Count( s => s.Name.Version == null ) <= 1, "There is either 0 or 1 'no version' script for a step." );
+            Debug.Assert( _scripts.Values.Where( s => s.Name.SetupStep == step ).Count( s => s.Name.Version == null ) <= 1, "There is either 0 or 1 'no version' script for a step." );
 
             if( to == null )
             {
                 // Delivers only the NoVersion script if it exists.
-                var noV = _scripts.Values.Where( s => s.Name.CallContainerStep == step && s.Name.Version == null ).SingleOrDefault();
+                var noV = _scripts.Values.Where( s => s.Name.SetupStep == step && s.Name.Version == null ).SingleOrDefault();
                 if( noV != null ) return new ScriptVector( noV );
                 return null;
             }
 
-            var versionStep = _scripts.Values.Where( s => s.Name.CallContainerStep == step && s.Name.Version != null && !s.Name.IsDowngradeScript && s.Name.Version <= to );
-            var noVersion = _scripts.Values.Where( s => s.Name.CallContainerStep == step ).FirstOrDefault( s => s.Name.Version == null );
+            var versionStep = _scripts.Values.Where( s => s.Name.SetupStep == step && s.Name.Version != null && !s.Name.IsDowngradeScript && s.Name.Version <= to );
+            var noVersion = _scripts.Values.Where( s => s.Name.SetupStep == step ).FirstOrDefault( s => s.Name.Version == null );
             if( from == null )
             {
                 // If there is no "from", consider the best one as the starting point.

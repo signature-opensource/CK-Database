@@ -27,9 +27,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Intializes a new dependent item with existing groups. 
+        /// Intializes a new empty <see cref="DependentItemGroupList"/>. 
         /// </summary>
-        /// <param name="existing">Exisitng groups.</param>
         public DependentItemGroupList()
         {
         }

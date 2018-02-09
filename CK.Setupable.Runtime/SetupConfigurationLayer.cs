@@ -52,7 +52,7 @@ namespace CK.Setup
         /// <summary>
         /// Step n°2 - Creation of the actual SetupItem to use for a StObj may be decided here. Like the others, this step is optional: by default
         /// a generic <see cref="StObjDynamicPackageItem"/> does the job.
-        /// This empty implementation of <see cref="IStObjSetupItemFactory.CreateSetupItem"/> calls <see cref="Previous"/> if it is not null, otherwise returns null.
+        /// This empty implementation of <see cref="IStObjSetupItemFactory.CreateSetupItem"/> calls <see cref="Next"/> if it is not null, otherwise returns null.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
@@ -65,7 +65,7 @@ namespace CK.Setup
         /// <summary>
         /// Step n°3 - This is where new <see cref="IDependentItem"/>s can be created and registered (typically as children of the item). For Sql, this is the step
         /// where setup items of stored procedures are instanciated and attached to their declaring tables or package.
-        /// This empty implementation of <see cref="IStObjSetupDynamicInitializer.DynamicItemInitialize"/> calls <see cref="Previous"/> if it is not null.
+        /// This empty implementation of <see cref="IStObjSetupDynamicInitializer.DynamicItemInitialize"/> calls <see cref="Next"/> if it is not null.
         /// </summary>
         /// <param name="state">Context for dynamic initialization.</param>
         /// <param name="item">The setup item for the object slice.</param>
@@ -76,8 +76,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Step n°4 - This is the last step that is not called if <see cref="SetupableAspectConfiguration.RunningMode"/> is <see cref="SetupEngineRunningMode.StObjLayerOnly"/>: 
-        /// the dependency graph of the setup items (StObj and/or pure <see cref="IDependentItem"/>) has been resolved, we now create the Setup Drivers for each of them that 
+        /// Step n°4 - The dependency graph of the setup items (StObj and/or pure <see cref="IDependentItem"/>) has been resolved, we now create the Setup Drivers for each of them that 
         /// will support the three-steps setup phasis.
         /// Creates a (potentially configured) instance of <see cref="SetupItemDriver"/> of a given <paramref name="driverType"/>.
         /// This empty implementation calls <see cref="Next"/> if it is not null, otherwise it always returns null.

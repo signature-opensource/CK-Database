@@ -19,8 +19,8 @@ namespace CK.Setup
     public sealed class VersionedTypedName : VersionedName
     {
         /// <summary>
-        /// Initializes a new <see cref="VersionedTypedName"/> with a <see cref="FullName"/> (must ne be null or empty) and 
-        /// a not null <see cref="Version"/> and a type.
+        /// Initializes a new <see cref="VersionedTypedName"/> with a <see cref="VersionedName.FullName"/> (must ne be null or empty) and 
+        /// a not null <see cref="VersionedName.Version"/> and a type.
         /// </summary>
         /// <param name="fullName">Name valid up to <see cref="Version"/>. It must be not null nor empty otherwise an exception is thrown.</param>
         /// <param name="type">The item's <see cref="Type"/>.</param>

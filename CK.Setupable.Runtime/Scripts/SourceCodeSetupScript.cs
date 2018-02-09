@@ -32,6 +32,7 @@ namespace CK.Setup
         /// Creates a <see cref="SourceCodeSetupScript"/> directly from source code.
         /// </summary>
         /// <param name="locName">The context-location-name for which a a <see cref="SourceCodeSetupScript"/> must be created.</param>
+        /// <param name="script">The script content.</param>
         /// <param name="extension">The extension must not be null, empty or starts with a '.' dot.</param>
         /// <param name="step">Optional step (when no <paramref name="version"/> is supplied, this is a "no version" script).</param>
         /// <param name="fromVersion">
