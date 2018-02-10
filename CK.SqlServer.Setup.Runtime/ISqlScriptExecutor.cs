@@ -12,6 +12,9 @@ using System.Text;
 
 namespace CK.SqlServer
 {
+    /// <summary>
+    /// Basic script executor. It is a disposable object.
+    /// </summary>
     public interface ISqlScriptExecutor : IDisposable
     {
         /// <summary>
@@ -23,6 +26,9 @@ namespace CK.SqlServer
 
     }
 
+    /// <summary>
+    /// Extends <see cref="ISqlScriptExecutor"/> to support multiple scripts execution at once.
+    /// </summary>
     public static class SqlScriptExecutorExtension
     {
         /// <summary>

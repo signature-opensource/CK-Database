@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -8,8 +8,17 @@ using System.Threading.Tasks;
 
 namespace CK.SqlServer.Parser
 {
+    /// <summary>
+    /// Extends <see cref="ISqlServerUnifiedTypeDecl"/> sql description type.
+    /// </summary>
     public static class ISqlServerExtensions
     {
+        /// <summary>
+        /// Gets whether a .Net type is compatible with this Sql Server type.
+        /// </summary>
+        /// <param name="this">This Sql Server type.</param>
+        /// <param name="t">.Net type to test.</param>
+        /// <returns>True if the .Net type is compatible, false otherwise.</returns>
         static public bool IsTypeCompatible( this ISqlServerUnifiedTypeDecl @this, Type t )
         {
             if( t.IsByRef ) t = t.GetElementType();
@@ -48,25 +57,6 @@ namespace CK.SqlServer.Parser
                 if( t == tSql ) return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// Gets the implicit conversion method from a source to a target type.
-        /// </summary>
-        /// <param name="baseType">Source type.</param>
-        /// <param name="targetType">Target type.</param>
-        /// <returns>The method or null if not found.</returns>
-        static MethodInfo GetImplicitConversionStaticMethod( Type baseType, Type targetType )
-        {
-            return baseType.GetMethods( BindingFlags.Public | BindingFlags.Static )
-                            .FirstOrDefault( mi => {
-                                if( mi.Name == "op_Implicit" && mi.ReturnType == targetType )
-                                {
-                                    ParameterInfo pi = mi.GetParameters().FirstOrDefault();
-                                    return pi != null && pi.ParameterType == baseType;
-                                }
-                                return false;
-                            } );
         }
 
         /// <summary>
