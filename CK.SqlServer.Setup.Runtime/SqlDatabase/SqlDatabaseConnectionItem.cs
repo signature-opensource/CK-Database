@@ -12,6 +12,10 @@ namespace CK.SqlServer.Setup
     {
         readonly SqlDatabaseItem _db;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDatabaseConnectionItem"/>.
+        /// </summary>
+        /// <param name="db">The database item.</param>
         public SqlDatabaseConnectionItem( SqlDatabaseItem db )
         {
             _db = db;

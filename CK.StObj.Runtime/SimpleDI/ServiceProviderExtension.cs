@@ -4,6 +4,9 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Extends <see cref="IServiceProvider"/> with simple DI methods (see <see cref="SimpleObjectActivator"/>).
+    /// </summary>
     public static class ServiceProviderExtension
     {
         /// <summary>

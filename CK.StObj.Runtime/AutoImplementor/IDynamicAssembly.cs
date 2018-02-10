@@ -55,7 +55,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the default name space for this <see cref="IDynamicAssembly"/>
         /// into which code should be generated.
-        /// Note that nothing prevents the <see cref="ICodeScope.Workspace"/> to be used and other
+        /// Note that nothing prevents the <see cref="INamedScope.Workspace"/> to be used and other
         /// namespaces to be created.
         /// </summary>
         INamespaceScope DefaultGenerationNamespace { get; }

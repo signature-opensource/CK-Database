@@ -9,9 +9,9 @@ namespace CK.Core
     /// Classes that implement this interface are able to implement a property.
     /// </summary>
     public interface IAutoImplementorProperty
-    {        
+    {
         /// <summary>
-        /// Implements the given property on the given <see cref="TypeBuilder"/>.
+        /// Implements the given property on the given <see cref="ITypeScope"/>.
         /// Implementations can rely on the <paramref name="dynamicAssembly"/>.<see cref="IDynamicAssembly.Memory">Memory</see> to store shared information if needed.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>

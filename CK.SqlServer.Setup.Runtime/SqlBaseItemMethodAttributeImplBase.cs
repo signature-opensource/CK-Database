@@ -54,20 +54,20 @@ namespace CK.SqlServer.Setup
         /// This is called only once the potential replacements have been analysed and resolved.
         /// This implementation simply calls the centralized <see cref="SqlBaseItem.CreateStandardSqlBaseItem"/> helper.
         /// </summary>
-        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+        /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="firstContainer">
         /// The first container that defined this object.
         /// Actual container if the object has been replaced is provided by 
-        /// <see cref="SetupObjectItemAttributeImplBase.Registerer">Registerer</see>.Container.
+        /// the registerer's container (<see cref="SetupObjectItemAttributeRegisterer.Container" />).
         /// </param>
         /// <param name="name">Full name of the object to create.</param>
         /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
-        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
+        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer registerer, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
         {
             return SqlBaseItem.CreateStandardSqlBaseItem(
                 _parser,
-                r,
+                registerer,
                 (SqlContextLocName)name,
                 (SqlPackageBaseItem)firstContainer,
                 (SqlBaseItem)transformArgument,
@@ -77,9 +77,9 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
-        /// or <see cref="SqlProcedure"/>).
+        /// or <see cref="SqlProcedureItem"/>).
         /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
-        /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the <paramref name="monitor"/> stops the process.
+        /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the monitor stops the process.
         /// </summary>
         /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">The item name.</param>

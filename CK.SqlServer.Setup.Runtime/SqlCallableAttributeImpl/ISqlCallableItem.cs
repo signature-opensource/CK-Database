@@ -17,8 +17,8 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods.</param>
-        /// <returns>The function. Null if <see cref="IsValid"/> is false or if an error occurred while generating it.</returns>
-        IFunctionScope AssumeSourceCommandBuilder(IActivityMonitor monitor, IDynamicAssembly dynamicAssembly);
+        /// <returns>The function. Null if an error occurred while generating it.</returns>
+        IFunctionScope AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly );
     }
 
 }

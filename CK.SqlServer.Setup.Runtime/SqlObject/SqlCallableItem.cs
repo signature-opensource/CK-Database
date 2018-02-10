@@ -14,7 +14,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="name">Name of this object.</param>
         /// <param name="itemType">Item type ("Function" or "Procedure").</param>
-        /// <param name="parsed">The parsed callable object.</param>
+        /// <param name="procOrFunc">The parsed callable object.</param>
         public SqlCallableItem( SqlContextLocName name, string itemType, T procOrFunc )
             : base( name, itemType, procOrFunc )
         {
@@ -31,8 +31,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets the transform target item if this item has associated <see cref="SqlBaseItem.Transformers">Transformers</see>.
-        /// This object is created as a clone of this object by the first call 
-        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// This object is created as a clone of this object by the first call to this AddTransformer method.
         /// </summary>
         public new SqlCallableItem<T> TransformTarget => (SqlCallableItem<T>)base.TransformTarget;
 

@@ -35,6 +35,7 @@
                    '$(IsInTestsFolder)' != 'true'
                    And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release')
                    And ($(MSBuildProjectName.EndsWith('.Model'))
+                        Or '$(MSBuildProjectName)' == 'CK.StObj.Runtime'
                         Or '$(MSBuildProjectName)' == 'CK.Setupable.Runtime'
                         Or '$(MSBuildProjectName)' == 'CK.SqlServer.Setup.Runtime' )">
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

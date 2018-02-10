@@ -19,7 +19,7 @@ namespace CK.Setup
         /// When it is true (see remarks) and the resolution fails, the property will not be set.
         /// </summary>
         /// <remarks>
-        /// If this is true, it means that all property definition across the inheritance chain has [<see cref="InjectContractAttribute">InjectAmbientContract</see>( <see cref="AmbientContractAttribute.IsOptional">IsOptional</see> = true ]
+        /// If this is true, it means that all property definition across the inheritance chain has [<see cref="InjectContractAttribute">InjectAmbientContract</see>( <see cref="IAmbientPropertyOrInjectContractAttribute.IsOptional">IsOptional</see> = true ]
         /// attribute (from the most abstract property definition), because a required property can NOT become optional.
         /// (Note that the reverse is not true: an optional ambient property can perfectly be made required by Specializations.)
         /// </remarks>

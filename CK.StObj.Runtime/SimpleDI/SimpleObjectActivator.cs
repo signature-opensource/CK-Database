@@ -9,10 +9,14 @@ namespace CK.Core
 {
     using Required = IReadOnlyList<KeyValuePair<object, Type>>;
 
+    /// <summary>
+    /// Ad-hoc DI helper that focuses on required parameters injection.
+    /// </summary>
     public class SimpleObjectActivator : ISimpleObjectActivator
     {
         /// <summary>
         /// Creates an instance of the specified type, using any available services.
+        /// The startegy it to use the longest constructor.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type of the object to create.</param>

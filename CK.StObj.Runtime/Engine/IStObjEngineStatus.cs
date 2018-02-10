@@ -23,7 +23,7 @@ namespace CK.Setup
         IReadOnlyList<ActivityMonitorPathCatcher.PathElement> DynamicPath { get; }
 
         /// <summary>
-        /// Gets the last <see cref="DynamicPath"/> where an <see cref="LogLevel.Error"/>
+        /// Gets the last <see cref="DynamicPath"/> where an <see cref="Core.LogLevel.Error"/>
         /// or a CK.Core.LogLevel.Fatal occurred. Null if no error nor fatal occurred.
         /// Use the extension method <see cref="ActivityMonitorExtension.ToStringPath"/> to easily format this path.
         /// </summary>

@@ -9,6 +9,11 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public partial class SqlCallableAttributeImpl : SqlBaseItemMethodAttributeImplBase
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlCallableAttributeImpl"/>.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
+        /// <param name="parser">The required parser that will be used.</param>
         public SqlCallableAttributeImpl( SqlCallableAttributeBase a, ISqlServerParser parser )
             : base( a, parser, a.ObjectType )
         {
@@ -20,7 +25,7 @@ namespace CK.SqlServer.Setup
         protected new SqlCallableAttributeBase Attribute => (SqlCallableAttributeBase)base.Attribute;
 
         /// <summary>
-        /// Tests whether a type has a corresponding <see cref="SqlDbType"/>. 
+        /// Tests whether a type has a corresponding <see cref="System.Data.SqlDbType"/>. 
         /// It is all the types that are mapped by <see cref="SqlHelper.FromSqlDbTypeToNetType"/> except <see cref="object"/> 
         /// plus <see cref="char"/> and enum (provided their underlying type is mapped) and 
         /// any <see cref="Nullable{T}"/> where T is mapped.

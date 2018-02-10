@@ -46,6 +46,12 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public ResourceLocator ResourceLocation { get; set; }
 
+        /// <summary>
+        /// Adds any <see cref="SqlDatabaseItem"/> groups to which this package belongs
+        /// to the <see cref="DynamicPackageItem.ObjectsPackage"/>'s groups (it it exists).
+        /// </summary>
+        /// <param name="m">The monitor to use.</param>
+        /// <returns>The driver to use.</returns>
         protected override object StartDependencySort( IActivityMonitor m )
         {
             if( ObjectsPackage != null )

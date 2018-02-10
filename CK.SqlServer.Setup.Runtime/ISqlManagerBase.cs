@@ -21,7 +21,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets or sets whether whenever a creation script is executed, the informational message
         /// 'The module 'X' depends on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// must be logged as a <see cref="Core.LogLevel.Error"/>. When false, this is a <see cref="Core.LogLevel.Info"/>.
         /// Defaults to false.
         /// Note that if <see cref="IgnoreMissingDependencyIsError"/> is true, this property has no effect and a missing dependency will remain informational.
         /// </summary>
@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets or sets whether <see cref="MissingDependencyIsError"/> must be ignored.
         /// When true, MissingDependencyIsError is always considered to be false.
-        /// Defaults to true (a missing dependency is logged with <see cref="LogLevel.Info"/> level).
+        /// Defaults to true (a missing dependency is logged with <see cref="Core.LogLevel.Info"/> level).
         /// </summary>
         bool IgnoreMissingDependencyIsError { get; set; }
 

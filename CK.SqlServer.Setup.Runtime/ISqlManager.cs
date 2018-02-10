@@ -29,7 +29,6 @@ namespace CK.SqlServer.Setup
         /// Simple execute scalar helper.
         /// The connection must be opened.
         /// </summary>
-        /// <typeparam name="T">Type to retrieve.</typeparam>
         /// <param name="select">Select clause.</param>
         /// <returns>The scalar (may be DBNull.Value) or null if no result has been returned.</returns>
         object ExecuteScalar( string select );

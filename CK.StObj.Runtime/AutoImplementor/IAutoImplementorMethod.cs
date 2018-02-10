@@ -9,7 +9,7 @@ namespace CK.Core
     public interface IAutoImplementorMethod
     {
         /// <summary>
-        /// Implements the given method on the given <see cref="ClassBuilder"/>.
+        /// Implements the given method on the given <see cref="ITypeScope"/>.
         /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>

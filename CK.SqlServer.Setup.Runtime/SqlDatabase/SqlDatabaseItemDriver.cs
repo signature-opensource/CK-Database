@@ -79,8 +79,9 @@ namespace CK.SqlServer.Setup
             return false;
         }
 
+        /// <summary>
         /// Gets a shared state for drivers: drivers from the same database can
-        /// easily share any service scoped to their database: <see cref="RegisterService{T}(T)"/>
+        /// easily share any service scoped to their database: <see cref="RegisterService"/>
         /// and 
         /// </summary>
         public IDictionary<object, object> SharedState => _sharedState;
@@ -98,7 +99,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <typeparam name="T">The type of the service to retrieve.</typeparam>
         /// <param name="mustExist">True to throw an exception if the service is not registered.</param>
-        /// <returns>The instance or null if it not registered and <param name="mustExist"/> is false.</returns>
+        /// <returns>The instance or null if it not registered and <paramref name="mustExist"/> is false.</returns>
         public T GetService<T>( bool mustExist = false ) => mustExist ? (T)_sharedState[typeof(T)] : (T)_sharedState.GetValueWithDefault( typeof( T ), null );
     }
 }

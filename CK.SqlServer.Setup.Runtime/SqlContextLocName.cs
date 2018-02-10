@@ -134,6 +134,9 @@ namespace CK.SqlServer.Setup
             }
         }
 
+        /// <summary>
+        /// Extracts and updates the <see cref="Schema"/> when <see cref="ContextLocName.Name"/> changed.
+        /// </summary>
         protected override void OnNameChanged()
         {
             string newSchema = DefaultContextLocNaming.SplitNamespace( Name, out _objectName );

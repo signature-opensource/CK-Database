@@ -34,6 +34,9 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = Drivers.Find<SqlDatabaseItemDriver>( Item.Groups.OfType<SqlDatabaseItem>().Single() ) );
 
+        /// <summary>
+        /// Masked to be formally associated to <see cref="SqlPackageBaseItem"/> item.
+        /// </summary>
         public new SqlPackageBaseItem Item => (SqlPackageBaseItem)base.Item;
 
         /// <summary>

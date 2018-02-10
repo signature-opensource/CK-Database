@@ -9,18 +9,25 @@ using System;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Extends <see cref="IDynamicAssembly"/>.
+    /// </summary>
     public static class DynamicAssemblyExtension
     {
         /// <summary>
-        /// Gets a type name in <see cref="SourceBuilder"/>'s namespace and a <see cref="NextUniqueNumber"/> suffix
-        /// or a guid when the <paramref name="name"/> is null.
+        /// Gets a type name in <see cref="IDynamicAssembly.DefaultGenerationNamespace"/>'s namespace
+        /// and a <see cref="IDynamicAssembly.NextUniqueNumber"/> suffix or a guid when the <paramref name="name"/> is null.
         /// </summary>
         /// <param name="this">This Dynamic assembly.</param>
         /// <param name="name">Base type name.</param>
         /// <returns>A unique type name.</returns>
         public static string AutoNextTypeName(this IDynamicAssembly @this, string name = null)
         {
-            return @this.DefaultGenerationNamespace.FullName + '.' + (name != null ? name + @this.NextUniqueNumber() : Guid.NewGuid().ToString());
+            return @this.DefaultGenerationNamespace.FullName
+                    + '.'
+                    + (name != null
+                            ? name + @this.NextUniqueNumber()
+                            : "G" + Guid.NewGuid().ToString( "N" ));
         }
 
         /// <summary>

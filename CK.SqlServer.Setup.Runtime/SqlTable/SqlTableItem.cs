@@ -11,8 +11,16 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Sql table item.
+    /// </summary>
     public class SqlTableItem : SqlPackageBaseItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlTableItem"/>.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="data">The StObj data.</param>
         public SqlTableItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {

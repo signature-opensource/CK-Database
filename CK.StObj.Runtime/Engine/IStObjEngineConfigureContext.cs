@@ -49,7 +49,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the list of already created and configured aspects.
-        /// Recall that the order of the configurations in <see cref="SetupEngineConfiguration.Aspects"/> drives the order of Aspects creation).
+        /// Recall that the order of the configurations in <see cref="StObjEngineConfiguration.Aspects"/> drives the order of Aspects creation).
         /// When <see cref="IStObjEngineAspect.Configure"/> is called, only configured aspects are registered here and available.
         /// </summary>
         IReadOnlyList<IStObjEngineAspect> Aspects { get; }

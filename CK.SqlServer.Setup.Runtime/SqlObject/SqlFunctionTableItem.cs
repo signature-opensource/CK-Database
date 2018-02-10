@@ -12,7 +12,7 @@ namespace CK.SqlServer.Setup
         /// Initializes a table function item with its name and code.
         /// </summary>
         /// <param name="name">Name of the function.</param>
-        /// <param name="view">Code of the function.</param>
+        /// <param name="tableFunction">Code of the function.</param>
         public SqlFunctionTableItem( SqlContextLocName name, ISqlServerFunctionTable tableFunction )
             : base( name, "Function", tableFunction )
         {

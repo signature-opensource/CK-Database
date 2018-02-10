@@ -33,6 +33,9 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public new SqlTransformerItem TransformTarget => (SqlTransformerItem)base.TransformTarget;
 
+        /// <summary>
+        /// Gets the source item.
+        /// </summary>
         public SqlBaseItem Source => _source;
 
         IMutableSetupBaseItem ISetupObjectTransformerItem.Source
@@ -57,6 +60,10 @@ namespace CK.SqlServer.Setup
             set { _target = (SqlBaseItem)value; }
         }
 
+        /// <summary>
+        /// Creates a <see cref="SetupConfigReader"/>.
+        /// </summary>
+        /// <returns>The config reader to use.</returns>
         public override SetupConfigReader CreateConfigReader() => _target.CreateConfigReader().CreateTransformerConfigReader( this );
 
     }
