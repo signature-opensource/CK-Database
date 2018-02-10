@@ -13,7 +13,7 @@ namespace CK.SqlServer.Setup
         ISqlServerCallableObject CallableObject { get; }
 
         /// <summary>
-        /// Gets or generates the method that creates the <see cref="SqlCommand"/> for this callable item.
+        /// Gets (and generates) the method that creates the SqlCommand for this callable item.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="dynamicAssembly">Use the memory associated to the dynamic to share the static class that implements the creation methods.</param>

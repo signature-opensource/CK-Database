@@ -1,16 +1,13 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlDatabase\SqlDatabaseConnectionItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System.Collections.Generic;
 using CK.Setup;
 using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Defines the connection object.
+    /// Its driver is <see cref="SqlDatabaseConnectionItemDriver"/>.
+    /// </summary>
     public class SqlDatabaseConnectionItem : ISetupItem, IDependentItemRef
     {
         readonly SqlDatabaseItem _db;
@@ -20,30 +17,45 @@ namespace CK.SqlServer.Setup
             _db = db;
         }
 
+        /// <summary>
+        /// Gets the <see cref="SqlDatabase"/> object instance.
+        /// </summary>
         public SqlDatabase SqlDatabase => _db.ActualObject;
 
-        public string FullName => _db.FullName + ".Connection"; 
+        /// <summary>
+        /// Gets the full name of this connection: : it is the FullName of the <see cref="SqlDatabase"/> suffixed with ".Connection".
+        /// </summary>
+        public string FullName => _db.FullName + ".Connection";
 
-        public IDependentItemContainerRef Container => null; 
+        /// <summary>
+        /// Gets the name of this connection: it is the Name of the <see cref="SqlDatabase"/> suffixed with ".Connection".
+        /// </summary>
+        public string Name => _db.Name + ".Connection"; 
 
-        public IDependentItemRef Generalization => null; 
+        IDependentItemContainerRef IDependentItem.Container => null;
 
-        public IEnumerable<IDependentItemRef> Requires => null; 
+        IDependentItemRef IDependentItem.Generalization => null;
 
-        public IEnumerable<IDependentItemGroupRef> Groups => null; 
+        IEnumerable<IDependentItemRef> IDependentItem.Requires => null; 
 
-        public IEnumerable<IDependentItemRef> RequiredBy => null; 
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups => null; 
 
-        public object StartDependencySort( IActivityMonitor m ) => typeof( SqlDatabaseConnectionItemDriver );
+        IEnumerable<IDependentItemRef> IDependentItem.RequiredBy => null; 
+
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => typeof( SqlDatabaseConnectionItemDriver );
 
         bool IDependentItemRef.Optional => false; 
 
+        /// <summary>
+        /// Gets the context name.
+        /// </summary>
         public string Context => _db.Context; 
 
+        /// <summary>
+        /// Gets the location.
+        /// </summary>
         public string Location => _db.Location;
 
         string IContextLocNaming.TransformArg => null;
-
-        public string Name => _db.Name + ".Connection"; 
     }
 }

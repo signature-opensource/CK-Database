@@ -12,7 +12,7 @@ namespace CK.SqlServer.Setup
         /// Initializes a stored procedure item with its name and code.
         /// </summary>
         /// <param name="name">Name of the stored procedure.</param>
-        /// <param name="view">Code of the stored procedure.</param>
+        /// <param name="storedProc">Code of the stored procedure.</param>
         public SqlProcedureItem( SqlContextLocName name, ISqlServerStoredProcedure storedProc )
             : base( name, "Procedure", storedProc )
         {

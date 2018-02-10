@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Sql package item.
+    /// </summary>
     public class SqlPackageBaseItem : StObjDynamicPackageItem
     {
         /// <summary>

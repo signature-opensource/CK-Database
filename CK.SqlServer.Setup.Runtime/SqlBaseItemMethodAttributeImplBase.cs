@@ -26,6 +26,7 @@ namespace CK.SqlServer.Setup
         /// and a item type ("Function", "Procedure", etc.).
         /// </summary>
         /// <param name="a">The attribute.</param>
+        /// <param name="parser">The sql parser service that will be used..</param>
         /// <param name="expectedItemType">The expected type of the object.</param>
         protected SqlBaseItemMethodAttributeImplBase( SetupObjectItemMemberAttributeBase a, ISqlServerParser parser, string expectedItemType )
             : base( a )

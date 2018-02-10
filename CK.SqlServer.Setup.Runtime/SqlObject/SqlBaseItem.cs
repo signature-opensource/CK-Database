@@ -166,12 +166,12 @@ namespace CK.SqlServer.Setup
         /// factory method or based on the resource text content and its initialization thanks to <see cref="Initialize"/>.
         /// </summary>
         /// <param name="parser">The Sql parser to use.</param>
-        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+        /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
         /// <param name="name">Full name of the object to create.</param>
         /// <param name="firstContainer">
         /// The first container that defined this object.
         /// Actual container if the object has been replaced is provided by 
-        /// <see cref="SetupObjectItemAttributeImplBase.Registerer">Registerer</see>.Container.
+        /// the registerer (<see cref="SetupObjectItemAttributeRegisterer.Container" />).
         /// </param>
         /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
         /// <param name="expectedItemTypes">Optional expected item types (can be null).</param>
@@ -182,7 +182,7 @@ namespace CK.SqlServer.Setup
         /// <returns>The created object or null if an error occurred and has been logged.</returns>
         public static SqlBaseItem CreateStandardSqlBaseItem(
                 ISqlServerParser parser,
-                SetupObjectItemAttributeRegisterer r,
+                SetupObjectItemAttributeRegisterer registerer,
                 SqlContextLocName name,
                 SqlPackageBaseItem firstContainer,
                 SqlBaseItem transformArgument,
@@ -190,19 +190,19 @@ namespace CK.SqlServer.Setup
                 Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
         {
             Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
-            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)r.Container;
-            using( r.Monitor.OpenTrace( $"Loading '{name}' of '{r.Container.FullName}'." ) )
+            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)registerer.Container;
+            using( registerer.Monitor.OpenTrace( $"Loading '{name}' of '{registerer.Container.FullName}'." ) )
             {
                 string fileName;
-                string text = name.LoadTextResource( r.Monitor, packageItem, out fileName );
+                string text = name.LoadTextResource( registerer.Monitor, packageItem, out fileName );
                 if( text == null ) return null;
-                SqlBaseItem result = ParseAndInitialize( r, name, parser, text, firstContainer, packageItem, transformArgument, expectedItemTypes, factory );
+                SqlBaseItem result = ParseAndInitialize( registerer, name, parser, text, firstContainer, packageItem, transformArgument, expectedItemTypes, factory );
                 if( result != null )
                 {
                     if( result.Container == null ) firstContainer.Children.Add( result );
-                    r.Monitor.CloseGroup( $"Loaded {result.ItemType} from file '{fileName}'." );
+                    registerer.Monitor.CloseGroup( $"Loaded {result.ItemType} from file '{fileName}'." );
                 }
-                else r.Monitor.CloseGroup( $"Error while loading file '{fileName}'." );
+                else registerer.Monitor.CloseGroup( $"Error while loading file '{fileName}'." );
                 return result;
             }
         }

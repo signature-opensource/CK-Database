@@ -78,6 +78,10 @@ namespace CK.SqlServer.Setup
         {
         }
 
+        /// <summary>
+        /// Overridden to return a new <see cref="SqlContextLocName"/>.
+        /// </summary>
+        /// <returns>A clone of this object.</returns>
         public override ContextLocName Clone() => new SqlContextLocName( this );
 
         /// <summary>

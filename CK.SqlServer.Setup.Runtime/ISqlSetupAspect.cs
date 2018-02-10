@@ -1,8 +1,11 @@
-﻿using CK.Setup;
+using CK.Setup;
 using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Sql setup aspect. Provides a <see cref="SqlParser"/> and <see cref="SqlDatabases"/>.
+    /// </summary>
     public interface ISqlSetupAspect
     {
         /// <summary>

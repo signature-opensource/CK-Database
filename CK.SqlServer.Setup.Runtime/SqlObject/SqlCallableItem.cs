@@ -29,6 +29,11 @@ namespace CK.SqlServer.Setup
             set { base.SqlObject = value; }
         }
 
+        /// <summary>
+        /// Gets the transform target item if this item has associated <see cref="SqlBaseItem.Transformers">Transformers</see>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+        /// </summary>
         public new SqlCallableItem<T> TransformTarget => (SqlCallableItem<T>)base.TransformTarget;
 
         ISqlServerCallableObject ISqlCallableItem.CallableObject => SqlObject;

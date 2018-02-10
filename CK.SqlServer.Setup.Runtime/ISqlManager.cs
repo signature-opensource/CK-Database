@@ -39,6 +39,7 @@ namespace CK.SqlServer.Setup
         /// The connection must be opened.
         /// </summary>
         /// <param name="cmd">The command text.</param>
+        /// <param name="timeoutSecond">Timeout of the execution in seconds.</param>
         /// <returns>The number of rows.</returns>
         int ExecuteNonQuery( string cmd, int timeoutSecond = -1 );
 

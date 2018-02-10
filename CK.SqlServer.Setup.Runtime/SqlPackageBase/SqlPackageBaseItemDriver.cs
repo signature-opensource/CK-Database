@@ -9,10 +9,17 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Driver for <see cref="SqlPackageBaseItem"/>.
+    /// </summary>
     public class SqlPackageBaseItemDriver : SetupItemDriver
     {
         SqlDatabaseItemDriver _dbDriver;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="info"></param>
         public SqlPackageBaseItemDriver( BuildInfo info )
             : base( info ) 
         {

@@ -5,6 +5,9 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Setup item that models the Sql database.
+    /// </summary>
     public class SqlDatabaseItem : StObjDynamicContainerItem
     {
         /// <summary>
@@ -54,6 +57,11 @@ namespace CK.SqlServer.Setup
             public object StartDependencySort( IActivityMonitor m ) => null;
         }
 
+        /// <summary>
+        /// >Initializes a new <see cref="SqlDatabaseItem"/>.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="data">The setup data from actual object.</param>
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data, typeof(SqlDatabaseItemDriver) )
         {
@@ -64,6 +72,9 @@ namespace CK.SqlServer.Setup
             Requires.Add( new Model( this ) );
         }
 
+        /// <summary>
+        /// Masked to return a <see cref="SqlDatabase"/>.
+        /// </summary>
         public new SqlDatabase ActualObject => (SqlDatabase)base.ActualObject;
 
         /// <summary>

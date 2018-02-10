@@ -27,6 +27,19 @@ namespace CK.SqlServer.Setup
             ExecuteNonQuery = IsCall | 0
         }
 
+        /// <summary>
+        /// Implements the given method on the given <see cref="ITypeScope"/> that is bound to the given <see cref="SqlObjectItem"/>.
+        /// Implementations can rely on the <paramref name="dynamicAssembly"/> to store shared information if needed.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="m">The method to implement.</param>
+        /// <param name="sqlItem">The associated <see cref="SqlBaseItem"/> (target of the method).</param>
+        /// <param name="dynamicAssembly">Dynamic assembly being implemented.</param>
+        /// <param name="cB">The type scope to use.</param>
+        /// <returns>
+        /// True on success, false on error. 
+        /// Any error must be logged into the <paramref name="monitor"/>.
+        /// </returns>
         protected override bool DoImplement(
             IActivityMonitor monitor,
             MethodInfo m,

@@ -6,6 +6,9 @@ using System;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Driver for <see cref="SqlDatabaseItem"/> item.
+    /// </summary>
     public class SqlDatabaseItemDriver : SetupItemDriver
     {
         readonly SqlDatabaseConnectionItemDriver _connection;
@@ -13,6 +16,11 @@ namespace CK.SqlServer.Setup
         readonly List<ISqlServerObject> _sqlObjects;
         readonly Dictionary<object,object> _sharedState;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDatabaseItemDriver"/>.
+        /// </summary>
+        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
+        /// <param name="sessionMemory">Session memory service.</param>
         public SqlDatabaseItemDriver( BuildInfo info, ISetupSessionMemory sessionMemory )
             : base( info )
         {

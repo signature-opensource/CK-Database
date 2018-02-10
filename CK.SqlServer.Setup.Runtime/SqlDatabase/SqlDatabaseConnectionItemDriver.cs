@@ -4,17 +4,28 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Driver for <see cref="SqlDatabaseConnectionItem"/> item. 
+    /// </summary>
     public class SqlDatabaseConnectionItemDriver : SetupItemDriver
     {
         readonly ISqlManagerProvider _sqlProvider;
         ISqlManagerBase _connection;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDatabaseConnectionItem"/>.
+        /// </summary>
+        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
+        /// <param name="sqlProvider">The sql manager provider.</param>
         public SqlDatabaseConnectionItemDriver( BuildInfo info, ISqlManagerProvider sqlProvider )
             : base( info )
         {
             _sqlProvider = sqlProvider;
         }
 
+        /// <summary>
+        /// Masked Item to formally be associated to a <see cref="SqlDatabaseConnectionItem"/> item.
+        /// </summary>
         public new SqlDatabaseConnectionItem Item => (SqlDatabaseConnectionItem)base.Item;
 
         /// <summary>

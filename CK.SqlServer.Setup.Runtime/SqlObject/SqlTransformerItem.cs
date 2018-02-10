@@ -4,7 +4,9 @@ using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
-
+    /// <summary>
+    /// Sql transformer item is a <see cref="SqlBaseItem"/>.
+    /// </summary>
     public class SqlTransformerItem : SqlBaseItem, ISetupObjectTransformerItem
     {
         SqlBaseItem _source;
@@ -17,12 +19,18 @@ namespace CK.SqlServer.Setup
             SetDriverType( typeof( SqlTransformerItemDriver ) );
         }
 
+        /// <summary>
+        /// Masked to be formally associated to a <see cref="ISqlServerTransformer"/> sql object.
+        /// </summary>
         public new ISqlServerTransformer SqlObject
         {
             get { return (ISqlServerTransformer)base.SqlObject; }
             set { base.SqlObject = value; }
         }
 
+        /// <summary>
+        /// Masked to be formally associated to a <see cref="SqlTransformerItem"/> transformer.
+        /// </summary>
         public new SqlTransformerItem TransformTarget => (SqlTransformerItem)base.TransformTarget;
 
         public SqlBaseItem Source => _source;

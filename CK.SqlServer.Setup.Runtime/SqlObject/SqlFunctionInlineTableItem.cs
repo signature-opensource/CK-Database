@@ -12,7 +12,7 @@ namespace CK.SqlServer.Setup
         /// Initializes an inline table function item with its name and code.
         /// </summary>
         /// <param name="name">Name of the function.</param>
-        /// <param name="view">Code of the function.</param>
+        /// <param name="inlineFunction">Code of the function.</param>
         public SqlFunctionInlineTableItem( SqlContextLocName name, ISqlServerFunctionInlineTable inlineFunction )
             : base( name, "Function", inlineFunction )
         {

@@ -24,11 +24,18 @@ namespace CK.SqlServer.Setup
     {
         SqlDatabaseItemDriver _dbDriver;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlObjectItemDriver"/>.
+        /// </summary>
+        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
         public SqlObjectItemDriver( BuildInfo info )
             : base( info )
         {
         }
 
+        /// <summary>
+        /// Masked to formally associates a <see cref="SqlObjectItem"/> type.
+        /// </summary>
         public new SqlObjectItem Item => (SqlObjectItem)base.Item;
 
         /// <summary>
@@ -36,6 +43,12 @@ namespace CK.SqlServer.Setup
         /// </summary>
         public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = Drivers.Find<SqlDatabaseItemDriver>( SqlDatabaseItem.ItemNameFor(Item) ));
 
+        /// <summary>
+        /// Installs the object.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="beforeHandlers">True when called before setup handlers.</param>
+        /// <returns>True on success, false on error.</returns>
         protected override bool Install( IActivityMonitor monitor, bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
@@ -82,7 +95,7 @@ namespace CK.SqlServer.Setup
             return ExpandAndExecuteScript( monitor, b.ToString() );
         }
 
-        private bool ExpandAndExecuteScript( IActivityMonitor monitor, string s )
+        bool ExpandAndExecuteScript( IActivityMonitor monitor, string s )
         {
             var tagHandler = new SimpleScriptTagHandler( s );
             if( !tagHandler.Expand( monitor, true ) ) return false;

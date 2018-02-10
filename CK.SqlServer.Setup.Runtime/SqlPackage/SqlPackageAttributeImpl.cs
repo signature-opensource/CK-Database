@@ -11,13 +11,23 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Implements <see cref="SqlPackageAttribute"/> attribute.
+    /// </summary>
     public class SqlPackageAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlPackageAttribute"/>.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
         public SqlPackageAttributeImpl( SqlPackageAttribute a )
             : base( a )
         {
         }
 
+        /// <summary>
+        /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribte type.
+        /// </summary>
         protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute; 
 
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )

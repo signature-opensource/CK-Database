@@ -4,7 +4,9 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
-
+    /// <summary>
+    /// Implementation of <see cref="SqlCallableAttributeBase"/>.
+    /// </summary>
     public partial class SqlCallableAttributeImpl : SqlBaseItemMethodAttributeImplBase
     {
         public SqlCallableAttributeImpl( SqlCallableAttributeBase a, ISqlServerParser parser )
@@ -12,11 +14,14 @@ namespace CK.SqlServer.Setup
         {
         }
 
+        /// <summary>
+        /// Gets the <see cref="SqlCallableAttributeBase"/> attribute.
+        /// </summary>
         protected new SqlCallableAttributeBase Attribute => (SqlCallableAttributeBase)base.Attribute;
 
         /// <summary>
         /// Tests whether a type has a corresponding <see cref="SqlDbType"/>. 
-        /// It is all the types that are mapped by <see cref="FromSqlDbTypeToNetType"/> except <see cref="object"/> 
+        /// It is all the types that are mapped by <see cref="SqlHelper.FromSqlDbTypeToNetType"/> except <see cref="object"/> 
         /// plus <see cref="char"/> and enum (provided their underlying type is mapped) and 
         /// any <see cref="Nullable{T}"/> where T is mapped.
         /// </summary>

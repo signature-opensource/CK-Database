@@ -16,11 +16,18 @@ namespace CK.SqlServer.Setup
 {
     public class SqlTableItemDriver : SqlPackageBaseItemDriver
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlTableItemDriver"/>.
+        /// </summary>
+        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
         public SqlTableItemDriver( BuildInfo info )
             : base( info ) 
         {
         }
 
+        /// <summary>
+        /// Masked to formally associates a <see cref="SqlTableItem"/> type.
+        /// </summary>
         public new SqlTableItem Item => (SqlTableItem)base.Item;
 
     }

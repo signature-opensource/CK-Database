@@ -28,7 +28,7 @@ namespace CK.SqlServer.Setup
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
-            SetAutomaticSetupFullNamewithoutContext( monitor, data, "SqlTable" );
+            SetAutomaticSetupFullNameWithoutContext( monitor, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
             data.DriverType = typeof( SqlTableItemDriver );
         }

@@ -15,6 +15,11 @@ namespace CK.SqlServer.Setup
     {
         readonly ISqlServerParser _parser;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlBaseItemAttributeImpl"/>.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
+        /// <param name="parser">Required parser service.</param>
         public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a, ISqlServerParser parser )
             : base( a )
         {

@@ -12,15 +12,26 @@ using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Implementation of <see cref="SqlPackageAttributeBase"/>.
+    /// This is the base class for <see cref="SqlPackageAttributeImpl"/> and <see cref="SqlTableAttributeImpl"/>.
+    /// </summary>
     public abstract class SqlPackageAttributeImplBase : IStObjStructuralConfigurator
     {
         readonly SqlPackageAttributeBase _attr;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlPackageAttributeImplBase"/>
+        /// </summary>
+        /// <param name="a">The attribute.</param>
         protected SqlPackageAttributeImplBase( SqlPackageAttributeBase a )
         {
             _attr = a;
         }
 
+        /// <summary>
+        /// Gets the attribute.
+        /// </summary>
         protected SqlPackageAttributeBase Attribute => _attr;
 
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
@@ -58,10 +69,24 @@ namespace CK.SqlServer.Setup
             ConfigureMutableItem( monitor, o );
         }
 
+        /// <summary>
+        /// When implemented this method must participate to <see cref="IStObjMutableItem"/> configuration.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="o">Tme mutable item to configure.</param>
         protected abstract void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o );
 
-
-        protected bool SetAutomaticSetupFullNamewithoutContext( IActivityMonitor monitor, IMutableStObjSetupData data, string loggedObjectTypeName )
+        /// <summary>
+        /// Helper that handle a better name for <see cref="IMutableStObjSetupData.FullNameWithoutContext"/> than
+        /// the default one (see <see cref="IStObjSetupDataBase.IsDefaultFullNameWithoutContext"/>).
+        /// Name is changed to be based on the schema and the .Net type with an automatic use
+        /// of namespace to disambiguate names in inheritance chains.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="data">The data for which full name should be updated.</param>
+        /// <param name="loggedObjectTypeName">Name to use while logging.</param>
+        /// <returns>True if FullNameWithoutContext has been changed, false otherwise.</returns>
+        protected bool SetAutomaticSetupFullNameWithoutContext( IActivityMonitor monitor, IMutableStObjSetupData data, string loggedObjectTypeName )
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
@@ -82,6 +107,13 @@ namespace CK.SqlServer.Setup
             return false;
         }
 
+        /// <summary>
+        /// Helper method to resolve the automatic handling of <see cref="IMutableStObjSetupData.FullNameWithoutContext"/>
+        /// by <see cref="SetAutomaticSetupFullNameWithoutContext"/>.
+        /// </summary>
+        /// <param name="data">The StObj data.</param>
+        /// <param name="shortestName">The shortest possible name.</param>
+        /// <returns>The non-clashing name to use.</returns>
         protected string FindAvailableFullNameWithoutContext( IMutableStObjSetupData data, string shortestName )
         {
             string proposal;

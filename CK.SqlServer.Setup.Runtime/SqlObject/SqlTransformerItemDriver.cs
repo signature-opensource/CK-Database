@@ -11,13 +11,27 @@ namespace CK.SqlServer.Setup
     /// </summary>
     public class SqlTransformerItemDriver : SetupItemDriver
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlTransformerItemDriver"/>.
+        /// </summary>
+        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
         public SqlTransformerItemDriver( BuildInfo info )
             : base( info )
         {
         }
 
+
+        /// <summary>
+        /// Masked to formally associates a <see cref="SqlTransformerItem"/> item.
+        /// </summary>
         public new SqlTransformerItem Item => (SqlTransformerItem)base.Item;
 
+        /// <summary>
+        /// Installs the transformer by applying the transformation.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="beforeHandlers">When true, nothing is done: the transformation is applied after the handlers.</param>
+        /// <returns>True on success, false otherwise.</returns>
         protected override bool Install( IActivityMonitor monitor, bool beforeHandlers )
         {
             if( beforeHandlers ) return true;
