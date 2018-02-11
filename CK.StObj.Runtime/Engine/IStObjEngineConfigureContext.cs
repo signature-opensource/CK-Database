@@ -56,14 +56,14 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets or sets a function that will be called with the list of StObjs once all of them are 
-        /// registered in the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// registered in the <see cref="DependencySorter"/> used by the StObjCollector.
         /// This action, like any action, is composable by using += operator.
         /// </summary>
         Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; }
 
         /// <summary>
         /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
-        /// the <see cref="DependencySorter"/> used by the <see cref="StObjCollector"/>.
+        /// the <see cref="DependencySorter"/> used by the StObjCollector.
         /// This action, like any action, is composable by using += operator.
         /// </summary>
         Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; }
