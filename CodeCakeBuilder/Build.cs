@@ -99,6 +99,8 @@ namespace CodeCake
             var projectsToPublish = projects
                                         .Where( p => !p.Path.Segments.Contains( "Tests" ) );
 
+            // Initialized by Build: the netstandard2.0/netcoreapp2.0 directory must exist
+            // since we rely on them to find the target...
             ComponentProjects componentProjects = null;
 
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
@@ -123,8 +125,6 @@ namespace CodeCake
                                      && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc")
                                      ? "Release"
                                      : "Debug";
-                     componentProjects = new ComponentProjects( configuration );
-
                      Cake.Information( "Publishing {0} projects with version={1} and configuration={2}: {3}",
                          projectsToPublish.Count(),
                          gitInfo.SafeSemVersion,
@@ -151,6 +151,7 @@ namespace CodeCake
                          {
                              s.Configuration = configuration;
                          } ) );
+                     componentProjects = new ComponentProjects( configuration );
                      foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.EndsWith( "netcoreapp2.0" ) ) )
                      {
                          Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart(),
