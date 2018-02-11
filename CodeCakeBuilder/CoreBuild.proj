@@ -10,14 +10,13 @@
     <MSBuild Targets="Restore" Projects="@(CoreProj)" Properties="@(Properties)" />
   </Target>
 
-  <Target Name="Build">
-    <MSBuild Targets="Build" Projects="@(CoreProj)" Properties="@(Properties)" />
-  </Target>
+    <Target Name="Build">
+        <MSBuild Targets="Build" Projects="@(CoreProj)" Properties="@(Properties)" />
+    </Target>
 
-  <Target Name="Pack">
+    <Target Name="Pack">
     <ItemGroup>
       <CoreProj Remove="..\Tests\**\*.csproj" />
-      <CoreProj Remove="CKSetupRemoteStore\CKSetupRemoteStore.csproj" />
       <CoreProj Remove="CKSetup\CKSetup.csproj" />
     </ItemGroup>
     <MSBuild Targets="Pack" Projects="@(CoreProj)" Properties="@(Properties)" />

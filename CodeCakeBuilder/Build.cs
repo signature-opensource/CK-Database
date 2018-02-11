@@ -6,6 +6,7 @@ using Cake.Common.Text;
 using Cake.Common.Tools.DotNetCore;
 using Cake.Common.Tools.DotNetCore.Build;
 using Cake.Common.Tools.DotNetCore.Pack;
+using Cake.Common.Tools.DotNetCore.Publish;
 using Cake.Common.Tools.DotNetCore.Restore;
 using Cake.Common.Tools.MSBuild;
 using Cake.Common.Tools.NuGet;
@@ -16,6 +17,7 @@ using Cake.Common.Tools.NUnit;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
+using CK.Text;
 using Code.Cake;
 using SimpleGitVersion;
 using System;
@@ -26,7 +28,55 @@ using System.IO;
 using System.Linq;
 
 namespace CodeCake
-{ 
+{
+
+    class ComponentProjects
+    {
+        public ComponentProjects( string configuration )
+        {
+            ComponentProjectPaths = new []
+            {
+                GetNet461BinFolder( "CK.StObj.Model", configuration ),
+                GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
+                GetNet461BinFolder( "CK.StObj.Engine", configuration ),
+                GetNet461BinFolder( "CK.Setupable.Model", configuration ),
+                GetNet461BinFolder( "CK.Setupable.Runtime", configuration ),
+                GetNet461BinFolder( "CK.Setupable.Engine", configuration ),
+                GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ),
+                GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
+
+                GetNetCoreBinFolder( "CK.StObj.Model", configuration ),
+                GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ),
+                GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ,
+                GetNetCoreBinFolder( "CK.Setupable.Model", configuration ),
+                GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ),
+                GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ),
+                GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ),
+                GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration )
+            };
+        }
+
+        public IReadOnlyList<string> ComponentProjectPaths { get; }
+
+        static string GetNet461BinFolder( string name, string configuration )
+        {
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
+        }
+
+        static string GetNetCoreBinFolder( string name, string configuration )
+        {
+            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
+            if( !Directory.Exists( pathToFramework ) )
+            {
+                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0" );
+            }
+            return pathToFramework;
+        }
+    }
+
+
     [AddPath("CodeCakeBuilder/Tools")]
     [AddPath("packages/**/tools*")]
     public class Build : CodeCakeHost
@@ -45,20 +95,16 @@ namespace CodeCake
                                        .Where( p => !(p is SolutionFolder)
                                                     && p.Name != "CodeCakeBuilder" );
 
-            // We do not publish .Tests projects for this solution.
+            // We do not generate NuGet packages for .Tests projects for this solution.
             var projectsToPublish = projects
                                         .Where( p => !p.Path.Segments.Contains( "Tests" ) );
+
+            ComponentProjects componentProjects = null;
 
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
 
             // Configuration is either "Debug" or "Release".
             string configuration = "Debug";
-
-            Teardown( c =>
-            {
-                var mustStop = Process.GetProcessesByName( "CKSetupRemoteStore" );
-                foreach( var p in mustStop ) p.Kill();
-            } );
 
             Task( "Check-Repository" )
                 .Does( () =>
@@ -77,6 +123,7 @@ namespace CodeCake
                                      && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc")
                                      ? "Release"
                                      : "Debug";
+                     componentProjects = new ComponentProjects( configuration );
 
                      Cake.Information( "Publishing {0} projects with version={1} and configuration={2}: {3}",
                          projectsToPublish.Count(),
@@ -104,6 +151,15 @@ namespace CodeCake
                          {
                              s.Configuration = configuration;
                          } ) );
+                     foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.EndsWith( "netcoreapp2.0" ) ) )
+                     {
+                         Cake.DotNetCorePublish( pub,
+                            new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
+                            {
+                                s.Framework = "netcoreapp2.0";
+                                s.Configuration = configuration;
+                            } ) );
+                     }
                  } );
 
             Task( "Unit-Testing" )
@@ -164,32 +220,10 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        if( !Cake.CKSetupPublishAndAddComponentFoldersToStore( new[]
-                        {
-                            GetNet461BinFolder( "CK.StObj.Model", configuration ),
-                            GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
-                            GetNet461BinFolder( "CK.StObj.Engine", configuration ),
-                            GetNet461BinFolder( "CK.Setupable.Model", configuration ),
-                            GetNet461BinFolder( "CK.Setupable.Runtime", configuration ),
-                            GetNet461BinFolder( "CK.Setupable.Engine", configuration ),
-                            GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ),
-                            GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                            GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
-
-                            GetNetCoreBinFolder( "CK.StObj.Model", configuration ),
-                            GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ),
-                            GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ,
-                            GetNetCoreBinFolder( "CK.Setupable.Model", configuration ),
-                            GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ),
-                            GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ),
-                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ),
-                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                            GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration )
-                        } ) )
+                        if( !Cake.CKSetupAddComponentFoldersToStore( componentProjects.ComponentProjectPaths ) )
                         {
                             Cake.TerminateWithError( "Error while registering components." );
                         }
-
                         if( !Cake.CKSetupPushLocalStoreToRemote( apiKey ) )
                         {
                             Cake.TerminateWithError( "Error while pushing components to remote store." );
@@ -299,21 +333,6 @@ namespace CodeCake
                     }
                 }
             }
-        }
-
-        string GetNet461BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
-        }
-
-        string GetNetCoreBinFolder( string name, string configuration )
-        {
-            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
-            if( !Directory.Exists( pathToFramework ) )
-            {
-                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0" );
-            }
-            return pathToFramework;
         }
 
 
