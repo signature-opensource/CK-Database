@@ -58,14 +58,14 @@ namespace CodeCake
             };
         }
 
-        public IReadOnlyList<string> ComponentProjectPaths { get; }
+        public IReadOnlyList<NormalizedPath> ComponentProjectPaths { get; }
 
-        static string GetNet461BinFolder( string name, string configuration )
+        static NormalizedPath GetNet461BinFolder( string name, string configuration )
         {
             return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
         }
 
-        static string GetNetCoreBinFolder( string name, string configuration )
+        static NormalizedPath GetNetCoreBinFolder( string name, string configuration )
         {
             string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
             if( !Directory.Exists( pathToFramework ) )
@@ -153,7 +153,7 @@ namespace CodeCake
                          } ) );
                      foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.EndsWith( "netcoreapp2.0" ) ) )
                      {
-                         Cake.DotNetCorePublish( pub,
+                         Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart(),
                             new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
                             {
                                 s.Framework = "netcoreapp2.0";
@@ -220,7 +220,7 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        if( !Cake.CKSetupAddComponentFoldersToStore( componentProjects.ComponentProjectPaths ) )
+                        if( !Cake.CKSetupAddComponentFoldersToStore( componentProjects.ComponentProjectPaths.Select( x => x.ToString() ) ) )
                         {
                             Cake.TerminateWithError( "Error while registering components." );
                         }

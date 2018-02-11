@@ -30,8 +30,8 @@ namespace CK.Setup
         IReadOnlyList<ActivityMonitorPathCatcher.PathElement> LastErrorPath { get; }
 
         /// <summary>
-        /// Gets the last <see cref="DynamicPath"/> with a <see cref="LogLevel.Fatal"/>, <see cref="LogLevel.Error"/>
-        /// or a <see cref="LogLevel.Warn"/>.
+        /// Gets the last <see cref="DynamicPath"/> with a <see cref="Core.LogLevel.Fatal"/>, <see cref="Core.LogLevel.Error"/>
+        /// or a <see cref="Core.LogLevel.Warn"/>.
         /// Null if no error, fatal nor warn occurred. 
         /// Use the extension method <see cref="ActivityMonitorExtension.ToStringPath"/> to easily format this path.
         /// </summary>
