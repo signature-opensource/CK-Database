@@ -221,7 +221,7 @@ namespace CodeCake
                     var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
                     if( !String.IsNullOrWhiteSpace( apiKey ) )
                     {
-                        if( !Cake.CKSetupAddComponentFoldersToStore( componentProjects.ComponentProjectPaths.Select( x => x.ToString() ) ) )
+                        if( !Cake.CKSetupPublishAndAddComponentFoldersToStore( componentProjects.ComponentProjectPaths.Select( x => x.ToString() ) ) )
                         {
                             Cake.TerminateWithError( "Error while registering components." );
                         }
