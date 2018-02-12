@@ -43,25 +43,25 @@
       <HintPath>..\packages\Cake.Core.0.25.0\lib\net46\Cake.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.9.0.3\lib\net461\CK.ActivityMonitor.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.9.0.4\lib\net461\CK.ActivityMonitor.dll</HintPath>
     </Reference>
     <Reference Include="CK.ActivityMonitor.SimpleSender, Version=9.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.ActivityMonitor.SimpleSender.9.0.3\lib\net461\CK.ActivityMonitor.SimpleSender.dll</HintPath>
+      <HintPath>..\packages\CK.ActivityMonitor.SimpleSender.9.0.4\lib\net461\CK.ActivityMonitor.SimpleSender.dll</HintPath>
     </Reference>
     <Reference Include="CK.Core, Version=9.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.9.1.1\lib\net461\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.9.1.2\lib\net461\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.Monitoring, Version=8.3.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Monitoring.8.3.2\lib\net461\CK.Monitoring.dll</HintPath>
+      <HintPath>..\packages\CK.Monitoring.8.3.3\lib\net461\CK.Monitoring.dll</HintPath>
     </Reference>
     <Reference Include="CK.Text, Version=6.2.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Text.6.2.0\lib\net461\CK.Text.dll</HintPath>
+      <HintPath>..\packages\CK.Text.6.2.1\lib\net461\CK.Text.dll</HintPath>
     </Reference>
     <Reference Include="CKSetup.Cake, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CKSetup.Cake.6.0.0-a00-00-develop-0050\lib\net461\CKSetup.Cake.dll</HintPath>
+      <HintPath>..\packages\CKSetup.Cake.6.0.0-r08\lib\net461\CKSetup.Cake.dll</HintPath>
     </Reference>
     <Reference Include="CKSetup.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CKSetup.Core.6.0.0-a00-00-develop-0050\lib\net461\CKSetup.Core.dll</HintPath>
+      <HintPath>..\packages\CKSetup.Core.6.0.0-r08\lib\net461\CKSetup.Core.dll</HintPath>
     </Reference>
     <Reference Include="Code.Cake, Version=0.20.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Code.Cake.0.20.0\lib\net45\Code.Cake.dll</HintPath>
