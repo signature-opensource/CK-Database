@@ -76,11 +76,12 @@ namespace SqlActorPackage.Tests
             try
             {
                 Assert.That( c.State, Is.EqualTo( ConnectionState.Closed ) );
-                using( var disposer = await c.EnsureOpenAsync() )
+                using( IDisposable disposer = await c.EnsureOpenAsync() )
                 {
                     Assert.That( disposer, Is.Not.Null );
                     Assert.That( c.State, Is.EqualTo( ConnectionState.Open ) );
-                    Assert.That( await c.EnsureOpenAsync(), Is.Null );
+                    IDisposable nullDisposable = await c.EnsureOpenAsync();
+                    nullDisposable.Should().BeNull();
                     await create.ExecuteNonQueryAsync( c );
                     Assert.That( await scalar.ExecuteScalarAsync<string>( c ), Is.EqualTo( "Three" ) );
                     var rowResult = await row.ExecuteRowAsync( c, r => Tuple.Create( r.GetInt32( 0 ), r.GetString( 1 ) ) );

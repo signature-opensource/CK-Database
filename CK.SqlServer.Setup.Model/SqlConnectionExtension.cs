@@ -14,8 +14,6 @@ namespace CK.SqlServer
     /// </summary>
     public static class SqlConnectionExtension
     {
-        static readonly Task<IDisposable> _nullTaskDisposable = Task.FromResult<IDisposable>( null );
-
         sealed class AutoCloser : IDisposable
         {
             readonly DbConnection _c;
@@ -61,7 +59,7 @@ namespace CK.SqlServer
                 await @this.OpenAsync( cancel ).ConfigureAwait( false );
                 return new AutoCloser( @this );
             }
-            return _nullTaskDisposable;
+            return null;
         }
 
         /// <summary>
