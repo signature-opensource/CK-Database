@@ -9,6 +9,7 @@ using System.Data;
 using System.IO;
 using static CK.Testing.DBSetupTestHelper;
 using FluentAssertions;
+using System.Threading.Tasks;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -119,14 +120,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
             }
         }
 
-
         [Test]
         public void ManualImplementation()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create test database on local server: {0}.", ConnectionString );
+                m.OpenFromConnectionString( ConnectionString, true ).Should().BeTrue( $"Unable to open or create test database on local server: {ConnectionString}." );
                 var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
+
                 m.ExecuteScripts( install, TestHelper.Monitor )
                     .Should().BeTrue();
 

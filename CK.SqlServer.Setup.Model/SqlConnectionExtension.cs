@@ -1,4 +1,4 @@
-﻿using CK.SqlServer.Setup;
+using CK.SqlServer.Setup;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +14,8 @@ namespace CK.SqlServer
     /// </summary>
     public static class SqlConnectionExtension
     {
+        static readonly Task<IDisposable> _nullTaskDisposable = Task.FromResult<IDisposable>( null );
+
         sealed class AutoCloser : IDisposable
         {
             readonly DbConnection _c;
@@ -51,7 +53,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="this">This connection.</param>
         /// <param name="cancel">Optional cancellation token.</param>
-        /// <returns>A IDisposable or null.</returns>
+        /// <returns>A IDisposable> or null.</returns>
         public static async Task<IDisposable> EnsureOpenAsync( this DbConnection @this, CancellationToken cancel = default(CancellationToken) )
         {
             if( @this.State == ConnectionState.Closed )
@@ -59,7 +61,7 @@ namespace CK.SqlServer
                 await @this.OpenAsync( cancel ).ConfigureAwait( false );
                 return new AutoCloser( @this );
             }
-            return null;
+            return _nullTaskDisposable;
         }
 
         /// <summary>

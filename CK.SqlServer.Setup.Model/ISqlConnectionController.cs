@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -14,6 +14,7 @@ namespace CK.SqlServer
     {
         /// <summary>
         /// Gets the controlled actual connection.
+        /// It can be opened or closed.
         /// </summary>
         SqlConnection Connection { get; }
 
@@ -23,6 +24,13 @@ namespace CK.SqlServer
         /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
         /// </summary>
         void ExplicitOpen();
+
+        /// <summary>
+        /// Opens the connection to the database if it were closed (only increments <see cref="ExplicitOpenCount"/> if the 
+        /// <see cref="Connection"/> were already opened). The connection will remain opened
+        /// until a corresponding explicit call to <see cref="ExplicitClose"/> is made.
+        /// </summary>
+        Task ExplicitOpenAsync();
 
         /// <summary>
         /// Gets the current number of <see cref="ExplicitOpen"/>.

@@ -54,7 +54,7 @@
         <CKCodeGenVersion>0.1.2</CKCodeGenVersion>
         <YodiiScriptVersion>0.5.2</YodiiScriptVersion>
         <CSemVerVersion>1.1.0</CSemVerVersion>
-        <CKSetupVersion>6.0.0-r08</CKSetupVersion>
+        <CKSetupVersion>6.0.0-r09</CKSetupVersion>
         <CKTestingVersion>0.3.0</CKTestingVersion>
         <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
         <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>

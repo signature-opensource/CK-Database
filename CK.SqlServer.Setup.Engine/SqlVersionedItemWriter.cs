@@ -13,6 +13,7 @@ namespace CK.SqlServer.Setup
     public class SqlVersionedItemWriter : IVersionedItemWriter
     {
         readonly ISqlManagerBase _manager;
+        bool _initialized;
 
         public SqlVersionedItemWriter( ISqlManagerBase m )
         {
@@ -24,31 +25,68 @@ namespace CK.SqlServer.Setup
         {
             var sqlReader = reader as SqlVersionedItemReader;
             bool rewriteToSameDatabase = sqlReader != null && sqlReader.Manager == _manager;
+            if( !rewriteToSameDatabase && !_initialized && _manager is ISqlManager actualManager )
+            {
+                SqlVersionedItemReader.AutoInitialize( actualManager );
+                _initialized = true;
+            }
             StringBuilder delete = null;
             StringBuilder update = null;
-            foreach( var t in trackedItems )
+            foreach( VersionedNameTracked t in trackedItems )
             {
-                if( t.Deleted || (!t.Accessed && deleteUnaccessedItems) )
+                VersionedTypedName toSet = null;
+                bool mustDelete = t.Deleted || (deleteUnaccessedItems && !t.Accessed);
+                if( mustDelete )
                 {
                     if( delete == null ) delete = new StringBuilder( "delete from CKCore.tItemVersionStore where FullName in (" );
                     else delete.Append( ',' );
-                    delete.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( t.FullName ) ).Append( '\'' ); 
+                    delete.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( t.FullName ) ).Append( '\'' );
+                    if( !t.Accessed )
+                    {
+                        monitor.Info( $"Item '{t.FullName}' has not been accessed: deleting its version information." );
+                    }
+                    else monitor.Info( $"Deleting '{t.FullName}' version information." );
+                }
+                else if( t.Original == null )
+                {
+                    monitor.Trace( $"Item '{t.FullName}' is a new one." );
+                    toSet = new VersionedTypedName( t.FullName, t.NewType, t.NewVersion );
+                }
+                else if( t.NewVersion != null )
+                {
+                    if( t.NewVersion > t.Original.Version )
+                    {
+                        monitor.Trace( $"Item '{t.FullName}': version is upgraded." );
+                        toSet = new VersionedTypedName( t.FullName, t.NewType, t.NewVersion );
+                    }
+                    else if( t.NewVersion < t.Original.Version )
+                    {
+                        monitor.Error( $"Item '{t.FullName}': version downgraded from {t.Original.Version} to {t.NewVersion}. This is ignored." );
+                    }
+                    else if( t.NewType != t.Original.Type )
+                    {
+                        monitor.Error( $"Item '{t.FullName}': Type change from '{t.Original.Type}' to '{t.NewType}'. This is ignored." );
+                    }
                 }
                 else
                 {
-                    if( t.NewVersion != null
-                        && (!rewriteToSameDatabase || t.NewVersion != t.Original?.Version || t.NewType != t.Original?.Type) )
+                    if( !rewriteToSameDatabase )
                     {
-                        if( update == null )
-                        {
-                            update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
-                            update.Append( "insert into @T( F, T, V ) values " );
-                        }
-                        else update.Append( ',' );
-                        update.Append("(N'").Append( SqlHelper.SqlEncodeStringContent( t.FullName ) )
-                            .Append( "','" ).Append( SqlHelper.SqlEncodeStringContent( t.NewType ) )
-                            .Append( "','" ).Append( t.NewVersion.ToString() ).Append( "')" );
+                        monitor.Trace( $"Item '{t.FullName}' has not been accessed. Updating target database." );
+                        toSet = t.Original;
                     }
+                }
+                if( toSet != null )
+                {
+                    if( update == null )
+                    {
+                        update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
+                        update.Append( "insert into @T( F, T, V ) values " );
+                    }
+                    else update.Append( ',' );
+                    update.Append("(N'").Append( SqlHelper.SqlEncodeStringContent( toSet.FullName ) )
+                        .Append( "','" ).Append( SqlHelper.SqlEncodeStringContent( toSet.Type ) )
+                        .Append( "','" ).Append( toSet.Version.ToString() ).Append( "')" );
                 }
             }
             if( delete != null )
@@ -63,6 +101,20 @@ namespace CK.SqlServer.Setup
                 // Throws exception on error.
                 _manager.ExecuteOneScript( update.ToString() );
             }
+        }
+
+        static VersionedTypedName HandleSkippedVersionWrite( IActivityMonitor monitor, bool rewriteToSameDatabase, VersionedNameTracked t, string startMsg )
+        {
+            if( rewriteToSameDatabase )
+            {
+                monitor.Info( startMsg + "left as-is." );
+            }
+            else
+            {
+                monitor.Info( startMsg + "injected to the target database version." );
+                return t.Original;
+            }
+            return null;
         }
     }
 }

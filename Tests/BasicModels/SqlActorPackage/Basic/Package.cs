@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.SqlServer.Setup.Engine.Tests.Model\KindOfActorPackage\Basic\Package.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -14,6 +14,7 @@ using CK.Setup;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace SqlActorPackage.Basic
 {
@@ -286,7 +287,7 @@ namespace SqlActorPackage.Basic
             object _cache;
 
             public int ActorId { get; set; }
-            
+
             public int SecurityZoneId { get; set; }
 
             #region ISqlCallContext Members
@@ -297,10 +298,10 @@ namespace SqlActorPackage.Basic
                 readonly SqlConnection _connection;
                 int _openCount;
 
-                public Controller(string connectionString)
+                public Controller( string connectionString )
                 {
                     ConnectionString = connectionString;
-                    _connection = new SqlConnection(connectionString);
+                    _connection = new SqlConnection( connectionString );
                 }
 
                 public SqlConnection Connection => _connection;
@@ -309,9 +310,9 @@ namespace SqlActorPackage.Basic
 
                 public void ExplicitClose()
                 {
-                    if (_openCount > 0)
+                    if( _openCount > 0 )
                     {
-                        if (--_openCount == 0)
+                        if( --_openCount == 0 )
                         {
                             _connection.Close();
                         }
@@ -320,10 +321,19 @@ namespace SqlActorPackage.Basic
 
                 public void ExplicitOpen()
                 {
-                    if (++_openCount == 1)
+                    if( ++_openCount == 1 )
                     {
                         _connection.Open();
                     }
+                }
+
+                public Task ExplicitOpenAsync()
+                {
+                    if( ++_openCount == 1 )
+                    {
+                        return _connection.OpenAsync();
+                    }
+                    return Task.CompletedTask;
                 }
 
                 public void Dispose()
@@ -332,34 +342,34 @@ namespace SqlActorPackage.Basic
                 }
             }
 
-            Controller GetProvider(string connectionString)
+            Controller GetProvider( string connectionString )
             {
                 Controller c;
-                if (_cache == null)
+                if( _cache == null )
                 {
-                    c = new Controller(connectionString);
+                    c = new Controller( connectionString );
                     _cache = c;
                     return c;
                 }
                 Controller newC;
                 c = _cache as Controller;
-                if (c != null)
+                if( c != null )
                 {
-                    if (c.ConnectionString == connectionString) return c;
-                    newC = new Controller(connectionString);
+                    if( c.ConnectionString == connectionString ) return c;
+                    newC = new Controller( connectionString );
                     _cache = new Controller[] { c, newC };
                 }
                 else
                 {
                     Controller[] cache = (Controller[])_cache;
-                    for (int i = 0; i < cache.Length; i++)
+                    for( int i = 0; i < cache.Length; i++ )
                     {
                         c = cache[i];
-                        if (c.ConnectionString == connectionString) return c;
+                        if( c.ConnectionString == connectionString ) return c;
                     }
                     Controller[] newCache = new Controller[cache.Length + 1];
-                    Array.Copy(cache, newCache, cache.Length);
-                    newC = new Controller(connectionString);
+                    Array.Copy( cache, newCache, cache.Length );
+                    newC = new Controller( connectionString );
                     newCache[cache.Length] = newC;
                     _cache = newCache;
                 }
@@ -370,14 +380,14 @@ namespace SqlActorPackage.Basic
 
             public void Dispose()
             {
-                if (_cache != null)
+                if( _cache != null )
                 {
                     Controller c = _cache as Controller;
-                    if (c != null) c.Dispose();
+                    if( c != null ) c.Dispose();
                     else
                     {
                         Controller[] cache = _cache as Controller[];
-                        for (int i = 0; i < cache.Length; ++i) cache[i].Dispose();
+                        for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
                     }
                     _cache = null;
                 }

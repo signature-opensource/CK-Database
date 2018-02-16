@@ -17,7 +17,7 @@ namespace CK.Setup
         /// <returns>
         /// Should return all the versions for all the <see cref="IDependentItem.FullName"/> previously installed.
         /// </returns>
-        IEnumerable<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor );
+        IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor );
 
         /// <summary>
         /// Called by the engine when the version is not found for the item

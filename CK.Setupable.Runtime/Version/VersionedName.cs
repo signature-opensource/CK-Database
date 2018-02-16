@@ -47,7 +47,7 @@ namespace CK.Setup
         /// <summary>
         /// Overridden to return the "FullName - Version".
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The FullName - Version.</returns>
         public override string ToString() => FullName + " - " + Version.ToString();
 
     }

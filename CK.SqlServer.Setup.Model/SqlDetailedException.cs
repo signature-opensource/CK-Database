@@ -24,6 +24,16 @@ namespace CK.SqlServer
         {
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDetailedException"/> on an inner <see cref="IOException"/>.
+        /// </summary>
+        /// <param name="message">Message for this exception.</param>
+        /// <param name="ex">Inner exception.</param>
+        public SqlDetailedException( string message, IOException ex )
+            : base( message, ex )
+        {
+        }
+
 #if NET461
         /// <summary>
         /// Serialization support.
@@ -37,49 +47,50 @@ namespace CK.SqlServer
 #endif
 
         /// <summary>
-        /// Creates a new SqlDetailedException with a message containing the call.
+        /// Creates a new SqlDetailedException with a message containing the call
+        /// when a <see cref="SqlException"/> is received.
         /// </summary>
         /// <param name="cmd">Command that generated the exception.</param>
         /// <param name="ex">The exception itself.</param>
-        /// <returns></returns>
-        static public SqlDetailedException Create( SqlCommand cmd, SqlException ex )
+        /// <param name="retryCount">Number of previous tries.</param>
+        /// <returns>The detailed exception.</returns>
+        static public SqlDetailedException Create( SqlCommand cmd, SqlException ex, int retryCount = 0 )
         {
-            return new SqlDetailedException( SqlHelper.CommandAsText( cmd ), ex );
+            return new SqlDetailedException( CreateMessage( cmd, retryCount ), ex );
         }
 
         /// <summary>
-        /// Executes a lambda and transforms any <see cref="SqlException"/> into a <see cref="SqlDetailedException"/>
-        /// thrown by the action.
+        /// Creates a new SqlDetailedException with a message containing the call
+        /// when an <see cref="IOException"/> is received.
         /// </summary>
-        /// <param name="cmd">The command to execute.</param>
-        /// <param name="action">The action that executes the command.</param>
-        static public void Catch( SqlCommand cmd, Action<SqlCommand> action )
+        /// <param name="cmd">Command that generated the exception.</param>
+        /// <param name="ex">The exception itself.</param>
+        /// <param name="retryCount">Number of previous tries.</param>
+        /// <returns>The detailed exception.</returns>
+        static public SqlDetailedException Create( SqlCommand cmd, IOException ex, int retryCount = 0 )
         {
-            try
+            return new SqlDetailedException( CreateMessage( cmd, retryCount ), ex );
+        }
+
+        static string CreateMessage( SqlCommand cmd, int retryCount)
+        {
+            string m = SqlHelper.CommandAsText( cmd );
+            if( retryCount > 0 )
             {
-                action( cmd );
+                m = $"[Retry n°{retryCount}] {m}";
             }
-            catch( SqlException ex )
-            {
-                throw Create( cmd, ex );
-            }
+            return m;
         }
 
         /// <summary>
-        /// Gets the <see cref="SqlException.Number"/>.
+        /// Gets the <see cref="SqlException"/> or null if it is not a SqlException.
         /// </summary>
-        public int Number
-        {
-            get { return InnerException.Number; }
-        }
+        public SqlException InnerSqlException => InnerException as SqlException;
 
         /// <summary>
-        /// Gets the inner exception that is necessarily a <see cref="SqlException"/>.
+        /// Gets the <see cref="SqlException"/> or null if it is not a SqlException.
         /// </summary>
-        public new SqlException InnerException
-        {
-            get { return (SqlException)base.InnerException; }
-        }
+        public IOException InnerIOException => InnerException as IOException;
 
     }
 }

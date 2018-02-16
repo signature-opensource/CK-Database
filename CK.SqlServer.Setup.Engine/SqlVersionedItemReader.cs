@@ -26,13 +26,12 @@ namespace CK.SqlServer.Setup
 
         internal readonly ISqlManager Manager;
 
-        void AutoInitialize()
+        public static void AutoInitialize( ISqlManager m )
         {
-            Debug.Assert( !_initialized );
-            var monitor = Manager.Monitor;
+            var monitor = m.Monitor;
             using( monitor.OpenTrace( "Installing SqlVersionedItemRepository store." ) )
             {
-                int ver = (int)Manager.ExecuteScalar( _scriptCreateAndGetVersion );
+                int ver = (int)(m.ExecuteScalar( _scriptCreateAndGetVersion ) ?? -1);
 
                 if( ver == CurrentVersion )
                 {
@@ -49,18 +48,22 @@ namespace CK.SqlServer.Setup
                     {
                         using( monitor.OpenInfo( $"Upgrading to Version = {ver}." ) )
                         {
-                            Manager.ExecuteNonQuery( _upgradeScripts[ver++] );
+                            m.ExecuteNonQuery( _upgradeScripts[ver++] );
                         }
                     }
-                    Manager.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
+                    m.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
                 }
-                _initialized = true;
             }
         }
 
-        public IEnumerable<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
+        public IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
         {
-            if( !_initialized ) AutoInitialize();
+            var result = new List<VersionedTypedName>();
+            if( !_initialized )
+            {
+                AutoInitialize( Manager );
+                _initialized = true;
+            }
             using( var c = new SqlCommand( "select FullName, ItemType, ItemVersion from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" ) { Connection = Manager.Connection } )
             using( var r = c.ExecuteReader() )
             {
@@ -72,9 +75,10 @@ namespace CK.SqlServer.Setup
                     {
                         throw new Exception( $"Unable to parse version for {fullName}: '{r.GetString(2)}'." );
                     }
-                    yield return new VersionedTypedName( fullName, r.GetString( 1 ), v );
+                    result.Add( new VersionedTypedName( fullName, r.GetString( 1 ), v ) );
                 }
             }
+            return result;
         }
 
         public VersionedName OnVersionNotFound( IVersionedItem item, Func<string, VersionedTypedName> originalVersions )

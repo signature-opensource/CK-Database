@@ -23,7 +23,7 @@ namespace CK.Setup
         /// a not null <see cref="VersionedName.Version"/> and a type.
         /// </summary>
         /// <param name="fullName">Name valid up to <see cref="Version"/>. It must be not null nor empty otherwise an exception is thrown.</param>
-        /// <param name="type">The item's <see cref="Type"/>.</param>
+        /// <param name="type">The item's <see cref="Type"/>. Must not be null or empty.</param>
         /// <param name="v">Version for the name. Must not be null.</param>
         public VersionedTypedName( string fullName, string type, Version v )
             : base( fullName, v )
@@ -42,7 +42,7 @@ namespace CK.Setup
         /// <summary>
         /// Overridden to return the "FullName - Version - Type".
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The FullName - Version - Type.</returns>
         public override string ToString() => FullName + " - " + Version.ToString() + " - " + Type;
 
     }
