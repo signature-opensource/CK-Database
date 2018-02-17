@@ -109,16 +109,16 @@ namespace CK.SqlServer
         /// <typeparam name="T">The result object type.</typeparam>
         /// <param name="this">This connection controller.</param>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="builder">The function that builds an object: called with a null <see cref="DataRow"/> when there is no result.</param>
+        /// <param name="builder">The function that builds an object: called with a null <see cref="SqlDataRow"/> when there is no result.</param>
         /// <returns>The built object.</returns>
-        public static T ExecuteSingleRow<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<DataRow, T> builder )
+        public static T ExecuteSingleRow<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlDataRow, T> builder )
         {
             T ReadRow( SqlCommand c )
             {
                 using( var r = c.ExecuteReader( CommandBehavior.SingleRow ) )
                 {
                     return r.Read()
-                            ? builder( new DataRow( r ) )
+                            ? builder( new SqlDataRow( r ) )
                             : builder( null );
                 }
             }
@@ -133,17 +133,17 @@ namespace CK.SqlServer
         /// <typeparam name="T">The result object type.</typeparam>
         /// <param name="this">This connection controller.</param>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="builder">The function that builds an object: called with a null <see cref="DataRow"/> when there is no result.</param>
+        /// <param name="builder">The function that builds an object: called with a null <see cref="SqlDataRow"/> when there is no result.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
         /// <returns>The built object.</returns>
-        public static Task<T> ExecuteSingleRowAsync<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<DataRow, T> builder, CancellationToken cancellationToken = default(CancellationToken) )
+        public static Task<T> ExecuteSingleRowAsync<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlDataRow, T> builder, CancellationToken cancellationToken = default(CancellationToken) )
         {
             async Task<T> ReadRowAsync( SqlCommand c, CancellationToken t )
             {
                 using( var r = await c.ExecuteReaderAsync( CommandBehavior.SingleRow, t ).ConfigureAwait( false ) )
                 {
                     return await r.ReadAsync( t ).ConfigureAwait( false )
-                            ? builder( new DataRow( r ) )
+                            ? builder( new SqlDataRow( r ) )
                             : builder( null );
                 }
             }
@@ -157,16 +157,16 @@ namespace CK.SqlServer
         /// <typeparam name="T">The result object type.</typeparam>
         /// <param name="this">This connection controller.</param>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="builder">The function that must build a <typeparamref name="T"/> for each <see cref="DataRow"/>.</param>
+        /// <param name="builder">The function that must build a <typeparamref name="T"/> for each <see cref="SqlDataRow"/>.</param>
         /// <returns>The built object.</returns>
-        public static List<T> ExecuteReader<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<DataRow, T> builder )
+        public static List<T> ExecuteReader<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlDataRow, T> builder )
         {
             List<T> ReadRows( SqlCommand c )
             {
                 var collector = new List<T>();
                 using( var r = c.ExecuteReader() )
                 {
-                    var row = new DataRow( r );
+                    var row = new SqlDataRow( r );
                     while( r.Read() )
                     {
                         collector.Add( builder( row ) );
@@ -184,17 +184,17 @@ namespace CK.SqlServer
         /// <typeparam name="T">The result object type.</typeparam>
         /// <param name="this">This connection controller.</param>
         /// <param name="cmd">The command to execute.</param>
-        /// <param name="builder">The function that must build a <typeparamref name="T"/> for each <see cref="DataRow"/>.</param>
+        /// <param name="builder">The function that must build a <typeparamref name="T"/> for each <see cref="SqlDataRow"/>.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
         /// <returns>The list of built object.</returns>
-        public static Task<List<T>> ExecuteReaderAsync<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<DataRow, T> builder, CancellationToken cancellationToken = default( CancellationToken ) )
+        public static Task<List<T>> ExecuteReaderAsync<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlDataRow, T> builder, CancellationToken cancellationToken = default( CancellationToken ) )
         {
             async Task<List<T>> ReadRowsAsync( SqlCommand c, CancellationToken t )
             {
                 var collector = new List<T>();
                 using( var r = await c.ExecuteReaderAsync( t ).ConfigureAwait( false ) )
                 {
-                    var row = new DataRow( r );
+                    var row = new SqlDataRow( r );
                     while( await r.ReadAsync( t ).ConfigureAwait( false ) )
                     {
                         collector.Add( builder( row ) );

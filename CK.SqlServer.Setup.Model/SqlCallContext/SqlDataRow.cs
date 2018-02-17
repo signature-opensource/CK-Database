@@ -16,7 +16,7 @@ namespace CK.SqlServer
     /// through it.
     /// Adds helpers like <see cref="GetBytes(int)"/> or <see cref="GetValues()"/>.
     /// </summary>
-    public class DataRow 
+    public class SqlDataRow 
     {
         readonly SqlDataReader _r;
 
@@ -24,7 +24,7 @@ namespace CK.SqlServer
         /// Initialize a new row on a <see cref="SqlDataReader"/>.
         /// </summary>
         /// <param name="reader">The reader (can not be null).</param>
-        public DataRow( SqlDataReader reader )
+        public SqlDataRow( SqlDataReader reader )
         {
             if( reader == null ) throw new ArgumentNullException( nameof( reader ) );
             _r = reader;
