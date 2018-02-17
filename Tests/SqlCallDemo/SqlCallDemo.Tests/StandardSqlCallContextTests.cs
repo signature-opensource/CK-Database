@@ -11,38 +11,31 @@ namespace SqlCallDemo.Tests
     public class StandardSqlCallContextTests
     {
         [Test]
-        public void exec_throws_what_builder_function_throws()
-        {
-            AsyncCallCatch<IndexOutOfRangeException>( "select 1;", command => (int)command.Parameters[0].Value );
-            AsyncCallCatch<InvalidCastException>( "select 1;", command => (int)(object)DBNull.Value );
-        }
-
-        [Test]
         public void exec_SqlCommand_throws_a_SqlDetailedException_when_a_SqlException_is_thrown()
         {
-            AsyncCallCatch<SqlDetailedException>( "select * frome kexistepas;", command => 3 );
+            AsyncCallCatch<SqlDetailedException>( "select * frome kexistepas;" );
         }
 
         [Test]
         public void exec_throws_ArgumentException_when_connection_string_is_syntax_invalid()
         {
-            AsyncCallCatch<ArgumentException>( "select 1;", command => 3, "%not a connection string at all%" );
+            AsyncCallCatch<ArgumentException>( "select 1;", "%not a connection string at all%" );
         }
 
         [Test]
         public void exec_throws_SqlDetailedException_when_database_does_not_exist()
         {
-            AsyncCallCatch<SqlDetailedException>( "select 1;", command => 3, TestHelper.GetConnectionString( "kexistepas-db" ) );
+            AsyncCallCatch<SqlDetailedException>( "select 1;", TestHelper.GetConnectionString( "kexistepas-db" ) );
         }
 
         [Test]
         [Explicit( "When trying to resolve a bad server name it takes a loooooooong time." )]
         public void exec_throws_SqlDetailedException_when_server_does_not_exist()
         {
-            AsyncCallCatch<SqlDetailedException>( "select 1;", command => 3, "Server=serverOfNothing;Database=ThisIsNotADatabase;Integrated Security=SSPI" );
+            AsyncCallCatch<SqlDetailedException>( "select 1;", "Server=serverOfNothing;Database=ThisIsNotADatabase;Integrated Security=SSPI" );
         }
 
-        void AsyncCallCatch<TException>( string cmd, Func<SqlCommand,int> resultBuilder, string connectionString = null )
+        void AsyncCallCatch<TException>( string cmd, string connectionString = null )
         {
             using( IDisposableSqlCallContext c = new SqlStandardCallContext() )
             using( var command = new SqlCommand( cmd ) )
@@ -51,12 +44,12 @@ namespace SqlCallDemo.Tests
                 {
                     // If the asynchronous process is lost (if the exception is not correctly managed),
                     // this test will fail with a task Cancelled exception after:
-                    // - 20 second when testing for connection string.... because when trying to resolve a bad server name it takes a loooooooong time.
+                    // - 30 second when testing for connection string.... because when trying to resolve a bad server name it takes a loooooooong time.
                     // - 1 second in other cases.
                     CancellationTokenSource source = new CancellationTokenSource();
                     source.CancelAfter( connectionString == null ? 1000 : 30*1000 );
                     c.Executor
-                        .ExecuteNonQueryAsyncTyped( connectionString ?? TestHelper.GetConnectionString(), command, resultBuilder, source.Token )
+                        .ExecuteNonQueryAsync( connectionString ?? TestHelper.GetConnectionString(), command, source.Token )
                         .Wait();
                 }
                 catch( AggregateException ex )

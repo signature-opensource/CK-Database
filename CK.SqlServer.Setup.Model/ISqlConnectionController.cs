@@ -44,5 +44,7 @@ namespace CK.SqlServer
         /// is never negative).
         /// </summary>
         void ExplicitClose();
+
+
     }
 }

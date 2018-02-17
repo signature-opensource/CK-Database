@@ -188,18 +188,18 @@ namespace CK.SqlServer
             return ExecuteSync( connectionString, cmd, c => c.ExecuteScalar() );
         }
 
-        void ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
+        int ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
         {
-            ExecuteSync( connectionString, cmd, c => c.ExecuteNonQuery() );
+            return ExecuteSync( connectionString, cmd, c => c.ExecuteNonQuery() );
         }
 
-        object ExecuteSync( string connectionString, SqlCommand cmd, Func<SqlCommand, object> executor )
+        T ExecuteSync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> executor )
         {
             DateTime start = DateTime.UtcNow;
             int retryCount = 0;
             List<SqlDetailedException> previous = null;
             ISqlConnectionController c = GetConnectionController( connectionString );
-            object result;
+            T result;
             for(; ; )
             {
                 SqlDetailedException e = null;
@@ -239,7 +239,7 @@ namespace CK.SqlServer
             return result;
         }
 
-        Task ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
+        Task<int> ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
         {
             return ExecuteAsync( connectionString, cmd, ( c, t ) => c.ExecuteNonQueryAsync( t ), cancellationToken );
         }
@@ -249,13 +249,13 @@ namespace CK.SqlServer
             return ExecuteAsync( connectionString, cmd, ( c, t ) => c.ExecuteScalarAsync( t ), cancellationToken );
         }
 
-        async Task<object> ExecuteAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> executor, CancellationToken cancellationToken )
+        async Task<T> ExecuteAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> executor, CancellationToken cancellationToken )
         {
             DateTime start = DateTime.UtcNow;
             int retryCount = 0;
             List<SqlDetailedException> previous = null;
             ISqlConnectionController c = GetConnectionController( connectionString );
-            object result;
+            T result;
             for(; ; )
             {
                 SqlDetailedException e = null;
@@ -293,18 +293,6 @@ namespace CK.SqlServer
             }
             OnCommandExecuted( cmd, retryCount, result );
             return result;
-        }
-
-        async Task<T> ISqlCommandExecutor.ExecuteNonQueryAsyncTyped<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> resultBuilder, CancellationToken cancellationToken )
-        {
-            Func<SqlCommand, CancellationToken, Task<T>> adapter;
-            adapter = async ( c, t ) =>
-            {
-                await c.ExecuteNonQueryAsync( t );
-                return resultBuilder( c );
-            };
-            var obj = await ExecuteAsync( connectionString, cmd, adapter, cancellationToken );
-            return (T)obj;
         }
 
         /// <summary>
@@ -345,7 +333,6 @@ namespace CK.SqlServer
             SqlDetailedException ex,
             IReadOnlyList<SqlDetailedException> previous,
             DateTime firstExecutionTimeUtc ) => TimeSpan.MaxValue;
-
-
     }
+
 }
