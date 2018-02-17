@@ -11,7 +11,7 @@ namespace CK.SqlServer
     {
         /// <summary>
         /// Gets the connection controller to use for a given connection string.
-        /// This is simply a more explicit call to the actual indexer: <see cref="P:ISqlCallContext.Item(string)"/>.
+        /// This is simply a more explicit call to the actual indexer: <see cref="ISqlCallContext.this[string]"/>.
         /// </summary>
         /// <param name="this">This Sql call context.</param>
         /// <param name="connectionString">The connection string.</param>
@@ -20,7 +20,7 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Gets the connection controller to use for a given connection string provider.
-        /// This is simply a more explicit call to the actual indexer: <see cref="P:ISqlCallContext.Item(ISqlConnectionStringProvider)"/>.
+        /// This is simply a more explicit call to the actual indexer: <see cref="ISqlCallContext.this[ISqlConnectionStringProvider]"/>.
         /// </summary>
         /// <param name="this">This Sql call context.</param>
         /// <param name="provider">The connection string provider.</param>
