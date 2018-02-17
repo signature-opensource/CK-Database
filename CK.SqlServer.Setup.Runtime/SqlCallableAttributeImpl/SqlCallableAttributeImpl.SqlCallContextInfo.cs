@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlCallContextInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using CK.Core;
@@ -28,11 +21,18 @@ namespace CK.SqlServer.Setup
         /// </summary>
         class SqlCallContextInfo
         {
+            enum GenerateCallType
+            {
+                None,
+                ExecuteNonQuery,
+                ExecuteNonQueryAsync,
+                FuncBuilderHelper
+            }
+
             readonly GenerationType _gType;
             readonly List<Property> _props;
-            readonly Type _returnedType;
             readonly ParameterInfo _cancellationTokenParam;
-            readonly MethodInfo _executorCallNonQuery;
+            readonly GenerateCallType _generateCallType;
             readonly string _sourceExecutorCallNonQuery;
 
             // Only the first one that supports ISqlCommandExecutor interests us. 
@@ -76,21 +76,20 @@ namespace CK.SqlServer.Setup
                     if( returnedType == typeof(Task) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
-                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsync;
-                        _returnedType = typeof(void);
+                        _generateCallType = GenerateCallType.ExecuteNonQueryAsync;
                         _sourceExecutorCallNonQuery = "ExecuteNonQueryAsync";
                     }
-                    else if( returnedType.GetTypeInfo().IsGenericType && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
+                    else if( returnedType.GetTypeInfo().IsGenericType
+                             && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
-                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQueryAsyncTyped;
-                        _returnedType = returnedType.GetGenericArguments()[0];
-                        _sourceExecutorCallNonQuery = $"ExecuteNonQueryAsyncTyped<{_returnedType.ToCSharpName(true)}>";
+                        var ret = returnedType.GetGenericArguments()[0];
+                        _generateCallType = GenerateCallType.FuncBuilderHelper;
+                        _sourceExecutorCallNonQuery = $"FuncBuilderHelper<{ret.ToCSharpName(true)}>";
                     }
                     else
                     {
-                        _executorCallNonQuery = SqlObjectItem.MExecutorCallNonQuery;
-                        _returnedType = returnedType;
+                        _generateCallType = GenerateCallType.ExecuteNonQuery;
                         _sourceExecutorCallNonQuery = "ExecuteNonQuery";
                     }
                 }
@@ -131,7 +130,7 @@ namespace CK.SqlServer.Setup
                         if( typeof( ISqlCommandExecutor ).IsAssignableFrom( param.ParameterType ) )
                         {
                             _sqlCommandExecutorParameter = param;
-                            monitor.Trace( $"Planning to use parameter '{param.Name}' {_executorCallNonQuery.Name} method." );
+                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}' itself." );
                             _sourceExecutor = $"((CK.SqlServer.ISqlCommandExecutor){param.Name})";
                             return true;
                         }
@@ -140,7 +139,7 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = pE.GetGetMethod();
-                            monitor.Trace( $"Planning to use parameter '{param.Name}.Executor' property {_executorCallNonQuery.Name} method." );
+                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}.Executor' property." );
                             _sourceExecutor = $"{param.Name}.Executor";
                             return true;
                         }
@@ -152,7 +151,7 @@ namespace CK.SqlServer.Setup
                         {
                             _sqlCommandExecutorParameter = param;
                             _sqlCommandExecutorMethodGetter = mE;
-                            monitor.Trace( $"Planning to use parameter '{param.Name}.GetExecutor()' method {_executorCallNonQuery.Name} method." );
+                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}.GetExecutor()' method." );
                             _sourceExecutor = $"{param.Name}.GetExecutor()";
                             return true;
                         }
@@ -184,12 +183,12 @@ namespace CK.SqlServer.Setup
             /// Gets whether a Func{SqlCommand,T} is required to call the procedure.
             /// It is necessarily an async call (for synchronous calls, the return code is inlined).
             /// </summary>
-            public bool RequiresReturnTypeBuilder => _executorCallNonQuery == SqlObjectItem.MExecutorCallNonQueryAsyncTyped; 
+            public bool RequiresReturnTypeBuilder => _generateCallType == GenerateCallType.FuncBuilderHelper; 
 
             /// <summary>
             /// Gets whether this is an asynchronous call.
             /// </summary>
-            public bool IsAsyncCall => _executorCallNonQuery != null && _executorCallNonQuery != SqlObjectItem.MExecutorCallNonQuery; 
+            public bool IsAsyncCall => _generateCallType == GenerateCallType.ExecuteNonQueryAsync || _generateCallType == GenerateCallType.FuncBuilderHelper; 
 
             public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {

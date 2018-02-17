@@ -124,7 +124,7 @@ namespace CK.Core
             ForceAppContextAssemblyGeneration = string.Equals( e.Element( XmlNames.ForceAppContextAssemblyGeneration )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
             InformationalVersion = e.Element( XmlNames.InformationalVersion )?.Value;
-            GenerateSourceFiles = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            GenerateSourceFiles = string.Equals( e.Element( XmlNames.GenerateSourceFiles )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();

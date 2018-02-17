@@ -147,11 +147,6 @@ namespace CK.SqlServer.Setup
         internal readonly static Type TypeCommand = typeof( SqlCommand );
         internal readonly static Type TypeConnection = typeof( SqlConnection );
         internal readonly static Type TypeTransaction = typeof( SqlTransaction );
-
-        internal readonly static MethodInfo MExecutorCallNonQuery = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQuery" );
-        internal readonly static MethodInfo MExecutorCallNonQueryAsync = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsync" );
-        internal readonly static MethodInfo MExecutorCallNonQueryAsyncTyped = typeof( ISqlCommandExecutor ).GetMethod( "ExecuteNonQueryAsyncTyped" );
-
         #endregion
 
     }

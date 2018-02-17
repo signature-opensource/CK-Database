@@ -505,7 +505,19 @@ namespace CK.SqlServer.Setup
                 if( fieldFullName == null )
                 {
                     ITypeScope t = dynamicAssembly.DefaultGenerationNamespace.FindType( "_build_func_" );
-                    if( t == null ) t = dynamicAssembly.DefaultGenerationNamespace.CreateType( "static class _build_func_" );
+                    if( t == null )
+                    {
+                        t = dynamicAssembly.DefaultGenerationNamespace.CreateType( "static class _build_func_" );
+                        t.CreateFunction(
+                            @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelper<T>(
+                                this CK.SqlServer.ISqlCommandExecutor @this,
+                                string connectionString,
+                                System.Data.SqlClient.SqlCommand cmd,
+                                Func < System.Data.SqlClient.SqlCommand, T > resultBuilder,
+                                System.Threading.CancellationToken cancellationToken )" )
+                          .Append( "await @this.ExecuteNonQueryAsync( connectionString, cmd, cancellationToken );" )
+                          .Append( "return resultBuilder( cmd );" );
+                    }
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();
                     string fieldName = "_" + funcName;
                     string tFuncReturnType = _unwrappedReturnedType.ToCSharpName();
