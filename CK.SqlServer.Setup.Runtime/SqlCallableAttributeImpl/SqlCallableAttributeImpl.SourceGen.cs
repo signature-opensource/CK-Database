@@ -121,6 +121,7 @@ namespace CK.SqlServer.Setup
             ITypeScope tB,
             bool hasRefSqlCommand )
         {
+            tB.Namespace.EnsureUsing( "CK.SqlServer" );
             int nbError = 0;
             List<ParameterInfo> extraMethodParameters = null;
             IFunctionScope cB = tB.CreateOverride( m );
@@ -205,14 +206,14 @@ namespace CK.SqlServer.Setup
                             extraMethodParameters.Add( mP );
                         }
                         // If the parameter is a parameter source, we register it.
-                        bool isParameterSourceOrCommandExecutor = sqlCallContexts.AddParameterSourceAndSqlCommandExecutor( mP, monitor, dynamicAssembly.GetPocoInfo() );
+                        bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoInfo() );
 
                         if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {
                             monitor.Error( $"Parameter '{mP.Name}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task)." );
                             ++nbError;
                         }
-                        else if( !isParameterSourceOrCommandExecutor
+                        else if( !isParameterSourceOrCallContext
                                  && !(sqlParamHandlers.IsAsyncCall && mP.ParameterType == typeof( CancellationToken ))
                                  && gType != GenerationType.ReturnWrapper )
                         {
@@ -242,8 +243,7 @@ namespace CK.SqlServer.Setup
                     if( !handler.IsMappedToMethodParameterOrParameterSourceProperty )
                     {
                         var sqlP = handler.SqlExprParam;
-                        if( sqlCallContexts == null
-                            || !sqlCallContexts.MatchPropertyToSqlParameter( handler, monitor ) )
+                        if( !sqlCallContexts.MatchPropertyToSqlParameter( handler, monitor ) )
                         {
                             if( sqlP.DefaultValue == null )
                             {
@@ -353,9 +353,9 @@ namespace CK.SqlServer.Setup
             }
             else if( (gType & GenerationType.IsCall) != 0 )
             {
-                if( sqlCallContexts == null || sqlCallContexts.SqlCommandExecutorParameter == null )
+                if( sqlCallContexts.SqlCommandExecutorParameter == null )
                 {
-                    monitor.Error( $"When calling with {gType}, at least one ISqlCallContext object must be or exposes a ISqlCommandExecutor." );
+                    monitor.Error( $"When calling with {gType}, at least one parameter must be a ISqlCallContext." );
                     ++nbError;
                 }
                 else if( nbError == 0 )

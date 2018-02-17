@@ -17,12 +17,6 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public void exec_throws_ArgumentException_when_connection_string_is_syntax_invalid()
-        {
-            AsyncCallCatch<ArgumentException>( "select 1;", "%not a connection string at all%" );
-        }
-
-        [Test]
         public void exec_throws_SqlDetailedException_when_database_does_not_exist()
         {
             AsyncCallCatch<SqlDetailedException>( "select 1;", TestHelper.GetConnectionString( "kexistepas-db" ) );

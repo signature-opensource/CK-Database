@@ -35,10 +35,8 @@ namespace CK.SqlServer.Setup
             readonly GenerateCallType _generateCallType;
             readonly string _sourceExecutorCallNonQuery;
 
-            // Only the first one that supports ISqlCommandExecutor interests us. 
-            ParameterInfo _sqlCommandExecutorParameter;
-            MethodInfo _sqlCommandExecutorMethodGetter;
-            string _sourceExecutor;
+            // Only the first one that supports ISqlCallContext interests us. 
+            ParameterInfo _sqlCallContextParameter;
 
             public class Property
             {
@@ -95,14 +93,14 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public bool AddParameterSourceAndSqlCommandExecutor( ParameterInfo param, IActivityMonitor monitor, IPocoSupportResult poco )
+            public bool AddParameterSourceOrSqlCallContext( ParameterInfo param, IActivityMonitor monitor, IPocoSupportResult poco )
             {
                 TypeInfo paramTypeInfo = param.ParameterType.GetTypeInfo();
                 if( paramTypeInfo.IsValueType || typeof( string ).IsAssignableFrom( param.ParameterType ) ) return false;
 
                 bool isParameterSource = param.GetCustomAttribute<ParameterSourceAttribute>() != null;
                 bool isParameterSourcePoco = isParameterSource && typeof( IPoco ).IsAssignableFrom( param.ParameterType );
-                bool needExecutor = !isParameterSourcePoco && ( _gType & GenerationType.IsCall) != 0 && _sqlCommandExecutorParameter == null;
+                bool needExecutor = !isParameterSourcePoco && ( _gType & GenerationType.IsCall) != 0 && _sqlCallContextParameter == null;
                 if( isParameterSource || needExecutor )
                 {
                     Type pocoMappedType = null;
@@ -126,33 +124,10 @@ namespace CK.SqlServer.Setup
                     }
                     if( needExecutor )
                     {
-                        Debug.Assert( _gType == GenerationType.ExecuteNonQuery );
-                        if( typeof( ISqlCommandExecutor ).IsAssignableFrom( param.ParameterType ) )
+                        if( typeof( ISqlCallContext ).IsAssignableFrom( param.ParameterType ) )
                         {
-                            _sqlCommandExecutorParameter = param;
-                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}' itself." );
-                            _sourceExecutor = $"((CK.SqlServer.ISqlCommandExecutor){param.Name})";
-                            return true;
-                        }
-                        PropertyInfo pE = allProperties.Select( p => p.Prop ).FirstOrDefault( p => p.Name == "Executor" && typeof( ISqlCommandExecutor ).IsAssignableFrom( p.PropertyType ) );
-                        if( pE != null )
-                        {
-                            _sqlCommandExecutorParameter = param;
-                            _sqlCommandExecutorMethodGetter = pE.GetGetMethod();
-                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}.Executor' property." );
-                            _sourceExecutor = $"{param.Name}.Executor";
-                            return true;
-                        }
-                        var methods = paramTypeInfo.IsInterface 
-                                        ? ReflectionHelper.GetFlattenMethods( param.ParameterType ) 
-                                        : param.ParameterType.GetMethods();
-                        MethodInfo mE = methods.FirstOrDefault( m => m.Name == "GetExecutor" && m.GetParameters().Length == 0 && typeof( ISqlCommandExecutor ).IsAssignableFrom( m.ReturnType ) );
-                        if( mE != null )
-                        {
-                            _sqlCommandExecutorParameter = param;
-                            _sqlCommandExecutorMethodGetter = mE;
-                            monitor.Debug( $"ISqlCommandExecutor: using parameter '{param.Name}.GetExecutor()' method." );
-                            _sourceExecutor = $"{param.Name}.GetExecutor()";
+                            monitor.Debug( $"ISqlCallContext: using parameter '{param.Name}'." );
+                            _sqlCallContextParameter = param;
                             return true;
                         }
                     }
@@ -177,7 +152,7 @@ namespace CK.SqlServer.Setup
             /// Gets the parameter that must support the call (when GenerationType.IsCall is set).
             /// Null if not found or if we are not generating call.
             /// </summary>
-            public ParameterInfo SqlCommandExecutorParameter => _sqlCommandExecutorParameter; 
+            public ParameterInfo SqlCommandExecutorParameter => _sqlCallContextParameter; 
 
             /// <summary>
             /// Gets whether a Func{SqlCommand,T} is required to call the procedure.
@@ -192,10 +167,10 @@ namespace CK.SqlServer.Setup
 
             public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {
-                b.Append( _sourceExecutor )
-                    .Append( "." )
+                b.Append( _sqlCallContextParameter.Name )
+                    .Append( "[Database]." )
                     .Append( _sourceExecutorCallNonQuery )
-                    .Append( "(Database.ConnectionString," )
+                    .Append( "(" )
                     .Append( varCommandName );
                 if( resultBuilderName != null )
                 {

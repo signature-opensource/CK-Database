@@ -35,7 +35,7 @@ namespace CK.SqlServer
         /// <param name="connection">The connection.</param>
         /// <param name="cmd">The command to execute.</param>
         /// <param name="innerExecutor">The actual executor (asynchronous).</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The result of the call built by <paramref name="innerExecutor"/>.</returns>
         Task<T> ExecuteQueryAsync<T>( IActivityMonitor monitor, SqlConnection connection, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> innerExecutor, CancellationToken cancellationToken );
 

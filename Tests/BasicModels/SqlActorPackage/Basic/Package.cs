@@ -327,9 +327,6 @@ namespace SqlActorPackage.Basic
         [SqlProcedureNoExecute( "sBasicProcedureWithAuth" )]
         public abstract OutputCmd<string> CallWithAuth( [ParameterSource]IBasicAuthContext c, int index, string name );
 
-        //[SqlProcedureNoExecute( "sBasicProcedureWithAuth" )]
-        //public abstract OutputCmd<T> CallWithAuth<T>( [ParameterSource]IAuthContext c, int index, string name, out string result );
-
         #endregion
     }
 }

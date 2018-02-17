@@ -510,12 +510,11 @@ namespace CK.SqlServer.Setup
                         t = dynamicAssembly.DefaultGenerationNamespace.CreateType( "static class _build_func_" );
                         t.CreateFunction(
                             @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelper<T>(
-                                this CK.SqlServer.ISqlCommandExecutor @this,
-                                string connectionString,
-                                System.Data.SqlClient.SqlCommand cmd,
-                                Func < System.Data.SqlClient.SqlCommand, T > resultBuilder,
+                                this ISqlConnectionController @this,
+                                SqlCommand cmd,
+                                Func<SqlCommand, T> resultBuilder,
                                 System.Threading.CancellationToken cancellationToken )" )
-                          .Append( "await @this.ExecuteNonQueryAsync( connectionString, cmd, cancellationToken );" )
+                          .Append( "await @this.ExecuteNonQueryAsync( cmd, cancellationToken );" )
                           .Append( "return resultBuilder( cmd );" );
                     }
                     string funcName = 'f' + dynamicAssembly.NextUniqueNumber();

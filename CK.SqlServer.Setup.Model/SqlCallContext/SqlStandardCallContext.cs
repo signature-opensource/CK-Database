@@ -193,7 +193,7 @@ namespace CK.SqlServer
         /// </summary>
         /// <param name="provider">The connection string provider.</param>
         /// <returns>The connection controller to use.</returns>
-        public ISqlConnectionController this[ISqlConnectionStringProvider p] => GetProvider( p.ConnectionString );
+        public ISqlConnectionController this[ISqlConnectionStringProvider provider] => GetProvider( provider.ConnectionString );
 
         T ISqlCommandExecutor.ExecuteQuery<T>( IActivityMonitor monitor, SqlConnection connection, SqlCommand cmd, Func<SqlCommand, T> innerExecutor )
         {

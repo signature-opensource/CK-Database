@@ -13,6 +13,38 @@ namespace CK.SqlServer
     /// </summary>
     public static class SqlConnectionControllerExtension
     {
+
+        /// <summary>
+        /// Executes the given command synchronously, relying on a function to handle the actual command
+        /// execution and result construction.
+        /// </summary>
+        /// <typeparam name="T">Type of the returned object.</typeparam>
+        /// <param name="this">This connection controller.</param>
+        /// <param name="cmd">The command to execute.</param>
+        /// <param name="innerExecutor">The actual executor.</param>
+        /// <returns>The result of the call built by <paramref name="innerExecutor"/>.</returns>
+        public static T ExecuteQuery<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlCommand, T> innerExecutor )
+        {
+            var ctx = @this.SqlCallContext;
+            return ctx.Executor.ExecuteQuery( ctx.Monitor, @this.Connection, cmd, innerExecutor );
+        }
+
+        /// <summary>
+        /// Executes the given command asynchronously, relying on a function to handle the actual command
+        /// execution and result construction.
+        /// </summary>
+        /// <typeparam name="T">Type of the returned object.</typeparam>
+        /// <param name="this">This connection controller.</param>
+        /// <param name="cmd">The command to execute.</param>
+        /// <param name="innerExecutor">The actual executor (asynchronous).</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>The result of the call built by <paramref name="innerExecutor"/>.</returns>
+        public static Task<T> ExecuteQueryAsync<T>( this ISqlConnectionController @this, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> innerExecutor, CancellationToken cancellationToken = default( CancellationToken ) )
+        {
+            var ctx = @this.SqlCallContext;
+            return ctx.Executor.ExecuteQueryAsync( ctx.Monitor, @this.Connection, cmd, innerExecutor, cancellationToken );
+        }
+
         /// <summary>
         /// Executes the given command.
         /// </summary>
@@ -132,7 +164,7 @@ namespace CK.SqlServer
             List<T> ReadRows( SqlCommand c )
             {
                 var collector = new List<T>();
-                using( var r = c.ExecuteReader( CommandBehavior.SingleRow ) )
+                using( var r = c.ExecuteReader() )
                 {
                     while( r.Read() )
                     {
@@ -159,7 +191,7 @@ namespace CK.SqlServer
             async Task<List<T>> ReadRowsAsync( SqlCommand c, CancellationToken t )
             {
                 var collector = new List<T>();
-                using( var r = await c.ExecuteReaderAsync( CommandBehavior.SingleRow, t ).ConfigureAwait( false ) )
+                using( var r = await c.ExecuteReaderAsync( t ).ConfigureAwait( false ) )
                 {
                     while( await r.ReadAsync( t ).ConfigureAwait( false ) )
                     {

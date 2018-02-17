@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -26,12 +26,6 @@ namespace SqlCallDemo
 
         [SqlProcedure( "sIntReturn" )]
         public abstract Task<int> IntReturnAsync( SqlStandardCallContext ctx, int? v );
-
-        [SqlProcedure( "sIntReturnWithActor" )]
-        public abstract int IntReturnWithActor( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
-
-        [SqlProcedure( "sIntReturnWithActor" )]
-        public abstract Task<int> IntReturnWithActorAsync( [ParameterSource]IActorCallContextIsExecutor ctx, string def = "5" );
 
         [SqlProcedure( "sIntReturnWithActor" )]
         public abstract int IntReturnWithActor( [ParameterSource]IActorCallContext ctx, string def = "5" );

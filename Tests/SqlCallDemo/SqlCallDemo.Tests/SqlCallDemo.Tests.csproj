@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="bin\Debug\net461\" />
+  </ItemGroup>
+
 </Project>
