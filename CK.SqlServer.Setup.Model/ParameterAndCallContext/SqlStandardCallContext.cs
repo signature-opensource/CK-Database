@@ -20,28 +20,44 @@ namespace CK.SqlServer
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methods in order to avoid interface pollution
-    /// when this object exposes parameter values.
+    /// This class directly implements <see cref="ISqlCommandExecutor"/> interface but with explicit methods in
+    /// order to avoid interface pollution. If an executor is provided in the constuctor, the protected <see cref="OnCommandExecuting"/>,
+    /// <see cref="OnCommandExecuted"/> and <see cref="OnCommandError"/> are no more called: it is up to the provided
+    /// executor to fully handle command execution.
     /// </para>
     /// <para>
-    /// The <see cref="ISqlConnectionController"/> that are created by <see cref="ISqlCommandExecutor.GetProvider"/> are cached
-    /// and reused until <see cref="Dispose"/> is called.
+    /// The <see cref="ISqlConnectionController"/> are cached and reused until <see cref="Dispose"/> is called:
+    /// when disposing this context any opened connection are closed (and disposed).
     /// </para>
     /// </remarks>
     public class SqlStandardCallContext : IDisposableSqlCallContext, ISqlCommandExecutor
     {
         object _cache;
+        readonly ISqlCommandExecutor _executor;
         IActivityMonitor _monitor;
         readonly bool _ownedMonitor;
 
         /// <summary>
-        /// Initializes a new <see cref="SqlStandardCallContext"/> that may be bound to an existing monitor.
+        /// Initializes a new <see cref="SqlStandardCallContext"/> that may be bound to an existing monitor
+        /// or to a command executor. 
+        /// <para>
+        /// If a <paramref name="executor"/> is provided, the protected <see cref="OnCommandExecuting"/>,
+        /// <see cref="OnCommandExecuted"/> and <see cref="OnCommandError"/> are no more called: it is up to
+        /// the external executor to fully handle command execution.
+        /// </para>
         /// </summary>
-        /// <param name="monitor">Optional monitor to use. When null, a new <see cref="ActivityMonitor"/> will be created when <see cref="Monitor"/> property is accessed.</param>
-        public SqlStandardCallContext( IActivityMonitor monitor = null )
+        /// <param name="monitor">
+        /// Optional monitor to use. When null, a new <see cref="ActivityMonitor"/> will be created
+        /// when <see cref="Monitor"/> property is accessed.
+        /// </param>
+        /// <param name="executor">
+        /// Optional command executor to which all command execution will be forwarded.
+        /// </param>
+        public SqlStandardCallContext( IActivityMonitor monitor = null, ISqlCommandExecutor executor = null )
         {
             _ownedMonitor = monitor == null;
             _monitor = monitor;
+            _executor = executor ?? this;
         }
 
         /// <summary>
@@ -49,7 +65,7 @@ namespace CK.SqlServer
         /// </summary>
         public IActivityMonitor Monitor => _monitor ?? (_monitor = new ActivityMonitor());
 
-        ISqlCommandExecutor ISqlCallContext.Executor => this;
+        ISqlCommandExecutor ISqlCallContext.Executor => _executor;
 
         /// <summary>
         /// Disposes any cached <see cref="SqlConnection"/>. 
@@ -92,6 +108,8 @@ namespace CK.SqlServer
             public SqlConnection Connection => _connection;
 
             public int ExplicitOpenCount => _openCount;
+
+            public ISqlCallContext SqlCallContext => _ctx;
 
             public void ExplicitClose()
             {
@@ -162,55 +180,38 @@ namespace CK.SqlServer
         }
 
         /// <summary>
-        /// Gets the connection to use for a given connection string.
+        /// Gets the connection controller to use for a given connection string.
+        /// This controller is cached for any new connection string.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
-        /// <returns>The SqlConnection to use that may be already opened.</returns>
-        public SqlConnection this[string connectionString] => GetProvider( connectionString ).Connection;
+        /// <returns>The connection controller to use.</returns>
+        public ISqlConnectionController this[string connectionString] => GetProvider( connectionString );
 
         /// <summary>
-        /// Gets the connection to use given a connection string provider.
+        /// Gets the connection controller to use for a given connection string provider.
+        /// This controller is cached for any new connection string.
         /// </summary>
-        /// <param name="p">The provider of the connection string.</param>
-        /// <returns>The SqlConnection to use that may be already opened.</returns>
-        public SqlConnection this[ISqlConnectionStringProvider p] => GetProvider( p.ConnectionString ).Connection;
+        /// <param name="provider">The connection string provider.</param>
+        /// <returns>The connection controller to use.</returns>
+        public ISqlConnectionController this[ISqlConnectionStringProvider p] => GetProvider( p.ConnectionString );
 
-        /// <summary>
-        /// Gets the contoller of a connection that can be use to pre open 
-        /// the connection instead of relying on local open/close.
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <returns>The controller for the connection.</returns>
-        public ISqlConnectionController GetConnectionController( string connectionString ) => GetProvider( connectionString );
-
-        object ISqlCommandExecutor.ExecuteScalar( string connectionString, SqlCommand cmd )
-        {
-            return ExecuteSync( connectionString, cmd, c => c.ExecuteScalar() );
-        }
-
-        int ISqlCommandExecutor.ExecuteNonQuery( string connectionString, SqlCommand cmd )
-        {
-            return ExecuteSync( connectionString, cmd, c => c.ExecuteNonQuery() );
-        }
-
-        T ExecuteSync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, T> executor )
+        T ISqlCommandExecutor.ExecuteQuery<T>( IActivityMonitor monitor, SqlConnection connection, SqlCommand cmd, Func<SqlCommand, T> innerExecutor )
         {
             DateTime start = DateTime.UtcNow;
             int retryCount = 0;
             List<SqlDetailedException> previous = null;
-            ISqlConnectionController c = GetConnectionController( connectionString );
             T result;
             for(; ; )
             {
                 SqlDetailedException e = null;
                 try
                 {
-                    using( c.Connection.EnsureOpen() )
+                    using( connection.EnsureOpen() )
                     {
-                        cmd.Connection = c.Connection;
+                        cmd.Connection = connection;
                         OnCommandExecuting( cmd, retryCount );
 
-                        result = executor( cmd );
+                        result = innerExecutor( cmd );
                         break;
                     }
                 }
@@ -225,7 +226,7 @@ namespace CK.SqlServer
                 Debug.Assert( e != null );
                 Monitor.Error( e );
                 if( previous == null ) previous = new List<SqlDetailedException>();
-                TimeSpan retry = OnCommandError( cmd, c, e, previous, start );
+                TimeSpan retry = OnCommandError( cmd, connection, e, previous, start );
                 if( retry.Ticks < 0
                     || retry == TimeSpan.MaxValue
                     || previous.Count > 1000 )
@@ -239,34 +240,23 @@ namespace CK.SqlServer
             return result;
         }
 
-        Task<int> ISqlCommandExecutor.ExecuteNonQueryAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
-        {
-            return ExecuteAsync( connectionString, cmd, ( c, t ) => c.ExecuteNonQueryAsync( t ), cancellationToken );
-        }
-
-        Task<object> ISqlCommandExecutor.ExecuteScalarAsync( string connectionString, SqlCommand cmd, CancellationToken cancellationToken )
-        {
-            return ExecuteAsync( connectionString, cmd, ( c, t ) => c.ExecuteScalarAsync( t ), cancellationToken );
-        }
-
-        async Task<T> ExecuteAsync<T>( string connectionString, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> executor, CancellationToken cancellationToken )
+        async Task<T> ISqlCommandExecutor.ExecuteQueryAsync<T>( IActivityMonitor monitor, SqlConnection connection, SqlCommand cmd, Func<SqlCommand, CancellationToken, Task<T>> innerExecutor, CancellationToken cancellationToken )
         {
             DateTime start = DateTime.UtcNow;
             int retryCount = 0;
             List<SqlDetailedException> previous = null;
-            ISqlConnectionController c = GetConnectionController( connectionString );
             T result;
             for(; ; )
             {
                 SqlDetailedException e = null;
                 try
                 {
-                    using( await c.Connection.EnsureOpenAsync( cancellationToken ).ConfigureAwait( false ) )
+                    using( await connection.EnsureOpenAsync( cancellationToken ).ConfigureAwait( false ) )
                     {
-                        cmd.Connection = c.Connection;
+                        cmd.Connection = connection;
                         OnCommandExecuting( cmd, retryCount );
 
-                        result = await executor( cmd, cancellationToken ).ConfigureAwait( false );
+                        result = await innerExecutor( cmd, cancellationToken ).ConfigureAwait( false );
                         break;
                     }
                 }
@@ -281,7 +271,7 @@ namespace CK.SqlServer
                 Debug.Assert( e != null );
                 Monitor.Error( e );
                 if( previous == null ) previous = new List<SqlDetailedException>();
-                TimeSpan retry = OnCommandError( cmd, c, e, previous, start );
+                TimeSpan retry = OnCommandError( cmd, connection, e, previous, start );
                 if( retry.Ticks < 0
                     || retry == TimeSpan.MaxValue
                     || previous.Count > 1000 )
@@ -322,17 +312,18 @@ namespace CK.SqlServer
         /// </para>
         /// </summary>
         /// <param name="cmd">The executing command.</param>
-        /// <param name="c">The connection controller.</param>
+        /// <param name="c">The connection.</param>
         /// <param name="ex">The exception caught and wrapped in a <see cref="SqlDetailedException"/>.</param>
         /// <param name="previous">Previous errors when retries have been made. Empty on the first error.</param>
         /// <param name="firstExecutionTimeUtc">The Utc time of the first try.</param>
         /// <returns>The time span to retry. A negative time span or <see cref="TimeSpan.MaxValue"/> to skip retry.</returns>
         protected virtual TimeSpan OnCommandError(
             SqlCommand cmd,
-            ISqlConnectionController c,
+            SqlConnection c,
             SqlDetailedException ex,
             IReadOnlyList<SqlDetailedException> previous,
             DateTime firstExecutionTimeUtc ) => TimeSpan.MaxValue;
+
     }
 
 }

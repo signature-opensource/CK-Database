@@ -13,6 +13,11 @@ namespace CK.SqlServer
     public interface ISqlConnectionController
     {
         /// <summary>
+        /// Gets the <see cref="ISqlCallContext"/> to which this connection controller belongs.
+        /// </summary>
+        ISqlCallContext SqlCallContext { get; }
+
+        /// <summary>
         /// Gets the controlled actual connection.
         /// It can be opened or closed.
         /// </summary>

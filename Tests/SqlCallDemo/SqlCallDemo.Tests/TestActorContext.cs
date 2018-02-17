@@ -17,15 +17,13 @@ namespace SqlCallDemo
             _exec = new SqlStandardCallContext();
         }
 
-        public SqlConnection this[ISqlConnectionStringProvider p] => _exec[p];
+        public ISqlConnectionController this[ISqlConnectionStringProvider p] => _exec[p];
 
-        public SqlConnection this[string connectionString] => _exec[connectionString];
+        public ISqlConnectionController this[string connectionString] => _exec[connectionString];
 
         int IActorCallContext.ActorId => _actorId; 
 
         ISqlCommandExecutor ISqlCallContext.Executor => _exec;
-
-        public ISqlConnectionController GetConnectionController( string connectionString ) => _exec.GetConnectionController( connectionString );
 
         public IActivityMonitor Monitor => TestHelper.Monitor;
 

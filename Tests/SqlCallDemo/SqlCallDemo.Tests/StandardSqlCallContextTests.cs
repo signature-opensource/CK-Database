@@ -40,6 +40,7 @@ namespace SqlCallDemo.Tests
             using( IDisposableSqlCallContext c = new SqlStandardCallContext() )
             using( var command = new SqlCommand( cmd ) )
             {
+                ISqlConnectionController con = c[connectionString ?? TestHelper.GetConnectionString()];
                 try
                 {
                     // If the asynchronous process is lost (if the exception is not correctly managed),
@@ -48,8 +49,7 @@ namespace SqlCallDemo.Tests
                     // - 1 second in other cases.
                     CancellationTokenSource source = new CancellationTokenSource();
                     source.CancelAfter( connectionString == null ? 1000 : 30*1000 );
-                    c.Executor
-                        .ExecuteNonQueryAsync( connectionString ?? TestHelper.GetConnectionString(), command, source.Token )
+                    con.ExecuteNonQueryAsync( command, source.Token )
                         .Wait();
                 }
                 catch( AggregateException ex )

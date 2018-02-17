@@ -36,7 +36,7 @@ namespace SqlTransform.Tests
             SqlParameterCollection parameters = (command = GeneratedCreateCommand()).Parameters;
             parameters[0].Value = (object)text1 ?? DBNull.Value;
             parameters[1].Value = 0;
-            context1.Executor.ExecuteNonQuery( extraConnectionString, (SqlCommand)command );
+            context1[extraConnectionString].ExecuteNonQuery( command );
             return parameters[0].Value == DBNull.Value ? (string)null : (string)parameters[0].Value;
         }
 

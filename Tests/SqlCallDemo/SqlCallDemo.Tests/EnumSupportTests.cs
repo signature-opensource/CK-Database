@@ -99,23 +99,6 @@ namespace SqlCallDemo.Tests
             }
         }
 
-        public System.Nullable<SqlCallDemo.FunctionPackage.Power> ProcWithNullableEnumIO( FunctionPackage p, CK.SqlServer.ISqlCallContext ctx, System.Nullable<SqlCallDemo.FunctionPackage.BPower> bytePower, System.Nullable<SqlCallDemo.FunctionPackage.Power> power )
-        {
-            SqlCommand cmd_loc;
-            cmd_loc = Cmd28();
-            SqlParameterCollection cmd_parameters = cmd_loc.Parameters;
-            SqlParameter tP;
-            tP = cmd_parameters[0];
-            tP.Value = (object)bytePower ?? DBNull.Value;
-            tP = cmd_parameters[1];
-            tP.Value = (object)power ?? DBNull.Value;
-            ctx.Executor.ExecuteNonQuery( p.Database.ConnectionString, cmd_loc );
-            object tempObj;
-            tempObj = cmd_parameters[1].Value;
-            if( tempObj == DBNull.Value ) tempObj = null;
-            var getR1 = (System.Nullable<SqlCallDemo.FunctionPackage.Power>)(System.Int32)tempObj;
-            return getR1;
-        }
         public static SqlCommand Cmd28()
         {
             var cmd = new SqlCommand( @"CK.sWithEnumIO" );

@@ -1,4 +1,4 @@
-﻿using CK.Setup;
+using CK.Setup;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
 using System;
@@ -24,10 +24,8 @@ namespace CKLevel2.IntermediateTransformation
         {
             using( var cmd = new SqlCommand( "select KeyValue, name from ITrans.vBase" ) )
             {
-                return cmd.ExecuteReader<KeyValuePair<int, string>>( ctx[Database], ( reader, list ) =>
-                {
-                    list.Add( new KeyValuePair<int, string>( reader.GetInt32( 0 ), reader.GetString( 1 ) ) );
-                } );
+                return ctx[Database].ExecuteReader( cmd, r =>
+                    new KeyValuePair<int, string>( r.GetInt32( 0 ), r.GetString( 1 ) ) );
             }
         }
 

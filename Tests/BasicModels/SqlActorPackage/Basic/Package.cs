@@ -272,8 +272,6 @@ namespace SqlActorPackage.Basic
 
         public interface IBasicAuthContext : IAmHereToTestPropertyMasking, IDisposable
         {
-            ISqlConnectionController GetControllerConnection( string connectionString );
-
             new int ActorId { get; set; }
         }
 
@@ -284,116 +282,13 @@ namespace SqlActorPackage.Basic
 
         public class BasicAuthContext : IAuthContext
         {
-            object _cache;
-
             public int ActorId { get; set; }
 
             public int SecurityZoneId { get; set; }
 
-            #region ISqlCallContext Members
-
-            class Controller : ISqlConnectionController
-            {
-                internal readonly string ConnectionString;
-                readonly SqlConnection _connection;
-                int _openCount;
-
-                public Controller( string connectionString )
-                {
-                    ConnectionString = connectionString;
-                    _connection = new SqlConnection( connectionString );
-                }
-
-                public SqlConnection Connection => _connection;
-
-                public int ExplicitOpenCount => _openCount;
-
-                public void ExplicitClose()
-                {
-                    if( _openCount > 0 )
-                    {
-                        if( --_openCount == 0 )
-                        {
-                            _connection.Close();
-                        }
-                    }
-                }
-
-                public void ExplicitOpen()
-                {
-                    if( ++_openCount == 1 )
-                    {
-                        _connection.Open();
-                    }
-                }
-
-                public Task ExplicitOpenAsync()
-                {
-                    if( ++_openCount == 1 )
-                    {
-                        return _connection.OpenAsync();
-                    }
-                    return Task.CompletedTask;
-                }
-
-                public void Dispose()
-                {
-                    _connection.Dispose();
-                }
-            }
-
-            Controller GetProvider( string connectionString )
-            {
-                Controller c;
-                if( _cache == null )
-                {
-                    c = new Controller( connectionString );
-                    _cache = c;
-                    return c;
-                }
-                Controller newC;
-                c = _cache as Controller;
-                if( c != null )
-                {
-                    if( c.ConnectionString == connectionString ) return c;
-                    newC = new Controller( connectionString );
-                    _cache = new Controller[] { c, newC };
-                }
-                else
-                {
-                    Controller[] cache = (Controller[])_cache;
-                    for( int i = 0; i < cache.Length; i++ )
-                    {
-                        c = cache[i];
-                        if( c.ConnectionString == connectionString ) return c;
-                    }
-                    Controller[] newCache = new Controller[cache.Length + 1];
-                    Array.Copy( cache, newCache, cache.Length );
-                    newC = new Controller( connectionString );
-                    newCache[cache.Length] = newC;
-                    _cache = newCache;
-                }
-                return newC;
-            }
-
-            public ISqlConnectionController GetControllerConnection( string connectionString ) => GetProvider( connectionString );
-
             public void Dispose()
             {
-                if( _cache != null )
-                {
-                    Controller c = _cache as Controller;
-                    if( c != null ) c.Dispose();
-                    else
-                    {
-                        Controller[] cache = _cache as Controller[];
-                        for( int i = 0; i < cache.Length; ++i ) cache[i].Dispose();
-                    }
-                    _cache = null;
-                }
             }
-
-            #endregion
         }
 
         public class OutputCmd<T> : IDisposable
