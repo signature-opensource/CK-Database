@@ -17,17 +17,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// registers the <see cref="IStObjMap"/>.
         /// </summary>
         /// <param name="services">This services.</param>
-        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="stobjAssembly">The assembly.</param>
         /// <param name="defaultConnectionString">
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <returns>This services collection.</returns>
         public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
         {
-            if( stobjAssembly == null )
-            {
-                throw new ArgumentNullException( nameof( stobjAssembly ) );
-            }
+            if( stobjAssembly == null ) throw new ArgumentNullException( nameof( stobjAssembly ) );
 
             var map = StObjContextRoot.Load( stobjAssembly );
             if( map == null )

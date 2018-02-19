@@ -79,10 +79,11 @@ namespace CK.SqlServer
 
         /// <summary>
         /// Gets the value of the specified column as an array of bytes.
+        /// Kindly returns null if <see cref="IsDBNull(int)"/> is true.
         /// </summary>
         /// <param name="i">The zero-based column ordinal.</param>
-        /// <returns>The value of the specified column as an array of bytes.</returns>
-        public byte[] GetBytes( int i ) => _r.GetSqlBytes( i ).Value;
+        /// <returns>The value of the specified column as an array of bytes or null if <see cref="IsDBNull(int)"/> is true.</returns>
+        public byte[] GetBytes( int i ) => _r.IsDBNull( i ) ? null : _r.GetSqlBytes( i ).Value;
 
         /// <summary>
         /// Gets the value of the specified column as a single character.

@@ -160,7 +160,6 @@ namespace CK.Setup
                         var errorPath = _status.LastErrorPath;
                         if( errorPath == null || errorPath.Count == 0 )
                         {
-                            Debug.Fail( "Success status is false but no error has been logged." );
                             _monitor.Fatal( "Success status is false but no error has been logged." );
                         }
                     }

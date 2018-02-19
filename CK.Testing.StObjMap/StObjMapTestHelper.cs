@@ -27,6 +27,11 @@ namespace CK.Testing
         IStObjMap _map;
         event EventHandler _stObjMapLoading;
 
+        /// <summary>
+        /// Initializes a new <see cref="StObjMapTestHelper"/>.
+        /// </summary>
+        /// <param name="config">The configuration.</param>
+        /// <param name="monitor">The monitor helper.</param>
         public StObjMapTestHelper( ITestHelperConfiguration config, IMonitorTestHelper monitor )
         {
             _config = config;
@@ -44,9 +49,9 @@ namespace CK.Testing
             remove => _stObjMapLoading -= value;
         }
 
-        string StObjMap.IStObjMapTestHelperCore.GeneratedAssemblyName => _generatedAssemblyName;
+        string IStObjMapTestHelperCore.GeneratedAssemblyName => _generatedAssemblyName;
 
-        IStObjMap StObjMap.IStObjMapTestHelperCore.StObjMap
+        IStObjMap IStObjMapTestHelperCore.StObjMap
         {
             get
             {
@@ -62,7 +67,7 @@ namespace CK.Testing
             }
         }
 
-        IStObjMap StObjMap.IStObjMapTestHelperCore.LoadStObjMap( string assemblyName, bool withWeakAssemblyResolver )
+        IStObjMap IStObjMapTestHelperCore.LoadStObjMap( string assemblyName, bool withWeakAssemblyResolver )
         {
             return DoLoadStObjMap( assemblyName, withWeakAssemblyResolver );
         }
@@ -95,19 +100,19 @@ namespace CK.Testing
             }
         }
 
-        public void ResetStObjMap()
+        void IStObjMapTestHelperCore.ResetStObjMap( bool deleteGeneratedBinFolderAssembly )
         {
-            if( _map != null )
-            {
-                _map = null;
-                var num = Interlocked.Increment( ref _resetNumer );
-                _generatedAssemblyName = $"{_originGeneratedAssemblyName}.Reset.{num}";
-                _monitor.Monitor.Info( $"Reseting StObjMap: Generated assembly name is now: {_generatedAssemblyName}." );
-            }
-            else _monitor.Monitor.Info( $"StObjMap is not loaded yet." );
+            if( _map == null ) _monitor.Monitor.Info( $"StObjMap is not loaded yet." );
+            _map = null;
+            var num = Interlocked.Increment( ref _resetNumer );
+            _generatedAssemblyName = $"{_originGeneratedAssemblyName}.Reset.{num}";
+            _monitor.Monitor.Info( $"Reseting StObjMap: Generated assembly name is now: {_generatedAssemblyName}." );
+            if( deleteGeneratedBinFolderAssembly ) DoDeleteGeneratedAssemblies( _monitor.BinFolder );
         }
 
-        public int DeleteGeneratedAssemblies( string directory )
+        int IStObjMapTestHelperCore.DeleteGeneratedAssemblies( string directory ) => DoDeleteGeneratedAssemblies( directory );
+
+        int DoDeleteGeneratedAssemblies( string directory )
         {
             using( _monitor.Monitor.OpenInfo( $"Deleting generated assemblies from {directory}." ) )
             {

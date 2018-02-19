@@ -1,4 +1,4 @@
-﻿using CK.Text;
+using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,11 +16,26 @@ namespace CK.Core
         readonly Header[] _headers;
         List<object[]> _rows;
 
+        /// <summary>
+        /// Header of a column.
+        /// </summary>
         public struct Header
         {
+            /// <summary>
+            /// Name of the column.
+            /// </summary>
             public readonly string Name;
+
+            /// <summary>
+            /// Type of the column.
+            /// </summary>
             public readonly Type ColumnType;
 
+            /// <summary>
+            /// Initializes a new <see cref="Header"/>.
+            /// </summary>
+            /// <param name="name">Colum name.</param>
+            /// <param name="columnType">Column type.</param>
             public Header( string name, Type columnType )
             {
                 Name = name;
@@ -28,10 +43,21 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Gets the columns' headers.
+        /// </summary>
         public IReadOnlyList<Header> Headers => _headers;
 
+        /// <summary>
+        /// Gets the rows.
+        /// </summary>
         public IReadOnlyList<object[]> Rows => _rows;
 
+        /// <summary>
+        /// Initializes a new <see cref="SimpleDataTable"/>.
+        /// </summary>
+        /// <param name="r">The data reader.</param>
+        /// <param name="readContent">true to call <see cref="AddNextRows(IDataReader)"/> on the reader.</param>
         public SimpleDataTable( IDataReader r, bool readContent = true )
         {
             _headers = new Header[r.FieldCount];
@@ -40,6 +66,10 @@ namespace CK.Core
             if( readContent ) AddNextRows( r );
         }
 
+        /// <summary>
+        /// Adds one row.
+        /// </summary>
+        /// <param name="r">The data reader.</param>
         public void AddRow( IDataReader r )
         {
             object[] row = new object[_headers.Length];
@@ -47,6 +77,11 @@ namespace CK.Core
             _rows.Add( row );
         }
 
+        /// <summary>
+        /// Adds all remaining rows from the data reader.
+        /// </summary>
+        /// <param name="r">The data reader to read from.</param>
+        /// <returns>The number of rows read.</returns>
         public int AddNextRows( IDataReader r )
         {
             int count = 0;

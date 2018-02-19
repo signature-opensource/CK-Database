@@ -77,7 +77,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// Executes the <paramref name="selectClause"/> and returns the scalar result.
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="selectClause">The select clause.</param>
@@ -94,7 +94,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Executes the <paramref name="command"/> and returns the scalar result.
+        /// Executes the <paramref name="selectClause"/> and returns the scalar result.
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="selectClause">The select clause.</param>
@@ -129,12 +129,7 @@ namespace CK.Core
         /// <returns>The text.</returns>
         public static string GetObjectDefinition( this SqlDatabase @this, string schemaName )
         {
-            string r = null;
-            Execute( @this, "select OBJECT_DEFINITION(OBJECT_ID(@0))", new string[] { schemaName }, cmd =>
-                {
-                    r = (string)cmd.ExecuteScalar();
-                } );
-            return r;
+            return SqlTransformTestHelper.TestHelper.GetObjectDefinition( @this.ConnectionString, schemaName );
         }
 
         /// <summary>
@@ -189,13 +184,13 @@ namespace CK.Core
         /// Executes a raw command and returns the number of rows affected.
         /// </summary>
         /// <param name="this">This database.</param>
-        /// <param name="clause">String to execute.</param>
-        /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
+        /// <param name="command">String to execute.</param>
+        /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="command"/>.</param>
         /// <returns>Numbers of rows affected.</returns>
-        static public int ExecuteNonQuery( this SqlDatabase @this, string clause, params object[] parameters )
+        static public int ExecuteNonQuery( this SqlDatabase @this, string command, params object[] parameters )
         {
             int rows = 0;
-            Execute( @this, clause, parameters, cmd =>
+            Execute( @this, command, parameters, cmd =>
             {
                 rows = cmd.ExecuteNonQuery();
             } );

@@ -4,6 +4,11 @@ using System;
 
 namespace CK.Testing.DBSetup
 {
+    /// <summary>
+    /// DBSetup core helper exposes only <see cref="GenerateSourceFiles"/> property and
+    /// the <see cref="RunDBSetup"/> method.
+    /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>.
+    /// </summary>
     public interface IDBSetupTestHelperCore
     {
         /// <summary>
@@ -23,7 +28,7 @@ namespace CK.Testing.DBSetup
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
         /// <param name="traceSetupGraphOrdering">True to trace input and output of setup graph ordering.</param>
         /// <param name="revertNames">True to revert names in ordering.</param>
-        /// <returns>The result.</returns>
+        /// <returns>The setup result: succeed, failed or up-to-date.</returns>
         CKSetupRunResult RunDBSetup( ISqlServerDatabaseOptions db = null, bool traceStObjGraphOrdering = false, bool traceSetupGraphOrdering = false, bool revertNames = false );
     }
 }

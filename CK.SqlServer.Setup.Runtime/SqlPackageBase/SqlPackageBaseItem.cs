@@ -30,8 +30,11 @@ namespace CK.SqlServer.Setup
             // Only HasModel = false will prevent us to associate a model.
             object hasModel = data.StObj.GetStObjProperty( "HasModel" );
             if( !(hasModel is bool) || (bool)hasModel ) EnsureModel();
-            
-            Debug.Assert( typeof( SqlPackageBaseItemDriver ).GetTypeInfo().IsAssignableFrom( data.DriverType ) );
+
+            if( !typeof( SqlPackageBaseItemDriver ).IsAssignableFrom( data.DriverType ) )
+            {
+                monitor.Warn( $"Driver type for {FullName} is '{data.DriverType}' that does not specialize '{typeof( SqlPackageBaseItemDriver ).FullName}'. Since this driver handles scripts application, this package may not behave as a normal Sql package object." );
+            }
             Name = data.FullNameWithoutContext;
         }
 
