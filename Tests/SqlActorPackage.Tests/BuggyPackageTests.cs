@@ -40,7 +40,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void failing_db_setup_does_not_execute_SettleContent()
         {
-            File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
+            File.WriteAllText( _configFile, @"<Error ErrorStep=""Settle"" />" );
             TestHelper.ResetStObjMap();
             TestHelper.RunDBSetup().Should().Be( CKSetup.CKSetupRunResult.Failed );
             using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
