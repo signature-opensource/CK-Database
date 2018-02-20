@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Controls the opening or closing of <see cref="SqlConnection"/> objects.
+    /// Controls the opening or closing of <see cref="SqlConnection"/> objects and
+    /// supports comprehensive helpers to ease database call thanks to <see cref="SqlConnectionControllerExtension"/>
+    /// extension methods.
     /// </summary>
     public interface ISqlConnectionController
     {
@@ -49,7 +51,5 @@ namespace CK.SqlServer
         /// is never negative).
         /// </summary>
         void ExplicitClose();
-
-
     }
 }

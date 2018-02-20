@@ -299,7 +299,8 @@ namespace CK.SqlServer
         /// <param name="retryCount">Number of tries before success.</param>
         /// <param name="result">
         /// The result of the <see cref="SqlCommand.ExecuteNonQuery"/> execution (number of rows),
-        /// or the result of the <see cref="SqlCommand.ExecuteScalar"/>, or the .
+        /// or the result of the <see cref="SqlCommand.ExecuteScalar"/>, or any result object built
+        /// by a more complex function.
         /// </param>
         protected virtual void OnCommandExecuted( SqlCommand cmd, int retryCount, object result ) { }
 

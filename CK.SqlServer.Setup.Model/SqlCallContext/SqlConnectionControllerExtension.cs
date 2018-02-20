@@ -13,7 +13,6 @@ namespace CK.SqlServer
     /// </summary>
     public static class SqlConnectionControllerExtension
     {
-
         /// <summary>
         /// Executes the given command synchronously, relying on a function to handle the actual command
         /// execution and result construction.
@@ -205,8 +204,5 @@ namespace CK.SqlServer
             var ctx = @this.SqlCallContext;
             return ctx.Executor.ExecuteQueryAsync( ctx.Monitor, @this.Connection, cmd, ReadRowsAsync, cancellationToken );
         }
-
-
-
     }
 }
