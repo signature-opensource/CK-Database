@@ -8,7 +8,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="Model"/> 
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="ModelPackage"/> 
     /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="SetupItemDriver"/>.
     /// </summary>
     /// <remarks>
@@ -50,32 +50,32 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the optional <see cref="AutoDependentPackageItem"/> "Model" for this <see cref="DynamicPackageItem"/>.
-        /// It is null (the default) if this package has no Model: use <see cref="EnsureModel"/> to
-        /// create the Model if needed.
+        /// It is null (the default). If this package must have a Model package, use <see cref="EnsureModelPackage"/> to
+        /// create it.
         /// </summary>
-        public AutoDependentPackageItem Model => _model;
+        public AutoDependentPackageItem ModelPackage => _model;
 
         /// <summary>
-        /// Creates the associated <see cref="Model"/> package if it does not exist yet.
+        /// Creates the associated <see cref="ModelPackage"/> package if it does not exist yet.
         /// </summary>
         /// <returns>The <see cref="AutoDependentPackageItem"/>.</returns>
-        public virtual AutoDependentPackageItem EnsureModel()
+        public virtual AutoDependentPackageItem EnsureModelPackage()
         {
             return _model ?? (_model = new AutoDependentPackageItem( this, true, "Model", "Model." ));
         }
 
         /// <summary>
-        /// Removes the <see cref="Model"/> (sets it to null).
+        /// Removes the <see cref="ModelPackage"/> (sets it to null).
         /// </summary>
-        public virtual void SupressModel()
+        public virtual void SupressModelPackage()
         {
             _model = null;
         }
 
         /// <summary>
         /// Gets the optional <see cref="AutoDependentPackageItem"/> "Objects" for this <see cref="DynamicPackageItem"/>.
-        /// It is null (the default) if this package has no associated "Objects" package: use <see cref="EnsureModel"/> to
-        /// create the Model if needed.
+        /// It is null (the default). If this package must have an "Objects" package, use <see cref="EnsureObjectsPackage"/> to
+        /// create it.
         /// </summary>
         public AutoDependentPackageItem ObjectsPackage => _objects; 
 

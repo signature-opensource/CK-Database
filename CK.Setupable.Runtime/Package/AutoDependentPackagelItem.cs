@@ -14,8 +14,8 @@ namespace CK.Setup
     /// </summary>
     /// <remarks>
     /// An AutoDependentPackageItem should only be built or removed by its owner Package itself 
-    /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModel()"/> 
-    /// and <see cref="DynamicPackageItem.SupressModel()"/> methods for instance.
+    /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModelPackage()"/> 
+    /// and <see cref="DynamicPackageItem.SupressModelPackage()"/> methods for instance.
     /// </remarks>
     public class AutoDependentPackageItem : IPackageItem, IDependentItemDiscoverer<ISetupItem>, IDependentItemContainerRef
     {

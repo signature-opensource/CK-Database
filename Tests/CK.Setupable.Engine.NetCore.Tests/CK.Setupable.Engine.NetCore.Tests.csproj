@@ -1,29 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OriginProjectName>CK.Setupable.Engine.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
- 
   <ItemGroup>
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.9.0" />
-    <PackageReference Include="NUnitLite" Version="3.9.0" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="NUnitLite" Version="3.10.1" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\$(OriginProjectName)\**\*.cs" Exclude="..\$(OriginProjectName)\obj\**">
       <Link>Include\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <Visible>true</Visible>
     </Compile>
   </ItemGroup>
-  
   <ItemGroup>
     <OriginRes Include="..\$(OriginProjectName)\Res\TextFile.txt">
       <Name>$(OriginProjectName).Res.TextFile.txt</Name>
@@ -35,19 +29,14 @@
       <Name>$(OriginProjectName).SubNamespace.%(RecursiveDir)%(Filename)%(Extension)</Name>
     </OriginRes>
   </ItemGroup>
-  
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
   <Target Name="EmbedOriginResource" BeforeTargets="BeforeBuild">
-  
     <ItemGroup>
       <EmbeddedResource Include="@(OriginRes)">
         <LogicalName>$([System.String]::new('%(OriginRes.Name)').Replace('\','.'))</LogicalName>
       </EmbeddedResource>
     </ItemGroup>
-
   </Target>
-
 </Project>

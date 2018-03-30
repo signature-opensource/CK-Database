@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
 
             var externalVersion = ExternalVersion?.Version;
             if( !CreateScriptHandlerFor( monitor, this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
-            if( Item.Model != null && !CreateScriptHandlerFor( monitor, Drivers[Item.Model], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( Item.ModelPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ModelPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
             if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ObjectsPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
             return true;
         }

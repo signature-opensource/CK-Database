@@ -143,11 +143,6 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets or sets the associated model object.
-        /// </summary>
-        public object ModelObject { get; protected set; }
-
-        /// <summary>
         /// Called at the very beginning of the setup phase, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
         /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).

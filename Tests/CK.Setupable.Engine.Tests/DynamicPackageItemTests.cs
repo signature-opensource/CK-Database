@@ -18,8 +18,8 @@ namespace CK.Setupable.Engine.Tests
             var pB = new DynamicPackageItem( "Package" ) { Name = "B" };
             var pAObjects = pA.EnsureObjectsPackage();
             var pBObjects = pB.EnsureObjectsPackage();
-            var pAModel = pA.EnsureModel();
-            var pBModel = pB.EnsureModel();
+            var pAModel = pA.EnsureModelPackage();
+            var pBModel = pB.EnsureModelPackage();
             pB.Requires.Add( pA );
             var sortResult = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pB );
             Assert.That( sortResult.IsComplete );

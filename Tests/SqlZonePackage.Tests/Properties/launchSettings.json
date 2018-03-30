@@ -3,7 +3,7 @@
     "GUI Debug": {
       "commandName": "Executable",
       "executablePath": "%USERPROFILE%\\.nuget\\packages\\nunit.runners.net4\\2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net461\\SqlZonePackage.Tests.dll"
+      "commandLineArgs": "SqlZonePackage.Tests.dll"
     }
   }
 }
