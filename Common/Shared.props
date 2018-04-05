@@ -30,19 +30,19 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>9.1.3-Cblank-0013</CKCoreVersion>
-    <CKActivityMonitorVersion>9.0.5-Cblank-0011</CKActivityMonitorVersion>
+    <CKCoreVersion>9.1.3-Cblank-0015</CKCoreVersion>
+    <CKActivityMonitorVersion>9.0.5-Cblank-0013</CKActivityMonitorVersion>
     <CKMonitoringVersion>8.3.3</CKMonitoringVersion>
-    <CKSetupDependencyVersion>7.0.0-b01-00-blank-0005</CKSetupDependencyVersion>
-    <CKAspNetVersion>1.3.4-Cblank-0007</CKAspNetVersion>
-    <CKSqlServerParserVersion>7.1.1-Cblank-0012</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>5.0.2-Cblank-0007</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>6.0.3-Cblank-0010</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.3-Cblank-0009</CKCodeGenVersion>
-    <YodiiScriptVersion>0.5.3-Cblank-0010</YodiiScriptVersion>
+    <CKSetupDependencyVersion>7.0.0-b01-00-blank-0007</CKSetupDependencyVersion>
+    <CKAspNetVersion>1.3.5-Cblank-0004</CKAspNetVersion>
+    <CKSqlServerParserVersion>7.1.1-Cblank-0014</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>5.0.2-Cblank-0009</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>6.0.3-Cblank-0011</CKReflectionVersion>
+    <CKCodeGenVersion>0.1.3-Cblank-0011</CKCodeGenVersion>
+    <YodiiScriptVersion>0.5.3-Cblank-0011</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
-    <CKSetupVersion>6.0.0-r09-00-blank-0025</CKSetupVersion>
-    <CKTestingVersion>0.3.1-Cblank-0011</CKTestingVersion>
+    <CKSetupVersion>6.0.0-r09-00-blank-0027</CKSetupVersion>
+    <CKTestingVersion>0.3.1-Cblank-0014</CKTestingVersion>
     <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
     <FluentAssertionsVersion>5.2.0</FluentAssertionsVersion>
   </PropertyGroup>
