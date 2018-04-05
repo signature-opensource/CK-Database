@@ -95,10 +95,10 @@ namespace CK.SqlServer.Setup.Engine.Tests
             using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var c = ctx[TestHelper.MasterConnectionString];
-                c.Invoking( co => co.ExecuteNonQuery( bug ) ).ShouldThrow<SqlDetailedException>();
-                c.Invoking( co => co.ExecuteScalar( bug ) ).ShouldThrow<SqlDetailedException>();
-                c.Invoking( co => co.ExecuteSingleRow( bug, r => 0 ) ).ShouldThrow<SqlDetailedException>();
-                c.Invoking( co => co.ExecuteReader( bug, r => 0 ) ).ShouldThrow<SqlDetailedException>();
+                c.Invoking( co => co.ExecuteNonQuery( bug ) ).Should().Throw<SqlDetailedException>();
+                c.Invoking( co => co.ExecuteScalar( bug ) ).Should().Throw<SqlDetailedException>();
+                c.Invoking( co => co.ExecuteSingleRow( bug, r => 0 ) ).Should().Throw<SqlDetailedException>();
+                c.Invoking( co => co.ExecuteReader( bug, r => 0 ) ).Should().Throw<SqlDetailedException>();
             }
         }
 
@@ -109,10 +109,10 @@ namespace CK.SqlServer.Setup.Engine.Tests
             using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var c = ctx[TestHelper.MasterConnectionString];
-                c.Awaiting( co => co.ExecuteNonQueryAsync( bug ) ).ShouldThrow<SqlDetailedException>();
-                c.Awaiting( co => co.ExecuteScalarAsync( bug ) ).ShouldThrow<SqlDetailedException>();
-                c.Awaiting( co => co.ExecuteSingleRowAsync( bug, r => 0 ) ).ShouldThrow<SqlDetailedException>();
-                c.Awaiting( co => co.ExecuteReaderAsync( bug, r => 0 ) ).ShouldThrow<SqlDetailedException>();
+                c.Awaiting( co => co.ExecuteNonQueryAsync( bug ) ).Should().Throw<SqlDetailedException>();
+                c.Awaiting( co => co.ExecuteScalarAsync( bug ) ).Should().Throw<SqlDetailedException>();
+                c.Awaiting( co => co.ExecuteSingleRowAsync( bug, r => 0 ) ).Should().Throw<SqlDetailedException>();
+                c.Awaiting( co => co.ExecuteReaderAsync( bug, r => 0 ) ).Should().Throw<SqlDetailedException>();
             }
         }
 

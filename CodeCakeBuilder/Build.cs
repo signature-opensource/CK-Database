@@ -162,19 +162,23 @@ namespace CodeCake
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
-                    var apiKey = Cake.InteractiveEnvironmentVariable( "CKSETUPREMOTESTORE_PUSH_API_KEY" );
-                    if( !String.IsNullOrWhiteSpace( apiKey ) )
+                    var components = componentProjects.ComponentProjectPaths.Select( x => x.ToString() );
+
+                    var storeConf = Cake.CKSetupCreateDefaultConfiguration();
+                    if( !storeConf.IsValid )
                     {
-                        if( !Cake.CKSetupPublishAndAddComponentFoldersToStore( componentProjects.ComponentProjectPaths.Select( x => x.ToString() ) ) )
-                        {
-                            Cake.TerminateWithError( "Error while registering components." );
-                        }
-                        if( !Cake.CKSetupPushLocalStoreToRemote( apiKey ) )
-                        {
-                            Cake.TerminateWithError( "Error while pushing components to remote store." );
-                        }
+                        Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
+                        return;
                     }
-                    else Cake.Information( "Skipped push to http:/cksetup.invenietis.net." );
+                    Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
+                    if( !Cake.CKSetupAddComponentFoldersToStore( storeConf, components ) )
+                    {
+                        Cake.TerminateWithError( "Error while registering components in local temporary store." );
+                    }
+                    if( !Cake.CKSetupPushLocalToRemoteStore( storeConf ) )
+                    {
+                        Cake.TerminateWithError( "Error while pushing components to remote store." );
+                    }
                 } );
 
             Task( "Push-NuGet-Packages" )

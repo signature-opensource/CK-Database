@@ -90,7 +90,7 @@ namespace CK.Setup
                 return driver.Drivers.Where( d => d.FullName.Contains( name ) ).Select( d => d.SortedItem ).ToList();
             }
             Debug.Assert( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.Children );
-            return driver.SortedItem.AllChildren.Where( c => c.FullName.Contains( name ) ).ToList();
+            return driver.SortedItem.GetAllChildren().Where( c => c.FullName.Contains( name ) );
         }
     }
 }
