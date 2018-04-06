@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OriginProjectName>SqlTransform.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
@@ -12,7 +11,6 @@
     <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="NUnitLite" Version="3.10.1" />
   </ItemGroup>
   <ItemGroup>
