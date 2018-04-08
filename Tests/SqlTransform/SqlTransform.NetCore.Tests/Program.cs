@@ -1,4 +1,6 @@
+using CK.Monitoring;
 using NUnitLite;
+using System.Globalization;
 using System.Reflection;
 
 namespace CK.StObj.Engine.Tests.NetCore
@@ -7,7 +9,13 @@ namespace CK.StObj.Engine.Tests.NetCore
     {
         public static int Main(string[] args)
         {
-            return new AutoRun(Assembly.GetEntryAssembly()).Execute(args);
+            CultureInfo.CurrentCulture
+                = CultureInfo.CurrentUICulture
+                = CultureInfo.DefaultThreadCurrentCulture
+                = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
+            int r = new AutoRun( Assembly.GetEntryAssembly() ).Execute( args );
+            GrandOutput.Default?.Dispose();
+            return r;
         }
     }
 }

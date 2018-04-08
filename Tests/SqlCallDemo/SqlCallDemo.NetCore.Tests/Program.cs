@@ -1,4 +1,5 @@
 using CK.Core;
+using CK.Monitoring;
 using NUnitLite;
 using System.Globalization;
 using System.Reflection;
@@ -13,7 +14,9 @@ namespace SqlCallDemo.NetCore.Tests
                 = CultureInfo.CurrentUICulture
                 = CultureInfo.DefaultThreadCurrentCulture
                 = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo( "en-US" );
-            return new AutoRun( Assembly.GetEntryAssembly() ).Execute( args );
+            int r = new AutoRun( Assembly.GetEntryAssembly() ).Execute( args );
+            GrandOutput.Default?.Dispose();
+            return r;
         }
     }
 }
