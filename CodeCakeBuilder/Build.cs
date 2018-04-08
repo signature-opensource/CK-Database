@@ -102,16 +102,21 @@ namespace CodeCake
             // since we rely on them to find the target...
             ComponentProjects componentProjects = null;
 
+            // The SimpleRepositoryInfo should be computed once and only once.
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
-
-            // Configuration is either "Debug" or "Release".
-            string configuration = "Debug";
+            // This default global info will be replaced by Check-Repository task.
+            // It is allocated here to ease debugging and/or manual work on complex build script.
+            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo { Version = gitInfo.SafeNuGetVersion };
 
             Task( "Check-Repository" )
                 .Does( () =>
-                 {
-                     configuration = StandardCheckRepository( projectsToPublish, gitInfo );
-                 } );
+                {
+                    globalInfo = StandardCheckRepository( projectsToPublish, gitInfo );
+                    if( globalInfo.ShouldStop )
+                    {
+                        Cake.TerminateWithSuccess( "All packages from this commit are already available. Build skipped." );
+                    }
+                } );
 
             Task( "Clean" )
                 .IsDependentOn( "Check-Repository" )
@@ -127,15 +132,15 @@ namespace CodeCake
                 .IsDependentOn( "Clean" )
                 .Does( () =>
                  {
-                     StandardSolutionBuild( solutionFileName, gitInfo, configuration );
-                     componentProjects = new ComponentProjects( configuration );
+                     StandardSolutionBuild( solutionFileName, gitInfo, globalInfo.BuildConfiguration );
+                     componentProjects = new ComponentProjects( globalInfo.BuildConfiguration );
                      foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.EndsWith( "netcoreapp2.0" ) ) )
                      {
                          Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart(),
                             new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
                             {
                                 s.Framework = "netcoreapp2.0";
-                                s.Configuration = configuration;
+                                s.Configuration = globalInfo.BuildConfiguration;
                             } ) );
                      }
                  } );
@@ -146,7 +151,7 @@ namespace CodeCake
                                      || Cake.ReadInteractiveOption( "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
                 .Does( () =>
                  {
-                     StandardUnitTests( configuration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
+                     StandardUnitTests( globalInfo.BuildConfiguration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
                  } );
 
             Task( "Create-All-NuGet-Packages" )
@@ -154,7 +159,7 @@ namespace CodeCake
                 .IsDependentOn( "Unit-Testing" )
                 .Does( () =>
                  {
-                     StandardCreateNuGetPackages( releasesDir, projectsToPublish, gitInfo, configuration );
+                     StandardCreateNuGetPackages( releasesDir, projectsToPublish, gitInfo, globalInfo.BuildConfiguration );
                  } );
 
             Task( "Push-Runtimes-and-Engines" )
@@ -186,14 +191,13 @@ namespace CodeCake
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                  {
-                     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
-                     StandardPushNuGetPackages( nugetPackages, gitInfo );
+                     StandardPushNuGetPackages( globalInfo, releasesDir );
                  } );
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Push-NuGet-Packages" )
-                .IsDependentOn( "Push-Runtimes-and-Engines" );
+                .IsDependentOn( "Push-Runtimes-and-Engines" )
+                .IsDependentOn( "Push-NuGet-Packages" );
         }
 
     }
