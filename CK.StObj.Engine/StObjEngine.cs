@@ -139,9 +139,10 @@ namespace CK.Setup
                         // The only case where the compilation is skipped is when there are multiple folders
                         // and none of them contains the whole (unified) set of components.
                         bool actualGenerationRequired = _config.ForceAppContextAssemblyGeneration
+                                                        || _config.AppContextAssemblyGeneratedDirectoryTarget != null
                                                         || normalizedFolders.Count == 1
                                                         || normalizedFolders.Any( f => f.SameAsRoot );
-                        _status.Success = FirstGenerationRun( normalizedFolders, r, dllName, skipCompilation: !actualGenerationRequired );
+                        _status.Success = FirstGenerationRun( normalizedFolders, r, dllName, !actualGenerationRequired, _config.AppContextAssemblyGeneratedDirectoryTarget );
 
                         if( _status.Success )
                         {
@@ -187,7 +188,7 @@ namespace CK.Setup
             }
         }
 
-        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName, bool skipCompilation )
+        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName, bool skipCompilation, string targetDir )
         {
             using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
             {
@@ -195,16 +196,18 @@ namespace CK.Setup
                 var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion, skipCompilation );
                 if( g.GeneratedFileNames.Count > 0 )
                 {
-                    foreach( var f in normalizedFolders.Where( f => f.SameAsRoot ) )
+                    var targetDirs = normalizedFolders.Where( f => f.SameAsRoot ).Select( f => f.Directory );
+                    if( !String.IsNullOrWhiteSpace( targetDir ) ) targetDirs.Append( Path.GetFullPath( targetDir ) ).Distinct();
+                    foreach( var dir in targetDirs )
                     {
-                        using( _monitor.OpenInfo( $"Copying generated files to folder: '{f.Directory}'." ) )
+                        using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )
                         {
                             foreach( var file in g.GeneratedFileNames )
                             {
                                 try
                                 {
                                     _monitor.Info( file );
-                                    File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( f.Directory, file ), true );
+                                    File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( dir, file ), true );
                                 }
                                 catch( Exception ex )
                                 {

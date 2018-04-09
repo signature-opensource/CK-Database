@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CK.Testing.StObjMap\CK.Testing.StObjMap.csproj" />
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
+    <ProjectReference Include="..\CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj" />
     <PackageReference Include="CK.Testing.SqlServer" Version="$(CKTestingVersion)" />
-    <PackageReference Include="CK.Testing.CKSetup" Version="$(CKSetupVersion)" />
   </ItemGroup>
 </Project>

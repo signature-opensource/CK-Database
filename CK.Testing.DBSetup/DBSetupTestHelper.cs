@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using CK.Core;
+using CK.Setup;
 using CK.Testing.DBSetup;
 using CK.Testing.SqlServer;
 using CK.Text;
@@ -18,31 +19,30 @@ namespace CK.Testing
     /// </summary>
     public class DBSetupTestHelper : IDBSetupTestHelperCore
     {
-        readonly ICKSetupTestHelper _ckSetup;
-        readonly IStObjMapTestHelper _stObjMap;
+        readonly ISetupableSetupTestHelper _setupableSetup;
         readonly ISqlServerTestHelper _sqlServer;
-        bool _generateSourceFiles;
 
-        internal DBSetupTestHelper( ITestHelperConfiguration config, ICKSetupTestHelper ckSetup, ISqlServerTestHelper sqlServer, IStObjMapTestHelper stObjMap )
+        internal DBSetupTestHelper( ITestHelperConfiguration config, ISetupableSetupTestHelper setupableSetup, ISqlServerTestHelper sqlServer )
         {
-            _ckSetup = ckSetup;
-            _stObjMap = stObjMap;
+            _setupableSetup = setupableSetup;
             _sqlServer = sqlServer;
-            stObjMap.StObjMapLoading += OnStObjMapLoading;
-            _generateSourceFiles = config.GetBoolean( "DBSetup/GenerateSourceFiles" ) ?? true;
+            _setupableSetup.StObjSetupRunning += OnStObjSetupRunning;
         }
 
-        void OnStObjMapLoading( object sender, EventArgs e )
+        void OnStObjSetupRunning( object sender, StObjSetup.StObjSetupRunningEventArgs e )
         {
-            var file = _stObjMap.BinFolder.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" );
-            if( !System.IO.File.Exists( file ) )
+            if( !e.StObjEngineConfiguration.Aspects.Any( c => c is SqlSetupAspectConfiguration ) )
             {
-                _stObjMap.Monitor.Info( $"File '{file}' does not exist. Running DBSetup to create it." );
-                DoRunDBSetup( null, false, false, false );
+                SqlSetupAspectConfiguration conf = new SqlSetupAspectConfiguration();
+                conf.DefaultDatabaseConnectionString = _sqlServer.GetConnectionString();
+                conf.IgnoreMissingDependencyIsError = true;
+                conf.GlobalResolution = false;
+
+                e.ForceSetup |= _sqlServer.EnsureDatabase();
+                e.StObjEngineConfiguration.Aspects.Add( conf );
             }
         }
 
-        bool IDBSetupTestHelperCore.GenerateSourceFiles { get => _generateSourceFiles; set => _generateSourceFiles = value; }
 
         CKSetupRunResult IDBSetupTestHelperCore.RunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
@@ -52,52 +52,37 @@ namespace CK.Testing
         CKSetupRunResult DoRunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
             if( db == null ) db = _sqlServer.DefaultDatabaseOptions;
-            using( _ckSetup.Monitor.OpenInfo( $"Running DBSetup on {db}." ) )
+            using( _setupableSetup.Monitor.OpenInfo( $"Running DBSetup on {db}." ) )
             {
                 try
                 {
-                    bool forceSetup = _ckSetup.CKSetup.DefaultForceSetup
-                                        || _sqlServer.EnsureDatabase( db )
-                                        || _ckSetup.CKSetup.FinalDefaultBinPaths
-                                             .Select( p => p.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" ) )
-                                             .Any( p => !File.Exists( p ) );
+                    bool forceSetup = _sqlServer.EnsureDatabase( db );
 
-                    var conf = new SetupConfiguration();
-                    conf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
-                    conf.Configuration = XElement.Parse( $@"
-                        <StObjEngineConfiguration>
-                            <TraceDependencySorterInput>{traceStObjGraphOrdering}</TraceDependencySorterInput>
-                            <TraceDependencySorterOutput>{traceStObjGraphOrdering}</TraceDependencySorterOutput>
-                            <RevertOrderingNames>{revertNames}</RevertOrderingNames>
-                            <GenerateSourceFiles>{_generateSourceFiles}</GenerateSourceFiles>
-                            <GeneratedAssemblyName>{_stObjMap.GeneratedAssemblyName}</GeneratedAssemblyName>
-                            <Aspect Type=""CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model"" >
-                                <TraceDependencySorterInput>{traceSetupGraphOrdering}</TraceDependencySorterInput>
-                                <TraceDependencySorterOutput>{traceSetupGraphOrdering}</TraceDependencySorterOutput>
-                                <RevertOrderingNames>{revertNames}</RevertOrderingNames>
-                            </Aspect>
-                            <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"" >
-                                <DefaultDatabaseConnectionString>{_sqlServer.GetConnectionString( db.DatabaseName )}</DefaultDatabaseConnectionString>
-                                <GlobalResolution>false</GlobalResolution>
-                                <IgnoreMissingDependencyIsError>true</IgnoreMissingDependencyIsError>
-                            </Aspect>
-                        </StObjEngineConfiguration>" );
-                    var result = _ckSetup.CKSetup.Run( conf, forceSetup: forceSetup );
-                    if( result != CKSetupRunResult.Failed )
-                    {
-                        string genDllName = _stObjMap.GeneratedAssemblyName + ".dll";
-                        var firstGen = new NormalizedPath( conf.BinPaths[0] ).AppendPart( genDllName );
-                        if( firstGen != _stObjMap.BinFolder.AppendPart( genDllName ) && File.Exists( firstGen ) )
-                        {
-                            _stObjMap.Monitor.Info( $"Copying generated '{genDllName}' from first BinPath ({conf.BinPaths[0]}) to bin folder." );
-                            File.Copy( firstGen, Path.Combine( AppContext.BaseDirectory, genDllName ), true );
-                        }
-                    }
-                    return result;
+                    var stObjConf = new StObjEngineConfiguration();
+                    stObjConf.GenerateSourceFiles = _setupableSetup.StObjGenerateSourceFiles;
+                    stObjConf.RevertOrderingNames = revertNames;
+                    stObjConf.TraceDependencySorterInput = traceStObjGraphOrdering;
+                    stObjConf.TraceDependencySorterOutput = traceStObjGraphOrdering;
+                    stObjConf.GeneratedAssemblyName = _setupableSetup.GeneratedAssemblyName;
+                    stObjConf.AppContextAssemblyGeneratedDirectoryTarget = _setupableSetup.BinFolder;
+
+                    var setupable = new SetupableAspectConfiguration();
+                    setupable.RevertOrderingNames = revertNames;
+                    setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
+                    setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
+                    stObjConf.Aspects.Add( setupable );
+
+                    var sqlServer = new SqlSetupAspectConfiguration();
+                    sqlServer.DefaultDatabaseConnectionString = _sqlServer.GetConnectionString( db.DatabaseName );
+                    sqlServer.GlobalResolution = false;
+                    sqlServer.IgnoreMissingDependencyIsError = true;
+                    stObjConf.Aspects.Add( sqlServer );
+
+                    return _setupableSetup.RunStObjSetup( stObjConf, forceSetup ); 
                 }
                 catch( Exception ex )
                 {
-                    _ckSetup.Monitor.Error( ex );
+                    _setupableSetup.Monitor.Error( ex );
                     throw;
                 }
             }

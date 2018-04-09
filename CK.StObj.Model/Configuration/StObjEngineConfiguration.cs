@@ -81,9 +81,14 @@ namespace CK.Core
             static public readonly XName RevertOrderingNames = XNamespace.None + "RevertOrderingNames";
 
             /// <summary>
-            /// The GenerateAppContextAssembly element name.
+            /// The ForceAppContextAssemblyGeneration element name.
             /// </summary>
             static public readonly XName ForceAppContextAssemblyGeneration = XNamespace.None + "GenerateAppContextAssembly";
+
+            /// <summary>
+            /// The AppContextAssemblyGeneratedDirectoryTarget element name.
+            /// </summary>
+            static public readonly XName AppContextAssemblyGeneratedDirectoryTarget = XNamespace.None + "AppContextAssemblyGeneratedDirectoryTarget";
 
             /// <summary>
             /// The GenerateSourceFiles element name.
@@ -122,6 +127,7 @@ namespace CK.Core
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             ForceAppContextAssemblyGeneration = string.Equals( e.Element( XmlNames.ForceAppContextAssemblyGeneration )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            AppContextAssemblyGeneratedDirectoryTarget = e.Element( XmlNames.AppContextAssemblyGeneratedDirectoryTarget )?.Value;
             GeneratedAssemblyName = e.Element( XmlNames.GeneratedAssemblyName )?.Value;
             InformationalVersion = e.Element( XmlNames.InformationalVersion )?.Value;
             GenerateSourceFiles = string.Equals( e.Element( XmlNames.GenerateSourceFiles )?.Value, "true", StringComparison.OrdinalIgnoreCase );
@@ -143,26 +149,20 @@ namespace CK.Core
         /// The <see cref="StObjEngineConfiguration"/> constructor will be able to read this element back.
         /// </summary>
         /// <param name="e">The element to populate.</param>
-        /// <param name="aspectTypeNameWriter">
-        /// Writer for aspects type names. 
-        /// Defaults to a function that returns a weak assembly name from <see cref="Type.AssemblyQualifiedName"/>
-        /// (using <see cref="SimpleTypeFinder.WeakenAssemblyQualifiedName(string, out string)"/>).
-        /// </param>
-        /// <returns>The <paramref name="e"/> element.</returns>
-        public XElement SerializeXml( XElement e, Func<Type, string> aspectTypeNameWriter = null )
+        /// <returns>The <paramref name="e"/> element to fill.</returns>
+        public XElement SerializeXml( XElement e )
         {
-            if( aspectTypeNameWriter == null )
+            string CleanName( Type t )
             {
-                aspectTypeNameWriter = t =>
-                {
-                    SimpleTypeFinder.WeakenAssemblyQualifiedName( t.AssemblyQualifiedName, out string weaken );
-                    return weaken;
-                };
+                SimpleTypeFinder.WeakenAssemblyQualifiedName( t.AssemblyQualifiedName, out string weaken );
+                return weaken;
             }
+
             e.Add( TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
                    ForceAppContextAssemblyGeneration ? new XElement( XmlNames.ForceAppContextAssemblyGeneration, "true" ) : null,
+                   AppContextAssemblyGeneratedDirectoryTarget != null ? new XElement( XmlNames.AppContextAssemblyGeneratedDirectoryTarget, AppContextAssemblyGeneratedDirectoryTarget ) : null,
                    GenerateSourceFiles ? new XElement( XmlNames.GenerateSourceFiles, "true" ) : null,
                    GeneratedAssemblyName != DefaultGeneratedAssemblyName
                         ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName )
@@ -172,7 +172,7 @@ namespace CK.Core
                         : null,
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
-                   Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, aspectTypeNameWriter( a.GetType() ) ) ) ) ),
+                   Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, CleanName( a.GetType() ) ) ) ) ),
                    SetupFolders.Select( f => f.ToXml() ) );
             return e;
         }
@@ -212,7 +212,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the <see cref="AppContext.BaseDirectory"/> since this were the whole setup process
-        /// must be runned.
+        /// must be ran.
         /// </summary>
         public string Directory => AppContext.BaseDirectory;
 
@@ -244,6 +244,13 @@ namespace CK.Core
         /// and none of them contains the whole (unified) set of components.
         /// </summary>
         public bool ForceAppContextAssemblyGeneration { get; set; }
+
+        /// <summary>
+        /// Get or sets a directory where the final assembly from <see cref="AppContext.BaseDirectory"/> must be copied.
+        /// When this is set to a non null (that must be an absolute path), the final assembly in the <see cref="AppContext.BaseDirectory"/>
+        /// will always be generated, regardless of <see cref="ForceAppContextAssemblyGeneration"/>.
+        /// </summary>
+        public string AppContextAssemblyGeneratedDirectoryTarget { get; set; }
 
         /// <summary>
         /// Gets the list of all configuration aspects that must participate to setup.

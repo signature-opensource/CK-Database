@@ -93,6 +93,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalTestHelper", "Tests\Lo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.AspNet", "CK.DB.AspNet\CK.DB.AspNet.csproj", "{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.StObjSetup", "CK.Testing.StObjSetup\CK.Testing.StObjSetup.csproj", "{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Testing.SetupableSetup", "CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj", "{D837F80F-4C8B-47EC-9F0E-105B820EE16C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -499,6 +503,30 @@ Global
 		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|x86.ActiveCfg = Release|Any CPU
 		{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}.Release|x86.Build.0 = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Debug|x86.Build.0 = Debug|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|x86.ActiveCfg = Release|Any CPU
+		{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}.Release|x86.Build.0 = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Debug|x86.Build.0 = Debug|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|x86.ActiveCfg = Release|Any CPU
+		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
