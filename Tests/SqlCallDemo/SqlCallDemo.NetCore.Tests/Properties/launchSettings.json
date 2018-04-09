@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "SqlCallDemo.NetCore.Tests": {
+    "NUnit Console": {
       "commandName": "Project",
       "commandLineArgs": "--wait"
     }

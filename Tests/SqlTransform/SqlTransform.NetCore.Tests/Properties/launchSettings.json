@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "CK.Setupable.Engine.NetCore.Tests": {
+    "NUnit Console": {
       "commandName": "Project",
       "commandLineArgs": "--wait"
     }
