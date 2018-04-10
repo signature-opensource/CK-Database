@@ -15,10 +15,11 @@ namespace CK.Testing
     /// <summary>
     /// Exposes standard implementation of <see cref="IStObjSetupTestHelperCore"/>.
     /// </summary>
-    public class StObjSetupTestHelper : IStObjSetupTestHelperCore
+    public class StObjSetupTestHelper : IStObjSetupTestHelperCore, ITestHelperResolvedCallback
     {
         readonly ICKSetupTestHelper _ckSetup;
         readonly IStObjMapTestHelper _stObjMap;
+        IStObjSetupTestHelper _mixin;
         EventHandler<StObjSetupRunningEventArgs> _stObjSetupRunning;
         bool _generateSourceFiles;
         bool _revertOrderingNames;
@@ -41,24 +42,36 @@ namespace CK.Testing
         void OnStObjMapLoading( object sender, EventArgs e )
         {
             var file = _stObjMap.BinFolder.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" );
-            if( !System.IO.File.Exists( file ) )
+            if( !File.Exists( file ) )
             {
                 _stObjMap.Monitor.Info( $"File '{file}' does not exist. Running StObjSetup to create it." );
-
-                bool forceSetup = _ckSetup.CKSetup.DefaultForceSetup
-                                    || _ckSetup.CKSetup.FinalDefaultBinPaths
-                                            .Select( p => p.AppendPart( _stObjMap.GeneratedAssemblyName + ".dll" ) )
-                                            .Any( p => !File.Exists( p ) );
-
-                var stObjConf = new StObjEngineConfiguration();
-                stObjConf.GenerateSourceFiles = _generateSourceFiles;
-                stObjConf.RevertOrderingNames = _revertOrderingNames;
-                stObjConf.TraceDependencySorterInput = _traceGraphOrdering;
-                stObjConf.TraceDependencySorterOutput = _traceGraphOrdering;
-                stObjConf.GeneratedAssemblyName = _stObjMap.GeneratedAssemblyName;
-                stObjConf.AppContextAssemblyGeneratedDirectoryTarget = _stObjMap.BinFolder;
-                DoRunStObjSetup( stObjConf, forceSetup );
+                var defaultConf = CreateDefaultConfiguration( _mixin );
+                DoRunStObjSetup( defaultConf.Configuration, defaultConf.ForceSetup );
             }
+        }
+
+        /// <summary>
+        /// Low level helper that initializes a new <see cref="StObjEngineConfiguration"/> and computes the force setup flag
+        /// that can be used by other helpers that need to run a DBSetup.
+        /// </summary>
+        /// <param name="helper">The <see cref="IStObjSetupTestHelper"/> helper.</param>
+        /// <returns>The configuration and the flag.</returns>
+        static public (StObjEngineConfiguration Configuration, bool ForceSetup) CreateDefaultConfiguration( IStObjSetupTestHelper helper )
+        {
+            bool forceSetup = helper.CKSetup.DefaultForceSetup
+                                || helper.CKSetup.FinalDefaultBinPaths.Append( helper.BinFolder )
+                                        .Select( p => p.AppendPart( helper.GeneratedAssemblyName + ".dll" ) )
+                                        .Any( p => !File.Exists( p ) );
+
+            var stObjConf = new StObjEngineConfiguration();
+            stObjConf.GenerateSourceFiles = helper.StObjGenerateSourceFiles;
+            stObjConf.RevertOrderingNames = helper.StObjRevertOrderingNames;
+            stObjConf.TraceDependencySorterInput = helper.StObjTraceGraphOrdering;
+            stObjConf.TraceDependencySorterOutput = helper.StObjTraceGraphOrdering;
+            stObjConf.GeneratedAssemblyName = helper.GeneratedAssemblyName;
+            stObjConf.AppContextAssemblyGeneratedDirectoryTarget = helper.BinFolder;
+
+            return (stObjConf, forceSetup);
         }
 
         CKSetupRunResult DoRunStObjSetup( StObjEngineConfiguration stObjConf, bool forceSetup )
@@ -74,22 +87,7 @@ namespace CK.Testing
                     var ckSetupConf = new SetupConfiguration();
                     ckSetupConf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
                     stObjConf.SerializeXml( ckSetupConf.Configuration );
-                    var result = _ckSetup.CKSetup.Run( ckSetupConf, forceSetup: ev.ForceSetup );
-                    if( result != CKSetupRunResult.Failed )
-                    {
-                        string genDllName = _stObjMap.GeneratedAssemblyName + ".dll";
-                        var firstGen = new NormalizedPath( ckSetupConf.BinPaths[0] ).AppendPart( genDllName );
-                        if( firstGen != _stObjMap.BinFolder.AppendPart( genDllName ) && File.Exists( firstGen ) )
-                        {
-                            if( ckSetupConf.BinPaths.Count > 1 && !stObjConf.ForceAppContextAssemblyGeneration )
-                            {
-                                _stObjMap.Monitor.Warn( $"ForceAppContextAssemblyGeneration is false but setup is based on multiple bin paths. Copying the first generated '{genDllName}' from BinPaths ({ckSetupConf.BinPaths[0]}) to bin folder. This may not work." );
-                            }
-                            else _stObjMap.Monitor.Info( $"Copying generated '{genDllName}' from first BinPath ({ckSetupConf.BinPaths[0]}) to bin folder." );
-                            File.Copy( firstGen, Path.Combine( AppContext.BaseDirectory, genDllName ), true );
-                        }
-                    }
-                    return result;
+                    return _ckSetup.CKSetup.Run( ckSetupConf, forceSetup: ev.ForceSetup );
                 }
                 catch( Exception ex )
                 {
@@ -112,6 +110,12 @@ namespace CK.Testing
         }
 
         CKSetupRunResult IStObjSetupTestHelperCore.RunStObjSetup( StObjEngineConfiguration configuration, bool forceSetup ) => DoRunStObjSetup( configuration, forceSetup );
+
+        void ITestHelperResolvedCallback.OnTestHelperGraphResolved( object resolvedObject )
+        {
+            if( !(resolvedObject is IStObjSetupTestHelper) ) throw new Exception( "IStObjSetupTestHelperCore must be resolved via IStObjSetupTestHelper. Not directly nor by the StObjSetupTestHelper class." );
+            _mixin = (IStObjSetupTestHelper)resolvedObject;
+        }
 
         /// <summary>
         /// Gets the <see cref="IStObjSetupTestHelperCore"/> default implementation.

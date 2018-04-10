@@ -56,29 +56,23 @@ namespace CK.Testing
             {
                 try
                 {
-                    bool forceSetup = _sqlServer.EnsureDatabase( db );
+                    var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _setupableSetup );
 
-                    var stObjConf = new StObjEngineConfiguration();
-                    stObjConf.GenerateSourceFiles = _setupableSetup.StObjGenerateSourceFiles;
-                    stObjConf.RevertOrderingNames = revertNames;
-                    stObjConf.TraceDependencySorterInput = traceStObjGraphOrdering;
-                    stObjConf.TraceDependencySorterOutput = traceStObjGraphOrdering;
-                    stObjConf.GeneratedAssemblyName = _setupableSetup.GeneratedAssemblyName;
-                    stObjConf.AppContextAssemblyGeneratedDirectoryTarget = _setupableSetup.BinFolder;
+                    stObjConf.ForceSetup |= _sqlServer.EnsureDatabase( db );
 
                     var setupable = new SetupableAspectConfiguration();
                     setupable.RevertOrderingNames = revertNames;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
-                    stObjConf.Aspects.Add( setupable );
+                    stObjConf.Configuration.Aspects.Add( setupable );
 
                     var sqlServer = new SqlSetupAspectConfiguration();
                     sqlServer.DefaultDatabaseConnectionString = _sqlServer.GetConnectionString( db.DatabaseName );
                     sqlServer.GlobalResolution = false;
                     sqlServer.IgnoreMissingDependencyIsError = true;
-                    stObjConf.Aspects.Add( sqlServer );
+                    stObjConf.Configuration.Aspects.Add( sqlServer );
 
-                    return _setupableSetup.RunStObjSetup( stObjConf, forceSetup ); 
+                    return _setupableSetup.RunStObjSetup( stObjConf.Configuration, stObjConf.ForceSetup ); 
                 }
                 catch( Exception ex )
                 {

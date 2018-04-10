@@ -197,7 +197,7 @@ namespace CK.Setup
                 if( g.GeneratedFileNames.Count > 0 )
                 {
                     var targetDirs = normalizedFolders.Where( f => f.SameAsRoot ).Select( f => f.Directory );
-                    if( !String.IsNullOrWhiteSpace( targetDir ) ) targetDirs.Append( Path.GetFullPath( targetDir ) ).Distinct();
+                    if( !String.IsNullOrWhiteSpace( targetDir ) ) targetDirs = targetDirs.Append( Path.GetFullPath( targetDir ) ).Distinct();
                     foreach( var dir in targetDirs )
                     {
                         using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )

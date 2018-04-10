@@ -21,6 +21,7 @@ namespace CK.Testing.StObjSetup
         public StObjSetupRunningEventArgs( StObjEngineConfiguration conf, bool forceSetup )
         {
             StObjEngineConfiguration = conf;
+            ForceSetup = forceSetup;
         }
 
         /// <summary>
