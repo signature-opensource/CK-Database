@@ -9,6 +9,7 @@ namespace CK.Testing.StObjSetup
     /// 
     /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>.
     /// </summary>
+    [ResolveTarget( typeof( IStObjSetupTestHelper ) )]
     public interface IStObjSetupTestHelperCore
     {
         /// <summary>
