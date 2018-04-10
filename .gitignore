@@ -262,3 +262,5 @@ Tests/SqlCallDemo/SqlCallDemo.NetCore.Tests/SetupWorkingDir/
 Tests/SqlTransform/SqlTransform.Tests/TestStores/
 Tests/CK.SqlServer.Setup.Engine.Tests/TestStores/
 Tests/SqlActorPackage.Tests/CKSetupWorkingDirectory/
+/Tests/SqlTransform/SqlTransform.NetCore.Tests/Logs/
+/Tests/SqlCallDemo/SqlCallDemo.NetCore.Tests/Logs/

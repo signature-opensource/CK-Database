@@ -5,18 +5,12 @@ using System;
 namespace CK.Testing.DBSetup
 {
     /// <summary>
-    /// DBSetup core helper exposes only <see cref="GenerateSourceFiles"/> property and
-    /// the <see cref="RunDBSetup"/> method.
-    /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>.
+    /// DBSetup core helper exposes only a the <see cref="RunDBSetup"/> method.
+    /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>, with
+    /// the help of <see cref="StObjSetup.IStObjSetupTestHelperCore"/> and <see cref="SetupableSetup.ISetupableSetupTestHelperCore"/>.
     /// </summary>
     public interface IDBSetupTestHelperCore
     {
-        /// <summary>
-        /// Gets or sets whether source files must be generated alongside the generated assembly.
-        /// Defaults to "DBSetup/GenerateSourceFiles" configuration or true if the configuration does not exist.
-        /// </summary>
-        bool GenerateSourceFiles { get; set; }
-
         /// <summary>
         /// Runs the database setup in <see cref="IBasicTestHelper.BinFolder"/> on the default database
         /// (see <see cref="ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
