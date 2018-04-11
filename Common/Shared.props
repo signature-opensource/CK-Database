@@ -38,7 +38,7 @@
     <CKSqlServerParserVersion>7.1.1-Cblank-0027</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>5.0.2-Cblank-0021</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.3-Cblank-0021</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.3-Cblank-0022</CKCodeGenVersion>
+    <CKCodeGenVersion>0.1.3-Cblank-0023</CKCodeGenVersion>
     <YodiiScriptVersion>0.5.3-Cblank-0021</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
     <CKSetupVersion>6.0.0-r09-00-blank-0042</CKSetupVersion>
