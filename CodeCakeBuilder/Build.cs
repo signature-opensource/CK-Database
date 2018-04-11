@@ -171,7 +171,7 @@ namespace CodeCake
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
                     if( !storeConf.IsValid )
                     {
-                        if( globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
+                        if( globalInfo.LocalFeedPath != null && globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
                         {
                             storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
                         }

@@ -12,6 +12,6 @@
     <PackageReference Include="NUnit.Runners.Net4" Version="2.6.4" />
     <PackageReference Include="SimpleGitVersion.Cake" Version="0.30.0" />
     <PackageReference Include="SimpleGitVersion.Core" Version="0.30.0" />
-    <PackageReference Include="CKSetup.Cake" Version="6.0.0-r09-00-blank-0027" />
+    <PackageReference Include="CKSetup.Cake" Version="6.0.0-r09-00-develop-0046" />
   </ItemGroup>
 </Project>
