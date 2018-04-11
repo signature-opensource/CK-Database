@@ -70,7 +70,7 @@ namespace CodeCake
             string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
             if( !Directory.Exists( pathToFramework ) )
             {
-                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0" );
+                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0/publish" );
             }
             return pathToFramework;
         }
@@ -119,7 +119,6 @@ namespace CodeCake
                 } );
 
             Task( "Clean" )
-                .IsDependentOn( "Check-Repository" )
                 .Does( () =>
                  {
                      Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
@@ -134,9 +133,9 @@ namespace CodeCake
                  {
                      StandardSolutionBuild( solutionFileName, gitInfo, globalInfo.BuildConfiguration );
                      componentProjects = new ComponentProjects( globalInfo.BuildConfiguration );
-                     foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.EndsWith( "netcoreapp2.0" ) ) )
+                     foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.LastPart == "publish" ) )
                      {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart(),
+                         Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart().RemoveLastPart(),
                             new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
                             {
                                 s.Framework = "netcoreapp2.0";
@@ -172,8 +171,15 @@ namespace CodeCake
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
                     if( !storeConf.IsValid )
                     {
-                        Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
-                        return;
+                        if( globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
+                        {
+                            storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
+                        }
+                        else
+                        {
+                            Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
+                            return;
+                        }
                     }
                     Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
                     if( !Cake.CKSetupAddComponentFoldersToStore( storeConf, components ) )

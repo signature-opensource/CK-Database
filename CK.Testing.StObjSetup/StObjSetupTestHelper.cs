@@ -15,6 +15,7 @@ namespace CK.Testing
     /// <summary>
     /// Exposes standard implementation of <see cref="IStObjSetupTestHelperCore"/>.
     /// </summary>
+    [ResolveTarget(typeof(IStObjSetupTestHelper))]
     public class StObjSetupTestHelper : IStObjSetupTestHelperCore, ITestHelperResolvedCallback
     {
         readonly ICKSetupTestHelper _ckSetup;
@@ -113,7 +114,6 @@ namespace CK.Testing
 
         void ITestHelperResolvedCallback.OnTestHelperGraphResolved( object resolvedObject )
         {
-            if( !(resolvedObject is IStObjSetupTestHelper) ) throw new Exception( "IStObjSetupTestHelperCore must be resolved via IStObjSetupTestHelper. Not directly nor by the StObjSetupTestHelper class." );
             _mixin = (IStObjSetupTestHelper)resolvedObject;
         }
 
