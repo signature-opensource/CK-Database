@@ -43,7 +43,6 @@
     <CSemVerVersion>1.1.0</CSemVerVersion>
     <CKSetupVersion>6.0.0-r09-00-develop-0048</CKSetupVersion>
     <CKTestingVersion>0.3.1-Cdevelop-0035</CKTestingVersion>
-    <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
     <FluentAssertionsVersion>5.2.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- 
