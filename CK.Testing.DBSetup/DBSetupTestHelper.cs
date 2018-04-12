@@ -22,7 +22,7 @@ namespace CK.Testing
         readonly ISetupableSetupTestHelper _setupableSetup;
         readonly ISqlServerTestHelper _sqlServer;
 
-        internal DBSetupTestHelper( ITestHelperConfiguration config, ISetupableSetupTestHelper setupableSetup, ISqlServerTestHelper sqlServer )
+        internal DBSetupTestHelper( ISetupableSetupTestHelper setupableSetup, ISqlServerTestHelper sqlServer )
         {
             _setupableSetup = setupableSetup;
             _sqlServer = sqlServer;
@@ -42,7 +42,6 @@ namespace CK.Testing
                 e.StObjEngineConfiguration.Aspects.Add( conf );
             }
         }
-
 
         CKSetupRunResult IDBSetupTestHelperCore.RunDBSetup( ISqlServerDatabaseOptions db, bool traceStObjGraphOrdering, bool traceSetupGraphOrdering, bool revertNames )
         {
