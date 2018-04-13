@@ -41,10 +41,18 @@
     <CKCodeGenVersion>0.1.3-Cdevelop-0026</CKCodeGenVersion>
     <YodiiScriptVersion>0.5.3-Cdevelop-0023</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
-    <CKSetupVersion>6.0.0-r09-00-develop-0054</CKSetupVersion>
+    <CKSetupVersion>6.0.0-r09-00-develop-0055</CKSetupVersion>
     <CKTestingVersion>0.3.1-Cdevelop-0035</CKTestingVersion>
     <FluentAssertionsVersion>5.2.0</FluentAssertionsVersion>
   </PropertyGroup>
+
+    <!-- Ignore any CKSetup-WorkingDir folder. -->
+    <ItemGroup>
+        <Compile Remove="CKSetup-WorkingDir\**" />
+        <EmbeddedResource Remove="CKSetup-WorkingDir\**" />
+        <None Remove="CKSetup-WorkingDir\**" />
+    </ItemGroup>
+    
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
     we unify the behavior here.
