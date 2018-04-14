@@ -12,6 +12,9 @@ using CK.Testing;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Provides extension methods to <see cref="SqlDatabase"/>.
+    /// </summary>
     public static class SqlDatabaseExtensions
     {
         /// <summary>
