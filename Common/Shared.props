@@ -35,13 +35,13 @@
     <CKMonitoringVersion>8.3.3</CKMonitoringVersion>
     <CKSetupDependencyVersion>7.0.0-b01-00-develop-0023</CKSetupDependencyVersion>
     <CKAspNetVersion>1.3.5-Cdevelop-0020</CKAspNetVersion>
-    <CKSqlServerParserVersion>7.1.1-Cdevelop-0032</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>7.1.1-Cdevelop-0033</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>5.0.2-Cdevelop-0026</CKSqlServerParserModelVersion>
     <CKReflectionVersion>6.0.3-Cdevelop-0023</CKReflectionVersion>
     <CKCodeGenVersion>0.1.3-Cdevelop-0028</CKCodeGenVersion>
     <YodiiScriptVersion>0.5.3-Cdevelop-0023</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
-    <CKSetupVersion>6.0.0-r09-00-develop-0061</CKSetupVersion>
+    <CKSetupVersion>6.0.0-r09-00-develop-0062</CKSetupVersion>
     <CKTestingVersion>0.3.1-Cdevelop-0039</CKTestingVersion>
     <FluentAssertionsVersion>5.2.0</FluentAssertionsVersion>
   </PropertyGroup>
