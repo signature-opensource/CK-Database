@@ -162,7 +162,7 @@ namespace CK.Core
                 if( _transformArg != value )
                 {
                     if( _transformArg != null ) _name = DefaultContextLocNaming.RemoveTransformArg( _name, 0, _name.Length );
-                    _name = DefaultContextLocNaming.AppendTransformArg( _name, value );
+                    if( value != null ) _name = DefaultContextLocNaming.AppendTransformArg( _name, value );
                     _transformArg = value;
                     _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
                 }

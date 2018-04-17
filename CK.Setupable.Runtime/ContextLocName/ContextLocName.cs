@@ -145,7 +145,7 @@ namespace CK.Core
             get { return _impl.TransformArg; }
             set
             {
-                if( value != null && string.IsNullOrWhiteSpace( value ) ) throw new ArgumentException( "Must not ne null, empty or whitespace.", nameof(TransformArg) );
+                if( value != null && string.IsNullOrWhiteSpace( value ) ) throw new ArgumentException( "Must not be empty or whitespace.", nameof(TransformArg) );
                 string oldName = _impl.Name;
                 _impl.TransformArg = value;
                 if( oldName != _impl.Name ) OnNameChanged();
