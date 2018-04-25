@@ -135,7 +135,7 @@ namespace CodeCake
                      componentProjects = new ComponentProjects( globalInfo.BuildConfiguration );
                      foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.LastPart == "publish" ) )
                      {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart().RemoveLastPart().RemoveLastPart().RemoveLastPart(),
+                         Cake.DotNetCorePublish( pub.RemoveLastPart(4),
                             new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
                             {
                                 s.Framework = "netcoreapp2.0";
@@ -171,7 +171,7 @@ namespace CodeCake
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
                     if( !storeConf.IsValid )
                     {
-                        if( globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
+                        if( globalInfo.LocalFeedPath != null && globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
                         {
                             storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
                         }

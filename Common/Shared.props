@@ -30,22 +30,27 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>9.1.3-Cblank-0027</CKCoreVersion>
-    <CKActivityMonitorVersion>9.0.5-Cblank-0025</CKActivityMonitorVersion>
+    <CKCoreVersion>9.1.3-Cdevelop-0034</CKCoreVersion>
+    <CKActivityMonitorVersion>9.0.5-Cdevelop-0032</CKActivityMonitorVersion>
     <CKMonitoringVersion>8.3.3</CKMonitoringVersion>
-    <CKSetupDependencyVersion>7.0.0-b01-00-blank-0018</CKSetupDependencyVersion>
-    <CKAspNetVersion>1.3.5-Cblank-0015</CKAspNetVersion>
-    <CKSqlServerParserVersion>7.1.1-Cblank-0027</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>5.0.2-Cblank-0021</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>6.0.3-Cblank-0021</CKReflectionVersion>
-    <CKCodeGenVersion>0.1.3-Cblank-0023</CKCodeGenVersion>
-    <YodiiScriptVersion>0.5.3-Cblank-0021</YodiiScriptVersion>
+    <CKSetupDependencyVersion>7.0.0-b01-00-develop-0025</CKSetupDependencyVersion>
+    <CKAspNetVersion>1.3.5-Cdevelop-0022</CKAspNetVersion>
+    <CKSqlServerParserVersion>7.1.1-Cdevelop-0035</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>5.0.2-Cdevelop-0028</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>6.0.3-Cdevelop-0025</CKReflectionVersion>
+    <CKCodeGenVersion>0.1.3-Cdevelop-0030</CKCodeGenVersion>
+    <YodiiScriptVersion>0.5.3-Cdevelop-0025</YodiiScriptVersion>
     <CSemVerVersion>1.1.0</CSemVerVersion>
-    <CKSetupVersion>6.0.0-r09-00-blank-0042</CKSetupVersion>
-    <CKTestingVersion>0.3.1-Cblank-0030</CKTestingVersion>
-    <MonoCecilVersion>0.10.0-beta7</MonoCecilVersion>
+    <CKSetupVersion>6.0.0-r09-00-develop-0064</CKSetupVersion>
+    <CKTestingVersion>0.3.1-Cdevelop-0041</CKTestingVersion>
     <FluentAssertionsVersion>5.2.0</FluentAssertionsVersion>
   </PropertyGroup>
+  <!-- Ignore any CKSetup-WorkingDir folder. -->
+  <ItemGroup>
+    <Compile Remove="CKSetup-WorkingDir\**" />
+    <EmbeddedResource Remove="CKSetup-WorkingDir\**" />
+    <None Remove="CKSetup-WorkingDir\**" />
+  </ItemGroup>
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
     we unify the behavior here.

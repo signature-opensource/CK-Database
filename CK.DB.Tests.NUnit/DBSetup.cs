@@ -46,7 +46,7 @@ namespace CK.DB.Tests
 
         /// <summary>
         /// Resets the <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.StObjMap"/>
-        /// by calling <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.ResetStObjMap()"/>
+        /// by calling <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.ResetStObjMap(bool)"/>
         /// and <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.DeleteGeneratedAssemblies(string)"/>
         /// in all the bin folders (<see cref="IBasicTestHelper.BinFolder"/> and all <see cref="CK.Testing.CKSetup.ICKSetupDriver.DefaultBinPaths"/>).
         /// </summary>

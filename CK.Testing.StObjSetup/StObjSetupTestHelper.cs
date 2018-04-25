@@ -60,7 +60,7 @@ namespace CK.Testing
         static public (StObjEngineConfiguration Configuration, bool ForceSetup) CreateDefaultConfiguration( IStObjSetupTestHelper helper )
         {
             bool forceSetup = helper.CKSetup.DefaultForceSetup
-                                || helper.CKSetup.FinalDefaultBinPaths.Append( helper.BinFolder )
+                                || helper.CKSetup.DefaultBinPaths.Append( helper.BinFolder )
                                         .Select( p => p.AppendPart( helper.GeneratedAssemblyName + ".dll" ) )
                                         .Any( p => !File.Exists( p ) );
 

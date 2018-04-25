@@ -14,9 +14,7 @@ namespace CK.Testing.DBSetup
         /// <summary>
         /// Runs the database setup in <see cref="IBasicTestHelper.BinFolder"/> on the default database
         /// (see <see cref="ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
-        /// Automatically called by <see cref="StObjMap.IStObjMapTestHelperCore.StObjMap"/>
-        /// when the StObjMap is not yet initialized.
-        /// This method uses CKSetup.Core (thanks to <see cref="ICKSetupTestHelper"/>).
+        /// This method calls <see cref="StObjSetup.IStObjSetupTestHelperCore.RunStObjSetup"/>.
         /// </summary>
         /// <param name="db">Defaults to the default database (<see cref="ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).</param>
         /// <param name="traceStObjGraphOrdering">True to trace input and output of StObj graph ordering.</param>
