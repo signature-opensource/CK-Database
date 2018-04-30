@@ -147,7 +147,7 @@ namespace CodeCake
             Task( "Unit-Testing" )
                 .IsDependentOn( "Build" )
                 .WithCriteria( () => Cake.InteractiveMode() == InteractiveMode.NoInteraction
-                                     || Cake.ReadInteractiveOption( "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
+                                     || Cake.ReadInteractiveOption( "RunUnitTests", "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
                 .Does( () =>
                  {
                      StandardUnitTests( globalInfo.BuildConfiguration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
@@ -169,17 +169,14 @@ namespace CodeCake
                     var components = componentProjects.ComponentProjectPaths.Select( x => x.ToString() );
 
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
+                    if( globalInfo.IsBlankCIRelease )
+                    {
+                        storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
+                    }
                     if( !storeConf.IsValid )
                     {
-                        if( globalInfo.LocalFeedPath != null && globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
-                        {
-                            storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
-                        }
-                        else
-                        {
-                            Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
-                            return;
-                        }
+                        Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
+                        return;
                     }
                     Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
                     if( !Cake.CKSetupAddComponentFoldersToStore( storeConf, components ) )
