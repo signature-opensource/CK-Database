@@ -169,17 +169,14 @@ namespace CodeCake
                     var components = componentProjects.ComponentProjectPaths.Select( x => x.ToString() );
 
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
+                    if( globalInfo.IsBlanckCIRelease )
+                    {
+                        storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
+                    }
                     if( !storeConf.IsValid )
                     {
-                        if( globalInfo.LocalFeedPath != null && globalInfo.LocalFeedPath.EndsWith( "LocalFeed\\Blank" ) )
-                        {
-                            storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
-                        }
-                        else
-                        {
-                            Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
-                            return;
-                        }
+                        Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
+                        return;
                     }
                     Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
                     if( !Cake.CKSetupAddComponentFoldersToStore( storeConf, components ) )
