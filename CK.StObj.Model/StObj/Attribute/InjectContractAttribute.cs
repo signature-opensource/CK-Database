@@ -34,14 +34,8 @@ namespace CK.Setup
             set { _isOptional = value; }
         }
 
-        bool IAmbientPropertyOrInjectContractAttribute.IsOptionalDefined
-        {
-            get { return _isOptional.HasValue; }
-        }
+        bool IAmbientPropertyOrInjectContractAttribute.IsOptionalDefined => _isOptional.HasValue; 
 
-        bool IAmbientPropertyOrInjectContractAttribute.IsAmbientProperty
-        {
-            get { return false; }
-        }
+        bool IAmbientPropertyOrInjectContractAttribute.IsAmbientProperty => false; 
     }
 }

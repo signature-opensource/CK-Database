@@ -11,13 +11,14 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
     internal class MutableReference : IStObjMutableReference
     {
         /// <summary>
-        /// Owner of the reference corresponds to the exact type of the object that has the Construct method for parameters.
+        /// Owner of the reference corresponds to the exact type of the object that has the StObjConstruct method for parameters.
         /// For Ambient Properties, the Owner is the Specialization.
         /// This is because a property has de facto more than one Owner when masking is used (note that handling of mask and covariance type checking is done
         /// by StObjTypeInfo: StObjTypeInfo.AmbientProperties already contains a merged information).
@@ -31,7 +32,10 @@ namespace CK.Setup
         {
             Owner = owner;
             _kind = kind;
-            if( _kind == StObjMutableReferenceKind.Requires || _kind == StObjMutableReferenceKind.Group || _kind == StObjMutableReferenceKind.AmbientContract || (_kind & StObjMutableReferenceKind.Container) != 0 )
+            if( _kind == StObjMutableReferenceKind.Requires 
+                || _kind == StObjMutableReferenceKind.Group 
+                || _kind == StObjMutableReferenceKind.AmbientContract 
+                || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
@@ -46,10 +50,11 @@ namespace CK.Setup
             }
         }
 
-        IStObj IStObjReference.Owner { get { return Owner; } }
-        IStObjMutableItem IStObjMutableReference.Owner { get { return Owner; } }
+        IStObj IStObjReference.Owner => Owner;
 
-        public StObjMutableReferenceKind Kind { get { return _kind; } }
+        IStObjMutableItem IStObjMutableReference.Owner => Owner;
+
+        public StObjMutableReferenceKind Kind => _kind;
 
         public StObjRequirementBehavior StObjRequirementBehavior { get; set; }
 
@@ -80,16 +85,18 @@ namespace CK.Setup
                 // Context is not null: search inside this exact context.
                 // Even if the context for this reference is the one of our Owner's context, since it is explicitly set,
                 // we expect the type to actually be in this context.
-                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context ? collector.FindContext( _context ) : cachedCollector;
+                StObjCollectorContextualResult ctxResult = cachedCollector == null || cachedCollector.Context != _context 
+                                                                ? collector.FindContext( _context ) 
+                                                                : cachedCollector;
                 if( ctxResult == null ) 
                 {
-                    Error( monitor, String.Format( "Undefined Typed context '{0}'", _context ) );
+                    Error( monitor, $"Undefined Typed context '{_context}'" );
                     return null;
                 }
                 result = ctxResult.InternalMapper.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    WarnOrErrorIfStObjRequired( monitor, String.Format( "{0} not found", AmbientContractCollector.FormatContextualFullName( _context, Type ) ) );
+                    WarnOrErrorIfStObjRequired( monitor, false, $"{AmbientContractCollector.FormatContextualFullName( _context, Type )} not found" );
                     return null;
                 }
             }
@@ -104,22 +111,13 @@ namespace CK.Setup
                     var all = collector.FindHighestImplFor( Type ).ToList();
                     if( all.Count == 0 )
                     {
-                        // Do not use WarnOrErrorIfStObjRequired since we want to handle optional value type or string not found without any warning.
-                        if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
-                        {
-                            Error( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
-                        }
-                        else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
-                        {
-                            if( !Type.IsValueType && Type != typeof(string) ) Warn( monitor, String.Format( "Type '{0}' not found in any context", Type.FullName ) );
-                        }
+                        // Do not when value type or string not found.
+                        WarnOrErrorIfStObjRequired(monitor, true, $"{AmbientContractCollector.FormatContextualFullName(_context, Type)} not found");
                         return null;
                     }
                     if( all.Count > 1 )
                     {
-                        Error( monitor, String.Format( "Type '{0}' exists in more than one context: '{1}'. A context for this relation must be specified", 
-                                                        Type.FullName, 
-                                                        String.Join( "', '", all.Select( m => m.Context ) ) ) );
+                        Error( monitor, $"Type '{Type.FullName}' exists in more than one context: '{String.Join("', '", all.Select(m => m.Context))}'. A context for this relation must be specified" );
                         return null;
                     }
                     result = all[0];
@@ -128,7 +126,7 @@ namespace CK.Setup
             return result;
         }
 
-        private void WarnOrErrorIfStObjRequired( IActivityMonitor monitor, string text )
+        protected virtual void WarnOrErrorIfStObjRequired( IActivityMonitor monitor, bool skipWarnOnValueType, string text )
         {
             if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.ErrorIfNotStObj )
             {
@@ -136,23 +134,23 @@ namespace CK.Setup
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                Warn( monitor, text );
+                if( !skipWarnOnValueType || !(Type.GetTypeInfo().IsValueType || Type == typeof(string)))
+                {
+                    Warn(monitor, text);
+                }
             }
         }
 
         protected void Warn( IActivityMonitor monitor, string text )
         {
-            monitor.Warn().Send( "{0}: {1}.", ToString(), text );
+            monitor.Warn( $"{ToString()}: {text}." );
         }
 
         protected void Error( IActivityMonitor monitor, string text )
         {
-            monitor.Error().Send( "{0}: {1}.", ToString(), text );
+            monitor.Error( $"{ToString()}: {text}." );
         }
 
-        public override string ToString()
-        {
-            return String.Format( "{0} reference for '{1}'", _kind.ToString(), Owner.ToString() );
-        }
+        public override string ToString() => $"{_kind.ToString()} reference for '{Owner}'";
     }
 }

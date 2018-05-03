@@ -1,37 +1,27 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\Attributes\SqlProcedureAttribute.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using CK.Core;
-using System.Reflection.Emit;
-using System.Reflection;
+using System.Threading.Tasks;
 
 namespace CK.SqlServer.Setup
 {
-
-    public enum ExecutionType
+    /// <summary>
+    /// Declares a stored procedure.
+    /// Signature is checked and code required to call it is generated.
+    /// </summary>
+    public class SqlProcedureAttribute : SqlCallableAttributeBase
     {
-        Unknown,
-        ExecuteNonQuery
-    } 
-    
-    [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureAttribute : SqlObjectItemMemberAttributeBase
-    {
+        /// <summary>
+        /// Initializes a new <see cref="SqlProcedureAttribute"/>.
+        /// </summary>
+        /// <param name="procedureName">
+        /// Name of the procedure. May start with "transform:" to declare a transformer
+        /// of the already existing procedure and "replace:" to fully override the existing definition.
+        /// </param>
         public SqlProcedureAttribute( string procedureName )
-            : base( procedureName, "CK.SqlServer.Setup.SqlProcedureAttributeImpl, CK.SqlServer.Setup.Runtime" )
+            : base( procedureName, "Procedure" )
         {
         }
-
-
-        public ExecutionType ExecuteCall { get; set; }
     }
-
 }

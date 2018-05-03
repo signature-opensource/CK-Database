@@ -13,19 +13,19 @@ namespace SqlCallDemo.ComplexType
 
     public abstract partial class ComplexTypePackage : SqlPackage
     {
-        [SqlProcedureNonQuery( "sComplexTypeStupidEmpty" )]
+        [SqlProcedure( "sComplexTypeStupidEmpty" )]
         public abstract Task<ComplexTypeStupidEmpty> GetComplexTypeStupidEmptyAsync( ISqlCallContext ctx );
 
-        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        [SqlProcedure( "sComplexTypeSimple" )]
         public abstract Task<ComplexTypeSimple> GetComplexTypeSimpleAsync( ISqlCallContext ctx, int id = 0 );
 
-        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        [SqlProcedure( "sComplexTypeSimple" )]
         public abstract Task<ComplexTypeSimpleWithCtor> GetComplexTypeSimpleWithCtorAsync( ISqlCallContext ctx, int id = 0 );
 
-        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        [SqlProcedure( "sComplexTypeSimple" )]
         public abstract Task<ComplexTypeSimpleWithExtraProperty> GetComplexTypeSimpleWithExtraPropertyAsync( ISqlCallContext ctx, int id = 0 );
 
-        [SqlProcedureNonQuery( "sComplexTypeSimple" )]
+        [SqlProcedure( "sComplexTypeSimple" )]
         public abstract Task<ComplexTypeSimpleWithMissingProperty> GetComplexTypeSimpleWithMissingPropertyAsync( ISqlCallContext ctx, int id = 0 );
 
     }

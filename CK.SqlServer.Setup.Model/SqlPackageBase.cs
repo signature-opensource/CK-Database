@@ -14,9 +14,12 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base class for actual <see cref="SqlPackage"/> and <see cref="SqlTable"/>.
+    /// </summary>
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
-    public class SqlPackageBase
+    public class SqlPackageBase : ISqlConnectionStringProvider
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.
@@ -32,10 +35,6 @@ namespace CK.SqlServer.Setup
         [AmbientProperty]
         public string Schema { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether this package is associated to a Model.
-        /// Defaults to false.
-        /// </summary>
-        public bool HasModel { get; set; }
+        string ISqlConnectionStringProvider.ConnectionString => Database?.ConnectionString;
     }
 }

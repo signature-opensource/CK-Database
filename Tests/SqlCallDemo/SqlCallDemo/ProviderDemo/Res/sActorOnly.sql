@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.0
+﻿-- SetupConfig: {}
 create procedure sActorOnly
 (
     @ActorId int,

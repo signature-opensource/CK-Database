@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.10
+﻿-- SetupConfig: {}
 alter procedure CK.sComplexTypeSimple
 (
 	@Id int = 0 /*input*/output,

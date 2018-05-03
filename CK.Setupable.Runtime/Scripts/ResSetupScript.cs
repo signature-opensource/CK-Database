@@ -14,31 +14,49 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Resource based implementation of <see cref="ISetupScript"/>.
+    /// </summary>
     public class ResSetupScript : ISetupScript
     {
-        public ResSetupScript( ParsedFileName n, string scriptSource )
+        string _cached;
+
+        /// <summary>
+        /// Initializes a new <see cref="ResSetupScript"/>.
+        /// </summary>
+        /// <param name="n">The name.</param>
+        public ResSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( String.IsNullOrWhiteSpace(scriptSource) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "scriptSource" );
-            if( !(n.ExtraPath is ResourceLocator) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a ResourceLocator.", "n" );
+            if( !(n.ExtraPath is ResourceLocator) ) throw new ArgumentException( "ParsedFileName.ExtractPath must be a ResourceLocator.", "n" );
             Name = n;
-            ScriptSource = scriptSource;
         }
 
-        public string ScriptSource { get; private set; }
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        public ParsedFileName Name { get; }
 
-        public ParsedFileName Name { get; private set; }
-
+        /// <summary>
+        /// Reads the resource content based on <see cref="ParsedFileName.ExtraPath"/> that is a <see cref="ResourceLocator"/>
+        /// and the <see cref="ParsedFileName.FileName"/>.
+        /// </summary>
+        /// <returns>The resource as a string.</returns>
         public string GetScript()
         {
-            ResourceLocator resLoc = (ResourceLocator)Name.ExtraPath;
-            return resLoc.GetString( Name.FileName, true );
+            if( _cached == null )
+            {
+                ResourceLocator resLoc = (ResourceLocator)Name.ExtraPath;
+                _cached = resLoc.GetString( Name.FileName, true );
+            }
+            return _cached;
         }
 
-        public override string ToString()
-        {
-            return String.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
-        }
+        /// <summary>
+        /// Overridden to return the path and name.
+        /// </summary>
+        /// <returns>The path and name.</returns>
+        public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }
 }

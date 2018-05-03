@@ -1,15 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\Collector\AmbientContractCollector.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Text;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -23,6 +18,7 @@ namespace CK.Core
     /// </remarks>
     public class AmbientContractCollector
     {
+
         /// <summary>
         /// Tests whether a Type is an <see cref="IAmbientContract"/>.
         /// It applies to interfaces and classes (for a class <see cref="IAmbientContractDefiner"/> is 
@@ -35,9 +31,9 @@ namespace CK.Core
             return
                 t != null
                 && t != typeof( object )
-                && (typeof( IAmbientContract ).IsAssignableFrom( t )
+                && (typeof( IAmbientContract ).GetTypeInfo().IsAssignableFrom( t )
                     ||
-                   (t.IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )));
+                   (t.GetTypeInfo().IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )));
         }
 
         /// <summary>
@@ -56,7 +52,17 @@ namespace CK.Core
             if( type == null ) throw new ArgumentNullException( "type" );
             return context == null ? type.FullName : '[' + context + ']' + type.FullName;
         }
-        
+
+        protected void RegisterAssembly(Type t)
+        {
+            var a = t.GetTypeInfo().Assembly;
+            if( !a.IsDynamic ) Assemblies.Add( a );
+        }
+
+        /// <summary>
+        /// The set of assemblies for which at least one type has been registered.
+        /// </summary>
+        protected HashSet<Assembly> Assemblies = new HashSet<Assembly>();
     }
 
     /// <summary>
@@ -90,7 +96,8 @@ namespace CK.Core
         readonly Func<IActivityMonitor,T,Type,T> _typeInfoFactory;
         
         readonly IActivityMonitor _monitor;
-        readonly DynamicAssembly _tempAssembly;
+        readonly IDynamicAssembly _tempAssembly;
+        readonly PocoRegisterer _pocoRegisterer;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientContractCollector{CT,T,TC}"/> instance.
@@ -98,15 +105,19 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="mapFactory">Factory for <see cref="IContextualTypeMap"/> objects.</param>
         /// <param name="typeInfoFactory">Factory for <see cref="AmbientTypeInfo"/> objects.</param>
-        /// <param name="tempAssembly">The <see cref="DynamicAssembly"/>.</param>
+        /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
         /// <param name="contextDispatcher">The strategy that will be used to alter type dispatching.</param>
         public AmbientContractCollector( 
             IActivityMonitor monitor,
             Func<IActivityMonitor, AmbientTypeMap<CT>> mapFactory,
             Func<IActivityMonitor, T, Type, T> typeInfoFactory,
-            DynamicAssembly tempAssembly = null, 
+            IDynamicAssembly tempAssembly,
             IAmbientContractDispatcher contextDispatcher = null )
         {
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
+            if( mapFactory == null ) throw new ArgumentNullException( nameof( mapFactory ) );
+            if( typeInfoFactory == null ) throw new ArgumentNullException( nameof( typeInfoFactory ) );
+            if( tempAssembly == null ) throw new ArgumentNullException( nameof( tempAssembly ) );
             _monitor = monitor;
             _contextDispatcher = contextDispatcher;
             _tempAssembly = tempAssembly;
@@ -114,61 +125,90 @@ namespace CK.Core
             _roots = new List<T>();
             _mapFactory = mapFactory;
             _typeInfoFactory = typeInfoFactory;
+            _pocoRegisterer = new PocoRegisterer();
         }
 
         /// <summary>
         /// Gets the number of registered types.
         /// </summary>
-        public int RegisteredTypeCount
-        {
-            get { return _collector.Count; }
-        }
+        public int RegisteredTypeCount => _collector.Count;
 
         /// <summary>
-        /// Registers multiple types. Only classes are actually registered (the enumearation 
-        /// can safely contain null references and interfaces).
+        /// Registers multiple types. Only classes and IPoco interfaces are considered.
         /// </summary>
-        /// <param name="types"></param>
-        public void Register( IEnumerable<Type> types )
+        /// <param name="types">Set of types.</param>
+        public void SafeRegister( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );
-            foreach( var t in types.Where( c => c != null && c.IsClass && c != typeof(object) ) )
+            foreach( var t in types )
             {
-                T result;
-                Register( t, out result );
+                if( t != null && t != typeof(object) ) DoRegisterClassOrPoco( t );
             }
         }
 
         /// <summary>
+        /// Registers a type.
+        /// It must be a class or a IPoco interface otherwise an argument exception is thrown.
+        /// </summary>
+        /// <param name="type">Class or IPoco interface.</param>
+        public void RegisterClassOrPoco( Type type )
+        {
+            if( type == null ) throw new ArgumentNullException( nameof( type ) );
+            if( type != typeof( object ) && !DoRegisterClassOrPoco( type ) )
+            {
+                throw new ArgumentException( $"Must be a Class or a IPoco interface: '{type.AssemblyQualifiedName}'.", nameof( type ) );
+            }
+        }
+
+        bool DoRegisterClassOrPoco( Type type )
+        {
+            Debug.Assert( type != null && type != typeof( object ) );
+            if( type.IsClass )
+            {
+                T result;
+                DoRegisterClass( type, out result );
+                return true;
+            }
+            if( type.IsInterface && typeof( IPoco ).IsAssignableFrom( type ) )
+            {
+                RegisterAssembly( type );
+                _pocoRegisterer.Register( _monitor, type );
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Registers a class.
+        /// It must be a class otherwise an argument exception is thrown.
         /// </summary>
         /// <param name="c">Class to register.</param>
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public bool RegisterClass( Type c )
         {
-            if( c == null ) throw new ArgumentNullException( "c" );
-            if( !c.IsClass ) throw new ArgumentException();
+            if( c == null ) throw new ArgumentNullException( nameof( c ) );
+            if( !c.GetTypeInfo().IsClass ) throw new ArgumentException();
             T result;
-            return c != typeof(object) ? Register( c, out result ) : false;
+            return c != typeof(object) ? DoRegisterClass( c, out result ) : false;
         }
 
-        bool Register( Type t, out T result )
+        bool DoRegisterClass( Type t, out T result )
         {
-            Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
+            Debug.Assert( t != null && t != typeof( object ) && t.GetTypeInfo().IsClass );
 
             // Skips already processed types.
             if( _collector.TryGetValue( t, out result ) ) return false;
 
             // Registers parent types whatever they are (null if not AmbientContract).
             T parent = null;
-            if( t.BaseType != typeof( object ) ) Register( t.BaseType, out parent );
+            if( t.GetTypeInfo().BaseType != typeof( object ) ) DoRegisterClass( t.GetTypeInfo().BaseType, out parent );
 
             // This is an Ambient contract if:
             // - its parent is an ambient contract 
             // - or it is statically an ambient contract (via IAmbientContract support or IAmbientContractDefiner on base class)
             // - or the IAmbientContractDispatcher wants to consider it as one.
             if( parent != null
-                || typeof( IAmbientContract ).IsAssignableFrom( t ) || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )
+                || typeof( IAmbientContract ).IsAssignableFrom( t ) || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )
                 || (_contextDispatcher != null && _contextDispatcher.IsAmbientContractClass( t )) )
             {
                 result = CreateTypeInfo( t, parent );
@@ -184,6 +224,7 @@ namespace CK.Core
 
         T CreateTypeInfo( Type t, T parent )
         {
+            RegisterAssembly( t );
             T result = _typeInfoFactory( _monitor, parent, t );
             if( parent == null ) _roots.Add( result );
             _collector.Add( t, result );
@@ -195,7 +236,8 @@ namespace CK.Core
         {
             public readonly CT Context;
             readonly IActivityMonitor _monitor;
-            readonly DynamicAssembly _assembly;
+            readonly IServiceProvider _services;
+            readonly IDynamicAssembly _tempAssembly;
 
             Dictionary<object,TC> _mappings;
             List<List<TC>> _concreteClasses;
@@ -203,12 +245,13 @@ namespace CK.Core
             List<Type> _abstractTails;
             int _registeredCount;
 
-            public PreResult( IActivityMonitor monitor, CT c, DynamicAssembly assembly )
+            public PreResult( IActivityMonitor monitor, CT c, IServiceProvider services, IDynamicAssembly tempAssembly )
             {
                 Debug.Assert( c != null );
                 Context = c;
                 _monitor = monitor;
-                _assembly = assembly;
+                _services = services;
+                _tempAssembly = tempAssembly;
                 _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
                 _abstractTails = new List<Type>();
@@ -220,7 +263,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     var deepestConcretes = new List<Tuple<TC,object>>();
-                    newOne.CollectDeepestConcrete<T, TC>( _monitor, Context, null, _assembly, deepestConcretes, _abstractTails );
+                    newOne.CollectDeepestConcrete<T, TC>( _monitor, _services, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0].Item1;
@@ -244,7 +287,7 @@ namespace CK.Core
                         ambiguousPath.AddRange( deepestConcretes.Select( m => m.Item1.AmbientTypeInfo.Type ) );
 
                         if( _classAmbiguities == null ) _classAmbiguities = new List<IReadOnlyList<Type>>();
-                        _classAmbiguities.Add( ambiguousPath.ToReadOnlyList() );
+                        _classAmbiguities.Add( ambiguousPath.ToArray() );
                     }
                 }
             }
@@ -283,10 +326,10 @@ namespace CK.Core
                 }
                 var ctxResult = new AmbientContractCollectorContextualResult<CT,T,TC>(
                     Context,
-                    _concreteClasses.Select( list => list.ToReadOnlyList() ).ToReadOnlyList(),
-                    _classAmbiguities != null ? new CKReadOnlyListOnIList<IReadOnlyList<Type>>( _classAmbiguities ) : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToReadOnlyList() ).ToReadOnlyList() : CKReadOnlyListEmpty<IReadOnlyList<Type>>.Empty,
-                    new CKReadOnlyListOnIList<Type>( _abstractTails ) );
+                    _concreteClasses.Select( list => list.ToArray() ).ToArray(),
+                    _classAmbiguities != null ? _classAmbiguities : (IReadOnlyList<IReadOnlyList<Type>>)Util.Array.Empty<IReadOnlyList<Type>>(),
+                    interfaceAmbiguities != null ? interfaceAmbiguities.Values.Select( list => list.ToArray() ).ToArray() : (IReadOnlyList<IReadOnlyList<Type>>)Util.Array.Empty<IReadOnlyList<Type>>(),
+                    _abstractTails );
                 return ctxResult;
             }
         }
@@ -295,16 +338,32 @@ namespace CK.Core
         /// Obtains the result of the collection.
         /// </summary>
         /// <returns>The result object.</returns>
-        public AmbientContractCollectorResult<CT,T,TC> GetResult()
+        public AmbientContractCollectorResult<CT,T,TC> GetResult( IServiceProvider services )
         {
+            IPocoSupportResult pocoSupport;
+            using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
+            {
+                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
+                if( pocoSupport != null )
+                {
+                    _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                    _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
+                    RegisterClass( pocoSupport.FinalFactory );
+                }
+            }
             var mappings = _mapFactory( _monitor );
             var byContext = new Dictionary<string, PreResult>();
-            byContext.Add( String.Empty, new PreResult( _monitor, mappings.CreateAndAddContext<T,TC>( _monitor, String.Empty ), _tempAssembly ) );
+            // Creates default context.
+            byContext.Add( string.Empty, new PreResult(
+                _monitor,
+                mappings.CreateAndAddContext<T,TC>( _monitor, string.Empty ),
+                services,
+                _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC> );
+                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC>, services );
             }
-            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, _collector );
+            var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector, Assemblies );
             foreach( PreResult rCtx in byContext.Values )
             {
                 r.Add( rCtx.GetResult( mappings, IsAmbientInterface ) );
@@ -314,20 +373,20 @@ namespace CK.Core
 
         bool IsAmbientInterface( Type t )
         {
-            Debug.Assert( t.IsInterface );
+            Debug.Assert( t.GetTypeInfo().IsInterface );
             return t != typeof( IAmbientContract ) && typeof( IAmbientContract ).IsAssignableFrom( t );
         }
 
-        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityMonitor,string,CT> contextCreator )
+        void HandleContexts( AmbientTypeInfo m, Dictionary<string, PreResult> contexts, Func<IActivityMonitor,string,CT> contextCreator, IServiceProvider services )
         {
             foreach( AmbientTypeInfo child in m.SpecializationsByContext( null ) )
             {
-                HandleContexts( child, contexts, contextCreator );
+                HandleContexts( child, contexts, contextCreator, services );
                 m.MutableFinalContexts.AddRange( child.MutableFinalContexts );
             }
             foreach( string context in m.MutableFinalContexts )
             {
-                contexts.GetOrSet( context, c => new PreResult( _monitor, contextCreator( _monitor, c ), _tempAssembly ) ).Add( m );
+                contexts.GetOrSet( context, c => new PreResult( _monitor, contextCreator( _monitor, c ), services, _tempAssembly ) ).Add( m );
             }
         }
 

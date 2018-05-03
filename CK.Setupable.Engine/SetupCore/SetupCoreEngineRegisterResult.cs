@@ -29,7 +29,7 @@ namespace CK.Setup
         public DependencySorterResult<ISetupItem> SortResult { get; private set; }
 
         /// <summary>
-        /// Gets whether the <see cref="SetupCoreEngine.Register"/> succeeded: <see cref="SortResult"/>.<see cref="IDependencySorterResult.IsComplete">IsComplete</see>
+        /// Gets whether the <see cref="SetupCoreEngine.RegisterAndCreateDrivers"/> succeeded: <see cref="SortResult"/>.<see cref="IDependencySorterResult.IsComplete">IsComplete</see>
         /// must be true, no <see cref="UnexpectedError"/> occurred, no <see cref="CancelReason"/> exists and no <see cref="CanceledRegistrationCulprit"/> canceled the registration.
         /// </summary>
         public bool IsValid
@@ -68,9 +68,9 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( "_monitor" );
             if( !IsValid )
             {
-                if( UnexpectedError != null ) monitor.Fatal().Send( UnexpectedError );
-                if( CanceledRegistrationCulprit != null ) monitor.Fatal().Send( "Canceled during '{0}' registration.", CanceledRegistrationCulprit.FullName );
-                if( CancelReason != null ) monitor.Fatal().Send( CancelReason );
+                if( UnexpectedError != null ) monitor.Fatal( UnexpectedError );
+                if( CanceledRegistrationCulprit != null ) monitor.Fatal( $"Canceled during '{CanceledRegistrationCulprit.FullName}' registration." );
+                if( CancelReason != null ) monitor.Fatal( CancelReason );
                 if( SortResult != null ) SortResult.LogError( monitor );
             }
         }

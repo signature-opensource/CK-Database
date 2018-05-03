@@ -15,41 +15,41 @@ namespace SqlCallDemo.ProviderDemo
     [SqlPackage( Schema = "Provider", ResourcePath = "Res" ), Versions( "1.0.0" )]
     public abstract partial class ProviderDemoPackage : SqlPackage
     {
-        [SqlProcedureNonQuery( "sActorOnly" )]
-        public abstract string ActorOnly( IActorCallContext ctx );
+        [SqlProcedure( "sActorOnly" )]
+        public abstract string ActorOnly( [ParameterSource]IActorCallContext ctx );
 
-        [SqlProcedureNonQuery( "sActorOnly" )]
-        public abstract Task<string> ActorOnlyAsync( IActorCallContext ctx );
+        [SqlProcedure( "sActorOnly" )]
+        public abstract Task<string> ActorOnlyAsync( [ParameterSource]IActorCallContext ctx );
 
-        [SqlProcedureNonQuery( "sCultureOnly" )]
-        public abstract string CultureOnly( ICultureCallContext ctx );
+        [SqlProcedure( "sCultureOnly" )]
+        public abstract string CultureOnly( [ParameterSource]ICultureCallContext ctx );
 
-        [SqlProcedureNonQuery( "sCultureOnly" )]
-        public abstract Task<string> CultureOnlyAsync( ICultureCallContext ctx );
+        [SqlProcedure( "sCultureOnly" )]
+        public abstract Task<string> CultureOnlyAsync( [ParameterSource]ICultureCallContext ctx );
 
-        [SqlProcedureNonQuery( "sTenantOnly" )]
-        public abstract string TenantOnly( ITenantCallContext ctx );
+        [SqlProcedure( "sTenantOnly" )]
+        public abstract string TenantOnly( [ParameterSource]ITenantCallContext ctx );
 
-        [SqlProcedureNonQuery( "sTenantOnly" )]
-        public abstract Task<string> TenantOnlyAsync( ITenantCallContext ctx );
+        [SqlProcedure( "sTenantOnly" )]
+        public abstract Task<string> TenantOnlyAsync( [ParameterSource]ITenantCallContext ctx );
 
-        [SqlProcedureNonQuery( "sActorCulture" )]
-        public abstract Task<string> ActorCulture( IActorCultureCallContext ctx );
+        [SqlProcedure( "sActorCulture" )]
+        public abstract Task<string> ActorCulture( [ParameterSource]IActorCultureCallContext ctx );
 
-        [SqlProcedureNonQuery( "sActorCulture" )]
-        public abstract Task<string> ActorCultureAsync( IActorCultureCallContext ctx );
+        [SqlProcedure( "sActorCulture" )]
+        public abstract Task<string> ActorCultureAsync( [ParameterSource]IActorCultureCallContext ctx );
 
-        [SqlProcedureNonQuery( "sCultureTenant" )]
-        public abstract Task<string> CultureTenant( ICultureTenantCallContext ctx );
+        [SqlProcedure( "sCultureTenant" )]
+        public abstract Task<string> CultureTenant( [ParameterSource]ICultureTenantCallContext ctx );
 
-        [SqlProcedureNonQuery( "sCultureTenant" )]
-        public abstract Task<string> CultureTenantAsync( ICultureTenantCallContext ctx );
+        [SqlProcedure( "sCultureTenant" )]
+        public abstract Task<string> CultureTenantAsync( [ParameterSource]ICultureTenantCallContext ctx );
 
-        [SqlProcedureNonQuery( "sAllContexts" )]
-        public abstract Task<string> AllContexts( IAllCallContext ctx );
+        [SqlProcedure( "sAllContexts" )]
+        public abstract Task<string> AllContexts( [ParameterSource]IAllCallContext ctx );
 
-        [SqlProcedureNonQuery( "sAllContexts" )]
-        public abstract Task<string> AllContextsAsync( IAllCallContext ctx );
+        [SqlProcedure( "sAllContexts" )]
+        public abstract Task<string> AllContextsAsync( [ParameterSource]IAllCallContext ctx );
 
     }
 }

@@ -18,7 +18,8 @@ namespace CK.Setup
         /// <summary>
         /// Gets an identifier of the type of the item. This is required
         /// in order to be able to handle specific storage for version without 
-        /// relying on any <see cref="IDependentItem.FullName">FullName</see> conventions.
+        /// relying on any <see cref="IDependentItem.FullName">FullName</see> conventions and may 
+        /// help troubleshooting.
         /// Must be a non null, nor empty empty or whitespace identifier of at most 16 characters long.
         /// </summary>
         string ItemType { get; }

@@ -1,13 +1,8 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\ActorPackage\DatabaseSetup.CommandParamInjection.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.Core;
+using FluentAssertions;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -15,7 +10,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckCommandParamInjection( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicPackageForCommandWrappers" ) )
+            using( TestHelper.Monitor.OpenTrace("CheckBasicPackageForCommandWrappers" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 SimpleProcedureNaked( c, package );
@@ -33,31 +28,32 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             string result;
             using( var cmd = package.SimpleProcedureNaked( 3712, "Test", out result ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test - 3712" ) );
+                cmd.Connection = c.Connection;
+                cmd.ExecuteNonQuery();
+                cmd.Parameters["@Result"].Value.Should().Be( "Test - 3712" );
             }
         }
 
         private static void SimpleProcedureWithConnection( SqlManager c, Package package )
         {
             string result;
-            using( var cmd = package.SimpleProcedureWithConnection( c.Connection.InternalConnection, 78, "Test2", out result ) )
+            using( var cmd = package.SimpleProcedureWithConnection( c.Connection, 78, "Test2", out result ) )
             {
                 cmd.ExecuteNonQuery();
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test2 - 78" ) );
+                cmd.Parameters["@Result"].Value.Should().Be( "Test2 - 78" );
             }
         }
 
         private static void SimpleProcedureWithTransaction( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.InternalConnection.BeginTransaction() )
+            using( var t = c.Connection.BeginTransaction() )
             using( var cmd = package.SimpleProcedureWithTransaction( t, 100, "Test3", out result ) )
             {
-                Assert.That( cmd.Transaction, Is.SameAs( t ) );
-                Assert.That( cmd.Connection, Is.SameAs( t.Connection ) );
+                cmd.Transaction.Should().BeSameAs( t );
+                cmd.Connection.Should().BeSameAs( t.Connection );
                 cmd.ExecuteNonQuery();
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test3 - 100" ) );
+                cmd.Parameters["@Result"].Value.Should().Be( "Test3 - 100" );
                 t.Commit();
             }
         }
@@ -65,13 +61,13 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithTransactionAndConnection( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.InternalConnection.BeginTransaction() )
-            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 100, t, "Test3", out result, c.Connection.InternalConnection ) )
+            using( var t = c.Connection.BeginTransaction() )
+            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 100, t, "Test3", out result, c.Connection ) )
             {
-                Assert.That( cmd.Transaction, Is.SameAs( t ) );
-                Assert.That( cmd.Connection, Is.SameAs( t.Connection ) );
+                cmd.Transaction.Should().BeSameAs( t );
+                cmd.Connection.Should().BeSameAs( t.Connection );
                 cmd.ExecuteNonQuery();
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test3 - 100" ) );
+                cmd.Parameters["@Result"].Value.Should().Be( "Test3 - 100" );
                 t.Commit();
             }
         }
@@ -79,13 +75,13 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithTransactionAndNullConnection( SqlManager c, Package package )
         {
             string result;
-            using( var t = c.Connection.InternalConnection.BeginTransaction() )
+            using( var t = c.Connection.BeginTransaction() )
             using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 200, t, "Test4", out result, null ) )
             {
-                Assert.That( cmd.Transaction, Is.SameAs( t ) );
-                Assert.That( cmd.Connection, Is.SameAs( t.Connection ) );
+                cmd.Transaction.Should().BeSameAs( t );
+                cmd.Connection.Should().BeSameAs( t.Connection );
                 cmd.ExecuteNonQuery();
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test4 - 200" ) );
+                cmd.Parameters["@Result"].Value.Should().Be( "Test4 - 200" );
                 t.Commit();
             }
         }
@@ -93,12 +89,12 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         private static void SimpleProcedureWithNullTransactionAndConnection( SqlManager c, Package package )
         {
             string result;
-            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 300, null, "Test5", out result, c.Connection.InternalConnection ) )
+            using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 300, null, "Test5", out result, c.Connection ) )
             {
-                Assert.That( cmd.Transaction, Is.Null );
-                Assert.That( cmd.Connection, Is.SameAs( c.Connection.InternalConnection ) );
+                cmd.Transaction.Should().BeNull();
+                cmd.Connection.Should().BeSameAs( c.Connection );
                 cmd.ExecuteNonQuery();
-                Assert.That( cmd.Parameters["@Result"].Value, Is.EqualTo( "Test5 - 300" ) );
+                cmd.Parameters["@Result"].Value.Should().Be( "Test5 - 300" );
             }
         }
 
@@ -107,8 +103,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             string result;
             using( var cmd = package.SimpleProcedureWithConnectionAndTransaction( 400, null, "Test6", out result, null ) )
             {
-                Assert.That( cmd.Transaction, Is.Null );
-                Assert.That( cmd.Connection, Is.Null );
+                cmd.Transaction.Should().BeNull();
+                cmd.Connection.Should().BeNull();
             }
         }
 

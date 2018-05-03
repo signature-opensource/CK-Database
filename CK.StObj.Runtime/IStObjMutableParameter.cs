@@ -15,7 +15,7 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes a parameter of a Construct method.
+    /// Describes a parameter of a StObjConstruct method.
     /// </summary>
     public interface IStObjMutableParameter : IStObjMutableReference
     {
@@ -40,7 +40,7 @@ namespace CK.Setup
         int Index { get; }
 
         /// <summary>
-        /// Gets whether the formal parameter is optional (<see cref="Type.Missing"/> can be used as the parameter value 
+        /// Gets whether the formal parameter is optional (<see cref="System.Type.Missing"/> can be used as the parameter value 
         /// at invocation time, see <see cref="ParameterInfo.IsOptional"/>).
         /// </summary>
         bool IsRealParameterOptional { get; }
@@ -54,7 +54,7 @@ namespace CK.Setup
         /// The <see cref="IStObjFinalParameter"/> also exposes this method: by using <see cref="IStObjFinalParameter.SetParameterValue"/> from <see cref="IStObjValueResolver.ResolveParameterValue"/>, an 
         /// explicit value can be injected while the potential dependency has actually been taken into account.
         /// </remarks>
-        /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual Construct method.</param>
+        /// <param name="value">Value to set. Type must be compatible otherwise an exception will be thrown when calling the actual StObjConstruct method.</param>
         void SetParameterValue( object value );
     }
 }

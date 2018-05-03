@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableItem.Construct.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +35,7 @@ namespace CK.Setup
                 }
             }
 
-            if( AmbientTypeInfo.Construct == null ) return;
+            if( AmbientTypeInfo.StObjConstruct == null ) return;
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
@@ -58,28 +51,28 @@ namespace CK.Setup
                 else
                 {
                     MutableItem resolved = null;
-                    if( t.Value == Type.Missing )
+                    if( t.Value == System.Type.Missing )
                     {
                         // Parameter reference have already been resolved as dependencies for graph construction since 
                         // no Value has been explicitely set for the parameter.
                         resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {
-                            Debug.Assert( resolved.InitialObject != Type.Missing );
+                            Debug.Assert( resolved.InitialObject != System.Type.Missing );
                             t.SetParameterValue( resolved.InitialObject );
                         }
                     }
                     if( valueResolver != null ) valueResolver.ResolveParameterValue( monitor, t );
-                    if( t.Value == Type.Missing && !t.IsRealParameterOptional )
+                    if( t.Value == System.Type.Missing && !t.IsRealParameterOptional )
                     {
                         if( !t.IsOptional )
                         {
                             // By throwing an exception here, we stop the process and avoid the construction 
                             // of an invalid object graph...
                             // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
-                            monitor.Fatal().Send( "{0}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors.", t.ToString() );
+                            monitor.Fatal( $"{t}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors." );
                         }
-                        t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                        t.SetParameterValue( t.Type.GetTypeInfo().IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
                     if( resolved != null && t.Value == resolved.InitialObject )
                     {
@@ -92,7 +85,7 @@ namespace CK.Setup
                 }
                 parameters[i++] = t.Value;
             }
-            AmbientTypeInfo.Construct.Invoke( _leafData.StructuredObject, parameters );
+            AmbientTypeInfo.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
         internal void SetPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
@@ -107,13 +100,13 @@ namespace CK.Setup
             }
         }
 
-        struct PropertySetter
+        public struct PropertySetter
         {
             public readonly PropertyInfo Property;
             public readonly object Value;
-            public readonly int IndexValue;
+            internal readonly int IndexValue;
 
-            public PropertySetter( PropertyInfo p, object o, BuildValueCollector valueCollector )
+            internal PropertySetter( PropertyInfo p, object o, BuildValueCollector valueCollector )
             {
                 Property = p;
                 Value = o;
@@ -136,7 +129,7 @@ namespace CK.Setup
             }
             catch( Exception ex )
             {
-                monitor.Error().Send( ex, "While setting '{1}.{0}'.", p.Property.Name, p.Property.DeclaringType.FullName );
+                monitor.Error( $"While setting '{p.Property.DeclaringType.FullName}.{p.Property.Name}'.", ex );
             }
         }
 

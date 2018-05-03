@@ -30,16 +30,18 @@ namespace CK.Core
         /// Initializes a new <see cref="AmbientContextualTypeInfo{T,TC}"/>. 
         /// Attributes must be retrieved with <see cref="AmbientContextualAttributesCache.GetCustomAttributes">GetCustomAttributes</see> methods.
         /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type.</param>
         /// <param name="generalization">Generalization in this context. Null if this is the root of the specialization path.</param>
         /// <param name="context">Context.</param>
+        /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <remarks>
         /// Contextual type information are built top-down (from generalization to most specialized type).
         /// Once the ultimate leaf (AbstractTypeCanBeInstanciated) has been computed and no ambiguities occur, initialization
         /// is done bottom-up through <see cref="InitializeBottomUp"/>.
         /// </remarks>
-        internal protected AmbientContextualTypeInfo( T t, TC generalization, IContextualTypeMap context )
-            : base( t.Type, generalization == null )
+        internal protected AmbientContextualTypeInfo( IActivityMonitor monitor, T t, TC generalization, IContextualTypeMap context, IServiceProvider services )
+            : base( monitor, t.Type.GetTypeInfo(), services, generalization == null )
         {
             AmbientTypeInfo = t;
             Context = context;
@@ -86,9 +88,9 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
         /// <param name="abstractTypeInfo">Optional object that could be associated to concretize an abstract type.</param>
-        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, DynamicAssembly assembly, out object abstractTypeInfo )
+        internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, IDynamicAssembly assembly, out object abstractTypeInfo )
         {
-            Debug.Assert( AmbientTypeInfo.Type.IsAbstract && assembly != null );
+            Debug.Assert( AmbientTypeInfo.Type.GetTypeInfo().IsAbstract && assembly != null );
             abstractTypeInfo = null;
             return false;
         }
@@ -97,10 +99,7 @@ namespace CK.Core
         /// Overridden to return the name of the type in the context.
         /// </summary>
         /// <returns>Formatted name.</returns>
-        public override string ToString()
-        {
-            return AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
-        }
+        public override string ToString() => AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
     }
 
 }

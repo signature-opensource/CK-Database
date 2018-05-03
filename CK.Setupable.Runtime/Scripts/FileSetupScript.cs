@@ -13,31 +13,48 @@ using System.IO;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// File based implementation of <see cref="ISetupableAspect"/>.
+    /// </summary>
     public class FileSetupScript : ISetupScript
     {
-        public FileSetupScript( ParsedFileName n, string scriptSource )
+        string _cached;
+
+        /// <summary>
+        /// Initialized a new <see cref="FileSetupScript"/>.
+        /// </summary>
+        /// <param name="n">The name.</param>
+        public FileSetupScript( ParsedFileName n )
         {
             if( n == null ) throw new ArgumentNullException( "n" );
-            if( String.IsNullOrWhiteSpace(scriptSource) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "scriptSource" );
             if( !(n.ExtraPath is string) || !Path.IsPathRooted( (string)n.ExtraPath ) ) throw new ArgumentException( "ParsedFileName.ExtraPath must be a rooted file path.", "n" );
             Name = n;
-            ScriptSource = scriptSource;
         }
 
-        public string ScriptSource { get; private set; }
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        public ParsedFileName Name { get; }
 
-        public ParsedFileName Name { get; private set; }
-
+        /// <summary>
+        /// Reads the file content from <see cref="ParsedFileName.ExtraPath"/>/<see cref="ParsedFileName.Name"/>.
+        /// </summary>
+        /// <returns>The file content.</returns>
         public string GetScript()
         {
-            string path = Path.Combine( (string)Name.ExtraPath, Name.FileName );
-            return File.ReadAllText( path );
+            if( _cached == null )
+            {
+                string path = Path.Combine( (string)Name.ExtraPath, Name.FileName );
+                _cached = File.ReadAllText( path );
+            }
+            return _cached;
         }
 
-        public override string ToString()
-        {
-            return String.Format( @"{0} script - {1}\\{2}", ScriptSource, Name.ExtraPath, Name.FileName );
-        }
+        /// <summary>
+        /// Overridden to return the path and name.
+        /// </summary>
+        /// <returns>The path and name.</returns>
+        public override string ToString() => $@"Script - {Name.ExtraPath}\\{Name.FileName}";
 
     }
 }

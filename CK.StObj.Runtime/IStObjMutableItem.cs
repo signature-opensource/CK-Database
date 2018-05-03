@@ -86,7 +86,7 @@ namespace CK.Setup
         IStObjMutableReferenceList Groups { get; }
 
         /// <summary>
-        /// Gets a list of mutable Construct parameters.
+        /// Gets a list of mutable StObjConstruct parameters.
         /// </summary>
         IReadOnlyList<IStObjMutableParameter> ConstructParameters { get; }
 
@@ -106,7 +106,8 @@ namespace CK.Setup
 
         /// <summary>
         /// Sets a direct property (it must not be an Ambient Property, Contract nor a StObj property) on the Structured Object. 
-        /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type otherwise an error is logged.
+        /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type 
+        /// otherwise an error is logged.
         /// </summary>
         /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to set.</param>
@@ -142,7 +143,8 @@ namespace CK.Setup
         bool SetAmbiantPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
-        /// Sets how an ambient property on the Structured Object must be resolved (the property must exist, be writeable, and marked with <see cref="AmbientPropertyAttribute"/>).
+        /// Sets how an ambient property on the Structured Object must be resolved (the property must exist, 
+        /// be writeable, and marked with <see cref="AmbientPropertyAttribute"/>).
         /// </summary>
         /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to configure.</param>

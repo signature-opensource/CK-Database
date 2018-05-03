@@ -11,15 +11,31 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Implementation of <see cref="SqlTableAttribute"/>.
+    /// </summary>
     public class SqlTableAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlTableAttributeImpl"/>.
+        /// </summary>
+        /// <param name="a">The attribute.</param>
         public SqlTableAttributeImpl( SqlTableAttribute a )
             : base( a )
         {
         }
 
-        protected new SqlTableAttribute Attribute { get { return (SqlTableAttribute)base.Attribute; } }
+        /// <summary>
+        /// Masked to formally associates a <see cref="SqlTableAttribute"/> attribute.
+        /// </summary>
+        protected new SqlTableAttribute Attribute => (SqlTableAttribute)base.Attribute;
 
+        /// <summary>
+        /// Transfers <see cref="SqlTableAttribute.TableName" /> as a direct property "TableName" of the StObj item
+        /// and <see cref="SqlPackageAttributeBase.Schema"/> as the "Schema" ambient property.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="o">The configured object.</param>
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
             if( Attribute.TableName != null ) o.SetDirectPropertyValue( monitor, "TableName", Attribute.TableName );
@@ -28,9 +44,9 @@ namespace CK.SqlServer.Setup
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
-            SetAutomaticSetupFullNamewithoutContext( monitor, data, "SqlTable" );
+            SetAutomaticSetupFullNameWithoutContext( monitor, data, "SqlTable" );
             data.ItemType = typeof( SqlTableItem );
-            data.DriverType = typeof( SqlTableSetupDriver );
+            data.DriverType = typeof( SqlTableItemDriver );
         }
 
     }

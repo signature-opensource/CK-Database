@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Testing.StObjMap\CK.Testing.StObjMap.csproj" />
+    <PackageReference Include="CK.Testing.CKSetup" Version="$(CKSetupVersion)" />
+  </ItemGroup>
+
+</Project>

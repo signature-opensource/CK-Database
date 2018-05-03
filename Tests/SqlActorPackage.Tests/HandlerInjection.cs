@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
+using FluentAssertions;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
-using System.Diagnostics;
+using static CK.Testing.CKDatabaseLocalTestHelper;
 
 namespace SqlActorPackage.Tests
 {
@@ -19,19 +15,43 @@ namespace SqlActorPackage.Tests
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sActorCreate" );
-            Assert.That( textA, Is.StringContaining( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
+            textA.Should().Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." );
 
             var textB = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
-            Assert.That( textB, Is.StringContaining( "--Injected From ActorHome - TestAutoHeaderAttribute." ) );
+            textB.Should().Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." );
         }
-        
+
         [Test]
         public void auto_header_injection_by_attribute_on_member()
         {
             var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
 
-            var text = a.Database.GetObjectDefinition( "CK.sActorGuidRefTest" );
-            Assert.That( text, Is.StringContaining( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." ) );
+            var text = a.Database.GetObjectDefinition("CK.sActorGuidRefTest");
+            text.Should().Contain( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." );
+        }
+
+        [Test]
+        public void construct_injection_of_unresolved_AmbientContract_is_null()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            a.UnexistingByConstructParam.Should().BeNull();
+        }
+
+        [Test]
+        public void optional_property_InjectContract_of_unresolved_AmbientContract_is_null()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            a.ZoneHome.Should().BeNull();
+            a.UnexistingByInjectContract.Should().BeNull();
+        }
+
+        [Test]
+        public void Initialize_method_provides_a_way_to_register_multiple_services()
+        {
+            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            a.AllServices.Should().HaveCount( 1 );
+            a.AllServices[0].Should().BeSameAs( TestHelper.StObjMap.Default.Obtain<GroupHome>() );
         }
     }
+
 }

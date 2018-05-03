@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Model\SqlDatabase.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -12,17 +12,19 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
-
+    /// <summary>
+    /// Database objects hold the <see cref="ConnectionString"/> and the schemas defined in it.
+    /// </summary>
     [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
-    public class SqlDatabase
+    public class SqlDatabase: ISqlConnectionStringProvider
     {
         /// <summary>
         /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
         /// </summary>
-        public const string DefaultDatabaseName = "db";
+        public const string DefaultDatabaseName = SqlSetupAspectConfiguration.DefaultDatabaseName;
 
         /// <summary>
-        /// Default schema name is "CK".
+        /// Default schema name is "CK": <see cref="SqlDefaultDatabase"/> registers it.
         /// </summary>
         public const string DefaultSchemaName = "CK";
 
@@ -30,11 +32,15 @@ namespace CK.SqlServer.Setup
         readonly Dictionary<string,string> _schemas;
         bool _installCore;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlDatabase"/>.
+        /// </summary>
+        /// <param name="name">Logical name of the database.</param>
         public SqlDatabase( string name )
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
             _name = name;
-            _schemas = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
+            _schemas = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -42,14 +48,11 @@ namespace CK.SqlServer.Setup
         /// This name, which is strongly associated to this SqlDatabase object and can not be changed (set only in the constructor), 
         /// defines the location of objects that are bound to it and drives the actual connection string to use.
         /// </summary>
-        public string Name
-        {
-            get { return _name; }
-        }
+        public string Name => _name;
 
         /// <summary>
         /// Gets or sets the connection string.
-        /// This can be automatically configured during setup (if the specialized class implements a Construct method with a connectionString parameter
+        /// This can be automatically configured during setup (if the specialized class implements a StObjConstruct method with a connectionString parameter
         /// and sets this property).
         /// </summary>
         public string ConnectionString { get; set; }
@@ -63,7 +66,7 @@ namespace CK.SqlServer.Setup
         /// <returns>Registered name.</returns>
         public string EnsureSchema( string name )
         {
-            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
+            if( string.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
             string existing;
             if( _schemas.TryGetValue( name, out existing ) )
             {
@@ -79,13 +82,10 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the different schemas that are owned by this <see cref="SqlDatabase"/>.
         /// </summary>
-        public IEnumerable<string> Schemas
-        {
-            get { return _schemas.Keys; }
-        }
+        public IEnumerable<string> Schemas => _schemas.Keys; 
 
         /// <summary>
-        /// Gets or sets whether CK Core kernel support must be installed in the database.
+        /// Gets or sets whether CKCore kernel support must be installed in the database.
         /// Defaults to false.
         /// Always true if <see cref="IsDefaultDatabase"/> is true.
         /// </summary>
@@ -98,9 +98,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Default database name is <see cref="DefaultDatabaseName"/> = "db".
         /// </summary>
-        public bool IsDefaultDatabase
-        {
-            get { return _name == DefaultDatabaseName; }
-        }
+        public bool IsDefaultDatabase => _name == DefaultDatabaseName;
+
     }
 }

@@ -49,7 +49,7 @@ namespace CK.Setupable.Engine.Tests
                 get { throw new NotImplementedException(); }
             }
 
-            public object StartDependencySort()
+            public object StartDependencySort( IActivityMonitor m )
             {
                 throw new NotImplementedException();
             }

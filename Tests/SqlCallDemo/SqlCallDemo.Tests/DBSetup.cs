@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace From.CKDBNUnit
 {
     [TestFixture]
-    public class DBSetup : CK.DB.Tests.DBSetup
+    public class DBSetup : LocalTestHelper.DBSetup
     {
     }
 }

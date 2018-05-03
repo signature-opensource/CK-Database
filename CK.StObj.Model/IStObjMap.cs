@@ -18,8 +18,9 @@ namespace CK.Core
     public interface IStObjMap : IContextualRoot<IContextualStObjMap>
     {
         /// <summary>
-        /// Gets all the mappings this StObjMap contains.
+        /// Gets all the mappings (<see cref="IStObj"/> and their final implementation) this 
+        /// StObjMap contains regardless of <see cref="IStObj.Context"/>.
         /// </summary>
-        IEnumerable<StObjMapMapping> AllMappings { get; }
+        IEnumerable<StObjImplementation> AllStObjs { get; }
     }
 }

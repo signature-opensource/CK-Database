@@ -1,0 +1,8 @@
+﻿-- SetupConfig: {}
+create transformer on CK.sPocoThingWrite
+as
+begin
+	add parameter @Age int, @Height int;
+	replace single {@Result = @Name} with "@Result = @Name + ' A,H=' + cast(@Age as varchar) + ',' + cast(@Height as varchar)";
+end
+

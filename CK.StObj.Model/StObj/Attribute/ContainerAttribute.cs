@@ -14,7 +14,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Parameter attribute that can be use to designate the container of the object among 
-    /// Construct parameters.
+    /// StObjConstruct method parameters.
     /// </summary>
     [AttributeUsage( AttributeTargets.Parameter, Inherited=false, AllowMultiple=false )]
     public class ContainerAttribute : Attribute

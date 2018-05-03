@@ -24,7 +24,7 @@ namespace CK.Setup
         internal MutableReferenceWithValue( MutableItem owner, StObjMutableReferenceKind kind )
             : base( owner, kind )
         {
-            Value = Type.Missing;
+            Value = System.Type.Missing;
         }
 
         public object Value { get; protected set; }

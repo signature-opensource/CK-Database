@@ -1,2 +1,0 @@
-"D:\Workspaces\Dev4\ck-database\CK.Deploy.Console\bin\Debug\CK.Deploy.Console.exe" "D:\Workspaces\Dev4\ck-authentication" "RelativeFileBasedFolder1;RelativeFileBasedFolder2" "RelativeDllBasedFolder1;RelativeDllBasedFolder2" "AssemblyName1;AssemblyName2" "Server=(local)\\NIMP;Database=CKAuthentication;Integrated Security=SSPI;"
-pause

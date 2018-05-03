@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
+    <ProjectReference Include="..\CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj" />
+    <PackageReference Include="CK.Testing.SqlServer" Version="$(CKTestingVersion)" />
+  </ItemGroup>
+</Project>

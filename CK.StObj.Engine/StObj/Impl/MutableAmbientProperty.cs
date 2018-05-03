@@ -44,22 +44,19 @@ namespace CK.Setup
             _maxSpecializationDepthSet = Int32.MaxValue;
         }
 
-        IStObjMutableItem IStObjAmbientProperty.Owner { get { return Owner; } }
+        IStObjMutableItem IStObjAmbientProperty.Owner => Owner; 
 
-        public override string Name { get { return _info.Name; } }
+        public override string Name => _info.Name;
 
-        internal override string KindName { get { return "AmbientProperty"; } }
+        internal override string KindName => "AmbientProperty";
 
-        internal override Type UnderlyingType { get { return _info.PropertyType; } }
+        internal override Type UnderlyingType => _info.PropertyType; 
 
-        public override string ToString()
-        {
-            return String.Format( "Ambient Property '{0}' of '{1}'", Name, Owner.ToString() );
-        }
+        public override string ToString() => $"Ambient Property '{Name}' of '{Owner.ToString()}'";
 
-        internal AmbientPropertyInfo AmbientPropertyInfo { get { return _info; } }
+        internal AmbientPropertyInfo AmbientPropertyInfo => _info;
 
-        internal int MaxSpecializationDepthSet { get { return _maxSpecializationDepthSet; } }
+        internal int MaxSpecializationDepthSet => _maxSpecializationDepthSet;
 
         /// <summary>
         /// Sets the final value. Public in order to implement IStObjFinalAmbientProperty.SetValue.
@@ -80,7 +77,7 @@ namespace CK.Setup
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                monitor.Error().Send( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                monitor.Error( $"'{ToString()}' has already been set or configured through a more specialized object." );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
@@ -94,11 +91,11 @@ namespace CK.Setup
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
             {
-                monitor.Error().Send( "'{0}' has already been set or configured through a more specialized object.", ToString() );
+                monitor.Error( $"'{this}' has already been set or configured through a more specialized object." );
                 return false;
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
-            Value = Type.Missing;
+            Value = System.Type.Missing;
             Context = context;
             Type = type;
             StObjRequirementBehavior = behavior;

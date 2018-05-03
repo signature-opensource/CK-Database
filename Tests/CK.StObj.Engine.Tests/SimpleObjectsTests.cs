@@ -11,26 +11,24 @@ using CK.Core;
 using CK.Setup;
 using CK.StObj.Engine.Tests.SimpleObjects;
 using NUnit.Framework;
+using System.Linq;
 
 namespace CK.StObj.Engine.Tests
 {
-    [CLSCompliant( false )]
     [TestFixture]
     public class SimpleObjectsTests
     {
         [Test]
         public void DiscoverSimpleObjects()
         {
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-            disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
-            
-            disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.IsClass )
+                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
+            collector.RegisterTypes( types.ToList() );
             
-            var result = collector.GetResult();
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
 
             IStObjResult oa = result.Default.StObjMap.ToStObj( typeof(ObjectA) );
@@ -55,38 +53,32 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void DiscoverWithLevel3()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "Without ObjectALevel4 class." ) )
+            using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
-                
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = t =>
-                    (t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
-                    && t.Name != "ObjectALevel4";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                                .Where( t => t.IsClass )
+                                .Where( t => (t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
+                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
+                                             && t.Name != "ObjectALevel4" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
+                collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
 
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
             {
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                                .Where( t => t.IsClass )
+                                .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
+                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
+                collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
             }
         }
@@ -94,22 +86,19 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void CycleInPackage()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
+            using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = t =>
-                    t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
-                    || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
-                    || t.Name == "ObjectBLevel3_InPackageForAB";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                                .Where( t => t.IsClass )
+                                .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
+                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
+                                             || t.Name == "ObjectBLevel3_InPackageForAB" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
+                collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -117,20 +106,18 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void Cycle()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY and ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = t =>
-                    t.Name == "ObjectXNeedsY" || t.Name == "ObjectYNeedsX"
-                    || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                               .Where( t => t.IsClass )
+                               .Where( t => t.Name == "ObjectXNeedsY"
+                                             || t.Name == "ObjectYNeedsX"
+                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
+                collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult();
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -138,19 +125,16 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void MissingReference()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ObjectXNeedsY without ObjectYNeedsX." ) )
+            using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = 
-                    t => t.Name == "ObjectXNeedsY"
-                    || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                               .Where( t => t.IsClass )
+                               .Where( t => t.Name == "ObjectXNeedsY"
+                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                collector.RegisterTypes( types.ToList() );
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -158,17 +142,14 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LoggerInjection()
         {
-            using( TestHelper.Monitor.OpenInfo().Send( "ConsoleMonitor injection (and optional parameter)." ) )
+            using( TestHelper.Monitor.OpenInfo( "ConsoleMonitor injection (and optional parameter)." ) )
             {
-                AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-                disco.AssemblyFilter = a => a == Assembly.GetExecutingAssembly();
-                disco.TypeFilter = t => t.Name == "LoggerInjected";
-
-                disco.DiscoverRecurse( Assembly.GetExecutingAssembly() );
+                var types = TestHelper.Assembly.GetTypes()
+                                .Where( t => t.Name == "LoggerInjected" );
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterTypes( disco );
-                var result = collector.GetResult();
+                collector.RegisterTypes( types.ToList() );
+                var result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.HasFatalError, Is.False );
 
                 IStObjResult theObject = result.Default.StObjMap.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
@@ -191,7 +172,7 @@ namespace CK.StObj.Engine.Tests
 
         class C3InC2SpecializeC1 : C1
         {
-            void Construct( [Container]C2InC1 c2 )
+            void StObjConstruct( [Container]C2InC1 c2 )
             {
             }
         }
@@ -204,17 +185,16 @@ namespace CK.StObj.Engine.Tests
             //        ⊐ []CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1 
             //            ⊐ []CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1 
             //                ↟ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.TypeFilter =
-                t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1";
 
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
+                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
+                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1" );
+
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            collector.RegisterTypes( types.ToList() );
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
         }
 
@@ -231,24 +211,21 @@ namespace CK.StObj.Engine.Tests
             //        ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1 
             //            ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1 
             //                ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.TypeFilter =
-                t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1";
 
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
+                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
+                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1" );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            collector.RegisterTypes( types.ToList() );
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.True );
-
         }
 
         class C3RequiresC2SpecializeC1 : C1
         {
-            void Construct( C2InC1 c2 )
+            void StObjConstruct( C2InC1 c2 )
             {
             }
         }
@@ -256,17 +233,14 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void ValidModelWithRequires()
         {
-            AssemblyRegisterer disco = new AssemblyRegisterer( TestHelper.Monitor );
-            disco.TypeFilter =
-                t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
-                || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1";
-
-            disco.Discover( Assembly.GetExecutingAssembly() );
+            var types = TestHelper.Assembly.GetTypes()
+                           .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
+                                        || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
+                                        || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1" );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterTypes( disco );
-            var result = collector.GetResult();
+            collector.RegisterTypes( types.ToList() );
+            var result = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( result.HasFatalError, Is.False );
         
         }

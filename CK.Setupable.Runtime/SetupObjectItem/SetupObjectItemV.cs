@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,36 +8,52 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A setup object item is initialized from a <see cref="ISetupObjectProtoItem"/>.
-    /// This is the implementation for items for which version matters.
+    /// A setup object item base class for items for which version matters.
     /// </summary>
     public abstract class SetupObjectItemV : SetupObjectItem, IVersionedItem
     {
-        Version _version;
-        IEnumerable<VersionedName> _previousNames;
+        List<VersionedName> _previousNames;
 
-        protected SetupObjectItemV( ISetupObjectProtoItem p )
-            : base( p )
+        /// <summary>
+        /// Initializes a <see cref="SetupObjectItemV"/> without ContextLocName nor ItemType.
+        /// Specialized class must take care of initializing them: having no name nor type is not valid.
+        /// </summary>
+        protected SetupObjectItemV()
         {
-            _version = p.Version;
-            _previousNames = p.PreviousNames;
+        }
+        
+        /// <summary>
+        /// Initializes a new <see cref="SetupObjectItemV"/>.
+        /// </summary>
+        /// <param name="name">Initial name of this item. Can not be null.</param>
+        /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
+        /// <param name="version">Version (if known).</param>
+        /// <param name="previousNames">Optional initial list for <see cref="PreviousNames"/>.</param>
+        protected SetupObjectItemV( ContextLocName name, string itemType, Version version = null, IEnumerable<VersionedName> previousNames = null )
+            : base( name, itemType )
+        {
+            Version = version;
+            _previousNames = previousNames != null ? previousNames.ToList() : null;
         }
 
         /// <summary>
-        /// Gets or sets the object that replaces this object.
+        /// Gets the transform target item if this item has associated <see cref="SetupObjectItem.Transformers"/>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
         /// </summary>
-        public new SetupObjectItemV ReplacedBy
-        {
-            get { return (SetupObjectItemV)base.ReplacedBy; }
-            internal protected set { base.ReplacedBy = value; }
-        }
+        public new SetupObjectItemV TransformTarget => (SetupObjectItemV)base.TransformTarget;
 
         /// <summary>
-        /// Gets the object that is replaced by this one.
+        /// Called by <see cref="SetupObjectItem.AddTransformer"/> to initialize the initial 
+        /// transform target as a clone of this object.
         /// </summary>
-        public new SetupObjectItemV Replaces
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if an error occured.</returns>
+        protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
-            get { return (SetupObjectItemV)base.Replaces; }
+            if( !base.OnTransformTargetCreated( monitor ) ) return false;
+            if( _previousNames != null ) TransformTarget._previousNames = new List<VersionedName>( _previousNames );
+            return true;
         }
 
         /// <summary>
@@ -46,10 +62,12 @@ namespace CK.Setup
         /// <remarks>
         /// When code builds the object, it may be safer to let the version be null and to rewrite the object.
         /// </remarks>
-        public Version Version
-        {
-            get { return _version; }
-        }
+        public Version Version { get; set; }
+
+        /// <summary>
+        /// Gets a mutable list of previous version name.
+        /// </summary>
+        public IList<VersionedName> PreviousNames => _previousNames ?? (_previousNames = new List<VersionedName>());
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {

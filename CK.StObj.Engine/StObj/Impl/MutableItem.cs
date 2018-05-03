@@ -58,13 +58,6 @@ namespace CK.Setup
             public object StructuredObject;
 
             /// <summary>
-            /// Available only at the leaf level.
-            /// This function returns the StructureObject until InjectFinalObjectFunc has been called.
-            /// Storing it here avoids creating multiple function delegates.
-            /// </summary>
-            public Func<object> StructuredObjectFunc;
-
-            /// <summary>
             /// Concerns the specialization.
             /// </summary>
             public ImplementableTypeInfo ImplementableTypeInfo;
@@ -84,9 +77,8 @@ namespace CK.Setup
 
             internal object CreateStructuredObject( IStObjRuntimeBuilder runtimeBuilder, Type typeIfNotImplementable )
             {
-                Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.LastGeneratedType : typeIfNotImplementable;
+                Type toInstanciate = ImplementableTypeInfo != null ? ImplementableTypeInfo.StubType : typeIfNotImplementable;
                 StructuredObject = runtimeBuilder.CreateInstance( toInstanciate );
-                StructuredObjectFunc = () => StructuredObject;
                 return StructuredObject;
             }
         }
@@ -133,7 +125,6 @@ namespace CK.Setup
 
         // Ambient properties are per StObj.
         List<TrackedAmbientPropertyInfo> _trackedAmbientProperties;
-        IReadOnlyList<TrackedAmbientPropertyInfo> _trackedAmbientPropertiesEx;
         /// <summary>
         /// True if this or any Generalization has _trackAmbientPropertiesMode != None.
         /// </summary>
@@ -158,8 +149,8 @@ namespace CK.Setup
         /// <summary>
         /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo objectType, MutableItem generalization, IContextualTypeMap context )
-            : base( objectType, generalization, context ) 
+        internal MutableItem( IActivityMonitor monitor, StObjTypeInfo objectType, MutableItem generalization, IContextualTypeMap context, IServiceProvider services )
+            : base( monitor, objectType, generalization, context, services ) 
         {
             Debug.Assert( context != null );
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
@@ -197,7 +188,7 @@ namespace CK.Setup
 
             _leafData.RootGeneralization = rootGeneralization;
             ApplyTypeInformation( monitor );
-            AnalyseConstruct( monitor );
+            AnalyzeConstruct( monitor );
             ConfigureFromAttributes( monitor );
         }
 
@@ -238,12 +229,12 @@ namespace CK.Setup
             }
         }
 
-        void AnalyseConstruct( IActivityMonitor monitor )
+        void AnalyzeConstruct( IActivityMonitor monitor )
         {
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
-            if( AmbientTypeInfo.Construct != null && AmbientTypeInfo.ConstructParameters.Length > 0 )
+            if( AmbientTypeInfo.StObjConstruct != null && AmbientTypeInfo.ConstructParameters.Length > 0 )
             {
                 var parameters = new MutableParameter[AmbientTypeInfo.ConstructParameters.Length];
                 for( int idx = 0; idx < parameters.Length; ++idx )
@@ -259,11 +250,11 @@ namespace CK.Setup
                     }
                     parameters[idx] = p;
                 }
-                _constructParameterEx = new CKReadOnlyListOnIList<MutableParameter>( parameters );
+                _constructParameterEx = parameters;
             }
             else
             {
-                _constructParameterEx = CKReadOnlyListEmpty<MutableParameter>.Empty;
+                _constructParameterEx = Util.Array.Empty<MutableParameter>();
             }
         }
 
@@ -278,23 +269,14 @@ namespace CK.Setup
 
         #endregion
 
-        public new IContextualStObjMap Context
-        {
-            get { return (IContextualStObjMap)base.Context; }
-        }
+        public new IContextualStObjMap Context => (IContextualStObjMap)base.Context; 
 
         /// <summary>
         /// Never null.
         /// </summary>
-        internal MutableItem LeafSpecialization
-        {
-            get { return _leafData.LeafSpecialization; }
-        }
+        internal MutableItem LeafSpecialization => _leafData.LeafSpecialization; 
 
-        internal MutableItem RootGeneralization
-        {
-            get { return _leafData.RootGeneralization; }
-        }
+        internal MutableItem RootGeneralization => _leafData.RootGeneralization; 
 
         #region IStObjMutableItem is called during Configuration
 
@@ -312,27 +294,27 @@ namespace CK.Setup
 
         string IStObjMutableItem.Context { get { return base.Context.Context; } }
 
-        IStObjMutableReference IStObjMutableItem.Container { get { return _container; } }
+        IStObjMutableReference IStObjMutableItem.Container => _container; 
 
-        IStObjMutableReferenceList IStObjMutableItem.Children { get { return _children; } }
+        IStObjMutableReferenceList IStObjMutableItem.Children => _children;
 
-        IStObjMutableReferenceList IStObjMutableItem.Requires { get { return _requires; } }
+        IStObjMutableReferenceList IStObjMutableItem.Requires => _requires;
 
-        IStObjMutableReferenceList IStObjMutableItem.RequiredBy { get { return _requiredBy; } }
+        IStObjMutableReferenceList IStObjMutableItem.RequiredBy => _requiredBy; 
 
-        IStObjMutableReferenceList IStObjMutableItem.Groups { get { return _groups; } }
+        IStObjMutableReferenceList IStObjMutableItem.Groups => _groups;
 
-        public IReadOnlyList<IStObjMutableParameter> ConstructParameters { get { return _constructParameterEx; } }
+        public IReadOnlyList<IStObjMutableParameter> ConstructParameters => _constructParameterEx; 
 
-        IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties { get { return _ambientPropertiesEx; } }
+        IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties => _ambientPropertiesEx; 
 
-        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts { get { return _ambientContractsEx; } }
+        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts => _ambientContractsEx;
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
             // If yes, it is an error... 
@@ -343,7 +325,7 @@ namespace CK.Setup
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error().Send( "Unable to set direct property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set direct property '{Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 
@@ -352,7 +334,7 @@ namespace CK.Setup
             PropertyInfo p = _leafData.LeafSpecialization.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
             if( p == null || !p.CanWrite )
             {
-                monitor.Error().Send( "Unable to set direct property '{1}.{0}' structural value. It must exist and be writable (on type '{2}'). (Source:{3})", propertyName, Type.FullName, _leafData.LeafSpecialization.Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set direct property '{Type.FullName}.{propertyName}' structural value. It must exist and be writable (on type '{_leafData.LeafSpecialization.Type.FullName}'). (Source:{sourceDescription})"  );
                 return false;
             }
             if( _leafData.DirectPropertiesToSet == null ) _leafData.DirectPropertiesToSet = new Dictionary<PropertyInfo, object>();
@@ -364,7 +346,7 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             // Is it an Ambient property?
             // If yes, set the value onto the property.
@@ -373,7 +355,7 @@ namespace CK.Setup
             {
                 return mp.SetValue( AmbientTypeInfo.SpecializationDepth, monitor, value );
             }
-            monitor.Error().Send( "Unable to set unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error( $"Unable to set unexisting Ambient property '{Type.FullName}.{propertyName}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{sourceDescription})" );
             return false;
         }
 
@@ -387,7 +369,7 @@ namespace CK.Setup
             {
                 return mp.SetConfiguration( AmbientTypeInfo.SpecializationDepth, monitor, context, type, behavior );
             }
-            monitor.Error().Send( "Unable to configure unexisting Ambient property '{1}.{0}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+            monitor.Error( $"Unable to configure unexisting Ambient property '{Type.FullName}.{propertyName}'. It must exist, be writable and marked with AmbientPropertyAttribute. (Source:{sourceDescription})" );
             return false;        
         }
 
@@ -395,12 +377,12 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
-            if( value == Type.Missing ) throw new ArgumentException( "Setting property to Type.Missing is not allowed. Source:" + sourceDescription, "value" );
+            if( value == System.Type.Missing ) throw new ArgumentException( "Setting property to System.Type.Missing is not allowed. Source:" + sourceDescription, "value" );
 
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error().Send( "Unable to set StObj property '{1}.{0}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{2})", propertyName, Type.FullName, sourceDescription );
+                monitor.Error( $"Unable to set StObj property '{Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 
@@ -413,14 +395,14 @@ namespace CK.Setup
         internal bool PrepareDependentItem( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
         {
             if( _prepareState == PrepareState.PreparedDone ) return true;
-            using( monitor.OpenTrace().Send( "Preparing '{0}'.", ToString() ) )
+            using( monitor.OpenTrace( $"Preparing '{ToString()}'." ) )
             {
                 try
                 {
                     bool result = true;
                     if( _prepareState == PrepareState.RecursePreparing )
                     {
-                        monitor.Warn().Send( "Cycle detected while preparing item." );
+                        monitor.Warn( "Cycle detected while preparing item." );
                         result = false;
                     }
                     else
@@ -443,7 +425,7 @@ namespace CK.Setup
                         // Check configuration.
                         if( _itemKind == DependentItemKind.Unknown )
                         {
-                            monitor.Warn().Send( "Since ItemKind is not specified on this base class ('{0}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container.", ToString() );
+                            monitor.Warn( $"Since ItemKind is not specified on this base class ('{ToString()}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container." );
                             _itemKind = DependentItemKind.Item;
                         }
                         if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;
@@ -462,7 +444,7 @@ namespace CK.Setup
                         // For AmbientProperties, this can not be done the same way: Ambient Properties are "projected to the leaf": they 
                         // have to be managed at the most specialized level: this is done in the next preparation step.
                     }
-                    monitor.CloseGroup( String.Format( "ItemKind is {0}", _itemKind.ToString() ) );
+                    monitor.CloseGroup( $"ItemKind is {_itemKind}" );
                     return result;
 
                 }
@@ -477,7 +459,7 @@ namespace CK.Setup
         {
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
-            _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type );
+            _dFullName = AmbientContractCollector.FormatContextualFullName( Context.Context, Type.AsType() );
             _dContainer = _container.ResolveToStObj( monitor, collector, cachedCollector );
             // Requirement initialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
@@ -487,18 +469,18 @@ namespace CK.Setup
                 {
                     if( dep != null ) req.Add( dep );
                 }
-                // Construct parameters are Required... except:
+                // StObjConstruct parameters are Required... except:
                 // - If they are one of our Container but this is handled
                 //   at the DependencySorter level by using the SkipDependencyToContainer option.
                 //   See the commented old code (to be kept) below for more detail on this option.
                 // - If IStObjMutableParameter.SetParameterValue has been called by a IStObjStructuralConfigurator, then this 
                 //   breaks the potential dependency.
                 // 
-                if( _constructParameterEx.Count > 0 )
+                if ( _constructParameterEx.Count > 0 )
                 {
                     foreach( MutableParameter t in _constructParameterEx )
                     {
-                        if( t.Value == Type.Missing )
+                        if( t.Value == System.Type.Missing )
                         {
                             MutableItem dep = t.ResolveToStObj( monitor, collector, cachedCollector );
                             if( dep != null ) req.Add( dep );
@@ -507,22 +489,22 @@ namespace CK.Setup
                 }
             }
             // This will be updated after the Sort with clean Requirements (no Generalization nor Containers in it).
-            _dRequires = req.ToReadOnlyList();
+            _dRequires = req.ToArray();
 
             // RequiredBy initialization.
             if( _requiredBy.Count > 0 )
             {
-                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             // Children Initialization.
             if( _children.Count > 0 )
             {
-                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             // Groups Initialization.
             if( _groups.Count > 0 )
             {
-                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToReadOnlyList();
+                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, collector, cachedCollector ) ).Where( m => m != null ).ToArray();
             }
             return result;
         }
@@ -629,9 +611,9 @@ namespace CK.Setup
         {
             Debug.Assert( IndexOrdered == 0 );
             IndexOrdered = idx;
-            _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
-            _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
-            _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToReadOnlyList();
+            _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
+            _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
+            _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
             // requiredBy are useless.
             _dRequiredBy = null;
             // Increments Specialization index.
@@ -737,112 +719,51 @@ namespace CK.Setup
             }
         }
 
-        object IDependentItem.StartDependencySort()
-        {
-            return null;
-        }
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) =>  null;
 
-        string IDependentItemRef.FullName
-        {
-            get { return _dFullName; }
-        }
+        string IDependentItemRef.FullName => _dFullName; 
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
-
+        bool IDependentItemRef.Optional => false; 
         #endregion
 
         #region IStObj Members
 
-        public object InitialObject
-        {
-            get { return _leafData.StructuredObject; }
-        }
+        public object InitialObject => _leafData.StructuredObject; 
 
-        public Func<object> ObjectAccessor
-        {
-            get { return _leafData.StructuredObjectFunc; }
-        }
 
         /// <summary>
         /// Gets the type of the structure object.
         /// </summary>
-        public Type ObjectType
-        {
-            get { return Type; }
-        }
+        public Type ObjectType => Type.AsType(); 
 
-        IStObj IStObj.Generalization
-        {
-            get { return Generalization; }
-        }
+        IStObj IStObj.Generalization => Generalization; 
 
-        IStObj IStObj.Specialization
-        {
-            get { return Specialization; }
-        }
+        IStObj IStObj.Specialization => Specialization; 
 
-        IStObjResult IStObjResult.Generalization
-        {
-            get { return Generalization; }
-        }
+        IStObjResult IStObjResult.Generalization => Generalization; 
 
-        IStObjResult IStObjResult.Specialization
-        {
-            get { return Specialization; }
-        }
+        IStObjResult IStObjResult.Specialization => Specialization; 
 
-        IStObjResult IStObjResult.RootGeneralization
-        {
-            get { return _leafData.RootGeneralization; }
-        }
+        IStObjResult IStObjResult.RootGeneralization => _leafData.RootGeneralization; 
 
-        IStObjResult IStObjResult.LeafSpecialization
-        {
-            get { return _leafData.LeafSpecialization; }
-        }
+        IStObjResult IStObjResult.LeafSpecialization => _leafData.LeafSpecialization; 
 
-        IStObjResult IStObjResult.ConfiguredContainer 
-        {
-            get { return IsOwnContainer ? _dContainer : null; } 
-        }
+        IStObjResult IStObjResult.ConfiguredContainer => IsOwnContainer ? _dContainer : null; 
 
-        IStObjResult IStObjResult.Container 
-        { 
-            get { return _dContainer; } 
-        }
+        IStObjResult IStObjResult.Container => _dContainer; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Requires 
-        {
-            get { return _dRequires; } 
-        }
+        IReadOnlyList<IStObjResult> IStObjResult.Requires  => _dRequires; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Children
-        {
-            get { return _dChildren; }
-        }
+        IReadOnlyList<IStObjResult> IStObjResult.Children => _dChildren; 
 
-        IReadOnlyList<IStObjResult> IStObjResult.Groups
-        {
-            get { return _dGroups; }
-        }
+        IReadOnlyList<IStObjResult> IStObjResult.Groups => _dGroups; 
 
-
-        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties
-        {
-            get 
-            { 
-                if( _trackedAmbientProperties == null ) return null;
-                return _trackedAmbientPropertiesEx ?? (_trackedAmbientPropertiesEx = new CKReadOnlyListOnIList<TrackedAmbientPropertyInfo>( _trackedAmbientProperties )); 
-            }
-        }
+        IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties => _trackedAmbientProperties;
 
         object IStObjResult.GetStObjProperty( string propertyName )
         {
             StObjProperty p = GetStObjProperty( propertyName );
-            return p != null ? p.Value : Type.Missing;
+            return p != null ? p.Value : System.Type.Missing;
         }
 
         #endregion

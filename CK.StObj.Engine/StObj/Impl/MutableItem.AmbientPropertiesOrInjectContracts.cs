@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -137,10 +138,10 @@ namespace CK.Setup
 
         /// <summary>
         /// Works on leaf only. 
-        /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to Construct of the root of the inheritance chain.
+        /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to StObjConstruct of the root of the inheritance chain.
         /// Registers all the AmbientContracts (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
         /// will be created.
-        /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before Construct (like DirectProperties) or only after the whole graph
+        /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before StObjConstruct (like DirectProperties) or only after the whole graph
         /// is created.
         /// - When the AmbientProperty is a mere value (not a StObj), we can call RootGeneralization.AddPreConstructProperty.
         /// - When the AmbientProperty is a StObj, depending on the resolved StObj's TrackAmbientPropertyMode, we call RootGeneralization.AddPreConstructProperty only if 
@@ -155,7 +156,7 @@ namespace CK.Setup
             {
                 foreach( var k in _leafData.DirectPropertiesToSet )
                 {
-                    if( k.Value != Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, result.BuildValueCollector ); 
+                    if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, result.BuildValueCollector ); 
                 }
             }
             foreach( var c in _leafData.AllAmbientContracts )
@@ -172,14 +173,14 @@ namespace CK.Setup
             foreach( var a in _ambientPropertiesEx )
             {
                 EnsureCachedAmbientProperty( monitor, result, a.Type, a.Name, a );
-                if( a.Value == Type.Missing )
+                if( a.Value == System.Type.Missing )
                 {
                     if( valueResolver != null ) valueResolver.ResolveExternalPropertyValue( monitor, a );
                 }
                 object value = a.Value;
-                if( value == Type.Missing )
+                if( value == System.Type.Missing )
                 {
-                    if( !a.IsOptional ) monitor.Error().Send( "{0}: Unable to resolve non optional.", a.ToString() );
+                    if( !a.IsOptional ) monitor.Error( $"{a.ToString()}: Unable to resolve non optional." );
                 }
                 else
                 {
@@ -200,7 +201,7 @@ namespace CK.Setup
                         // Walks up the chain to locate the most abstract compatible slice.
                         {
                             MutableItem genResolved = resolved.Generalization;
-                            while( genResolved != null && sourceProp.PropertyType.IsAssignableFrom( genResolved.ObjectType ) )
+                            while( genResolved != null && sourceProp.PropertyType.GetTypeInfo().IsAssignableFrom( genResolved.ObjectType ) )
                             {
                                 resolved = genResolved;
                                 genResolved = genResolved.Generalization;
@@ -295,7 +296,7 @@ namespace CK.Setup
                     a = _leafData.AllAmbientProperties.FirstOrDefault( p => p.Name == name );
                     if( a != null && !propertyType.IsAssignableFrom( a.Type ) )
                     {
-                        monitor.Warn().Send( "Looking for property named '{0}' of type '{1}': found a candidate on '{2}' but type does not match (it is '{3}'). It is ignored.", name, propertyType.Name, ToString(), a.Type.Name );
+                        monitor.Warn( $"Looking for property named '{name}' of type '{propertyType.Name}': found a candidate on '{ToString()}' but type does not match (it is '{a.Type.Name}'). It is ignored." );
                         return null;
                     }
                 }
@@ -308,7 +309,7 @@ namespace CK.Setup
                         if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
-                    while( (a == null || a.Value == Type.Missing) && currentLevel != null );
+                    while( (a == null || a.Value == System.Type.Missing) && currentLevel != null );
                     if( a == null )
                     {
                         // Not found: registers the marker.
@@ -320,12 +321,12 @@ namespace CK.Setup
                 }
                 if( a.IsFinalValue ) return a;
 
-                Debug.Assert( a.Value == Type.Missing || a.MaxSpecializationDepthSet > 0, "a Value exists => it has been set." );
+                Debug.Assert( a.Value == System.Type.Missing || a.MaxSpecializationDepthSet > 0, "a Value exists => it has been set." );
 
                 MutableAmbientProperty foundFromOther = null;
                 // If the property has not been set to a value or not configured (a.MaxSpecializationDepthSet == 0), 
                 // OR the value has been set to Missing to use resolution (this is a way to cancel any previous settings).
-                if( a.MaxSpecializationDepthSet == 0 || (a.Value == Type.Missing && a.UseValue) )
+                if( a.MaxSpecializationDepthSet == 0 || (a.Value == System.Type.Missing && a.UseValue) )
                 {
                     if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromGeneralizationAndThenContainer )
                     {
@@ -335,7 +336,7 @@ namespace CK.Setup
                             if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
                             currentLevel = currentLevel.Specialization;
                         }
-                        while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
+                        while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null );
                     }
                     else if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization )
                     {
@@ -345,7 +346,7 @@ namespace CK.Setup
                             if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
                             currentLevel = currentLevel.Generalization;
                         }
-                        while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null );
+                        while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null );
                     }
                 }
                 // A Value exists: the property has been explicitly set or configured for resolution at a given level.
@@ -360,9 +361,9 @@ namespace CK.Setup
                         if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
-                    while( (foundFromOther == null || foundFromOther.Value == Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
+                    while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
                 }
-                if( foundFromOther != null && foundFromOther.Value != Type.Missing )
+                if( foundFromOther != null && foundFromOther.Value != System.Type.Missing )
                 {
                     a.SetValue( foundFromOther.Value );
                 }

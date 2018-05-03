@@ -14,13 +14,15 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A setup item is an <see cref="IDependentItem"/> and a <see cref="IContextLocNaming"/>: its FullName is structured with the Context-Location-Name triplet.
+    /// A setup item is an <see cref="IDependentItem"/> and a <see cref="IContextLocNaming"/>: its FullName 
+    /// is structured with the Context-Location-Name triplet.
+    /// It is most often bound to an actual model object (see <see cref="ISetupObjectItem.ActualObject"/>).
     /// </summary>
     public interface ISetupItem : IDependentItem, IContextLocNaming
     {
         /// <summary>
-        /// This property is defined her to resolve ambiguity between <see cref="IDependentItem.FullName"/> and <see cref="IContextLocNaming.FullName"/>:
-        /// they are actually the same.
+        /// This property is defined here to resolve ambiguity between <see cref="IDependentItem.FullName"/> 
+        /// and <see cref="IContextLocNaming.FullName"/>: they are actually the same.
         /// </summary>
         new string FullName { get; }
 

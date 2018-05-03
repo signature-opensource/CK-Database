@@ -18,52 +18,37 @@ namespace CK.Setup
     /// </summary>
     public class VersionedName
     {
-        string _name;
-        Version _version;
-
         /// <summary>
-        /// Initializes a new <see cref="VersionedName"/> with a <see cref="FullName"/> and a <see cref="Version"/>.
-        /// Both of them must be valid.
+        /// Initializes a new <see cref="VersionedName"/> with a <see cref="FullName"/> (must ne be null or empty) and 
+        /// a non null <see cref="Version"/>.
         /// </summary>
         /// <param name="fullName">Name valid up to <see cref="Version"/>. It must be not null nor empty otherwise an exception is thrown.</param>
-        /// <param name="v">Valid version for the name. Null is converted into <see cref="Util.EmptyVersion"/>.</param>
-        public VersionedName( string fullName, Version v )
+        /// <param name="version">Version for the name. Must not be null.</param>
+        public VersionedName( string fullName, Version version )
         {
+            if( version == null ) throw new ArgumentNullException( nameof( version ) );
+            if( string.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentNullException( nameof( fullName ) );
             FullName = fullName;
-            Version = v;
+            Version = version;
         }
 
         /// <summary>
         /// Gets the full name of a versionned name.
+        /// Never null or empty.
         /// </summary>
-        public string FullName 
-        {
-            get { return _name; }
-            private set
-            {
-                if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentException();
-                _name = value;
-            }
-        }
+        public string FullName { get; }
 
         /// <summary>
         /// Gets the version associated to the <see cref="FullName"/>. 
-        /// Never null (<see cref="Util.EmptyVersion"/> at least).
+        /// Never null.
         /// </summary>
-        public Version Version
-        {
-            get { return _version; }
-            private set { _version = value ?? Util.EmptyVersion; }
-        }
+        public Version Version { get; }
 
         /// <summary>
         /// Overridden to return the "FullName - Version".
         /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return _name + " - " + _version.ToString();
-        }
+        /// <returns>The FullName - Version.</returns>
+        public override string ToString() => FullName + " - " + Version.ToString();
 
     }
 }

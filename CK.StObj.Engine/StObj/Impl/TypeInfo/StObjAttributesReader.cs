@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -34,7 +35,8 @@ namespace CK.Setup
 
             var a = (IStObjAttribute[])objectType.GetCustomAttributes( typeof( IStObjAttribute ), false );
             if( a.Length == 0 ) return null;
-            if( a.Length == 1 ) return (IStObjAttribute)a[0];
+            if( a.Length == 1 ) return a[0];
+
             IList<Type> requires = null;
             IList<Type> requiredBy = null;
             IList<Type> children = null;
@@ -55,15 +57,14 @@ namespace CK.Setup
                     {
                         if( monitor.ShouldLogLine( multipleContainerLogLevel ) )
                         {
-                            string msg = String.Format( "Attribute {0} for type {1} specifies Container type '{2}' but attribute {3} specifies Container type '{4}'. Container is '{4}'.",
-                                                                        attr.GetType().Name, objectType.FullName, containerDefiner.GetType().Name, attr.Container.FullName );
+                            string msg = $"Attribute {attr.GetType().Name} for type {objectType.FullName} specifies Container type '{attr.Container.Name}' but attribute {containerDefiner.GetType().Name} specifies Container type '{containerDefiner.Container.Name}'. Container remains '{containerDefiner.Container.Name}'.";
                             monitor.UnfilteredLog( ActivityMonitor.Tags.Empty, multipleContainerLogLevel, msg, monitor.NextLogTime(), null );
                         }
                     }
                 }
                 if( attr.ItemKind != DependentItemKindSpec.Unknown )
                 {
-                    if( itemKind != DependentItemKindSpec.Unknown ) monitor.Warn().Send( "ItemKind is already set to '{0}'. Value '{1}' set by {2} is ignored.", itemKind, attr.ItemKind, attr.GetType().Name );
+                    if( itemKind != DependentItemKindSpec.Unknown ) monitor.Warn( $"ItemKind is already set to '{itemKind}'. Value '{attr.ItemKind}' set by {attr.GetType().Name} is ignored." );
                     else itemKind = attr.ItemKind;
                 }
                 CombineTypes( ref requires, attr.Requires );

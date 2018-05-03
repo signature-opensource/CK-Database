@@ -1,11 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\Attributes\SqlPackageAttribute.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,17 +7,25 @@ using CK.Setup;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Attribute that must decorate a <see cref="SqlPackage"/> class.
+    /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
     public class SqlPackageAttribute : SqlPackageAttributeBase, IAttributeSetupName
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlPackageAttribute"/>.
+        /// </summary>
         public SqlPackageAttribute()
             : base( "CK.SqlServer.Setup.SqlPackageAttributeImpl, CK.SqlServer.Setup.Runtime" )
         {
+            HasModel = true;
         }
 
         /// <summary>
         /// Gets or sets whether this package has an associated Model.
-        /// Defaults to false.
+        /// Defaults to true.
+        /// It can be set to false only for packages that do not contain any model package.
         /// </summary>
         public bool HasModel { get; set; }
 

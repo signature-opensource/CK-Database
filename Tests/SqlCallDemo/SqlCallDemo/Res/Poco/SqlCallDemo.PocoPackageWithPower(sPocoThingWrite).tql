@@ -1,0 +1,8 @@
+﻿-- SetupConfig: {}
+create transformer on CK.sPocoThingWrite
+as
+begin
+	add parameter @Power int;
+	replace single {@Result = @Name} with "@Result = @Name + ' P=' + cast(@Power as varchar)";
+end
+

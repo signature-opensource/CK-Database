@@ -69,7 +69,7 @@ namespace CK.Setup
         public string Name
         {
             get { return _name.Name; }
-            set { _name.Name = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.Name = value; }
         }
 
         /// <summary>
@@ -79,8 +79,11 @@ namespace CK.Setup
         public string FullName
         {
             get { return _name.FullName; }
-            set { _name.FullName = value; }
+            set { DefaultContextLocNaming.ThrowIfTransformArg( value ); _name.FullName = value; }
         }
+
+        string IContextLocNaming.TransformArg => null;
+
 
         /// <summary>
         /// Gets whether this item is a simple Item, a Group or a Container.
@@ -145,38 +148,16 @@ namespace CK.Setup
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
         /// <returns>
-        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="GenericItemSetupDriver"/>), or its assembly qualified name.
-        /// By default, returns the type of <see cref="GenericItemSetupDriver"/>.
+        /// Must return the <see cref="Type"/> of the setup driver (specialization of <see cref="SetupItemDriver"/>), or its assembly qualified name.
+        /// By default, returns the type of <see cref="SetupItemDriver"/>.
         /// </returns>
-        protected virtual object StartDependencySort()
-        {
-            return typeof( GenericItemSetupDriver );
-        }
+        protected virtual object StartDependencySort( IActivityMonitor m ) => typeof( SetupItemDriver );
 
-        object IDependentItem.StartDependencySort()
-        {
-            return StartDependencySort();
-        }
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => StartDependencySort( m );
 
-        /// <summary>
-        /// Called once the associated driver has been instanciated.
-        /// </summary>
-        /// <param name="driver">Driver for this item.</param>
-        /// <returns>True on success. Returning false cancels the setup process.</returns>
-        protected virtual bool OnDriverCreated( GenericItemSetupDriver driver )
-        {
-            return true;
-        }
+        string IVersionedItem.ItemType => _itemType; 
 
-        string IVersionedItem.ItemType
-        {
-            get { return _itemType; }
-        }
-
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false; 
 
         IDependentItemContainerRef IDependentItem.Container
         {

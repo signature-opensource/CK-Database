@@ -1,4 +1,4 @@
-﻿-- Version = 1.0.10
+﻿-- SetupConfig: {}
 alter procedure CK.sAllDefaultValues
 (
 	@NVarChar nvarchar(64) = N'All Defaults',
@@ -12,6 +12,7 @@ alter procedure CK.sAllDefaultValues
 	@DateTime datetime = '2011-10-26',
 	@Float float = -457.5858e-8,
 	@Real real = -45.588e-10,
+	@Bin varbinary(50) = 0xa3b,
 	@TextResult nvarchar(1024) output
 )
 as
@@ -27,6 +28,7 @@ begin
 	if @DateTime is null set @TextResult = @TextResult + ' - @DateTime is null'; else set @TextResult = @TextResult + ' - @DateTime = ' + cast( @DateTime as nvarchar(50)); 
 	if @Float is null set @TextResult = @TextResult + ' - @Float is null'; else set @TextResult = @TextResult + ' - @Float = ' + cast( @Float as nvarchar(50)); 
 	if @Real is null set @TextResult = @TextResult + ' - @Real is null'; else set @TextResult = @TextResult + ' - @Real = ' + cast( @Real as nvarchar(50)); 
+	if @Bin is null set @TextResult = @TextResult + ' - @Bin is null'; else set @TextResult = @TextResult + ' - @Bin = ' + CONVERT(varchar(max),@Bin,2); 
 	return 0;
 end
 

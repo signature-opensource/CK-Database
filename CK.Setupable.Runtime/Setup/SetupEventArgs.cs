@@ -5,6 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Event argument for <see cref="ISetupEngine.SetupEvent"/>.
+    /// Event argument for <see cref="ISetupableAspect.SetupEvent"/>.
     /// </summary>
     public class SetupEventArgs : EventArgs
     {
@@ -23,7 +24,12 @@ namespace CK.Setup
         /// Gets the current step. Can be None (before registration), Init, Install, Settle and Done.
         /// </summary>
         public SetupStep Step { get; private set; }
-        
+
+        /// <summary>
+        /// Gets the current monitor to use.
+        /// </summary>
+        public IActivityMonitor Monitor { get; private set; }
+
         /// <summary>
         /// Gets whether an error occured during <see cref="Step"/>.
         /// </summary>
@@ -38,8 +44,9 @@ namespace CK.Setup
             CancelReason = cancelReason;
         }
 
-        internal SetupEventArgs( SetupStep step, bool errorOccured = false )
+        internal SetupEventArgs( IActivityMonitor m, SetupStep step, bool errorOccured = false )
         {
+            Monitor = m;
             Step = step;
             ErrorOccurred = errorOccured;
         }

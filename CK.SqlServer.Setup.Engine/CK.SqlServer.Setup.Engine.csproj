@@ -1,145 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9A0BCE15-00EF-411B-8283-68AED047FCE5}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CK.Setup.SqlServer</RootNamespace>
-    <AssemblyName>CK.SqlServer.Setup.Engine</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <Description>
+      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK.SqlServer.Setup.Engine provides full Sql Server setup support.
+    </Description>
   </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" $(GenerateDocumentation) != '' ">
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\CK.SqlServer.Setup.Engine.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.SqlServer.Parser.Model.1.0.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.XML" />
-    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Labo\Copy of Tests.cs" />
-    <Compile Include="Labo\PathImpl.cs" />
-    <Compile Include="SqlCKCoreInstaller.cs" />
-    <Compile Include="SqlFileDiscoverer.cs" />
-    <Compile Include="SqlManager.cs" />
-    <Compile Include="SqlManagerProvider.cs" />
-    <Compile Include="Labo\Tests.cs" />
-    <Compile Include="SqlMultiScript.cs" />
-    <Compile Include="SqlSetupSessionMemoryProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlScriptExecutor.cs" />
-    <Compile Include="SqlScriptTypeHandler.cs" />
-    <Compile Include="SqlSetupAspect.cs" />
-    <Compile Include="SqlVersionedItemRepository.cs" />
+    <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
-      <Name>CK.Setupable.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj">
-      <Project>{A5380F73-7050-4090-8E75-4CFC7AFA5B7B}</Project>
-      <Name>CK.Setupable.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
-      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
-      <Name>CK.SqlServer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
-      <Project>{B64D3D2A-FD2B-4731-8559-8A52C3A45351}</Project>
-      <Name>CK.SqlServer.Setup.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
-      <Project>{14E253CB-F606-4228-8860-FD04880DF379}</Project>
-      <Name>CK.SqlServer.Setup.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
-      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
-      <Name>CK.StObj.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj">
-      <Project>{D3C700E1-3546-437C-9B96-1F867A539B6A}</Project>
-      <Name>CK.Setupable.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
-      <Name>CK.StObj.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
-      <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>
-      <Name>CK.StObj.Runtime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

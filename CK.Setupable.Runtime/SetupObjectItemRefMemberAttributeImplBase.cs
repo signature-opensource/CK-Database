@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +9,9 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Implementation of <see cref="SetupObjectItemRefMemberAttributeBase"/>.
+    /// </summary>
     public abstract class SetupObjectItemRefMemberAttributeImplBase : IAttributeAmbientContextBoundInitializer
     {
         readonly SetupObjectItemRefMemberAttributeBase _attribute;
@@ -28,26 +31,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the original attribute.
         /// </summary>
-        protected SetupObjectItemRefMemberAttributeBase Attribute
-        {
-            get { return _attribute; }
-        }
+        protected SetupObjectItemRefMemberAttributeBase Attribute => _attribute; 
 
         /// <summary>
         /// Gets the owner (type and provider of its other attributes).
         /// </summary>
-        protected ICKCustomAttributeTypeMultiProvider Owner
-        {
-            get { return _owner; }
-        }
+        protected ICKCustomAttributeTypeMultiProvider Owner => _owner; 
 
         /// <summary>
         /// Gets the member to which the attribute applies.
         /// </summary>
-        protected MemberInfo Member
-        {
-            get { return _member; }
-        }
+        protected MemberInfo Member => _member; 
 
         void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
@@ -62,10 +56,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated <see cref="SetupObjectItem"/> to work with.
         /// </summary>
-        public SetupObjectItem SetupObjectItem
-        {
-            get { return _setupItemProvider.SetupObjectItem; }
-        }
+        public SetupObjectItem SetupObjectItem => _setupItemProvider.SetupObjectItem; 
 
     }
 

@@ -1,171 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A5380F73-7050-4090-8E75-4CFC7AFA5B7B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CK.Setupable.Runtime</RootNamespace>
-    <AssemblyName>CK.Setupable.Runtime</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <Description>CK.Setupable.Runtime defines tha aspect that supports Three Steps Setup.
+    </Description>
   </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" $(GenerateDocumentation) != '' ">
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\CK.Setupable.Runtime.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
+    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
+    <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="AssemblyExtension.cs" />
-    <Compile Include="ContextLocName\ContextLocName.cs" />
-    <Compile Include="ContextLocName\ContextLocNameStructImpl.cs" />
-    <Compile Include="ContextLocName\DefaultContextLocNaming.cs" />
-    <Compile Include="ContextLocName\IContextLocNaming.cs" />
-    <Compile Include="HelperExtensions.cs" />
-    <Compile Include="Setup\ISetupEngineAspect.cs" />
-    <Compile Include="ResourceLocator.cs" />
-    <Compile Include="SetupItemSelectorBaseAttributeImpl.cs" />
-    <Compile Include="SetupObjectItemRefMemberAttributeImplBase.cs" />
-    <Compile Include="SetupObjectItem\ISetupObjectItemProvider.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItemCV.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItemC.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItemV.cs" />
-    <Compile Include="SetupObjectItem\SetupObjectItem.cs" />
-    <Compile Include="ProtoItem\ISetupObjectProtoItem.cs" />
-    <Compile Include="ISetupItem.cs" />
-    <Compile Include="ProtoItem\SetupObjectProtoItemCollector.cs" />
-    <Compile Include="Scripts\FileSetupScript.cs" />
-    <Compile Include="Scripts\IScriptCollector.cs" />
-    <Compile Include="Scripts\ISetupScript.cs" />
-    <Compile Include="Scripts\ResSetupScript.cs" />
-    <Compile Include="SetupObjectItemAttributeImplBase.cs" />
-    <Compile Include="SetupObjectItemMemberAttributeImplBase.cs" />
-    <Compile Include="Setup\IDriverList.cs" />
-    <Compile Include="Setup\ISetupEngineAspectProvider.cs" />
-    <Compile Include="Setup\ISetupItemDriverAware.cs" />
-    <Compile Include="Setup\RegisterSetupEventArgs.cs" />
-    <Compile Include="Setup\DriverBase.cs" />
-    <Compile Include="Setup\DriverEventArgs.cs" />
-    <Compile Include="Setup\DriverListExtension.cs" />
-    <Compile Include="Setup\IDriverBaseList.cs" />
-    <Compile Include="Setup\ISetupEngine.cs" />
-    <Compile Include="Setup\ISetupHandler.cs" />
-    <Compile Include="Setup\ISetupSessionMemory.cs" />
-    <Compile Include="Setup\GenericItemSetupDriver.cs" />
-    <Compile Include="Setup\SetupEngineState.cs" />
-    <Compile Include="Setup\SetupEventArgs.cs" />
-    <Compile Include="Setup\SetupHandler.cs" />
-    <Compile Include="Setup\SetupHandlerFuncAdapter.cs" />
-    <Compile Include="StObj\IMutableStObjSetupData.cs" />
-    <Compile Include="StObj\IStObjSetupConfigurator.cs" />
-    <Compile Include="StObj\IStObjSetupData.cs" />
-    <Compile Include="StObj\IStObjSetupDataBase.cs" />
-    <Compile Include="StObj\IStObjSetupDynamicInitializer.cs" />
-    <Compile Include="StObj\IStObjSetupDynamicInitializerState.cs" />
-    <Compile Include="StObj\IStObjSetupItem.cs" />
-    <Compile Include="StObj\IStObjSetupItemFactory.cs" />
-    <Compile Include="StObj\StObjDynamicContainerItem.cs" />
-    <Compile Include="StObj\StObjDynamicPackageItem.cs" />
-    <Compile Include="Version\IVersionedItem.cs" />
-    <Compile Include="Version\IVersionedItemRepository.cs" />
-    <Compile Include="Version\MultiVersionManager.cs" />
-    <Compile Include="Package\DependentItemGroupList.cs" />
-    <Compile Include="Package\DependentItemList.cs" />
-    <Compile Include="Package\DynamicContainerItem.cs" />
-    <Compile Include="Package\MultiVersionDependentItem.cs" />
-    <Compile Include="Package\DynamicPackageItem.cs" />
-    <Compile Include="Package\IDependentItemGroupList.cs" />
-    <Compile Include="Package\IDependentItemList.cs" />
-    <Compile Include="Package\IMutableSetupItem.cs" />
-    <Compile Include="Package\IMutableSetupItemContainer.cs" />
-    <Compile Include="Package\IMutableSetupItemGroup.cs" />
-    <Compile Include="Package\IPackageItem.cs" />
-    <Compile Include="Package\AutoDependentPackagelItem.cs" />
-    <Compile Include="Scripts\ParsedFileName.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Setup\SetupCallGroupStep.cs" />
-    <Compile Include="SetupStep.cs" />
-    <Compile Include="Version\VersionedName.cs" />
-    <Compile Include="Version\VersionedNameExtension.cs" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87f54185-5226-4eee-8d59-5d03e6c1ab7c}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
-      <Name>CK.Setupable.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
-      <Name>CK.StObj.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
-      <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>
-      <Name>CK.StObj.Runtime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

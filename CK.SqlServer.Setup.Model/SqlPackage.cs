@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\SqlPackage.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +6,12 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base class for package objects. 
+    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
+    /// are de facto ambient contracts.
+    /// This class does not bring no more than the base <see cref="SqlPackageBase"/>.
+    /// </summary>
     public class SqlPackage : SqlPackageBase, IAmbientContractDefiner
     {
     }

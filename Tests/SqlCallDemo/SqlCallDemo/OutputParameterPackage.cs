@@ -24,33 +24,33 @@ namespace SqlCallDemo
         /// This is why the sql expression of the default value is reinjected in the call. 
         /// </para>
         /// </summary>
-        [SqlProcedureNonQuery( "sOutputInputParameterWithDefault" )]
+        [SqlProcedure( "sOutputInputParameterWithDefault" )]
         public abstract string OutputInputParameterWithDefault( SqlStandardCallContext ctx );
 
         /// <summary>
         /// Injecting the default value of the (also) returned parameter.
         /// </summary>
-        [SqlProcedureNonQuery( "sOutputInputParameterWithDefault" )]
+        [SqlProcedure( "sOutputInputParameterWithDefault" )]
         public abstract string OutputInputParameterWithDefault( SqlStandardCallContext ctx, string textResult );
 
         /// <summary>
         /// A simple return type on a pure output parameter, a warning is emitted:
         /// if a pure output parameter has a default value then it should be marked /*input*/output since the input value seems to matter.
         /// </summary>
-        [SqlProcedureNonQuery( "sOutputParameterWithDefault" )]
+        [SqlProcedure( "sOutputParameterWithDefault" )]
         public abstract string OutputParameterWithDefault( SqlStandardCallContext ctx );
 
         /// <summary>
         /// A simple return type on a pure output parameter but with a value for the default (a warning is still emitted about the missing /*input*/ marker).
         /// </summary>
-        [SqlProcedureNonQuery( "sOutputParameterWithDefault" )]
+        [SqlProcedure( "sOutputParameterWithDefault" )]
         public abstract string OutputParameterWithDefault( SqlStandardCallContext ctx, string textResult );
 
-        ///// <summary>
-        ///// A simple return type on a pure output parameter but with a value for the default (a warning is still emitted about the missing /*input*/ marker).
-        ///// </summary>
-        //[SqlProcedureNonQuery( "sOutputParameterWithDefault" )]
-        //public abstract Task<string> OutputParameterWithDefaultAsync( SqlStandardCallContext ctx, string textResult );
+        /// <summary>
+        /// A simple return type on a pure output parameter but with a value for the default (a warning is still emitted about the missing /*input*/ marker).
+        /// </summary>
+        [SqlProcedure( "sOutputParameterWithDefault" )]
+        public abstract Task<string> OutputParameterWithDefaultAsync( SqlStandardCallContext ctx, string textResult );
 
     }
 }

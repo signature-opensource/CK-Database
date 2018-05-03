@@ -49,7 +49,7 @@ namespace CK.Setup
         /// and <see cref="IStObjMutableItem.Container"/> (a described dependency is required unless explicitely declared as optional by <see cref="IStObjStructuralConfigurator"/>).
         /// </para>
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.WarnIfNotStObj"/> for Construct parameters since <see cref="IStObjValueResolver"/> can inject any dependency (the 
+        /// Defaults to <see cref="StObjRequirementBehavior.WarnIfNotStObj"/> for StObjConstruct parameters since <see cref="IStObjValueResolver"/> can inject any dependency (the 
         /// dependency may even be missing - ie. let to null for reference types and to the default value for value type - if <see cref="IStObjMutableParameter.IsOptional"/> is true).
         /// </para>
         /// <para>

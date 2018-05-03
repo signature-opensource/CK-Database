@@ -17,7 +17,7 @@ namespace CK.Setup
     /// </summary>
     /// <remarks>
     /// The <see cref="AttributeTargets.ReturnValue"/> is defined here for consistency (it is perfectly applicable to a return value) but is 
-    /// currently not used by the framework since we do not handle methods other than void Construct.
+    /// currently not used by the framework since we do not handle methods other than void StObjConstruct.
     /// </remarks>
     [AttributeUsage( AttributeTargets.Parameter | AttributeTargets.ReturnValue | AttributeTargets.Property, Inherited = false, AllowMultiple = false )]
     public class ContextAttribute : Attribute

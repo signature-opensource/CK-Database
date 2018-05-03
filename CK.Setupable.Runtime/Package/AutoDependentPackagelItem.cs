@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Package\PackageModelItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,21 +14,21 @@ namespace CK.Setup
     /// </summary>
     /// <remarks>
     /// An AutoDependentPackageItem should only be built or removed by its owner Package itself 
-    /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModel()"/> 
-    /// and <see cref="DynamicPackageItem.SupressModel()"/> methods for instance.
+    /// thanks to specific methods that control the existence of the model. The <see cref="DynamicPackageItem"/> use this pattern with its <see cref="DynamicPackageItem.EnsureModelPackage()"/> 
+    /// and <see cref="DynamicPackageItem.SupressModelPackage()"/> methods for instance.
     /// </remarks>
     public class AutoDependentPackageItem : IPackageItem, IDependentItemDiscoverer<ISetupItem>, IDependentItemContainerRef
     {
         readonly IPackageItem _package;
         readonly string _prefix;
         readonly string _prefixWithDot;
-        IDependentItemContainerRef _container;
+        IDependentItemContainerRef _explicitContaner;
         DependentItemList _requires;
         DependentItemList _requiredBy;
         DependentItemGroupList _groups;
         IDependentItemList _children;
         bool _frontPackage;
-        bool _automaticModelRequirement;
+        bool _autoProjectRequirements;
 
         /// <summary>
         /// Initializes a new <see cref="AutoDependentPackageItem"/> with a specific prefix.
@@ -47,38 +40,34 @@ namespace CK.Setup
         public AutoDependentPackageItem( IPackageItem owner, bool frontPackage, string prefix, string prefixWithDot )
         {
             if( owner == null ) throw new ArgumentNullException( "package" );
-            if( String.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( "prefix" );
-            if( String.IsNullOrWhiteSpace( prefixWithDot )
+            if( string.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( "prefix" );
+            if( string.IsNullOrWhiteSpace( prefixWithDot )
                 || prefixWithDot.Length != prefix.Length + 1
                 || prefixWithDot[prefixWithDot.Length-1] != '.'
-                || String.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );
+                || string.CompareOrdinal( prefix, 0, prefixWithDot, 0, prefix.Length ) != 0 ) throw new ArgumentException( "prefixWithDot" );
             _frontPackage = frontPackage;
             _package = owner;
             _prefix = prefix;
             _prefixWithDot = prefixWithDot;
-            _automaticModelRequirement = true;
+            _autoProjectRequirements = true;
         }
 
         /// <summary>
         /// Gets the "owner" package.
         /// </summary>
-        public IPackageItem Package
-        {
-            get { return _package; }
-        }
+        public IPackageItem Package => _package; 
 
         /// <summary>
         /// Gets the prefix.
         /// </summary>
-        public string Prefix
-        {
-            get { return _prefix; }
-        }
+        public string Prefix => _prefix; 
 
         /// <summary>
-        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is automatically projected as a requirement to its AutoDependentPackageItem 
-        /// with the same prefix on this one (the package name is prefixed with "?<see cref="Prefix"/>.").
-        /// Defaults to true and applies to Requires and RequiredBy relations.
+        /// Gets or sets whether any <see cref="Package"/> requirements (that is not itself a AutoDependentPackageItem) is 
+        /// automatically projected as a requirement to its AutoDependentPackageItem with the same prefix on this 
+        /// one (the package name is prefixed with "?<see cref="Prefix"/>.").
+        /// Defaults to true and applies to Requires, RequiredBy, Groups, Children, Generalization relations and Container
+        /// if an explicit <see cref="Container"/> is not set.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -92,116 +81,97 @@ namespace CK.Setup
         /// "If I want to be required by "B" (ie. I must be before "B"), then if "B" has a "XXX", my "XXX" must also be before "XXX.B".".
         /// </para>
         /// </remarks>
-        public bool AutomaticModelRequirement
+        public bool AutoProjectRequirements
         {
-            get { return _automaticModelRequirement; }
-            set { _automaticModelRequirement = value; }
+            get { return _autoProjectRequirements; }
+            set { _autoProjectRequirements = value; }
         }
 
         /// <summary>
         /// Gets the context of this model that is the same as the <see cref="P:Package"/>.
         /// </summary>
-        public string Context
-        {
-            get { return _package.Context; }
-        }
+        public string Context => _package.Context; 
 
         /// <summary>
         /// Gets the location of this model that is the same as the <see cref="P:Package"/>.
         /// </summary>
-        public string Location
-        {
-            get { return _package.Location; }
-        }
+        public string Location => _package.Location; 
 
         /// <summary>
         /// Gets the name of this <see cref="AutoDependentPackageItem"/>: it is the <see cref="P:Package"/>'s name prefixed by "<see cref="Prefix"/>.".
         /// </summary>
-        public string Name
-        {
-            get { return _prefixWithDot + _package.Name; }
-        }
+        public string Name => _prefixWithDot + _package.Name; 
 
         /// <summary>
         /// Gets the full name of this model.
         /// </summary>
-        public string FullName
-        {
-            get { return DefaultContextLocNaming.Format( _package.Context, _package.Location, Name ); }
-        }
+        public string FullName => DefaultContextLocNaming.Format( _package.Context, _package.Location, Name ); 
+
+        string IContextLocNaming.TransformArg => null;
 
         /// <summary>
-        /// Gets the container to which this Model belongs. 
-        /// It is totally independent of the <see cref="Package"/>'s container and should be let to null
-        /// to minimize constraints on the graph.
+        /// Gets or set the container to which this dependent package explicitly belongs. 
+        /// It is totally independent of the <see cref="Package"/>'s container and should be let to null:
+        /// if Package's Container has a similar (<see cref="Prefix"/>) package it will be the container of 
+        /// this dependent package.
         /// </summary>
         public IDependentItemContainerRef Container
         {
-            get { return _container; }
-            set { _container = value; }
+            get { return _explicitContaner; }
+            set { _explicitContaner = value; }
         }
 
         /// <summary>
         /// Gets a mutable list of items that this AutoDependentPackageItem requires.
         /// </summary>
-        public IDependentItemList Requires
-        {
-            get { return _requires ?? (_requires = new DependentItemList()); }
-        }
+        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList()); 
 
         /// <summary>
         /// Gets a mutable list of items that are required by this AutoDependentPackageItem.
         /// </summary>
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
-        }
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList()); 
 
         /// <summary>
         /// Gets a mutable list of groups to which this AutoDependentPackageItem belongs.
         /// </summary>
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
-        }
+        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
         
         /// <summary>
         /// Gets the version: it is the same as the <see cref="P:Package"/>'s one.
         /// </summary>
-        public Version Version
-        {
-            get { return _package.Version; }
-        }
+        public Version Version => _package.Version; 
 
         /// <summary>
-        /// Gets the children list.
+        /// Gets the mutable children list.
         /// </summary>
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
         IDependentItemRef IDependentItem.Generalization
         {
             get { return _package.Generalization != null ? new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( _package.Generalization.FullName, _prefixWithDot ), true ) : null; }
         }
 
-        object IDependentItem.StartDependencySort()
+        IDependentItemContainerRef IDependentItem.Container
         {
-            return typeof( GenericItemSetupDriver );
+            get
+            {
+                return _explicitContaner 
+                        ?? (_package.Container != null 
+                            ? new NamedDependentItemContainerRef( DefaultContextLocNaming.AddNamePrefix( _package.Container.FullName, _prefixWithDot ), true ) 
+                            : null);
+            }
         }
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        object IDependentItem.StartDependencySort( IActivityMonitor m ) => typeof( SetupItemDriver );
+
+        bool IDependentItemRef.Optional => false; 
 
         IEnumerable<IDependentItemRef> IDependentItem.Requires
         {
             get 
             {
                 var thisRequires = _requires.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
-                if( _automaticModelRequirement )
+                if( _autoProjectRequirements )
                 {
                     var req = _package.Requires;
                     if( req != null )
@@ -212,7 +182,7 @@ namespace CK.Setup
                     }
                 }
                 if( _frontPackage ) return thisRequires;
-                return thisRequires != null ? thisRequires.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
+                return thisRequires != null ? thisRequires.Append( _package.GetReference() ) : new [] { _package.GetReference() };
             }
         }
 
@@ -221,7 +191,7 @@ namespace CK.Setup
             get
             {
                 var thisRequiredBy = _requiredBy.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
-                if( _automaticModelRequirement )
+                if( _autoProjectRequirements )
                 {
                     var reqBy = _package.RequiredBy;
                     if( reqBy != null )
@@ -232,49 +202,70 @@ namespace CK.Setup
                     }
                 }
                 if( !_frontPackage ) return thisRequiredBy;
-                return thisRequiredBy != null ? thisRequiredBy.Append( _package.GetReference() ) : new CKReadOnlyListMono<IDependentItemRef>( _package.GetReference() );
+                return thisRequiredBy != null ? thisRequiredBy.Append( _package.GetReference() ) : new[] { _package.GetReference() };
             }
         }
 
-        //TODO: CHECK that Group relationships supports optionality and projects them into potential "Prefix." groups. 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {
-            get { return _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
+            get
+            {
+                var thisGroups = _groups.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
+                if( _autoProjectRequirements )
+                {
+                    var groups = _package.Groups;
+                    if( groups != null )
+                    {
+                        var fromPackage = groups.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                                .Select( r => new NamedDependentItemGroupRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisGroups = thisGroups != null ? thisGroups.Concat( fromPackage ) : fromPackage;
+                    }
+                }
+                return thisGroups;
+            }
+        }
+
+
+        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
+        {
+            get
+            {
+                var thisChildren = _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) );
+                if( _autoProjectRequirements )
+                {
+                    var children = _package.Children;
+                    if( children != null )
+                    {
+                        var fromPackage = children.Where( r => !DefaultContextLocNaming.NameStartsWith( r.FullName, _prefixWithDot ) )
+                                                    .Select( r => new NamedDependentItemRef( DefaultContextLocNaming.AddNamePrefix( r.FullName, _prefixWithDot ), true ) );
+                        thisChildren = thisChildren != null ? thisChildren.Concat( fromPackage ) : fromPackage;
+                    }
+                }
+                return thisChildren;
+            }
         }
 
         IEnumerable<VersionedName> IVersionedItem.PreviousNames
         {
             get 
             {
-                var pp = _package.PreviousNames;
-                if( pp.Any() )
-                {
-                    var f = pp.First();
-                    var name = f.FullName;
-                    var newName = DefaultContextLocNaming.AddNamePrefix( name, _prefixWithDot );
-                    var f2 = new VersionedName( newName, f.Version );
-                }
+                //var pp = _package.PreviousNames;
+                //if( pp.Any() )
+                //{
+                //    var f = pp.First();
+                //    var name = f.FullName;
+                //    var newName = DefaultContextLocNaming.AddNamePrefix( name, _prefixWithDot );
+                //    var f2 = new VersionedName( newName, f.Version );
+                //}
                 return _package.PreviousNames.Select( p => new VersionedName( DefaultContextLocNaming.AddNamePrefix( p.FullName, _prefixWithDot ), p.Version ) ); 
             }
         }
 
-        string IVersionedItem.ItemType
-        {
-            get { return _prefix; }
-        }
-
-        //TODO: CHECK that Children relationships supports optionality and projects them into potential "Prefix." children. ??
-        //      Not sure it is a good idea for container/Children... 
-        IEnumerable<IDependentItemRef> IDependentItemGroup.Children
-        {
-            get { return _children.SetRefFullName( r => DefaultContextLocNaming.Resolve( r.FullName, _package.Context, _package.Location ) ); }
-        }
+        string IVersionedItem.ItemType =>  _prefix; 
 
 
-        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
-        {
-            return new CKReadOnlyListMono<ISetupItem>( _package );
-        }
+        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister() => new[] { _package };
+
     }
 
 

@@ -1,9 +1,7 @@
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -11,7 +9,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckSqlCallContext( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckSqlCallContext" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckSqlCallContext" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 CallWithAuthContext( package );

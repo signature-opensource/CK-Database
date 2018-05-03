@@ -7,6 +7,9 @@ using CK.Core;
 using System.Data.SqlClient;
 using System.Data;
 using System.IO;
+using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
+using System.Threading.Tasks;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -15,7 +18,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     {
         IActivityMonitor Logger { get; }
 
-        SqlConnectionProvider Connection { get; }
+        SqlConnection Connection { get; }
     }
 
     public class SqlCallContext : ISqlCallContext
@@ -32,7 +35,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             get { return TestHelper.Monitor; }
         }
 
-        public SqlConnectionProvider Connection
+        public SqlConnection Connection
         {
             get { return _m.Connection; }
         }
@@ -42,7 +45,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class CallProcedureAutoImplementor
     {
-        readonly static string ConnectionString = TestHelper.DatabaseTestConnectionString;
+        readonly static string ConnectionString = TestHelper.GetConnectionString();
 
         class ManualCall
         {
@@ -107,7 +110,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     p.Value = z;
                     c.Add( p );
 
-                    ctx.Connection.ExecuteNonQuery( cmd );
+                    cmd.Connection = ctx.Connection;
+                    cmd.ExecuteNonQuery();
 
                     y = (int)pOut0.Value;
                     d = (DateTime)pOut1.Value;
@@ -116,15 +120,16 @@ namespace CK.SqlServer.Setup.Engine.Tests
             }
         }
 
-
         [Test]
         public void ManualImplementation()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), "Unable to open or create test database on local server: {0}.", ConnectionString );
-                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.ProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
-                m.ExecuteScripts( install, TestHelper.Monitor );
+                m.OpenFromConnectionString( ConnectionString, true ).Should().BeTrue( $"Unable to open or create test database on local server: {ConnectionString}." );
+                var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
+
+                m.ExecuteScripts( install, TestHelper.Monitor )
+                    .Should().BeTrue();
 
                 SqlCallContext c = new SqlCallContext( m );
                 ManualCall manual = new ManualCall();

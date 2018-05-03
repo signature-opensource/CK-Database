@@ -18,10 +18,10 @@ namespace CK.Setupable.Engine.Tests
             var pB = new DynamicPackageItem( "Package" ) { Name = "B" };
             var pAObjects = pA.EnsureObjectsPackage();
             var pBObjects = pB.EnsureObjectsPackage();
-            var pAModel = pA.EnsureModel();
-            var pBModel = pB.EnsureModel();
+            var pAModel = pA.EnsureModelPackage();
+            var pBModel = pB.EnsureModelPackage();
             pB.Requires.Add( pA );
-            var sortResult = DependencySorter.OrderItems( pB );
+            var sortResult = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pB );
             Assert.That( sortResult.IsComplete );
             var sortedNames = sortResult.SortedItems.Select( i => i.FullName ).ToArray();
             CollectionAssert.AreEqual( new[] { "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" }, sortedNames );

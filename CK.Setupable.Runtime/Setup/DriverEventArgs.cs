@@ -5,6 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Event argument for the <see cref="ISetupEngine.DriverEvent"/>.
+    /// Event argument for the <see cref="ISetupableAspect.DriverEvent"/>.
     /// </summary>
     public class DriverEventArgs : EventArgs
     {
@@ -33,14 +34,20 @@ namespace CK.Setup
         public DriverBase Driver { get; internal set; }
 
         /// <summary>
+        /// Gets the current monitor to use.
+        /// </summary>
+        public IActivityMonitor Monitor { get; private set; }
+
+        /// <summary>
         /// Gets or sets a flag to stop the setup process. 
         /// This should be set to true after at least one fatal error has been 
         /// logged with a detailed explanation. 
         /// </summary>
         public bool CancelSetup { get; set; }
 
-        internal DriverEventArgs( SetupStep step )
+        internal DriverEventArgs( IActivityMonitor m, SetupStep step )
         {
+            Monitor = m;
             Step = step;
         }
 

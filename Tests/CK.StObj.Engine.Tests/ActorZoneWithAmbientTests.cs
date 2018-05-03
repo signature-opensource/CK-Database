@@ -6,7 +6,6 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
-    [CLSCompliant(false)]
     public class ActorZoneWithAmbientTests
     {
         public class AmbientPropertySetAttribute : Attribute, IStObjStructuralConfigurator
@@ -63,7 +62,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
         class BasicGroup : BaseDatabaseObject
         {
-            void Construct( BasicActor actor )
+            void StObjConstruct( BasicActor actor )
             {
             }
         }
@@ -82,7 +81,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class ZoneGroup : BasicGroup
         {
-            void Construct( SecurityZone zone )
+            void StObjConstruct( SecurityZone zone )
             {
             }
         }
@@ -91,7 +90,7 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class SecurityZone : BaseDatabaseObject
         {
-            void Construct( BasicGroup group )
+            void StObjConstruct( BasicGroup group )
             {
             }
         }
@@ -125,22 +124,22 @@ namespace CK.StObj.Engine.Tests
         public void LayeredArchitecture()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-            collector.RegisterClass( typeof( BasicPackage ) );
-            collector.RegisterClass( typeof( BasicActor ) );
-            collector.RegisterClass( typeof( BasicUser ) );
-            collector.RegisterClass( typeof( BasicGroup ) );
-            collector.RegisterClass( typeof( ZonePackage ) );
-            collector.RegisterClass( typeof( ZoneGroup ) );
-            collector.RegisterClass( typeof( SecurityZone ) );
-            collector.RegisterClass( typeof( AuthenticationPackage ) );
-            collector.RegisterClass( typeof( AuthenticationUser ) );
-            collector.RegisterClass( typeof( AuthenticationDetail ) );
-            collector.RegisterClass( typeof( SqlDatabaseDefault ) );
+            collector.RegisterType( typeof( BasicPackage ) );
+            collector.RegisterType( typeof( BasicActor ) );
+            collector.RegisterType( typeof( BasicUser ) );
+            collector.RegisterType( typeof( BasicGroup ) );
+            collector.RegisterType( typeof( ZonePackage ) );
+            collector.RegisterType( typeof( ZoneGroup ) );
+            collector.RegisterType( typeof( SecurityZone ) );
+            collector.RegisterType( typeof( AuthenticationPackage ) );
+            collector.RegisterType( typeof( AuthenticationUser ) );
+            collector.RegisterType( typeof( AuthenticationDetail ) );
+            collector.RegisterType( typeof( SqlDatabaseDefault ) );
             collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
 
 
-            var r = collector.GetResult();
+            var r = collector.GetResult( new SimpleServiceContainer() );
             Assert.That( r.HasFatalError, Is.False );
             r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
             r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );

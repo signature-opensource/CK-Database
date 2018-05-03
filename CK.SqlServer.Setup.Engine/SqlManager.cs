@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Engine\SqlManager.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +19,7 @@ namespace CK.SqlServer.Setup
         static List<string> _protectedDatabaseNames = new List<string>() { "master", "msdb", "tempdb", "model" };
 
         readonly IActivityMonitor   _monitor;
-        SqlConnectionProvider	    _oCon;
+        SqlConnection               _oCon;
         bool				    	_checkTranCount;
         bool                        _ckCoreInstalled;
         bool                        _missingDependencyIsError;
@@ -43,18 +36,11 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="SqlConnectionProvider"/> of this <see cref="SqlManager"/>.
-        /// Null when the connection is closed.
+        /// Gets the <see cref="SqlConnection"/> of this manager.
         /// </summary>
-        public SqlConnectionProvider Connection
-        {
-            get { return _oCon; }
-        }
+        public SqlConnection Connection => _oCon;
 
-        void IDisposable.Dispose()
-        {
-            Close();
-        }
+        void IDisposable.Dispose() => Close();
 
         /// <summary>
         /// Close the connection. <see cref="Connection"/> becomes null.
@@ -64,8 +50,8 @@ namespace CK.SqlServer.Setup
         {
             if( _oCon != null )
             {
-                _oCon.InternalConnection.StateChange -= new StateChangeEventHandler( OnConnStateChange );
-                _oCon.InternalConnection.InfoMessage -= new SqlInfoMessageEventHandler( OnConnInfo );
+                _oCon.StateChange -= new StateChangeEventHandler( OnConnStateChange );
+                _oCon.InfoMessage -= new SqlInfoMessageEventHandler( OnConnInfo );
                 _oCon.Dispose();
                 _oCon = null;
             }
@@ -76,14 +62,15 @@ namespace CK.SqlServer.Setup
             Debug.Assert( _oCon == null );
             try
             {
-                _oCon = new SqlConnectionProvider( connectionString );
-                if( clearPoolFirst ) SqlConnection.ClearPool( _oCon.InternalConnection );
+                _oCon = new SqlConnection( connectionString );
+                CheckAction( "opening", _oCon.Database );
+                if( clearPoolFirst ) SqlConnection.ClearPool( _oCon );
                 if( _monitor != null )
                 {
-                    _oCon.InternalConnection.StateChange += new StateChangeEventHandler( OnConnStateChange );
-                    _oCon.InternalConnection.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
+                    _oCon.StateChange += new StateChangeEventHandler( OnConnStateChange );
+                    _oCon.InfoMessage += new SqlInfoMessageEventHandler( OnConnInfo );
                 }
-                _oCon.ExplicitOpen();
+                _oCon.Open();
             }
             catch
             {
@@ -139,7 +126,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success.</returns>
         public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
         {
-            using( _monitor.OpenInfo().Send( "Connection to {0}.", connectionString ) )
+            using( _monitor.OpenInfo( $"Connection to {connectionString}." ) )
             {
                 try
                 {
@@ -151,18 +138,19 @@ namespace CK.SqlServer.Setup
                 {
                     if( autoCreate )
                     {
-                        _monitor.Warn().Send( ex );
+                        _monitor.Warn( ex );
                         string name;
-                        using( var master = new SqlConnectionProvider( GetMasterConnectionString( connectionString, out name ) ) )
+                        using( var master = new SqlConnection( GetMasterConnectionString( connectionString, out name ) ) )
                         {
                             try
                             {
-                                _monitor.Info().Send( "Creating database '{0}'.", name );
-                                master.ExecuteNonQuery( "create database " + name );
+                                _monitor.Info( $"Creating database '{name}'." );
+                                master.Open();
+                                using( var cmd = new SqlCommand( $"create database {name}" ) { Connection = master } ) cmd.ExecuteNonQuery();
                             }
                             catch( Exception exCreate )
                             {
-                                _monitor.Error().Send( exCreate );
+                                _monitor.Error( exCreate );
                                 return false;
                             }
                         }
@@ -173,13 +161,13 @@ namespace CK.SqlServer.Setup
                         }
                         catch( Exception exOpenCreated )
                         {
-                            _monitor.Error().Send( exOpenCreated );
+                            _monitor.Error( exOpenCreated );
                             return false;
                         }
                     }
                     else
                     {
-                        _monitor.Error().Send( ex );
+                        _monitor.Error( ex );
                         return false;
                     }
                 }
@@ -201,25 +189,9 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets a <see cref="IActivityMonitor"/>. When a monitor is set,
-        /// exceptions are redirected to it and this <see cref="SqlManager"/> does not throw 
-        /// exceptions any more.
+        /// Gets the <see cref="IActivityMonitor"/>.
         /// </summary>
-        public IActivityMonitor Monitor
-        {
-            get { return _monitor; }
-        }
-
-        /// <summary>
-        /// True if the connection to the current database is opened. Can be called on a 
-        /// disposed <see cref="SqlManager"/>.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsOpen()
-        {
-            return _oCon != null && _oCon.InternalConnection.State == System.Data.ConnectionState.Open;
-        }
-
+        public IActivityMonitor Monitor => _monitor; 
 
         /// <summary>
         /// Ensures that the CKCore kernel is installed.
@@ -245,10 +217,10 @@ namespace CK.SqlServer.Setup
         public string GetObjectDefinition( string schemaName )
         {
             CheckOpen();
-            using( var cmd = new SqlCommand( "select OBJECT_DEFINITION(OBJECT_ID(@0))" ) )
+            using( var cmd = new SqlCommand( "select OBJECT_DEFINITION(OBJECT_ID(@0))" ) { Connection = _oCon } )
             {
                 cmd.Parameters.AddWithValue( "@0", schemaName );
-                return (string)_oCon.ExecuteScalar( cmd );
+                return (string)cmd.ExecuteScalar();
             }
         }
 
@@ -261,21 +233,21 @@ namespace CK.SqlServer.Setup
         public bool SchemaDropAllObjects( string schema, bool dropSchema )
         {
             CheckOpen();
-            if( String.IsNullOrEmpty( schema )
+            if( string.IsNullOrEmpty( schema )
                 || schema.IndexOf( '\'' ) >= 0
                 || schema.IndexOf( ';' ) >= 0 ) throw new ArgumentException( "schemaName" );
             try
             {
-                using( var c = new SqlCommand( "CKCore.sSchemaDropAllObjects" ) )
+                using( var c = new SqlCommand( "CKCore.sSchemaDropAllObjects" ) { Connection = _oCon } )
                 {
                     c.CommandType = CommandType.StoredProcedure;
                     c.Parameters.AddWithValue( "@SchemaName", schema );
-                    _oCon.ExecuteNonQuery( c );
+                    c.ExecuteNonQuery();
                     if( dropSchema )
                     {
                         c.CommandType = CommandType.Text;
-                        c.CommandText = String.Format( "if exists(select 1 from sys.schemas where name = '{0}') drop schema {0};", schema );
-                        _oCon.ExecuteNonQuery( c );
+                        c.CommandText = $"if exists(select 1 from sys.schemas where name = '{schema}') drop schema [{schema.Replace( "]", "]]" )}];";
+                        c.ExecuteNonQuery();
                     }
                 }
                 if( schema == "CKCore" ) _ckCoreInstalled = false;
@@ -283,7 +255,7 @@ namespace CK.SqlServer.Setup
             }
             catch( Exception ex )
             {
-                _monitor.Error().Send( ex );
+                _monitor.Error( ex );
                 return false;
             }
         }
@@ -292,7 +264,7 @@ namespace CK.SqlServer.Setup
         {
             if( dbName == null || dbName.Length == 0 || _protectedDatabaseNames.Contains( dbName ) )
             {
-                throw new Exception( String.Format( "Attempt to {0} database '{1}'.", action, dbName ) );
+                throw new Exception( $"Attempt to {action} database '{dbName}'." );
             }
         }
 
@@ -303,7 +275,6 @@ namespace CK.SqlServer.Setup
             readonly IActivityMonitor _monitor;
             readonly int _tranCount;
             readonly string _databaseName;
-            readonly IDisposable _connectionCloser;
 
             /// <summary>
             /// Gets or sets the number of <see cref="Execute"/> that failed.
@@ -322,7 +293,7 @@ namespace CK.SqlServer.Setup
                 _command = new SqlCommand();
                 // 8 minutes timeout... should be enough!
                 _command.CommandTimeout = 8 * 60;
-                _command.Connection = _manager.Connection.InternalConnection;
+                _command.Connection = _manager.Connection;
                 _databaseName = autoRestoreDatabase ? _command.Connection.Database : null;
                 if( checkTransactionCount )
                 {
@@ -330,7 +301,6 @@ namespace CK.SqlServer.Setup
                     _tranCount = (int)_command.ExecuteScalar();
                 }
                 else _tranCount = -1;
-                _connectionCloser = _manager.Connection.AcquireConnection( _command );
             }
 
             public bool Execute( string script )
@@ -362,13 +332,13 @@ namespace CK.SqlServer.Setup
                     FailCount = FailCount + 1;
                     if( _monitor == null ) throw;
                     // If the monitor is tracing, the text has already been logged.
-                    if( hasBeenTraced ) _monitor.Error().Send( e );
+                    if( hasBeenTraced ) _monitor.Error( e );
                     else
                     {
                         // If the text is not already logged, then we unconditionally log it below the error.
-                        using( _monitor.OpenError().Send( e ) )
+                        using( _monitor.OpenError( e ) )
                         {
-                            _monitor.Info().Send( script );
+                            _monitor.Info( script );
                         }
                     }
                 }
@@ -377,55 +347,49 @@ namespace CK.SqlServer.Setup
 
             public void Dispose()
             {
-                _connectionCloser.Dispose();
                 _command.Dispose();
-                if( _manager.IsOpen() )
+                try
                 {
-                    try
+                    if( _tranCount >= 0 )
                     {
-                        if( _tranCount >= 0 )
+                        int tranCountAfter = (int)_manager.ExecuteScalar( "select @@TranCount" );
+                        if( _tranCount != tranCountAfter )
                         {
-                            int tranCountAfter = (int)_manager.Connection.ExecuteScalar( "select @@TranCount" );
-                            if( _tranCount != tranCountAfter )
+                            string msg = $"Transaction count differ: {_tranCount} before, {tranCountAfter} after.";
+                            int nbRollbak = tranCountAfter - _tranCount;
+                            if( _tranCount == 0 && nbRollbak > 0 )
                             {
-                                string msg = String.Format( "Transaction count differ: {0} before, {1} after.", _tranCount, tranCountAfter );
-                                int nbRollbak = tranCountAfter - _tranCount;
-                                if( _tranCount == 0 && nbRollbak > 0 )
+                                msg += " Attempting rollback: ";
+                                try
                                 {
-                                    msg += " Attempting rollback: ";
-                                    try
-                                    {
-                                        _manager.Connection.ExecuteNonQuery( "rollback" );
-                                        msg += "Succeed.";
-                                    }
-                                    catch( Exception ex )
-                                    {
-                                        msg += "Failed -> " + ex.Message;
-                                    }
+                                    _manager.ExecuteNonQuery( "rollback" );
+                                    msg += "Succeed.";
                                 }
-                                if( _monitor != null ) _monitor.Error().Send( msg );
-                                else if( LastSucceed ) throw new Exception( msg );
+                                catch( Exception ex )
+                                {
+                                    msg += "Failed -> " + ex.Message;
+                                }
                             }
-                        }
-                        if( _databaseName != null && _databaseName != _manager.Connection.InternalConnection.Database )
-                        {
-                            if( _monitor != null ) _monitor.Info().Send( "Current database automatically restored from {0} to {1}.", _manager.Connection.InternalConnection.Database, _databaseName );
-                            _command.Connection.ChangeDatabase( _databaseName );
+                            if( _monitor != null ) _monitor.Error( msg );
+                            else if( LastSucceed ) throw new Exception( msg );
                         }
                     }
-                    catch( Exception ex )
+                    if( _databaseName != null && _databaseName != _manager.Connection.Database )
                     {
-                        if( _monitor != null ) _monitor.OpenWarn().Send( ex );
-                        else
-                        {
-                            if( LastSucceed ) throw;
-                            // When an error already occurred, we do not rethrow the internal exception.
-                        }
+                        if( _monitor != null ) _monitor.Info( $"Current database automatically restored from {_manager.Connection.Database} to {_databaseName}." );
+                        _command.Connection.ChangeDatabase( _databaseName );
                     }
                 }
-
+                catch( Exception ex )
+                {
+                    if( _monitor != null ) _monitor.OpenWarn( ex );
+                    else
+                    {
+                        if( LastSucceed ) throw;
+                        // When an error already occurred, we do not rethrow the internal exception.
+                    }
+                }
             }
-
         }
 
         /// <summary>
@@ -484,14 +448,64 @@ namespace CK.SqlServer.Setup
             }
         }
 
+        /// <summary>
+        /// Simple execute scalar helper.
+        /// The connection must be opened.
+        /// </summary>
+        /// <param name="select">Select clause.</param>
+        /// <returns>The scalar (may be DBNull.Value) or null if no result has been returned.</returns>
+        public object ExecuteScalar( string select )
+        {
+            CheckOpen();
+            using( var cmd = new SqlCommand( select ) { Connection = _oCon } )
+            {
+                return cmd.ExecuteScalar();
+            }
+        }
+
+        /// <summary>
+        /// Simple execute helper.
+        /// The connection must be opened.
+        /// </summary>
+        /// <param name="cmd">The command text.</param>
+        /// <returns>The number of rows.</returns>
+        public int ExecuteNonQuery( string cmd, int timeoutSecond = -1 )
+        {
+            CheckOpen();
+            using( var c = new SqlCommand( cmd ) { Connection = _oCon } )
+            {
+                if( timeoutSecond >= 0 ) c.CommandTimeout = timeoutSecond;
+                return c.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Executes the command and returns the first row as an array of object values.
+        /// </summary>
+        /// <param name="cmd">The <see cref="SqlCommand"/> to execute.</param>
+        /// <returns>An array of objects or null if nothing has been returned from database.</returns>
+        public object[] ReadFirstRow( SqlCommand cmd )
+        {
+            CheckOpen();
+            cmd.Connection = _oCon;
+            using( SqlDataReader r = cmd.ExecuteReader( CommandBehavior.SingleRow ) )
+            {
+                if( !r.Read() ) return null;
+                object[] res = new object[r.FieldCount];
+                r.GetValues( res );
+                return res;
+            }
+        }
+
+
         #region Private
 
         void OnConnStateChange( object sender, StateChangeEventArgs args )
         {
             Debug.Assert( _monitor != null );
             if( args.CurrentState == ConnectionState.Open )
-                _monitor.Info().Send( "Connected to database." );
-            else _monitor.Info().Send( "Disconnected from database." );
+                _monitor.Info( "Connected to database." );
+            else _monitor.Info( "Disconnected from database." );
         }
 
         void OnConnInfo( object sender, SqlInfoMessageEventArgs args )
@@ -503,27 +517,19 @@ namespace CK.SqlServer.Setup
                 {
                     if( _missingDependencyIsError && err.Number == 2007 )
                     {
-                        _monitor.Error().Send( "Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
+                        _monitor.Error( $"Missing Dependency (MissingDependencyIsError configuration is true for this object).\r\n"
                                       + "You can set MissingDependencyIsError to false for this object, or set IgnoreMissingDependencyIsError configuration to true to globally ignore this error (but it is better to correctly manage Requirements).\r\n"
-                                      + "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                                      + "{err.Procedure} ({err.LineNumber}): {err.Message}" );
                     }
-                    else _monitor.Info().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    else _monitor.Info( $"{err.Procedure} ({err.LineNumber}): {err.Message}" );
                 }
                 else if( err.Class <= 16 )
                 {
-                    _monitor.Warn().Send( "{0} ({1}): {2}", err.Procedure, err.LineNumber, err.Message );
+                    _monitor.Warn( $"{err.Procedure} ({err.LineNumber}): {err.Message}" );
                 }
                 else
                 {
-                    _monitor.Error().Send( "Sql Server error at '{0}'\r\nClass='{1}'\r\nMessage: '{2}'\r\nProcedure: '{6}'\r\nLineNumber: '{7}'\r\nNumber: '{3}'\r\nState: '{4}'\r\nServer: '{5}'",
-                                        err.Source,
-                                        err.Class,
-                                        err.Message,
-                                        err.Number,
-                                        err.State,
-                                        err.Server,
-                                        err.Procedure,
-                                        err.LineNumber );
+                    _monitor.Error( $"Sql Server error at '{err.Source}'\r\nClass='{err.Class}'\r\nMessage: '{err.Message}'\r\nProcedure: '{err.Procedure}'\r\nLineNumber: '{err.LineNumber}'\r\nNumber: '{err.Number}'\r\nState: '{err.State}'\r\nServer: '{err.Server}'" );
                 }
             }
         }

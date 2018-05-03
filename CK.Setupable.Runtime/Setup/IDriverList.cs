@@ -14,24 +14,24 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// An ordered list of <see cref="GenericItemSetupDriver"/> indexed by the <see cref="IDependentItem.FullName"/> or 
+    /// An ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> or 
     /// by the <see cref="IDependentItem"/> object instance itself.
     /// </summary>
-    public interface IDriverList : IReadOnlyList<GenericItemSetupDriver>
+    public interface IDriverList : IReadOnlyList<SetupItemDriver>
     {
         /// <summary>
-        /// Gets a <see cref="GenericItemSetupDriver"/> by its name.
+        /// Gets a <see cref="SetupItemDriver"/> by its name.
         /// </summary>
-        /// <param name="fullName">The item full name.</param>
+        /// <param name="fullName">The item full name. Can be null: null is returned.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
-        GenericItemSetupDriver this[string fullName] { get; }
+        SetupItemDriver this[string fullName] { get; }
 
         /// <summary>
-        /// Gets a <see cref="GenericItemSetupDriver"/> associated to a <see cref="IDependentItem"/>.
+        /// Gets a <see cref="SetupItemDriver"/> associated to a <see cref="IDependentItem"/>.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The item. Can be null: null is returned.</param>
         /// <returns>The associated driver or null if the driver does not exist.</returns>
-        GenericItemSetupDriver this[IDependentItem item] { get; }
+        SetupItemDriver this[IDependentItem item] { get; }
 
     }
 }

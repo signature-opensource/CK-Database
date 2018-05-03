@@ -24,6 +24,7 @@ namespace CK.Core
         string _context;
         string _location;
         string _name;
+        string _transformArg;
 
         /// <summary>
         /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a full name.
@@ -34,25 +35,52 @@ namespace CK.Core
             // Initialize class invariants.
             _fullName = _name = String.Empty;
             _context = _location = null;
+            _transformArg = null;
             FullName = fullName;
         }
 
         /// <summary>
-        /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a full name.
+        /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a triplet.
         /// </summary>
+        /// <param name="context">The context string. Can be null.</param>
+        /// <param name="location">The location. Can be null.</param>
+        /// <param name="name">The name, may be suffixed with the (<see cref="TransformArg"/>). Can not be null.</param>
         public ContextLocNameStructImpl( string context, string location, string name )
         {
             if( name == null ) throw new ArgumentNullException( "name" );
             _context = context;
             _location = location;
             _name = name;
+            int len = name.Length;
+            _transformArg = DefaultContextLocNaming.ExtractTransformArg( name, 0, ref len );
+            if( len != name.Length ) _name = name.Substring( 0, len );
+            else _name = name;
+            _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="ContextLocNameStructImpl"/> with a context, location and base name plus
+        /// the transform argument.
+        /// </summary>
+        /// <param name="context">The context string. Can be null.</param>
+        /// <param name="location">The location. Can be null.</param>
+        /// <param name="nameWithoutTransformArg">The name. Can not be null.</param>
+        /// <param name="transformArg">The transform argument. Can not be null nor empty.</param>
+        public ContextLocNameStructImpl( string context, string location, string nameWithoutTransformArg, string transformArg )
+        {
+            if( nameWithoutTransformArg == null ) throw new ArgumentNullException( nameof( nameWithoutTransformArg ) );
+            if( string.IsNullOrEmpty( transformArg ) ) throw new ArgumentNullException( nameof( transformArg ) );
+            _context = context;
+            _location = location;
+            _name = nameWithoutTransformArg + "(" + transformArg +")";
+            _transformArg = transformArg;
             _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
         }
 
         /// <summary>
         /// Initializes a new <see cref="ContextLocNameStructImpl"/> from a non null <see cref="IContextLocNaming"/>.
         /// </summary>
-        /// <param name="contextLocName"></param>
+        /// <param name="contextLocName">The existing name.</param>
         public ContextLocNameStructImpl( IContextLocNaming contextLocName )
         {
             if( contextLocName == null ) throw new ArgumentNullException( "contextLocName" );
@@ -60,6 +88,7 @@ namespace CK.Core
             _location = contextLocName.Location;
             _name = contextLocName.Name;
             _fullName = contextLocName.FullName;
+            _transformArg = contextLocName.TransformArg;
         }
 
         /// <summary>
@@ -78,11 +107,6 @@ namespace CK.Core
                     _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
                 }
             }
-        }
-
-        void CombineContext( string baseContext )
-        {
-
         }
 
         /// <summary>
@@ -104,7 +128,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets or sets the name. <see cref="FullName"/> is automatically updated.
+        /// Gets or sets the name. <see cref="FullName"/> and <see cref="TransformArg"/> are automatically updated.
         /// Never null (normalized to <see cref="String.Empty"/>).
         /// </summary>
         public string Name
@@ -112,10 +136,34 @@ namespace CK.Core
             get { return _name; }
             set
             {
-                if( value == null ) value = String.Empty;
+                if( value == null ) value = string.Empty;
                 if( _name != value )
                 {
                     _name = value;
+                    int len = _name.Length;
+                    _transformArg = DefaultContextLocNaming.ExtractTransformArg( _name, 0, ref len );
+                    if( len != _name.Length ) _name = _name.Substring( 0, len );
+                    _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tranformation argument full name. 
+        /// The <see cref="Name"/> and <see cref="FullName"/> are updated.
+        /// This can be null (no target) or not empty: an empty transformation argument is not valid.
+        /// </summary>
+        public string TransformArg
+        {
+            get { return _transformArg; }
+            set
+            {
+                if( value != null && value.Length == 0 ) throw new ArgumentException( "TransformArg can not be empty (but can be null)." );
+                if( _transformArg != value )
+                {
+                    if( _transformArg != null ) _name = DefaultContextLocNaming.RemoveTransformArg( _name, 0, _name.Length );
+                    if( value != null ) _name = DefaultContextLocNaming.AppendTransformArg( _name, value );
+                    _transformArg = value;
                     _fullName = DefaultContextLocNaming.Format( _context, _location, _name );
                 }
             }
@@ -136,14 +184,13 @@ namespace CK.Core
                     if( value == null )
                     {
                         _fullName = _name = String.Empty;
-                        _context = _location = null;
+                        _context = _location = _transformArg = null;
                     }
                     else
                     {
-                        if( !DefaultContextLocNaming.TryParse( value, out _context, out _location, out _name ) )
+                        if( !DefaultContextLocNaming.TryParse( value, out _context, out _location, out _name, out _transformArg ) )
                         {
                             _fullName = _name = value;
-                            _context = _location = null;
                         }
                         else
                         {
@@ -155,13 +202,34 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Overridden to return the hash of the full name.
+        /// </summary>
+        /// <returns>Hash of the full name.</returns>
+        public override int GetHashCode() => _fullName != null ? _fullName.GetHashCode() : 0;
+
+        /// <summary>
+        /// Equality is bound to the <see cref="FullName"/>.
+        /// </summary>
+        /// <param name="obj">Object to compare to.</param>
+        /// <returns>True if FullName are equal.</returns>
+        public override bool Equals( object obj )
+        {
+            IContextLocNaming i = obj as IContextLocNaming;
+            if( i != null ) return i.FullName == _fullName;
+            if( obj is ContextLocNameStructImpl )
+            {
+                ContextLocNameStructImpl s = (ContextLocNameStructImpl)obj;
+                return s.FullName == _fullName;
+            }
+            return base.Equals( obj );
+        }
+
+        /// <summary>
         /// Returns this <see cref="FullName"/>, mainly for debugging purposes.
         /// </summary>
         /// <returns>This FullName.</returns>
-        public override string ToString()
-        {
-            return _fullName;
-        }
+        public override string ToString() => _fullName;
+
     }
 
 }

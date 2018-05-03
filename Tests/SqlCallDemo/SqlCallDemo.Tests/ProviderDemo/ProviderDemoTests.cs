@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using CK.SqlServer;
 using SqlCallDemo.ProviderDemo;
 using CK.Core;
+using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
 
 namespace SqlCallDemo.Tests.ProviderDemo
 {
@@ -48,7 +45,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
 
         static bool CallActorOnly( string s )
         {
-            Assert.That( s, Is.StringMatching( "@ActorId = (1|2)" ) );
+            s.Should().MatchRegex( "@ActorId = (1|2)" );
             return s == "@ActorId = 1";
         }
 
@@ -82,7 +79,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
 
         static bool CallCultureOnly( string s )
         {
-            Assert.That( s, Is.StringMatching( "@CultureId = (3|4)" ) );
+            s.Should().MatchRegex( "@CultureId = (3|4)" );
             return s == "@CultureId = 3";
         }
 

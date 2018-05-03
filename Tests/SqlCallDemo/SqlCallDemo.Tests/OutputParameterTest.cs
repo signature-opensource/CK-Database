@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
 using NUnit.Framework;
+using System.Threading.Tasks;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -71,16 +65,16 @@ namespace SqlCallDemo.Tests
         }
 
 
-        //[Test]
-        //public async Task async_calling_a_pure_output_with_default_parameter()
-        //{
-        //    var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
-        //    using( var ctx = new SqlStandardCallContext() )
-        //    {
-        //        string result = await p.OutputParameterWithDefaultAsync( ctx, null );
-        //        Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );
-        //    }
-        //}
+        [Test]
+        public async Task async_calling_a_pure_output_with_default_parameter()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                string result = await p.OutputParameterWithDefaultAsync( ctx, null ).ConfigureAwait( false );
+                Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );
+            }
+        }
 
 
     }

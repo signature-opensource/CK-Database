@@ -1,26 +1,22 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\Configuration\SqlSetupAspectConfiguration.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
 using System;
 using System.Collections.Generic;
-using CK.Core;
-using CK.Setup;
-using CK.SqlServer.Setup;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace CK.Setup
 {
-    [Serializable]
-    public class SqlSetupAspectConfiguration : ISetupEngineAspectConfiguration
+    /// <summary>
+    /// Aspect configuration object.
+    /// </summary>
+    public class SqlSetupAspectConfiguration : IStObjEngineAspectConfiguration
     {
+        /// <summary>
+        /// Default database name is "db".
+        /// </summary>
+        public const string DefaultDatabaseName = "db";
+
         readonly List<SqlDatabaseDescriptor> _databases;
-        readonly List<string> _ckPackageDirectories;
-        readonly List<string> _sqlFileDirectories;
-        string _defaultDatabaseConnectionString;
-        bool _ignoreMissingDependencyIsError;
 
         /// <summary>
         /// Initializes a new <see cref="SqlSetupAspectConfiguration"/>.
@@ -28,39 +24,49 @@ namespace CK.Setup
         public SqlSetupAspectConfiguration()
         {
             _databases = new List<SqlDatabaseDescriptor>();
-            _ckPackageDirectories = new List<string>();
-            _sqlFileDirectories = new List<string>();
         }
 
+        static readonly XName xDatabases = XNamespace.None + "Databases";
+        static readonly XName xDatabase = XNamespace.None + "Database";
+        static readonly XName xDefaultDatabaseConnectionString = XNamespace.None + "DefaultDatabaseConnectionString";
+        static readonly XName xGlobalResolution = XNamespace.None + "GlobalResolution";
+        static readonly XName xIgnoreMissingDependencyIsError = XNamespace.None + "IgnoreMissingDependencyIsError";
+
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupAspectConfiguration"/> from its xml representation.
+        /// </summary>
+        /// <param name="e">The element.</param>
+        public SqlSetupAspectConfiguration( XElement e )
+        {
+            _databases = e.Elements( xDatabases ).Elements( xDatabase ).Select( d => new SqlDatabaseDescriptor( d ) ).ToList();
+            DefaultDatabaseConnectionString = e.Element( xDefaultDatabaseConnectionString )?.Value;
+            GlobalResolution = string.Equals( e.Element( xGlobalResolution )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            IgnoreMissingDependencyIsError = string.Equals( e.Element( xIgnoreMissingDependencyIsError )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
+        /// Serializes its content in the provided <see cref="XElement"/> and returns it.
+        /// The <see cref="SqlSetupAspectConfiguration(XElement)"/> constructor will be able to read this element back.
+        /// </summary>
+        /// <param name="e">The element to populate.</param>
+        /// <returns>The <paramref name="e"/> element.</returns>
+        public XElement SerializeXml( XElement e )
+        {
+            e.Add( new XElement( xDatabases, _databases.Select( d => d.Serialize( new XElement( xDatabase ) ) ) ),
+                   new XElement( xDefaultDatabaseConnectionString, DefaultDatabaseConnectionString ),
+                   GlobalResolution ? new XElement( xGlobalResolution, "true" ) : null,
+                   IgnoreMissingDependencyIsError ? new XElement( xGlobalResolution, "true" ) : null );
+            return e;
+        }
         /// <summary>
         /// Gets or sets the default database connection string.
         /// </summary>
-        public string DefaultDatabaseConnectionString
-        {
-            get { return _defaultDatabaseConnectionString; }
-            set { _defaultDatabaseConnectionString = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
-        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must always be logged as a <see cref="LogLevel.Info"/>.
-        /// Defaults to false: objects that support a MissingDependencyIsError property (sets to true) will fail with an error if a missing dependency is detected.
-        /// This applies to all <see cref="Databases"/>.
-        /// </summary>
-        public bool IgnoreMissingDependencyIsError
-        {
-            get { return _ignoreMissingDependencyIsError; }
-            set { _ignoreMissingDependencyIsError = value; }
-        }
+        public string DefaultDatabaseConnectionString { get; set; }
 
         /// <summary>
         /// Gets the list of available <see cref="SqlDatabaseDescriptor"/>.
         /// </summary>
-        public List<SqlDatabaseDescriptor> Databases
-        {
-            get { return _databases; }
-        }
+        public List<SqlDatabaseDescriptor> Databases => _databases; 
 
         /// <summary>
         /// Finds a configured connection string by its name.
@@ -70,30 +76,28 @@ namespace CK.Setup
         /// <returns>Configured connection string or null if not found.</returns>
         public string FindConnectionStringByName( string name )
         {
-            if( name == SqlDatabase.DefaultDatabaseName ) return DefaultDatabaseConnectionString;
-            foreach( var desc in Databases ) if( desc.DatabaseName == name ) return desc.ConnectionString;
+            if( name == DefaultDatabaseName ) return DefaultDatabaseConnectionString;
+            foreach( var desc in Databases ) if( desc.LogicalDatabaseName == name ) return desc.ConnectionString;
             return null;
         }
 
         /// <summary>
-        /// Gets the list of root directories (lookup is recursive) into which file packages (*.ck xml files) must be registered.
+        /// Gets or set whether the resolution of objects must be done globally.
+        /// This is a temporary property: this should eventually be the only mode...
         /// </summary>
-        public List<string> FilePackageDirectories
-        {
-            get { return _ckPackageDirectories; }
-        }
+        public bool GlobalResolution { get; set; }
 
+        string IStObjEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
+
+        
         /// <summary>
-        /// Gets the list of root directories (lookup is recursive) into which sql files (*.sql files) must be registered.
+        /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
+        /// on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
+        /// must always be logged as a LogLevel.Info.
+        /// Defaults to false.
+        /// This applies to all <see cref="Databases"/>.
         /// </summary>
-        public List<string> SqlFileDirectories
-        {
-            get { return _sqlFileDirectories; }
-        }
+        public bool IgnoreMissingDependencyIsError { get; set; }
 
-        string ISetupEngineAspectConfiguration.AspectType
-        {
-            get { return "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; }
-        }
     }
 }

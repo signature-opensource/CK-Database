@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CK.Core;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
+using System;
+using System.Data.SqlClient;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo
 {
@@ -19,19 +17,18 @@ namespace SqlCallDemo
             _exec = new SqlStandardCallContext();
         }
 
-        int IActorCallContext.ActorId
-        {
-            get { return _actorId; }
-        }
+        public ISqlConnectionController this[ISqlConnectionStringProvider p] => _exec[p];
 
-        ISqlCommandExecutor ISqlCallContext.Executor
-        {
-            get { return _exec; }
-        }
+        public ISqlConnectionController this[string connectionString] => _exec[connectionString];
 
-        void IDisposable.Dispose()
-        {
-            _exec.Dispose();
-        }
+        int IActorCallContext.ActorId => _actorId; 
+
+        ISqlCommandExecutor ISqlCallContext.Executor => _exec;
+
+        public IActivityMonitor Monitor => TestHelper.Monitor;
+
+        void IDisposable.Dispose() => _exec.Dispose();
+
+
     }
 }

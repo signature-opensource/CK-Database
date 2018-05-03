@@ -5,6 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,38 +15,20 @@ namespace CK.Setup
 {
     sealed class GroupHeadSetupDriver : DriverBase
     {
-        GenericItemSetupDriver _group;
-
-        internal GroupHeadSetupDriver( ISetupEngine center, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
-            : base( center, sortedItem, externalVersion )
+        internal GroupHeadSetupDriver( IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
+            : base( drivers, allDrivers, sortedItem, externalVersion )
         {
         }
 
-        internal override bool IsGroupHead
-        {
-            get { return true; }
-        }
+        internal override bool IsGroupHead => true;
 
-        public GenericItemSetupDriver Group
-        {
-            get { return _group; }
-            internal set { _group = value; }
-        }
+        internal SetupItemDriver GroupOrContainer;
 
-        internal override sealed bool ExecuteInit()
-        {
-            return Group.ExecuteHeadInit();
-        }
+        internal override sealed bool ExecuteInit( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInit( m );
 
-        internal override sealed bool ExecuteInstall()
-        {
-            return Group.ExecuteHeadInstall();
-        }
+        internal override sealed bool ExecuteInstall( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInstall( m );
 
-        internal override sealed bool ExecuteSettle()
-        {
-            return Group.ExecuteHeadSettle();
-        }
+        internal override sealed bool ExecuteSettle( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadSettle( m );
 
     }
 }

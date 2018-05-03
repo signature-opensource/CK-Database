@@ -1,20 +1,11 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.SqlServer.Setup.Engine.Tests\Core\SimpleScriptTagHandlerTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
+using CK.Text;
+using FluentAssertions;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using System.IO;
-using System.Data.SqlClient;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using CK.Core;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -35,21 +26,21 @@ This appears too.
 --[endscript]
 We must have this line as a the third script.
 " );
-            Assert.That( p.Expand( TestHelper.Monitor, true ) );
-            Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
+            p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
+            p.ScriptCount.Should().Be( 1, "Only one script detected." );
             var s = p.SplitScript();
-            Assert.That( s.Count, Is.EqualTo( 3 ) );
+            s.Count.Should().Be( 3 );
             
-            Assert.That( s[0].IsScriptTag, Is.False );
-            Assert.That( s[0].Body, Is.StringContaining( "Before begin appears." ) );
+            s[0].IsScriptTag.Should().BeFalse();
+            s[0].Body.Should().Contain( "Before begin appears." );
 
-            Assert.That( s[1].IsScriptTag );
-            Assert.That( s[1].Body, Is.StringContaining( "This nested tag is ignored." )
-                                    .And.StringContaining( "This appears." )
-                                    .And.StringContaining( "This appears too." ) );
-            
-            Assert.That( s[2].IsScriptTag, Is.False );
-            Assert.That( s[2].Body, Is.EqualTo( "We must have this line as a the third script." ) );
+            s[1].IsScriptTag.Should().BeTrue();
+            s[1].Body.Should().Contain( "This nested tag is ignored." )
+                                    .And.Contain( "This appears." )
+                                    .And.Contain( "This appears too." );
+
+            s[2].IsScriptTag.Should().BeFalse();
+            s[2].Body.Should().EndWith( "We must have this line as a the third script." );
 
             DumpScripts( "NestedBeginScripts", p, s );
         }
@@ -59,7 +50,7 @@ We must have this line as a the third script.
         {
             {
                 var p = new SimpleScriptTagHandler( "--[beginscript]" );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
+                p.Expand( TestHelper.Monitor, true ).Should().BeFalse();
             }            
             {
                 var p = new SimpleScriptTagHandler(
@@ -68,7 +59,7 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
+                p.Expand( TestHelper.Monitor, true ).Should().BeFalse();
             }
             {
                 var p = new SimpleScriptTagHandler(
@@ -77,7 +68,7 @@ We must have this line as a the third script.
 --[endscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
+                p.Expand( TestHelper.Monitor, true ).Should().BeFalse();
             }
 
         }
@@ -91,7 +82,7 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, false ), Is.False, "There should be no scripts." );
+                p.Expand( TestHelper.Monitor, false ).Should().BeFalse( "There should be no scripts." );
             }
             {
                 var p = new SimpleScriptTagHandler(
@@ -101,8 +92,8 @@ We must have this line as a the third script.
 --[beginscript]
 --[endscript]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.True, "Multilple scripts are okay." );
-                Assert.That( p.ScriptCount, Is.EqualTo( 2 ), "One can reject them if wanted." );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue( "Multilple scripts are okay." );
+                p.ScriptCount.Should().Be( 2, "One can reject them if wanted." );
             }
         }
 
@@ -121,24 +112,26 @@ go  n°3
 ";
             {
                 var p = new SimpleScriptTagHandler( script1 );
-                Assert.That( p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: true ) );
-                Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
+                p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: true ).Should().BeTrue();
+                p.ScriptCount.Should().Be( 1 , "Only one script detected." );
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 5 ) );
+                s.Should().HaveCount( 5 );
                 
-                Assert.That( s.Select( o => o.IsScriptTag ).All( t => t == false ), "When GO are allowed and occur inside the begin/endscript, there is no notion of ScriptTag." );
-                
-                Assert.That( s[0].Body, Is.StringContaining( "Before" ) );
-                
-                Assert.That( s[1].Body, Is.StringContaining( "n°1" ) );
-                Assert.That( s[2].Body, Is.StringContaining( "n°2" ) );
-                Assert.That( s[3].Body, Is.StringContaining( "n°3" ) );
+                s.All( o => o.IsScriptTag == false )
+                    .Should().BeTrue( "When GO are allowed and occur inside the begin/endscript, there is no notion of ScriptTag." );
 
-                Assert.That( s[4].Body, Is.StringContaining( "n°4" ) );
+                s[0].Body.Should().Contain( "Before" );
+
+                s[1].Body.Should().Contain( "n°1" );
+                s[2].Body.Should().Contain( "n°2" );
+                s[3].Body.Should().Contain( "n°3" );
+                s[4].Body.Should().Contain( "n°4" );
+
             }
             {
                 var p = new SimpleScriptTagHandler( script1 );
-                Assert.That( p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
+                p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: false )
+                    .Should().BeFalse();
             }
 
             string script2 = @"
@@ -158,21 +151,23 @@ go
 ";
             {
                 var p = new SimpleScriptTagHandler( script2 );
-                Assert.That( p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: true ) );
-                Assert.That( p.ScriptCount, Is.EqualTo( 1 ), "Only one script detected." );
+                p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: true ).Should().BeTrue();
+                p.ScriptCount.Should().Be( 1, "Only one script detected." );
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 5 ) );
-                Assert.That( s.Select( o => o.IsScriptTag ).All( t => t == false ), "When GO are allowed and occur inside the begin/endscript, there is no notion of ScriptTag." );
+                s.Should().HaveCount( 5 );
+                s.Select( o => o.IsScriptTag ).All( t => t == false )
+                    .Should().BeTrue( "When GO are allowed and occur inside the begin/endscript, there is no notion of ScriptTag." );
                 
-                Assert.That( s[0].Body, Is.StringContaining( "Before" ) );
-                Assert.That( s[1].Body, Is.StringContaining( "n°1" ) );
-                Assert.That( s[2].Body, Is.StringContaining( "n°2" ) );
-                Assert.That( s[3].Body, Is.StringContaining( "n°3" ) );
-                Assert.That( s[4].Body, Is.StringContaining( "n°4" ) );
+                s[0].Body.Should().Contain( "Before" );
+                s[1].Body.Should().Contain( "n°1" );
+                s[2].Body.Should().Contain( "n°2" );
+                s[3].Body.Should().Contain( "n°3" );
+                s[4].Body.Should().Contain( "n°4" );
             }
             {
                 var p = new SimpleScriptTagHandler( script2 );
-                Assert.That( p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: false ), Is.False );
+                p.Expand( TestHelper.Monitor, scriptAllowed: true, goInsideScriptAllowed: false )
+                    .Should().BeFalse();
             }
         }
 
@@ -181,24 +176,24 @@ go
         {
             {
                 var p = new SimpleScriptTagHandler( @"" );
-                Assert.That( p.Expand( TestHelper.Monitor, true ) );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 0 ) );
+                s.Should().HaveCount( 0 );
             }
             {
                 var p = new SimpleScriptTagHandler( @"    " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ) );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 0 ) );
+                s.Should().HaveCount( 0 );
             }
             {
                 var p = new SimpleScriptTagHandler( 
 @"  
 
 go" );
-                Assert.That( p.Expand( TestHelper.Monitor, true ) );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 0 ) );
+                s.Should().HaveCount( 0 );
             }
             {
                 var p = new SimpleScriptTagHandler( 
@@ -210,9 +205,9 @@ go
 go
 
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ) );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 0 ) );
+                s.Should().HaveCount( 0 );
             }
         }
 
@@ -221,15 +216,17 @@ go
         {
             Action<SimpleScriptTagHandler> tester = p =>
             {
-                Assert.That( p.Expand( TestHelper.Monitor, true ) );
-                Assert.That( p.ScriptCount, Is.EqualTo( 4 ), "4 script tags detected." );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
+                p.ScriptCount.Should().Be( 4, "4 script tags detected." );
                 var s = p.SplitScript();
-                Assert.That( s.Count, Is.EqualTo( 5 ), "Five scripts to execute." );
+                s.Count.Should().Be( 5, "Five scripts to execute." );
 
-                Assert.That( s.Take( 4 ).All( t => t.IsScriptTag == true ) && s[4].IsScriptTag == false );
+                s.Take( 4 ).All( t => t.IsScriptTag == true ).Should().BeTrue();
+                s[4].IsScriptTag.Should().BeFalse();
 
-                Assert.That( String.Join( " ", s.Select( t => t.Label ?? "<null>" ) ), Is.EqualTo( "DOES IT WORK WELL <null>" ) );
-                Assert.That( s.Select( t => t.Body ).Select( ( t, i ) => t.Contains( "n°" + (i + 1) ) ).All( o => o ) );
+                String.Join( " ", s.Select( t => t.Label ?? "<null>" ) ).Should().Be( "DOES IT WORK WELL <null>" );
+                s.Select( t => t.Body ).Select( ( t, i ) => t.Contains( "n°" + (i + 1) ) ).All( o => o )
+                    .Should().BeTrue();
 
                 DumpScripts( "Labeled script", p, s );
             };
@@ -276,27 +273,27 @@ n°5
 n°1
 --[endscript s2]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
+                p.Expand( TestHelper.Monitor, true ).Should().BeFalse();
             }
             {
-                var p = new SimpleScriptTagHandler( @"
---[beginscript s1]
+                var p = new SimpleScriptTagHandler( 
+@"--[beginscript s1]
 nested will be skipped.
 --[beginscript s1]
 inner nested.
 --[endscript s1]
 it should work.
 --[endscript s1]
-" );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.True );
+".NormalizeEOL() );
+                p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
-                Assert.That( p.ScriptCount, Is.EqualTo( 1 ) );
-                Assert.That( s[0].Body, Is.StringContaining( @"
-nested will be skipped.
+                p.ScriptCount.Should().Be( 1 );
+                s[0].Body.Should().Contain( 
+@"nested will be skipped.
 --[beginscript s1]
 inner nested.
 --[endscript s1]
-it should work." ) );
+it should work.".NormalizeEOL() );
                 DumpScripts( "Nested labeled scripts", p, s );
             }
             {
@@ -308,22 +305,22 @@ n°1
 n°1
 --[endscript s1]
 " );
-                Assert.That( p.Expand( TestHelper.Monitor, true ), Is.False );
+                p.Expand( TestHelper.Monitor, true ).Should().BeFalse();
             }
         }
 
         private static void DumpScripts( string testName, SimpleScriptTagHandler p, List<SimpleScriptTagHandler.Script> s )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( testName ) )
+            using( TestHelper.Monitor.OpenTrace( testName ) )
             {
-                TestHelper.Monitor.Trace().Send( p.OriginalScript );
-                using( TestHelper.Monitor.OpenTrace().Send( "Result" ) )
+                TestHelper.Monitor.Trace( p.OriginalScript );
+                using( TestHelper.Monitor.OpenTrace( "Result" ) )
                 {
                     foreach( var one in s )
                     {
-                        using( TestHelper.Monitor.OpenTrace().Send( "Script Label: {0}", one.Label ) )
+                        using( TestHelper.Monitor.OpenTrace( $"Script Label: {one.Label}" ) )
                         {
-                            TestHelper.Monitor.Trace().Send( one.Body );
+                            TestHelper.Monitor.Trace( one.Body );
                         }
                     }
                 }

@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableItem.StObjProperties.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -52,7 +46,7 @@ namespace CK.Setup
 
             public object Value
             {
-                get { return _value == _unsetValue ? Type.Missing : _value; }
+                get { return _value == _unsetValue ? System.Type.Missing : _value; }
                 set { _value = value; }
             }
 
@@ -97,16 +91,16 @@ namespace CK.Setup
                 // If the value is missing (it has never been set or has been explicitly "removed"), we have nothing to do.
                 // If the type is not constrained, we have nothing to do.
                 object v = p.Value;
-                if( v != Type.Missing )
+                if( v != System.Type.Missing )
                 {
                     bool setIt = p.HasStructuredObjectProperty;
                     if( p.Type != typeof( object ) )
                     {
                         if( v == null )
                         {
-                            if( p.Type.IsValueType && !(p.Type.IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
+                            if( p.Type.GetTypeInfo().IsValueType && !(p.Type.GetTypeInfo().IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
-                                monitor.Error().Send( "StObjProperty '{0}.{1}' has been set to null but its type '{2}' is not nullable.", ToString(), p.Name, p.Type.Name );
+                                monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' has been set to null but its type '{p.Type.Name}' is not nullable." );
                                 setIt = false;
                             }
                         }
@@ -114,7 +108,7 @@ namespace CK.Setup
                         {
                             if( !p.Type.IsAssignableFrom( v.GetType() ) )
                             {
-                                monitor.Error().Send( "StObjProperty '{0}.{1}' is of type '{2}', but a value of type '{3}' has been set.", ToString(), p.Name, p.Type.Name, v.GetType() );
+                                monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' is of type '{p.Type.Name}', but a value of type '{v.GetType()}' has been set." );
                                 setIt = false;
                             }
                         }
@@ -138,16 +132,17 @@ namespace CK.Setup
                 if( c.InfoOnType != null && !p.Type.IsAssignableFrom( c.Type ) )
                 {
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
-                    monitor.Warn().Send( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
+                    var msg = String.Format( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
                         ToString(), p.Name, p.Type.Name,
                         _dContainer.Type.Name, c.Name, c.Type.Name,
                         sourceName,
                         Type.Name );
+                    monitor.Warn( msg ); 
                 }
                 if( doSetOrMerge )
                 {
-                    // The source value must have been set and not explicitly "removed" with a Type.Missing value.
-                    if( c.Value != Type.Missing )
+                    // The source value must have been set and not explicitly "removed" with a System.Type.Missing value.
+                    if( c.Value != System.Type.Missing )
                     {
                         // We "Set" the value from this source.
                         if( !p.ValueHasBeenSet ) p.Value = c.Value;
@@ -158,7 +153,7 @@ namespace CK.Setup
                                 services.Add( monitor );
                                 if( !((IMergeable)p.Value).Merge( c.Value, services ) )
                                 {
-                                    monitor.Error().Send( "Unable to merge StObjProperty '{0}.{1}' with value from {2}.", ToString(), p.Value, sourceName );
+                                    monitor.Error( $"Unable to merge StObjProperty '{ToString()}.{p.Value}' with value from {sourceName}." );
                                 }
                             }
                         }

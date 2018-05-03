@@ -25,7 +25,7 @@ namespace CK.Setup
         }
 
         // To disambiguate types.
-        internal List<MutableReference> AsList { get { return this; } }
+        internal List<MutableReference> AsList => this;
 
         public IStObjMutableReference AddNew( string context, Type t, StObjRequirementBehavior behavior )
         {
@@ -40,20 +40,10 @@ namespace CK.Setup
             return m != null ? IndexOf( m ) : Int32.MinValue;
         }
 
-        public bool Contains( object item )
-        {
-            return IndexOf( item ) >= 0;
-        }
+        IStObjMutableReference IReadOnlyList<IStObjMutableReference>.this[int index] => this[index]; 
 
-        IStObjMutableReference IReadOnlyList<IStObjMutableReference>.this[int index]
-        {
-            get { return this[index]; }
-        }
+        IEnumerator<IStObjMutableReference> IEnumerable<IStObjMutableReference>.GetEnumerator() => GetEnumerator();
 
-        IEnumerator<IStObjMutableReference> IEnumerable<IStObjMutableReference>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
     }
 
 }

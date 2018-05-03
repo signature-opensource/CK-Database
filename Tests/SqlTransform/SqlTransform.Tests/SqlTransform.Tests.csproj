@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\Common\Shared.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

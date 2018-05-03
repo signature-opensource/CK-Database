@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,51 +8,63 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// A setup object item is initialized from a <see cref="ISetupObjectProtoItem"/>.
-    /// This is the implementation for items that can be containers or groups but when version does not apply.
+    /// A setup object item implementation for items that can be containers or groups 
+    /// but when version does not apply.
     /// </summary>
     public abstract class SetupObjectItemC : SetupObjectItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
-        DependentItemKind _itemKind;
         DependentItemList _children;
 
-        protected SetupObjectItemC( ISetupObjectProtoItem p )
-            : base( p )
+        /// <summary>
+        /// Initializes a <see cref="SetupObjectItemC"/> without ContextLocName nor ItemType.
+        /// Specialized class must take care of initializing them: having no name nor type is not valid.
+        /// </summary>
+        protected SetupObjectItemC()
         {
-            _itemKind = p.ItemKind;
-            if( p.Children != null ) Children.Add( p.Children );
         }
 
         /// <summary>
-        /// Gets or sets the object that replaces this object.
+        /// Initializes a new <see cref="SetupObjectItemC"/>.
         /// </summary>
-        public new SetupObjectItemC ReplacedBy
+        /// <param name="name">Initial name of this item. Can not be null.</param>
+        /// <param name="itemType">Type of the item. Can not be null nor longer than 16 characters.</param>
+        protected SetupObjectItemC( ContextLocName name, string itemType )
+            : base( name, itemType )
         {
-            get { return (SetupObjectItemC)base.ReplacedBy; }
-            internal protected set { base.ReplacedBy = value; }
         }
 
         /// <summary>
-        /// Gets the object that is replaced by this one.
+        /// Gets the transform target item if this item has associated <see cref="SetupObjectItem.Transformers"/>.
+        /// This object is created as a clone of this object by the first call 
+        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
         /// </summary>
-        public new SetupObjectItemC Replaces
-        {
-            get { return (SetupObjectItemC)base.Replaces; }
-        }
+        public new SetupObjectItemC TransformTarget => (SetupObjectItemC)base.TransformTarget;
 
-        public IDependentItemList Children
+        /// <summary>
+        /// Called by <see cref="SetupObjectItem.AddTransformer"/> to initialize the initial 
+        /// transform target as a clone of this object.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>True on success, false if an error occured.</returns>
+        protected override bool OnTransformTargetCreated( IActivityMonitor monitor )
         {
-            get { return _children ?? (_children = new DependentItemList()); }
+            if( !base.OnTransformTargetCreated( monitor ) ) return false;
+            // Should the transformed item be the container of the non transformed one?
+            // I guess no.
+            // if( _children != null ) TransformTarget._children = new DependentItemList( _children );
+            _children = null;
+            return true;
         }
 
         /// <summary>
-        /// Gets or sets the kind of item.
+        /// Gets the mutable list of children.
         /// </summary>
-        public DependentItemKind ItemKind
-        {
-            get { return _itemKind; }
-            set { _itemKind = value; }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList());
+
+        /// <summary>
+        /// Gets or sets the kind of item. Can be <see cref="DependentItemKind.Unknown"/>.
+        /// </summary>
+        public DependentItemKind ItemKind { get; set; }
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {

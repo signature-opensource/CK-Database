@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\StObj\StObjDynamicPackageItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using CK.Core;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -23,28 +17,15 @@ namespace CK.Setup
     public class StObjDynamicContainerItem : DynamicContainerItem, IStObjSetupItem
     {
         readonly IStObjResult _stObj;
-        object _obj;
-
-        /// <summary>
-        /// Initializes a new <see cref="StObjDynamicContainerItem"/> that must be manually configured associated to an explicit object instance.
-        /// </summary>
-        /// <param name="driverType">Type of the associated driver or its assembly qualified name.</param>
-        /// <param name="obj">The associated object. Must not be null.</param>
-        protected StObjDynamicContainerItem( object driverType, object obj )
-            : base( driverType )
-        {
-            if( obj == null ) throw new ArgumentNullException( "obj" );
-            _obj = obj;
-        }
 
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicContainerItem"/> initialized by a <see cref="IStObjSetupData"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="data">Descriptive data that is used to configure this item.</param>
-        /// <param name="defaultDriverType">If <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
-        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, Type defaultDriverType = null )
-            : base( (object)data.DriverType ?? (object)data.DriverTypeName ?? defaultDriverType )
+        /// <param name="defaultDriverType">Can be a string or a Type: if <see cref="IStObjSetupData.DriverType"/> and <see cref="IStObjSetupData.DriverTypeName"/> is null, this driver is used.</param>
+        public StObjDynamicContainerItem( IActivityMonitor monitor, IStObjSetupData data, object defaultDriverType = null )
+            : base( data.DriverType ?? data.DriverTypeName ?? defaultDriverType )
         {
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicContainerItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicContainerItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
@@ -59,34 +40,12 @@ namespace CK.Setup
         /// <summary>
         /// Gets the StObj. Null if this item is directly bound to an object.
         /// </summary>
-        public IStObjResult StObj
-        {
-            get { return _stObj; }
-        }
+        public IStObjResult StObj => _stObj; 
         
         /// <summary>
-        /// Gets the associated object instance (the final, most specialized, structured object) when this is bound to a StObj (<see cref="StObj"/> is not null). 
-        /// Otherwise gets the object associated explicitely when this setup item has been created.
-        /// See remarks.
+        /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The function that is injected during the graph creation (at the StObj level) simply returns the <see cref="IStObjResult.InitialObject"/> instance that is NOT always a "real",
-        /// fully operational, object since its auto implemented methods (or other aspects) have not been generated yet.
-        /// </para>
-        /// <para>
-        /// Once the final assembly has been generated, this function is updated with <see cref="IContextualStObjMap.Obtain"/>: during the setup phasis, the actual 
-        /// objects that are associated to items are "real" objects produced/managed by the final <see cref="StObjContextRoot"/>.
-        /// </para>
-        /// <para>
-        /// In order to honor potential transient lifetime (one day), these object should not be aggressively cached, this is why this is a <see cref="GetObject()"/> function 
-        /// and not a simple 'Object' or 'FinalObject' property. 
-        /// </para>
-        /// </remarks>
-        public object GetObject() 
-        {
-            return _obj != null ? _obj : _stObj.ObjectAccessor(); 
-        }
+        public object ActualObject => _stObj.InitialObject; 
 
     }
 }

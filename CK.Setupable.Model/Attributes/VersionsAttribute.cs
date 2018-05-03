@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Model\VersionsAttribute.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,10 +27,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets a string like "1.2.4, Previous.Name = 1.3.1, A.New.Name=1.4.1, 1.5.0".
         /// </summary>
-        public string VersionsString
-        {
-            get { return _versions; }
-        }
+        public string VersionsString => _versions; 
 
     }
 }

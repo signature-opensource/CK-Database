@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\StObj\Impl\StObjSetupDataBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -67,10 +61,7 @@ namespace CK.Setup
             }
         }
 
-        public IStObjSetupData Generalization
-        {
-            get { return _parent; }
-        }
+        public IStObjSetupData Generalization => _parent; 
         
         public string ContainerFullName
         {
@@ -78,25 +69,13 @@ namespace CK.Setup
             set { _containerFullName = value; }
         }
 
-        public IDependentItemList Requires
-        {
-            get { return _requires; }
-        }
+        public IDependentItemList Requires => _requires; 
 
-        public IDependentItemList RequiredBy
-        {
-            get { return _requiredBy; }
-        }
+        public IDependentItemList RequiredBy => _requiredBy; 
 
-        public IDependentItemList Children
-        {
-            get { return _children; }
-        }
+        public IDependentItemList Children => _children; 
 
-        public IDependentItemGroupList Groups
-        {
-            get { return _groups; }
-        }
+        public IDependentItemGroupList Groups => _groups; 
 
         public Type ItemType
         {
@@ -125,7 +104,7 @@ namespace CK.Setup
         internal static StObjSetupDataRootClass CreateRootData( IActivityMonitor monitor, Type t )
         {
             if( t == typeof( object ) ) return null;
-            StObjSetupDataRootClass b = CreateRootData( monitor, t.BaseType );
+            StObjSetupDataRootClass b = CreateRootData( monitor, t.GetTypeInfo().BaseType );
             return new StObjSetupDataRootClass( monitor, t, b ); 
         }
     }

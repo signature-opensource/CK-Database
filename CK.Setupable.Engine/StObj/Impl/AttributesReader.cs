@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Engine\StObj\Impl\AttributesReader.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -21,7 +15,7 @@ namespace CK.Setup
             Debug.Assert( monitor != null );
             Debug.Assert( t != null );
             DependentItemGroupList result = new DependentItemGroupList();
-            var all = (GroupsAttribute[])t.GetCustomAttributes( typeof( GroupsAttribute ), false );
+            var all = (GroupsAttribute[])t.GetTypeInfo().GetCustomAttributes( typeof( GroupsAttribute ), false );
             foreach( var a in all )
             {
                 result.AddCommaSeparatedString( a.Groups );
@@ -35,7 +29,7 @@ namespace CK.Setup
             Debug.Assert( t != null );
             Debug.Assert( attrType != null && typeof( RequiresAttribute ).IsAssignableFrom( attrType ) );
             DependentItemList result = new DependentItemList();
-            var all = (RequiresAttribute[])t.GetCustomAttributes( attrType, false );
+            var all = (RequiresAttribute[])t.GetTypeInfo().GetCustomAttributes( attrType, false );
             foreach( var a in all )
             {
                 result.AddCommaSeparatedString( a.Requirements );
@@ -45,7 +39,7 @@ namespace CK.Setup
 
         static internal SetupAttribute GetSetupAttribute( Type t )
         {
-            return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
+            return (SetupAttribute)t.GetTypeInfo().GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
         }
 
         static internal string GetFullName( IActivityMonitor monitor, bool warnWhenDefaultToTypeFullName, Type t, string alreadyNamed = null )
@@ -57,14 +51,17 @@ namespace CK.Setup
             foreach( var n in all )
             {
                 if( name == null ) name = n.FullName;
-                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 ) monitor.Warn().Send( "FullName '{0}' is already associated to type '{1}'. Extraneous name '{2}' is ignored.", name, t.FullName, n.FullName );
+                else if( n.FullName != null && String.CompareOrdinal( name, n.FullName ) != 0 )
+                {
+                    monitor.Warn( $"FullName '{name}' is already associated to type '{t.FullName}'. Extraneous name '{n.FullName}' is ignored." );
+                }
             }
             if( name == null )
             {
                 name = t.FullName;
                 if( warnWhenDefaultToTypeFullName )
                 {
-                    monitor.Warn().Send( "Type '{0}' has no explicit associated Setup Name. Using the Type's full name.", t.FullName );
+                    monitor.Warn( $"Type '{t.FullName}' has no explicit associated Setup Name. Using the Type's full name." );
                 }
             }
             return name;
@@ -72,7 +69,7 @@ namespace CK.Setup
 
         static internal string GetVersionsString( Type t )
         {
-            var a = (VersionsAttribute)t.GetCustomAttributes( typeof( VersionsAttribute ), false ).SingleOrDefault();
+            var a = (VersionsAttribute)t.GetTypeInfo().GetCustomAttributes( typeof( VersionsAttribute ), false ).SingleOrDefault();
             return a != null ? a.VersionsString : null;
         }
 

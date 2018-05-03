@@ -50,35 +50,33 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets setup driver type (when not null this masks the <see cref="DriverTypeName"/> property).
-        /// This is used ONLY if <see cref="ItemType"/> and <see cref="ItemTypeName"/> are not set.
-        /// This enables the use of a specialized <see cref="GenericItemSetupDriver"/> bound to a default <see cref="StObjDynamicPackageItem"/>.
+        /// This enables the use of a specialized <see cref="SetupItemDriver"/> bound to a default <see cref="StObjDynamicPackageItem"/>.
         /// This property is inherited.
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverTypeName"/> is specified either), 
-        /// the standard <see cref="GenericItemSetupDriver"/> is used.
+        /// the standard <see cref="SetupItemDriver"/> is used.
         /// </remarks>
         Type DriverType { get; }
 
         /// <summary>
         /// Gets the assembly qualified name of the setup driver type.
-        /// This is used ONLY if <see cref="ItemType"/>, <see cref="ItemTypeName"/> and <see cref="DriverType"/> are not set.
-        /// This is the ultimate fallback in order to use anything else than the default <see cref="GenericItemSetupDriver"/> (bound to a default <see cref="StObjDynamicPackageItem"/>).
+        /// This is the ultimate fallback in order to use anything else than the default <see cref="SetupItemDriver"/> (bound to a default <see cref="StObjDynamicPackageItem"/>).
         /// This property is inherited.
         /// </summary>
         /// <remarks>
         /// When let to null (and no <see cref="DriverType"/> is specified either), 
-        /// the standard <see cref="GenericItemSetupDriver"/> is used.
+        /// the standard <see cref="SetupItemDriver"/> is used.
         /// </remarks>
         string DriverTypeName { get; }
 
         /// <summary>
-        /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
+        /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> Requires { get; }
 
         /// <summary>
-        /// Gets the list of requirements (can be <see cref="IDependentItem"/> instances or named references).
+        /// Gets the list of reverse requirements (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> RequiredBy { get; }
 

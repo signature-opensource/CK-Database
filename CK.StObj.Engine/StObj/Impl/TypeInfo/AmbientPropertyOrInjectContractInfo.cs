@@ -26,7 +26,7 @@ namespace CK.Setup
         {
             _isOptionalDefined = isOptionalDefined;
             _isOptional = isOptional;
-            ContextAttribute c = (ContextAttribute)Attribute.GetCustomAttribute( p, typeof( ContextAttribute ), false );
+            ContextAttribute c = p.GetCustomAttribute<ContextAttribute>(false);
             if( c != null ) Context = c.Context;
         }
 
@@ -36,7 +36,7 @@ namespace CK.Setup
         /// </summary>
         public string Context { get; private set; }
 
-        public bool IsOptional { get { return _isOptional; } private set { _isOptional = value; } }
+        public bool IsOptional => _isOptional; 
 
         protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
@@ -47,7 +47,7 @@ namespace CK.Setup
             {
                 if( _isOptionalDefined )
                 {
-                    monitor.Error().Send( "Ambient property '{0}.{1}' states that it is optional but base property '{2}.{1}' is required.", DeclaringType.FullName, Name, gen.DeclaringType.FullName );
+                    monitor.Error( $"{Kind}: Property '{DeclaringType.FullName}.{Name}' states that it is optional but base property '{gen.DeclaringType.FullName}.{Name}' is required." );
                 }
                 _isOptional = false;
             }
@@ -79,26 +79,26 @@ namespace CK.Setup
             acListResult = null;
             foreach( var p in properties )
             {
-                StObjPropertyAttribute stObjAttr = (StObjPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( StObjPropertyAttribute ), false );
+                StObjPropertyAttribute stObjAttr = p.GetCustomAttribute<StObjPropertyAttribute>(false);
                 if( stObjAttr != null )
                 {
                     string nP = String.IsNullOrEmpty( stObjAttr.PropertyName ) ? p.Name : stObjAttr.PropertyName;
                     Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
                     if( stObjProperties.Find( sp => sp.Name == nP ) != null )
                     {
-                        monitor.Error().Send( "StObj property named '{0}' for '{1}' is defined more than once. It should be declared only once.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error( $"StObj property named '{p.Name}' for '{p.DeclaringType.FullName}' is defined more than once. It should be declared only once." );
                         continue;
                     }
                     stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
-                AmbientPropertyAttribute ap = (AmbientPropertyAttribute)Attribute.GetCustomAttribute( p, typeof( AmbientPropertyAttribute ), false );
-                IAmbientPropertyOrInjectContractAttribute ac = (InjectContractAttribute)Attribute.GetCustomAttribute( p, typeof( InjectContractAttribute ), false );
+                AmbientPropertyAttribute ap = p.GetCustomAttribute<AmbientPropertyAttribute>( false );
+                IAmbientPropertyOrInjectContractAttribute ac = p.GetCustomAttribute<InjectContractAttribute>( false );
                 if( ac != null || ap != null )
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
                     {
-                        monitor.Error().Send( "Property named '{0}' for '{1}' can not be both an Ambient Contract, an Ambient Property or a StObj property.", p.Name, p.DeclaringType.FullName );
+                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Contract, an Ambient Property or a StObj property." );
                         continue;
                     }
                     IAmbientPropertyOrInjectContractAttribute attr = ac ?? ap;
@@ -107,7 +107,7 @@ namespace CK.Setup
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
                     {
-                        monitor.Error().Send( "Property '{0}' of '{1}' can not be marked as {2}. Did you forget to make it protected or public?", p.Name, p.DeclaringType.FullName, kindName );
+                        monitor.Error( $"Property '{p.Name}' of '{p.DeclaringType.FullName}' can not be marked as {kindName}. Did you forget to make it protected or public?" );
                         continue;
                     }
                     if( attr.IsAmbientProperty )

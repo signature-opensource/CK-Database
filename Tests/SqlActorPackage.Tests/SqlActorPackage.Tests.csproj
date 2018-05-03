@@ -1,118 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EA0228B9-75E2-48E4-9E74-1EE83D0ED4FF}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlActorPackage.Tests</RootNamespace>
-    <AssemblyName>SqlActorPackage.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
+  <Import Project="..\..\Common\Shared.props" />
+
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="CK.SqlServer.Parser, Version=4.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.4.0.2\lib\net45\CK.SqlServer.Parser.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="CK.SqlServer.Parser.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CK.SqlServer.Parser.Model.1.0.0\lib\net45\CK.SqlServer.Parser.Model.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="DBSetup.cs" />
-    <Compile Include="HandlerInjection.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64da8104-2c71-4d52-8f44-d34738f6d564}</Project>
-      <Name>CK.Setupable.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj">
-      <Project>{a5380f73-7050-4090-8e75-4cfc7afa5b7b}</Project>
-      <Name>CK.Setupable.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Core\CK.SqlServer.Core.csproj">
-      <Project>{f2977613-731a-4efa-9703-cd6b92f00558}</Project>
-      <Name>CK.SqlServer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj">
-      <Project>{b64d3d2a-fd2b-4731-8559-8a52c3a45351}</Project>
-      <Name>CK.SqlServer.Setup.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj">
-      <Project>{14e253cb-f606-4228-8860-fd04880df379}</Project>
-      <Name>CK.SqlServer.Setup.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96dedeee-de7d-4b14-8fde-bc4d8d9ccb78}</Project>
-      <Name>CK.StObj.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
-      <Project>{db108ff8-42a4-4787-92c2-2d5a4daab85e}</Project>
-      <Name>CK.StObj.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj">
-      <Project>{c9bcbea7-e5e9-4685-b976-4a6e85af4453}</Project>
-      <Name>CK.DB.Tests.NUnit</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\KindOfActorPackage\SqlActorPackage.csproj">
-      <Project>{6d0d47c8-98f7-47de-b118-ad3606455f7e}</Project>
-      <Name>SqlActorPackage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.SqlServer.Setup.Engine.Tests.Model\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj">
-      <Project>{e03b0333-1607-47c6-b6bf-d21e4489f659}</Project>
-      <Name>SqlActorPackage.Runtime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+
 </Project>

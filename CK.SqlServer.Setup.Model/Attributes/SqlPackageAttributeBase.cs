@@ -1,11 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\Attributes\SqlPackageAttributeBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,8 +6,15 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base attribute for <see cref="SqlTableAttribute"/> and <see cref="SqlPackageAttribute"/>.
+    /// </summary>
     public abstract class SqlPackageAttributeBase : AmbientContextBoundDelegationAttribute
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlPackageAttributeBase"/>.
+        /// </summary>
+        /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
         protected SqlPackageAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
@@ -37,7 +37,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Gets or sets the Resource Type to use for the <see cref="IResourceLocator"/>.
-        /// When null (the default that should rarely be changed), it is the package's resource type is used or the decorated type itself that is 
+        /// When null (the default that should rarely be changed), it is the decorated type itself that is 
         /// used to locate the resources.
         /// </summary>
         public Type ResourceType { get; set; }

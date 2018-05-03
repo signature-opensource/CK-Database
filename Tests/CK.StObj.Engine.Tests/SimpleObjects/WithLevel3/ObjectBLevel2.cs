@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (Tests\CK.StObj.Engine.Tests\SimpleObjects\WithLevel3\ObjectBLevel2.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3
 {
     // Container PackageForABLevel1 is "over defined" here:
     // - by the StObj attribute.
-    // - by the Construct parameter.
+    // - by the StObjConstruct parameter.
     // - by its base class (ObjectBLevel1 is already in PackageForABLevel1).
     //
     // As long as it is the same, there is no problem.
@@ -23,12 +23,12 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3
     {
         IAbstractionALevel3 _a3;
 
-        void Construct( [Container]PackageForABLevel1 package, IAbstractionALevel3 a3 )
+        void StObjConstruct( [Container]PackageForABLevel1 package, IAbstractionALevel3 a3 )
         {
             Assert.That( ConstructCount, Is.EqualTo( 2 ), "ObjectB, ObjectBLevel1 construct have been called." );
-            Assert.That( a3.ConstructCount, Is.GreaterThanOrEqualTo( 4 ), "ObjectA, ObjectALevel1, ObjectALevel2 and ObjectALevel3.Construct have been called." );
+            Assert.That( a3.ConstructCount, Is.GreaterThanOrEqualTo( 4 ), "ObjectA, ObjectALevel1, ObjectALevel2 and ObjectALevel3.StObjConstruct have been called.");
 
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            SimpleObjectsTrace.LogMethod( GetType().GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.NonPublic ) );
             a3.MethofOfALevel3();
             _a3 = a3;
 
@@ -37,7 +37,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3
 
         public virtual void MethofOfBOnLevel2()
         {
-            SimpleObjectsTrace.LogMethod( MethodInfo.GetCurrentMethod() );
+            SimpleObjectsTrace.LogMethod( GetType().GetMethod( "MethofOfBOnLevel2", BindingFlags.Instance | BindingFlags.Public ) );
         }
     }
 }

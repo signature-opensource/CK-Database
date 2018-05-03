@@ -4,6 +4,9 @@ using System.Data.SqlClient;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using System.Reflection;
+using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -12,13 +15,19 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     public partial class DatabaseSetup
     {
         [Test]
-        public void InstallActorBasicFromScracth()
+        public void InstallActorBasic()
+        {
+            InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
+        }
+
+        [Test]
+        public void InstallActorBasicFromScracthDropAndReverseInstall()
         {
             InstallDropAndReverseInstall( true, false, "InstallActorBasicFromScracth" );
         }
 
         [Test]
-        public void InstallActorBasic()
+        public void InstallActorBasicDropAndReverseInstall()
         {
             InstallDropAndReverseInstall( false, false, "InstallActorBasic" );
         }
@@ -29,60 +38,67 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             InstallDropAndReverseInstall( false, true, "InstallActorWithZone" );
         }
 
-        private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName )
+        private static void InstallDropAndReverseInstall( bool resetFirst, bool withZone, string dllName, bool doRevert = true )
         {
-            var c = new SetupEngineConfiguration();
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            if( withZone ) c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlZonePackage" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName;
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.UseIndependentAppDomain = true;
+            var c = new StObjEngineConfiguration();
+            c.Assemblies.Add( "SqlActorPackage" );
+            if( withZone ) c.Assemblies.Add( "SqlZonePackage" );
+            c.GeneratedAssemblyName = dllName;
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
-            var config = new SqlSetupAspectConfiguration();
-            config.DefaultDatabaseConnectionString = TestHelper.DatabaseTestConnectionString;
-            c.Aspects.Add( config );
 
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+            var setupable = new SetupableAspectConfiguration();
+            c.Aspects.Add( setupable );
+
+            var sql = new SqlSetupAspectConfiguration();
+            sql.DefaultDatabaseConnectionString = TestHelper.GetConnectionString();
+            c.Aspects.Add( sql );
+
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
                 if( resetFirst )
                 {
+                    db.SchemaDropAllObjects( "bad schema name", true );
                     db.SchemaDropAllObjects( "CK", true );
                     db.SchemaDropAllObjects( "CKCore", false );
                 }
             }
-            using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
+
+            TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, c ).Run() )
+                .Should().BeTrue();
+
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                Assert.That( result.Success );
-                Assert.That( result.IndependentAppDomain != null );
-            }
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
-            {
-                IStObjMap m = StObjContextRoot.Load( dllName, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
+                var a = Assembly.Load( new AssemblyName( dllName ) );
+                IStObjMap m = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
+
+            if( !doRevert ) return;
+
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersion')" ), Is.EqualTo( 2 ) );
+                Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tActor','tItemVersionStore')" ), Is.EqualTo( 2 ) );
+                db.SchemaDropAllObjects( "bad schema name", true );
                 db.SchemaDropAllObjects( "CK", true );
                 db.SchemaDropAllObjects( "CKCore", false );
-                Assert.That( db.Connection.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersion')" ), Is.EqualTo( 0 ) );
+                Assert.That( db.ExecuteScalar( "select count(*) from sys.tables where name in ('tSystem','tItemVersionStore')" ), Is.EqualTo( 0 ) );
+            }
+            c.RevertOrderingNames = true;
+            setupable.RevertOrderingNames = true;
+            c.GeneratedAssemblyName = dllName + ".Reverted";
+
+            using( TestHelper.Monitor.OpenTrace( "Second setup (reverse order)" ) )
+            {
+                TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, c ).Run() )
+                    .Should().BeTrue();
             }
 
-            c.RunningMode = SetupEngineRunningMode.DefaultWithRevertOrderingNames;
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.AssemblyName = dllName + ".Reverted";
-            using( TestHelper.Monitor.OpenTrace().Send( "Second setup (reverse order)" ) )
+            using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                using( var result = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
-                {
-                    Assert.That( result.Success );
-                    Assert.That( result.IndependentAppDomain != null );
-                }
-            }
-
-            using( var db = SqlManager.OpenOrCreate( TestHelper.DatabaseTestConnectionString, TestHelper.Monitor ) )
-            {
-                IStObjMap m = StObjContextRoot.Load( dllName, null, TestHelper.Monitor );
+                var a = Assembly.Load( new AssemblyName( dllName + ".Reverted" ) );
+                IStObjMap m = StObjContextRoot.Load( a, null, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
             }
@@ -90,10 +106,10 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicOnly( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicOnly" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckBasicOnly" ) )
             {
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tGroup where GroupName = 'Public'" ), Is.EqualTo( 1 ) );
                 Assert.That( CallExistsUser( c, map, Guid.NewGuid().ToString() ), Is.False );
 
                 int idUInt = CallCreateUser( c, map, "1020" );
@@ -117,10 +133,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         private static void CheckBasicAndZone( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckBasicAndZone" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckBasicAndZone" ) )
             {
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
-                Assert.That( c.Connection.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tActor where ActorId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.tSecurityZone where SecurityZoneId <= 1" ), Is.EqualTo( 2 ) );
+                Assert.That( c.ExecuteScalar( "select count(*) from CK.a_stupid_view" ), Is.GreaterThan( 1 ) );
                 CallCreateUser( c, map, Guid.NewGuid().ToString() );
                 CallCreateGroupZone( c, map, 0, "ZoneGroupIn0" );
                 CallCreateGroupZone( c, map, 1, "ZoneGroupIn1" );
@@ -141,7 +158,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             {
                 actorHome.CmdGuidRefTest( ref cmd, inOnly, ref inAndOut, out text );
             }
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection;
+            cmd.ExecuteNonQuery();
 
             object o = cmd.Parameters["@InAndOut"].Value;
             inAndOut = o == DBNull.Value ? null : (Guid?)o;
@@ -157,7 +175,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             bool exists;
             SqlCommand cmd = null;
             userHome.CmdExists( ref cmd, name, out exists );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection;
+            cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
             return exists;
@@ -170,7 +189,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             SqlCommand cmd = null;
             //CmdExists2( ref cmd, userPart1, userPart2, out exists );
             userHome.CmdExists2( ref cmd, userPart1, userPart2, out exists );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection;
+            cmd.ExecuteNonQuery();
             exists = (bool)cmd.Parameters["@ExistsResult"].Value;
             cmd.Dispose();
             return exists;
@@ -220,7 +240,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int userId;
             using( SqlCommand cmd = userHome.CmdCreate( name, out userId ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
+                cmd.Connection = c.Connection;
+                cmd.ExecuteNonQuery();
                 userId = (int)cmd.Parameters["@UserIdResult"].Value;
             }
             Assert.That( userId, Is.GreaterThan( 1 ) );
@@ -231,10 +252,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             var groupHome = map.Default.Obtain<SqlActorPackage.Basic.GroupHome>();
             int groupId;
-            using( SqlCommand cmd = groupHome.CmdCreate( Guid.NewGuid().ToString(), out groupId ) )
+            using( var ctx = new SqlStandardCallContext() )
             {
-                c.Connection.ExecuteNonQuery( cmd );
-                groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
+                groupHome.CmdCreate( ctx, Guid.NewGuid().ToString(), out groupId );
             }
             Assert.That( groupId, Is.GreaterThan( 1 ) );
             return groupId;
@@ -248,7 +268,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             int groupId;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.Connection = c.Connection;
+            cmd.ExecuteNonQuery();
             // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId, Is.GreaterThan( 1 ) );
@@ -256,7 +277,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             int groupId2;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName + "2" );
-            c.Connection.ExecuteNonQuery( cmd );
+            cmd.ExecuteNonQuery();
             // The SqlParameter still exists in the command, even if it is not explicitly declared.
             groupId2 = (int)cmd.Parameters["@GroupIdResult"].Value;
             Assert.That( groupId2, Is.GreaterThan( groupId ) );
@@ -272,7 +293,8 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             int groupId;
             using( SqlCommand cmd = groupHome.CmdCreate( securityZoneId, groupName.ToString(), out groupId ) )
             {
-                c.Connection.ExecuteNonQuery( cmd );
+                cmd.Connection = c.Connection;
+                cmd.ExecuteNonQuery();
                 groupId = (int)cmd.Parameters["@GroupIdResult"].Value;
             }
             Assert.That( groupId, Is.GreaterThan( 1 ) );

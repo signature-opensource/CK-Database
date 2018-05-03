@@ -12,15 +12,34 @@ using System.Text;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Mutable list of <see cref="IDependentItemGroupRef"/>.
+    /// </summary>
     public class DependentItemGroupList : List<IDependentItemGroupRef>, IDependentItemGroupList
     {
+        /// <summary>
+        /// Intializes a new dependent item with existing groups. 
+        /// </summary>
+        /// <param name="existing">Exisitng groups.</param>
+        public DependentItemGroupList( IEnumerable<IDependentItemGroupRef> existing ) 
+            : base( existing )
+        {
+        }
+
+        /// <summary>
+        /// Intializes a new empty <see cref="DependentItemGroupList"/>. 
+        /// </summary>
+        public DependentItemGroupList()
+        {
+        }
+
         /// <summary>
         /// Adds a full name as a <see cref="NamedDependentItemGroupRef"/>.
         /// </summary>
         /// <param name="fullName">Full name of the dependency. When null or empty, nothing is added.</param>
         public void Add( string fullName )
         {
-            if( !String.IsNullOrWhiteSpace( fullName ) )
+            if( !string.IsNullOrWhiteSpace( fullName ) )
             {
                 Add( new NamedDependentItemGroupRef( fullName ) );
             }

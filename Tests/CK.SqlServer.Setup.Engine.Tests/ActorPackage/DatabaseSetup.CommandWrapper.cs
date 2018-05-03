@@ -8,6 +8,7 @@
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
@@ -15,7 +16,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     {
         static void CheckCommandWrapper( SqlManager c, IStObjMap map )
         {
-            using( TestHelper.Monitor.OpenTrace().Send( "CheckCommandWrapper" ) )
+            using( TestHelper.Monitor.OpenTrace( "CheckCommandWrapper" ) )
             {
                 var package = map.Default.Obtain<Package>();
                 SimplestScalar( c, package );
@@ -29,7 +30,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static void SimplestScalar( SqlManager c, Package package )
         {
-            using( var cmd = package.SimplestScalar( c.Connection.InternalConnection, 3712, "Test" ) )
+            using( var cmd = package.SimplestScalar( c.Connection, 3712, "Test" ) )
             {
                 Assert.That( cmd.Execute(), Is.EqualTo( "Test - 3712" ) );
             }

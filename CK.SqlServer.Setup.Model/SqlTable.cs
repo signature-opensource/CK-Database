@@ -13,20 +13,38 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Base class for table objects. 
+    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
+    /// are de facto ambient contracts.
+    /// </summary>
     public class SqlTable : SqlPackageBase, IAmbientContractDefiner
     {
+        /// <summary>
+        /// Initializes a new <see cref="SqlTable"/> with a null <see cref="TableName"/>.
+        /// </summary>
         public SqlTable()
         {
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlTable"/> with a <see cref="TableName"/>.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
         public SqlTable( string tableName )
         {
             TableName = tableName;
         }
 
+        /// <summary>
+        /// Gets the table name.
+        /// </summary>
         public string TableName { get; protected set; }
 
-        public string SchemaName { get { return Schema + '.' + TableName; } }
+        /// <summary>
+        /// Gets the schema.name full name of the table.
+        /// </summary>
+        public string SchemaName => Schema + '.' + TableName;
 
     }
 }

@@ -113,8 +113,8 @@ namespace CK.Core
         /// </returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
-            if( Type == null ) return Util.EmptyStringArray;
-            IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
+            if( Type == null ) return Util.Array.Empty<string>();
+            IReadOnlyList<string> a = Type.GetTypeInfo().Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );
             namePrefix = p + namePrefix;
@@ -162,7 +162,7 @@ namespace CK.Core
         {
             foreach( var p in allowedNamePrefix )
             {
-                string s = LoadString( _type, _path, p + name, false );
+                string s = LoadString( Type, _path, p + name, false );
                 if( s != null ) return s;
             }
             return LoadString( Type, _path, name, throwError );
@@ -199,7 +199,7 @@ namespace CK.Core
                 }
             }
             namePrefix = String.Empty;
-            return LoadString( _type, _path, name, throwError );
+            return LoadString( Type, _path, name, throwError );
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace CK.Core
         /// <returns>The assembly:path string.</returns>
         public override string ToString()
         {
-            return String.Format( "{0}:{1}", Type != null ? Type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
+            return String.Format( "{0}:{1}", Type != null ? Type.GetTypeInfo().Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
         }
 
         /// <summary>
@@ -288,7 +288,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            return LoadStream( resourceHolder.Assembly, fullName, name, throwError );
+            return LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError );
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            using( Stream stream = LoadStream( resourceHolder.Assembly, fullName, name, throwError ) )
+            using( Stream stream = LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError ) )
             {
                 if( stream == null ) return null;
                 using( StreamReader reader = new StreamReader( stream, true ) )
@@ -336,16 +336,15 @@ namespace CK.Core
             {
                 var resNames = a.GetSortedResourceNames();
                 string shouldBe = null;
-                string sEnd = '.' + name;
                 foreach( string s in resNames )
                 {
-                    if( s.EndsWith( sEnd, StringComparison.InvariantCultureIgnoreCase ) )
+                    if( s.IndexOf(name, StringComparison.OrdinalIgnoreCase ) >= 0 )
                     {
                         shouldBe = s;
                         break;
                     }
                 }
-                throw new CKException( "Resource not found: '{0}'.{1}", fullResName, shouldBe == null ? String.Empty : String.Format( " It seems to be '{0}'.", shouldBe ) );
+                throw new CKException( "Resource not found: '{0}'.{1}", fullResName, shouldBe == null ? string.Empty : $" It seems to be '{shouldBe}'." );
             }
             return stream;
         }

@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
 
         public SqlSetupSessionMemoryProvider( ISqlManager manager )
         {
-            if( manager == null ) throw new ArgumentNullException( "manager" );
+            if( manager == null ) throw new ArgumentNullException( nameof(manager) );
             _manager = manager;
         }
 
@@ -55,7 +55,7 @@ namespace CK.SqlServer.Setup
             _manager.EnsureCKCoreIsInstalled( _manager.Monitor );
             using( var cRead = new SqlCommand( _initScript ) )
             {
-                var existing = _manager.Connection.ReadFirstRow( cRead );
+                var existing = _manager.ReadFirstRow( cRead );
                 LastStartDate = (DateTime)existing[0];
                 if( LastStartDate == Util.SqlServerEpoch ) LastStartDate = DateTime.MinValue;
                 StartCount = (int)existing[1];
@@ -101,7 +101,7 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
         {
             if( IsStarted ) throw new InvalidOperationException();
             if( !_initialized ) Initialize();
-            _manager.Connection.ExecuteNonQuery( "update CKCore.tSetupMemory set LastStartDate = getutcdate(), TotalStartCount = TotalStartCount+1, StartCount = StartCount+1, LastError=N'Started but not Stopped yet.'" );
+            _manager.ExecuteNonQuery( "update CKCore.tSetupMemory set LastStartDate = getutcdate(), TotalStartCount = TotalStartCount+1, StartCount = StartCount+1, LastError=N'Started but not Stopped yet.'" );
             IsStarted = true;
             return this;
         }
@@ -120,18 +120,18 @@ select LastStartDate, StartCount, LastError from CKCore.tSetupMemory;
             if( !IsStarted ) throw new InvalidOperationException();
             if( error == null )
             {
-                _manager.Connection.ExecuteNonQuery( "update CKCore.tSetupMemory set StartCount = 0, LastError=null; drop table CKCore.tSetupMemoryItem;" );
+                _manager.ExecuteNonQuery( "update CKCore.tSetupMemory set StartCount = 0, LastError=null; drop table CKCore.tSetupMemoryItem;" );
                 StartCount = 0;
                 LastError = null;
             }
             else
             {
-                if( String.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must not be null or empty.", "error" );
+                if( string.IsNullOrWhiteSpace( error ) ) throw new ArgumentException( "Must be null or not be empty.", "error" );
 
                 using( var c = new SqlCommand( @"update CKCore.tSetupMemory set LastError=@LastError; select LastStartDate, StartCount from CKCore.tSetupMemory;" ) )
                 {
                     c.Parameters.AddWithValue( "@LastError", error );
-                    var resync = _manager.Connection.ReadFirstRow( c );
+                    var resync = _manager.ReadFirstRow( c );
                     LastStartDate = (DateTime)resync[0];
                     StartCount = (int)resync[1];
                 }
@@ -153,19 +153,21 @@ on t.ItemKey = s.ItemKey
 when matched then update set ItemValue = @ItemValue
 when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" ) )
             {
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
                 c.Parameters.AddWithValue( "@ItemValue", itemValue );
-                _manager.Connection.ExecuteNonQuery( c );
+                c.ExecuteNonQuery();
             }
         }
 
         string ISetupSessionMemory.FindRegisteredItem( string itemKey )
         {
-            if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
+            if( string.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select ItemValue from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
-                return (string)_manager.Connection.ExecuteScalar( c );
+                return (string)c.ExecuteScalar();
             }
         }
 
@@ -174,8 +176,9 @@ when not matched then insert(ItemKey,ItemValue) values (@ItemKey, @ItemValue);" 
             if( String.IsNullOrWhiteSpace( itemKey ) || itemKey.Length > 255 ) throw new ArgumentException( "Must not be null or empty or longer than 255 characters.", "itemKey" );
             using( var c = new SqlCommand( @"select 'a' from CKCore.tSetupMemoryItem where ItemKey=@ItemKey;" ) )
             {
+                c.Connection = _manager.Connection;
                 c.Parameters.AddWithValue( "@ItemKey", itemKey );
-                return (string)_manager.Connection.ExecuteScalar( c ) != null;
+                return (string)c.ExecuteScalar() != null;
             }
         }
         #endregion

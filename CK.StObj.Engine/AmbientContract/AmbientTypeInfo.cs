@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace CK.Core
 {
@@ -44,11 +45,11 @@ namespace CK.Core
             if( t == null ) throw new ArgumentNullException( "t" );
             Type = t;
             MutableFinalContexts = new HashSet<string>();
-            _finalContextsEx = new CKReadOnlyCollectionOnISet<string>( MutableFinalContexts );
+            _finalContextsEx = new CKReadOnlyCollectionOnICollection<string>( MutableFinalContexts );
             if( (Generalization = parent) == null )
             {
                 _nextSibling = null;
-                MutableFinalContexts.Add( String.Empty );
+                MutableFinalContexts.Add( string.Empty );
             }
             else
             {
@@ -84,7 +85,7 @@ namespace CK.Core
 
         Type[] EnsureAllAmbientInterfaces( Func<Type,bool> ambientInterfacePredicate )
         {
-            return _ambientInterfaces ?? (_ambientInterfaces = Type.GetInterfaces().Where( ambientInterfacePredicate ).ToArray());
+            return _ambientInterfaces ?? (_ambientInterfaces = Type.GetTypeInfo().GetInterfaces().Where( ambientInterfacePredicate ).ToArray());
         }
 
         internal Type[] EnsureThisAmbientInterfaces( Func<Type, bool> ambientInterfacePredicate )
@@ -109,13 +110,13 @@ namespace CK.Core
             }
         }
 
-        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IContextualTypeMap context, TC generalization, DynamicAssembly assembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
+        internal bool CollectDeepestConcrete<T, TC>( IActivityMonitor monitor, IServiceProvider services, IContextualTypeMap context, TC generalization, IDynamicAssembly tempAssembly, List<Tuple<TC,object>> lastConcretes, List<Type> abstractTails )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T,TC>
         {
             // Creates the TC associated to T in context here: it may be unused but this is required
             // in order for AbstractTypeCanBeInstanciated to be able to use Generalization information (attributes cache).
-            var ct = CreateContextTypeInfo<T, TC>( generalization, context );
+            var ct = CreateContextTypeInfo<T, TC>( monitor, services, generalization, context );
             Debug.Assert( context != null );
             bool concreteBelow = false;
             AmbientTypeInfo c = _firstChild;
@@ -123,14 +124,14 @@ namespace CK.Core
             {
                 if( c.MutableFinalContexts.Contains( context.Context ) )
                 {
-                    concreteBelow |= c.CollectDeepestConcrete<T, TC>( monitor, context, ct, assembly, lastConcretes, abstractTails );
+                    concreteBelow |= c.CollectDeepestConcrete<T, TC>( monitor, services, context, ct, tempAssembly, lastConcretes, abstractTails );
                 }
                 c = c._nextSibling;
             }
             if( !concreteBelow )
             {
                 object abstractTypeInfo = null;
-                if( Type.IsAbstract && (assembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, assembly, out abstractTypeInfo )) )
+                if( Type.GetTypeInfo().IsAbstract && (tempAssembly == null || !ct.AbstractTypeCanBeInstanciated( monitor, tempAssembly, out abstractTypeInfo )) )
                 {
                     abstractTails.Add( Type );
                 }
@@ -148,19 +149,21 @@ namespace CK.Core
         /// </summary>
         /// <typeparam name="T">This specialized AmbientTypeInfo.</typeparam>
         /// <typeparam name="TC">Type of associated contextualized specialization.</typeparam>
-        /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="generalization">Generalization if any (null for root of Types path).</param>
+        /// <param name="context">Context name for which the associated contextualized specialization must be instanciated.</param>
         /// <returns>Associated contextualized type information.</returns>
-        internal virtual protected TC CreateContextTypeInfo<T, TC>( TC generalization, IContextualTypeMap context )
+        internal virtual protected TC CreateContextTypeInfo<T, TC>( IActivityMonitor monitor, IServiceProvider services, TC generalization, IContextualTypeMap context )
             where T : AmbientTypeInfo
             where TC : AmbientContextualTypeInfo<T, TC>
         {
-            return (TC)new AmbientContextualTypeInfo<T,TC>( (T)this, generalization, context );
+            return (TC)new AmbientContextualTypeInfo<T, TC>( monitor, (T)this, generalization, context, services );
         }
 
         static void ProcessContextAttributes<T>( Type t, Func<string, bool> action ) where T : IAddOrRemoveContextAttribute
         {
-            object[] attrs = t.GetCustomAttributes( typeof( T ), false );
+            var attrs = t.GetTypeInfo().GetCustomAttributes( typeof( T ), false );
             foreach( var a in attrs ) action( ((IAddOrRemoveContextAttribute)a).Context );
         }
     }

@@ -1,139 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D3C700E1-3546-437C-9B96-1F867A539B6A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CK.Setup</RootNamespace>
-    <AssemblyName>CK.Setupable.Engine</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <Description>CK.Setupable.Engine implements CK.Setupable.Runtime: it the aspect that support the Three Steps Setup.
+    </Description>
   </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" $(GenerateDocumentation) != '' ">
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\CK.Setupable.Engine.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
-      <HintPath>..\packages\CK.Core.4.3.0\lib\net45\CK.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
+    <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Scripts\ScriptSource.cs" />
-    <Compile Include="Scripts\ScriptTypeHandler.cs" />
-    <Compile Include="SetupCore\GroupHeadSetupDriver.cs" />
-    <Compile Include="SetupCore\ISetupSessionMemoryProvider.cs" />
-    <Compile Include="Scripts\SetupScriptExtension.cs" />
-    <Compile Include="Scripts\MultiScriptBase.cs" />
-    <Compile Include="Scripts\MultiScriptExecutorBase.cs" />
-    <Compile Include="Scripts\IScriptExecutor.cs" />
-    <Compile Include="Scripts\CoveringScript.cs" />
-    <Compile Include="Scripts\ScriptCollector.cs" />
-    <Compile Include="Scripts\ScriptSet.cs" />
-    <Compile Include="Scripts\ScriptSetupHandler.cs" />
-    <Compile Include="Scripts\TypedScriptVector.cs" />
-    <Compile Include="Scripts\TypedScriptVectorConstraint.cs" />
-    <Compile Include="Scripts\ScriptSetupHandlerBuilder.cs" />
-    <Compile Include="Scripts\ScriptTypeManager.cs" />
-    <Compile Include="SetupEngine.Aspect.cs" />
-    <Compile Include="SetupEngine.cs" />
-    <Compile Include="SetupCore\SetupCoreEngineRegisterResult.cs" />
-    <Compile Include="SetupCore\ISetupDriverFactory.cs" />
-    <Compile Include="SetupCore\SetupCoreEngine.cs" />
-    <Compile Include="SetupEngineStartConfiguration.cs" />
-    <Compile Include="StObj\Impl\AttributesReader.cs" />
-    <Compile Include="SetupEngineConfigurator.cs" />
-    <Compile Include="StObj\Impl\StObjSetupDataRootClass.cs" />
-    <Compile Include="StObj\Impl\StObjSetupData.cs" />
-    <Compile Include="StObj\StObjBuilder.cs" />
-    <Compile Include="StObj\StObjSetupItemBuilder.cs" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CK.Setup.Dependency\CK.Setup.Dependency.csproj">
-      <Project>{87F54185-5226-4EEE-8D59-5D03E6C1AB7C}</Project>
-      <Name>CK.Setup.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj">
-      <Project>{64DA8104-2C71-4D52-8F44-D34738F6D564}</Project>
-      <Name>CK.Setupable.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj">
-      <Project>{A5380F73-7050-4090-8E75-4CFC7AFA5B7B}</Project>
-      <Name>CK.Setupable.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj">
-      <Project>{DF7A0B05-4B48-44C2-B6C8-6FCFD66DF8F8}</Project>
-      <Name>CK.StObj.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj">
-      <Project>{96DEDEEE-DE7D-4B14-8FDE-BC4D8D9CCB78}</Project>
-      <Name>CK.StObj.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj">
-      <Project>{DB108FF8-42A4-4787-92C2-2D5A4DAAB85E}</Project>
-      <Name>CK.StObj.Runtime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.11.1\build\SimpleGitVersionTask.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

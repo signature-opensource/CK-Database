@@ -1,15 +1,9 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\Collector\AmbientContractCollectorContextualResult.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using CK.Text;
 
 namespace CK.Core
 {
@@ -45,53 +39,35 @@ namespace CK.Core
 
 
         /// <summary>
-        /// Gets the context name. <see cref="String.Empty"/> for default context.
+        /// Gets the context name. <see cref="string.Empty"/> for default context.
         /// </summary>
-        public string Context
-        {
-            get { return _mappings.Context; }
-        }
+        public string Context => _mappings.Context; 
 
         /// <summary>
         /// Gets the type mapper for this context.
         /// </summary>
-        public CT Mappings
-        {
-            get { return _mappings; }
-        }
+        public CT Mappings => _mappings; 
 
         /// <summary>
         /// Gets all the paths from <see cref="IAmbientContract"/> base classes to their most specialized concrete classes 
         /// that this context contains.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<TC>> ConcreteClasses
-        {
-            get { return _concreteClassesPath; }
-        }
+        public IReadOnlyList<IReadOnlyList<TC>> ConcreteClasses => _concreteClassesPath; 
 
         /// <summary>
         /// Gets all the class ambiguities: the first type corresponds to more than one following concrete specializations.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<Type>> ClassAmbiguities
-        {
-            get { return _classAmbiguities; }
-        }
+        public IReadOnlyList<IReadOnlyList<Type>> ClassAmbiguities => _classAmbiguities; 
 
         /// <summary>
         /// Gets all the interfaces ambiguities: the first type is an interface that is implemented by more than one following concrete classes.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<Type>> InterfaceAmbiguities
-        {
-            get { return _interfaceAmbiguities; }
-        }
+        public IReadOnlyList<IReadOnlyList<Type>> InterfaceAmbiguities => _interfaceAmbiguities; 
 
         /// <summary>
         /// Gets the list of tails that are abstract types.
         /// </summary>
-        public IReadOnlyList<Type> AbstractTails
-        {
-            get { return _abstractTails; }
-        }
+        public IReadOnlyList<Type> AbstractTails => _abstractTails; 
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue: currently if a class or an interface 
@@ -110,19 +86,19 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace().Send( "Ambient Contract for context '{1}': {0} mappings for {2} concrete paths.", _mappings.MappedTypeCount, Context, _concreteClassesPath.Count ) )
+            using( monitor.OpenTrace( $"Ambient Contract for context '{Context}': {_mappings.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
             {
                 foreach( var a in _classAmbiguities )
                 {
-                    monitor.Error().Send( "Base class '{0}' has more than one concrete specialization: '{1}'.", a[0].FullName, String.Join( "', '", a.Skip(1).Select( t => t.FullName ) ) );
+                    monitor.Error( $"Base class '{a[0].FullName}' has more than one concrete specialization: '{a.Skip( 1 ).Select( t => t.FullName ).Concatenate( "', '" )}'." );
                 }
                 foreach( var a in _interfaceAmbiguities )
                 {
-                    monitor.Error().Send( "Interface '{0}' is implemented by more than one concrete classes: {1}.", a[0].FullName, String.Join( "', '", a.Skip( 1 ).Select( t => t.FullName ) ) );
+                    monitor.Error( $"Interface '{a[0].FullName}' is implemented by more than one concrete classes: {a.Skip( 1 ).Select( t => t.FullName ).Concatenate( "', '" )}." );
                 }
                 if( _abstractTails.Count > 0 )
                 {
-                    monitor.Warn().Send( "Abstract classes without specialization are ignored: {0}.", String.Join( ", ", _abstractTails.Select( t => t.FullName ) ) );
+                    monitor.Warn( $"Abstract classes without specialization are ignored: {_abstractTails.Select( t => t.FullName ).Concatenate()}." );
                 }
 
             }

@@ -10,7 +10,8 @@ namespace CK.Setup
 
     /// <summary>
     /// Base class for attributes declared on a class that define dynamically created setup objects.
-    /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" can be defined.
+    /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" may be defined:
+    /// this is up to the specialized attribute and its implementation to actually set the maximum number of allowed names.
     /// </summary>
     public abstract class SetupObjectItemAttributeBase : AmbientContextBoundDelegationAttribute
     {
@@ -22,12 +23,14 @@ namespace CK.Setup
         public SetupObjectItemAttributeBase( string commaSeparatedObjectNames, string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
-            CommaSeparatedObjectNames = commaSeparatedObjectNames;
+            NameOrCommaSeparatedObjectNames = commaSeparatedObjectNames;
         }
 
         /// <summary>
-        /// Gets a object name or multiple comma separated names.
+        /// Gets a object name (or multiple comma separated names if the implementation allows it).
+        /// Implementor should use the name of the required constructor parameter (and comments of course) to 
+        /// specify this i.e.: 'name' or 'commaSeparatedObjectNames'.
         /// </summary>
-        public string CommaSeparatedObjectNames { get; private set; }
+        public string NameOrCommaSeparatedObjectNames { get; }
     }
 }

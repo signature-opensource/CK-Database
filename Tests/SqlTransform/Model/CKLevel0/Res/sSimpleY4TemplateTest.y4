@@ -1,0 +1,10 @@
+﻿-- SetupConfig: {}
+create procedure CK.sSimpleY4TemplateTest
+(
+    @TemplatedText nvarchar(100) output
+)
+as
+begin
+	set @TemplatedText = N'<%= Model.DynamicPropertySample %>';
+	return 0;
+end

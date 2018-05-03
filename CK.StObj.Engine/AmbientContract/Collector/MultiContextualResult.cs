@@ -23,81 +23,60 @@ namespace CK.Core
     public class MultiContextualResult<T>
         where T : class, IContextualResult
     {
-        readonly ListDictionary _contextResults;
+        T _default;
+        List<T> _others;
         readonly ContextCollection _contextsEx;
 
         class ContextCollection : IReadOnlyCollection<T>
         {
-            readonly ListDictionary _c;
+            readonly MultiContextualResult<T> _c;
 
-            public ContextCollection( ListDictionary c )
+            public ContextCollection(MultiContextualResult<T> c )
             {
                 _c = c;
             }
 
-            public bool Contains( object item )
-            {
-                T c = item as T;
-                return c != null ? _c.Contains( c.Context ) : false;
-            }
-
-            public int Count
-            {
-                get { return _c.Count; }
-            }
+            public int Count => (_c._default != null ? 1 : 0) + (_c._others != null ? _c._others.Count : 0);
 
             public IEnumerator<T> GetEnumerator()
             {
-                return _c.Values.Cast<T>().GetEnumerator();
+                if (_c._default != null ) yield return _c._default;
+                if (_c._others != null) foreach (var c in _c._others) yield return c;
             }
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return _c.Values.GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         internal MultiContextualResult()
         {
-            _contextResults = new ListDictionary();
-            _contextsEx = new ContextCollection( _contextResults );
+            _contextsEx = new ContextCollection( this );
         }
 
         /// <summary>
         /// Gets the result for the default context (<see cref="String.Empty"/>).
         /// </summary>
-        public T Default
-        {
-            get { return (T)_contextResults[String.Empty]; }
-        }
+        public T Default => _default; 
 
         /// <summary>
         /// Gets the different contexts (including <see cref="Default"/>).
         /// </summary>
-        public IReadOnlyCollection<T> Contexts { get { return _contextsEx; } }
+        public IReadOnlyCollection<T> Contexts => _contextsEx; 
 
         /// <summary>
         /// Gets the result for any context or null if no such context exist.
         /// </summary>
         /// <param name="context">Type that identifies a context (null is the same as <see cref="String.Empty"/>).</param>
         /// <returns>The result for the given context.</returns>
-        public T FindContext( string context )
-        {
-            return (T)_contextResults[context ?? String.Empty];
-        }
+        public T FindContext( string context ) => string.IsNullOrEmpty(context) 
+                                                    ? _default
+                                                    : _others?.FirstOrDefault( c => c.Context == context );
 
         /// <summary>
         /// Gets whether at least one result has a fatal error. 
         /// Can be overriden to take into account other errors.
         /// </summary>
-        public virtual bool HasFatalError
-        {
-            get
-            {
-                foreach( T c in _contextResults.Values ) if( c.HasFatalError ) return true;
-                return false;
-            }
-        }
+        public virtual bool HasFatalError =>  _default?.HasFatalError == true 
+                                                || _others?.Any( c => c.HasFatalError == true ) == true;
 
         /// <summary>
         /// Submits <see cref="Default"/> and then other contexts context to the given <see cref="Action"/>.
@@ -106,18 +85,25 @@ namespace CK.Core
         protected void Foreach( Action<T> action )
         {
             if( action == null ) throw new ArgumentNullException( "action" );
-            T cDef = Default;
-            if( cDef != null ) action( cDef );
-            foreach( T c in _contextResults.Values )
-            {
-                if( c.Context.Length > 0 ) action( c );
-            }
+            if(_default != null ) action(_default);
+            if( _others != null )
+                foreach ( T c in _others ) action( c );
         }
 
         internal T Add( T c )
         {
             Debug.Assert( c.Context != null );
-            _contextResults.Add( c.Context, c );
+            if( c.Context.Length == 0 )
+            {
+                Debug.Assert(_default == null);
+                _default = c;
+            }
+            else
+            {
+                if( _others == null ) _others = new List<T>();
+                Debug.Assert(_others.All(o => o.Context != c.Context));
+                _others.Add(c);
+            }
             return c;
         }
 

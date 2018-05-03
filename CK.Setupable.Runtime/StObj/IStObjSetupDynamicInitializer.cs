@@ -23,7 +23,7 @@ namespace CK.Setup
         /// <summary>
         /// When called, any dependent StObjs have already been initialized: initializers for a Generalization are called before the ones of its Specializations for instance.
         /// If an initializer requires its dependent object to be initialized (before some of its own initializations), it can use the <see cref="IStObjSetupDynamicInitializerState.PushAction">PushAction</see>
-        /// of the <paramref name="state"/> to register actions that will be executed in revert order.
+        /// of the <paramref name="state"/> to register actions that will be executed after its dependencies (but before any actions pushed by its dependencies).
         /// </summary>
         /// <param name="state">Context for dynamic initialization.</param>
         /// <param name="item">The setup item for the object slice.</param>
@@ -33,6 +33,7 @@ namespace CK.Setup
         /// its hierarchy.
         /// </remarks>
         void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj );
+
     }
 
 

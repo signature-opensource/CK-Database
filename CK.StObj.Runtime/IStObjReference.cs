@@ -25,7 +25,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Owner of the reference corresponds to the exact type of the object that has the Construct method for parameters.
+        /// Owner of the reference corresponds to the exact type of the object that has the StObjConstruct method for parameters.
         /// However, for Ambient Properties, the Owner is the ultimate (leaf) Specialization.
         /// </para>
         /// <para>
@@ -70,7 +70,7 @@ namespace CK.Setup
         /// (a described dependency is required unless explicitely declared as optional by <see cref="IStObjStructuralConfigurator"/>).
         /// </para>
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.WarnIfNotStObj"/> for Construct parameters since <see cref="IStObjValueResolver"/> can inject any dependency (the 
+        /// Defaults to <see cref="StObjRequirementBehavior.WarnIfNotStObj"/> for StObjConstruct parameters since <see cref="IStObjValueResolver"/> can inject any dependency (the 
         /// dependency may even be missing - ie. let to null for reference types - if <see cref="IStObjMutableParameter.IsOptional"/> is true).
         /// </para>
         /// <para>

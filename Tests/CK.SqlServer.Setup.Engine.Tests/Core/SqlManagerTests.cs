@@ -1,84 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.Setup;
+using FluentAssertions;
 using NUnit.Framework;
+using System.Data.SqlClient;
+using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.Core
 {
     [TestFixture]
     public class SqlManagerTests
     {
-        static readonly string ConnectionString = TestHelper.GetConnectionString( "INVALID-NAME-TEST" );
-
         [Test]
         public void SqlManager_OpenOrCreate_catch_any_errors_when_a_Monitor_is_set()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( ConnectionString, true ), Is.False );
+                Assert.That( m.OpenFromConnectionString( TestHelper.GetConnectionString( "INVALID-NAME-TEST" ), true ), Is.False );
             }
         }
 
         [Test]
-        public void an_invalid_database_name_does_not_DBSetup_master()
+        public void DBSetup_can_not_touch_master_model_tempdb_or_msdb()
         {
-            var c = new SetupEngineConfiguration();
-            c.StObjEngineConfiguration.BuildAndRegisterConfiguration.Assemblies.DiscoverAssemblyNames.Add( "SqlActorPackage" );
-            c.StObjEngineConfiguration.FinalAssemblyConfiguration.GenerateFinalAssemblyOption = BuilderFinalAssemblyConfiguration.GenerateOption.DoNotGenerateFile;
-            var config = new SqlSetupAspectConfiguration();
-            c.Aspects.Add( config );
-            config.DefaultDatabaseConnectionString = ConnectionString;
+            var badTarget = TestHelper.GetDatabaseOptions( "master" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
 
-            using( var r = StObjContextRoot.Build( c, null, TestHelper.Monitor ) )
+            using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {
-                Assert.That( r.Success, Is.False );
-            }
-
-            using( var defaultDB = new SqlManager( TestHelper.Monitor ) )
-            {
-                defaultDB.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( defaultDB.Connection.ExecuteScalar( "select DB_Name()" ), Is.EqualTo( "master" ) );
-                Assert.That( defaultDB.Connection.ExecuteScalar( "select count(*) from sys.tables where name = 'tSystem';" ), Is.EqualTo( 0 ) );
-            }
-        }
-
-        [Test]
-        public void an_auto_created_database_does_not_leave_opened_connections()
-        {
-            string autoTest = TestHelper.GetConnectionString( "TEST_AUTOCREATE" );
-
-            using( var removal = new SqlManager( TestHelper.Monitor ) )
-            {
-                removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( removal.Connection.ExecuteScalar(
-                                        @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
-                                          select 'Done';" ), Is.EqualTo( "Done" ) );
-            }
-
-            using( var creator = new SqlManager( TestHelper.Monitor ) )
-            {
-                Assert.That( creator.OpenFromConnectionString( autoTest, true ) );
-                Assert.That( creator.Connection.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 1 ) );
-            }
-
-            using( var removal = new SqlManager( TestHelper.Monitor ) )
-            {
-                using( var c = new SqlConnection( autoTest ) )
+                db.Open();
+                using( var cmd = new SqlCommand( "select DB_Name()", db ) )
                 {
-                    SqlConnection.ClearPool( c );
+                    cmd.ExecuteScalar().Should().Be( "master" );
+                    cmd.CommandText = "select count(*) from sys.tables where name = 'tSystem';";
+                    cmd.ExecuteScalar().Should().Be( 0 );
                 }
-                removal.OpenFromConnectionString( TestHelper.ConnectionStringMaster );
-                Assert.That( removal.Connection.ExecuteScalar(
-                                        @"if db_id('TEST_AUTOCREATE') is not null drop database TEST_AUTOCREATE; 
-                                          select 'Done';" ), Is.EqualTo( "Done" ) );
-                Assert.That( removal.Connection.ExecuteScalar( @"select count(*) from sys.databases where name = 'TEST_AUTOCREATE';" ), Is.EqualTo( 0 ) );
             }
 
+            badTarget = TestHelper.GetDatabaseOptions( "msdb" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+
+            badTarget = TestHelper.GetDatabaseOptions( "model" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+
+            badTarget = TestHelper.GetDatabaseOptions( "tempdb" );
+            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
         }
 
     }

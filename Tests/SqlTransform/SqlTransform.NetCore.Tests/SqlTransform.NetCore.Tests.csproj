@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common\Shared.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OriginProjectName>SqlTransform.Tests</OriginProjectName>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
+    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnitLite" Version="3.10.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\$(OriginProjectName)\**\*.cs" Exclude="..\$(OriginProjectName)\obj\**;..\$(OriginProjectName)\bin\**">
+      <Link>Include\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Visible>true</Visible>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Logs\" />
+  </ItemGroup>
+</Project>

@@ -39,8 +39,8 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor );
-                collector.RegisterClass( typeof( SimpleContainer ) );
-                StObjCollectorResult result = collector.GetResult();
+                collector.RegisterType( typeof( SimpleContainer ) );
+                StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
             }
         }
@@ -82,13 +82,13 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void SchmurtzPropagation()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, false, false, null, null, new SchmurtzConfigurator() );
-            collector.RegisterClass( typeof( SimpleContainer ) );
-            collector.RegisterClass( typeof( SpecializedContainer ) );
-            collector.RegisterClass( typeof( BaseObject ) );
-            collector.RegisterClass( typeof( SpecializedObject ) );
-            collector.RegisterClass( typeof( SpecializedObjectWithExplicitContainer ) );
-            StObjCollectorResult result = collector.GetResult();
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new SchmurtzConfigurator() );
+            collector.RegisterType( typeof( SimpleContainer ) );
+            collector.RegisterType( typeof( SpecializedContainer ) );
+            collector.RegisterType( typeof( BaseObject ) );
+            collector.RegisterType( typeof( SpecializedObject ) );
+            collector.RegisterType( typeof( SpecializedObjectWithExplicitContainer ) );
+            StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
 
             Assert.That( result.OrderedStObjs.First( s => s.ObjectType == typeof( BaseObject ) ).GetStObjProperty( "SchmurtzProp" ).ToString(),
                 Is.EqualTo( "Root => SpecializedContainer specializes Root => BaseObject belongs to SpecializedContainer" ) );

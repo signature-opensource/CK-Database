@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Model\StObj\Attribute\AmbientPropertyAttribute.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,19 +50,10 @@ namespace CK.Setup
         /// <summary>
         /// Gets whether <see cref="ResolutionSource"/> has been set.
         /// </summary>
-        public bool IsResolutionSourceDefined
-        {
-            get { return _source.HasValue; }
-        }
+        public bool IsResolutionSourceDefined => _source.HasValue; 
 
-        bool IAmbientPropertyOrInjectContractAttribute.IsOptionalDefined
-        {
-            get { return _isOptional.HasValue; }
-        }
+        bool IAmbientPropertyOrInjectContractAttribute.IsOptionalDefined => _isOptional.HasValue; 
 
-        bool IAmbientPropertyOrInjectContractAttribute.IsAmbientProperty
-        {
-            get { return true; }
-        }
+        bool IAmbientPropertyOrInjectContractAttribute.IsAmbientProperty =>  true; 
     }
 }

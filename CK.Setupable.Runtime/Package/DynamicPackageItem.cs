@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\Package\DynamicPackageItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +8,8 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="Model"/> 
-    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="GenericItemSetupDriver"/>.
+    /// Fully mutable <see cref="IDependentItemContainer"/> and <see cref="IVersionedItem"/> with optional associated <see cref="ModelPackage"/> 
+    /// and <see cref="ObjectsPackage"/> packages (that are <see cref="AutoDependentPackageItem"/>) and  configurable type for the associated <see cref="SetupItemDriver"/>.
     /// </summary>
     /// <remarks>
     /// The <see cref="DynamicContainerItem"/> can be used if a pure mutable Container is needed (no versions nor associated AutoDependentPackageItem).
@@ -34,27 +27,21 @@ namespace CK.Setup
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="GenericItemSetupDriver"/> is asumed.
+        /// When null, the type of <see cref="SetupItemDriver"/> is asumed.
         /// </param>
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )
         {
-            _driverType = driverType ?? typeof( GenericItemSetupDriver );
+            _driverType = driverType ?? typeof( SetupItemDriver );
             ItemKind = DependentItemKind.Container;
         }
 
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
-        public IDependentItemList Children
-        {
-            get { return _children ?? (_children = new DependentItemList()); }
-        }
+        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
 
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        bool IDependentItemRef.Optional => false;
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
@@ -63,46 +50,40 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the optional <see cref="AutoDependentPackageItem"/> "Model" for this <see cref="DynamicPackageItem"/>.
-        /// It is null (the default) if this package has no Model: use <see cref="EnsureModel"/> to
-        /// create the Model if needed.
+        /// It is null (the default). If this package must have a Model package, use <see cref="EnsureModelPackage"/> to
+        /// create it.
         /// </summary>
-        public AutoDependentPackageItem Model
-        {
-            get { return _model; }
-        }
+        public AutoDependentPackageItem ModelPackage => _model;
 
         /// <summary>
-        /// Creates the associated <see cref="Model"/> package if it does not exist yet.
+        /// Creates the associated <see cref="ModelPackage"/> package if it does not exist yet.
         /// </summary>
-        /// <returns></returns>
-        public AutoDependentPackageItem EnsureModel()
+        /// <returns>The <see cref="AutoDependentPackageItem"/>.</returns>
+        public virtual AutoDependentPackageItem EnsureModelPackage()
         {
             return _model ?? (_model = new AutoDependentPackageItem( this, true, "Model", "Model." ));
         }
 
         /// <summary>
-        /// Removes the <see cref="Model"/> (sets it to null).
+        /// Removes the <see cref="ModelPackage"/> (sets it to null).
         /// </summary>
-        public void SupressModel()
+        public virtual void SupressModelPackage()
         {
             _model = null;
         }
 
         /// <summary>
         /// Gets the optional <see cref="AutoDependentPackageItem"/> "Objects" for this <see cref="DynamicPackageItem"/>.
-        /// It is null (the default) if this package has no associated "Objects" package: use <see cref="EnsureModel"/> to
-        /// create the Model if needed.
+        /// It is null (the default). If this package must have an "Objects" package, use <see cref="EnsureObjectsPackage"/> to
+        /// create it.
         /// </summary>
-        public AutoDependentPackageItem ObjectsPackage
-        {
-            get { return _objects; }
-        }
+        public AutoDependentPackageItem ObjectsPackage => _objects; 
 
         /// <summary>
         /// Creates the associated <see cref="ObjectsPackage"/> package if it does not exist yet.
         /// </summary>
-        /// <returns></returns>
-        public AutoDependentPackageItem EnsureObjectsPackage()
+        /// <returns>The <see cref="AutoDependentPackageItem"/>.</returns>
+        public virtual AutoDependentPackageItem EnsureObjectsPackage()
         {
             return _objects ?? (_objects = new AutoDependentPackageItem( this, false, "Objects", "Objects." ));
         }
@@ -110,7 +91,7 @@ namespace CK.Setup
         /// <summary>
         /// Removes the <see cref="ObjectsPackage"/> (sets it to null).
         /// </summary>
-        public void SupressObjectsPackage()
+        public virtual void SupressObjectsPackage()
         {
             _objects = null;
         }
@@ -125,14 +106,12 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the prefix that can be used to locate child names (typically for resource lookup).
+        /// Called by the <see cref="DependencySorter"/>.
+        /// The object return that is associated to this item is its driver type.
         /// </summary>
-        public virtual IReadOnlyList<string> AvailableChildPrefix
-        {
-            get { return CKReadOnlyListEmpty<string>.Empty; }
-        }
-
-        protected override object StartDependencySort()
+        /// <param name="m">The monitor to use.</param>
+        /// <returns>The driver type.</returns>
+        protected override object StartDependencySort( IActivityMonitor m )
         {
             return _driverType;
         }
@@ -141,11 +120,11 @@ namespace CK.Setup
         {
             if( _objects == null )
             {
-                return _model != null ? new CKReadOnlyListMono<ISetupItem>( _model ) : null;
+                return _model != null ? new [] { _model } : null;
             }
             else if( _model == null )
             {
-                return new CKReadOnlyListMono<ISetupItem>( _objects );
+                return new [] { _objects };
             }
             else 
             {
