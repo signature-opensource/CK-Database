@@ -15,6 +15,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers all the StObj mappings from the default context of an assembly and also
         /// registers the <see cref="IStObjMap"/>.
+        /// <para>
+        /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
+        /// and wrap the call this way:
+        /// <code>
+        /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
+        /// {
+        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        /// }
+        /// </code>
+        /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
+        /// that may cause runtime errors.
+        /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="stobjAssembly">The assembly.</param>
@@ -41,6 +53,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers all the StObj mappings from the default context of an assembly and also
         /// registers the <see cref="IStObjMap"/>.
+        /// <para>
+        /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
+        /// and wrap the call this way:
+        /// <code>
+        /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
+        /// {
+        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        /// }
+        /// </code>
+        /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
+        /// that may cause runtime errors.
+        /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="assemblyName">The assembly name.</param>
@@ -64,6 +88,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers all the StObj mappings from the default context of an assembly and also
         /// registers the <see cref="IStObjMap"/>.
+        /// <para>
+        /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
+        /// and wrap the call this way:
+        /// <code>
+        /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
+        /// {
+        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        /// }
+        /// </code>
+        /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
+        /// that may cause runtime errors.
+        /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="assemblyName">The assembly name.</param>

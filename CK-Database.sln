@@ -95,7 +95,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.AspNet", "CK.DB.AspNe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.StObjSetup", "CK.Testing.StObjSetup\CK.Testing.StObjSetup.csproj", "{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.Testing.SetupableSetup", "CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj", "{D837F80F-4C8B-47EC-9F0E-105B820EE16C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.SetupableSetup", "CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj", "{D837F80F-4C8B-47EC-9F0E-105B820EE16C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -557,7 +557,7 @@ Global
 		{0FF79953-075C-40FB-9A19-EA30F0573DCA} = {6E913090-EA34-4A90-8DBB-1501F9981F53}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.2.1.505.2\lib\NET35
+		SolutionGuid = {FAF75456-A490-4FB3-B2E8-CFFC10068A8E}
 	EndGlobalSection
 EndGlobal

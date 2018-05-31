@@ -32,7 +32,6 @@
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>10.0.2-C0006-local</CKCoreVersion>
     <CKActivityMonitorVersion>10.0.1-C0006-local</CKActivityMonitorVersion>
-    <CKMonitoringVersion>8.3.3</CKMonitoringVersion>
     <CKSetupDependencyVersion>7.0.1-C0005-local</CKSetupDependencyVersion>
     <CKAspNetVersion>2.0.1-C0006-local</CKAspNetVersion>
     <CKSqlServerParserVersion>8.0.1-C0005-local</CKSqlServerParserVersion>
@@ -40,10 +39,9 @@
     <CKReflectionVersion>7.0.1-C0004-local</CKReflectionVersion>
     <CKCodeGenVersion>0.2.1-C0006-local</CKCodeGenVersion>
     <YodiiScriptVersion>0.6.1-C0004-local</YodiiScriptVersion>
-    <CSemVerVersion>1.1.0</CSemVerVersion>
     <CKSetupVersion>6.0.1-C0008-local</CKSetupVersion>
     <CKTestingVersion>0.4.1-C0006-local</CKTestingVersion>
-    <FluentAssertionsVersion>5.3.0</FluentAssertionsVersion>
+    <FluentAssertionsVersion>5.3.2</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
