@@ -170,7 +170,7 @@ namespace CodeCake
                     var components = componentProjects.ComponentProjectPaths.Select( x => x.ToString() );
 
                     var storeConf = Cake.CKSetupCreateDefaultConfiguration();
-                    if( globalInfo.IsBlankCIRelease )
+                    if( globalInfo.IsLocalCIRelease )
                     {
                         storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
                     }
