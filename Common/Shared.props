@@ -30,17 +30,17 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>10.0.2-C0029-develop</CKCoreVersion>
-    <CKActivityMonitorVersion>10.0.1-C0028-develop</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>7.0.1-C0026-develop</CKSetupDependencyVersion>
-    <CKAspNetVersion>2.0.1-C0027-develop</CKAspNetVersion>
-    <CKSqlServerParserVersion>8.0.1-C0026-develop</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>6.0.1-C0027-develop</CKSqlServerParserModelVersion>
+    <CKCoreVersion>10.0.2-C0032-develop</CKCoreVersion>
+    <CKActivityMonitorVersion>10.0.1-C0031-develop</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>7.0.1-C0029-develop</CKSetupDependencyVersion>
+    <CKAspNetVersion>2.0.1-C0029-develop</CKAspNetVersion>
+    <CKSqlServerParserVersion>8.0.1-C0028-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>6.0.1-C0030-develop</CKSqlServerParserModelVersion>
     <CKReflectionVersion>7.0.1-C0017-develop</CKReflectionVersion>
-    <CKCodeGenVersion>0.2.1-C0028-develop</CKCodeGenVersion>
-    <YodiiScriptVersion>0.6.1-C0018-develop</YodiiScriptVersion>
-    <CKSetupVersion>6.0.1-C0032-develop</CKSetupVersion>
-    <CKTestingVersion>0.4.1-C0028-develop</CKTestingVersion>
+    <CKCodeGenVersion>0.2.1-C0031-develop</CKCodeGenVersion>
+    <YodiiScriptVersion>0.6.1-C0019-develop</YodiiScriptVersion>
+    <CKSetupVersion>6.0.1-C0034-develop</CKSetupVersion>
+    <CKTestingVersion>0.4.1-C0030-develop</CKTestingVersion>
     <FluentAssertionsVersion>5.3.2</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
