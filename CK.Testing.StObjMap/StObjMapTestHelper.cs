@@ -24,8 +24,12 @@ namespace CK.Testing
         readonly string _originGeneratedAssemblyName;
         string _generatedAssemblyName;
         static int _resetNumer;
+
+        DateTime _lastLoadedMapUtc;
+        DateTime _lastAccessMapUtc;
         IStObjMap _map;
         event EventHandler _stObjMapLoading;
+        event EventHandler<StObjMapAccessedEventArgs> _stObjMapAccessed;
 
         /// <summary>
         /// Initializes a new <see cref="StObjMapTestHelper"/>.
@@ -49,18 +53,56 @@ namespace CK.Testing
             remove => _stObjMapLoading -= value;
         }
 
+        event EventHandler<StObjMapAccessedEventArgs> IStObjMapTestHelperCore.StObjMapAccessed
+        {
+            add => _stObjMapAccessed += value;
+            remove => _stObjMapAccessed -= value;
+        }
+
         string IStObjMapTestHelperCore.GeneratedAssemblyName => _generatedAssemblyName;
 
         IStObjMap IStObjMapTestHelperCore.StObjMap
         {
             get
             {
+                void Load()
+                {
+                    var h = _stObjMapLoading;
+                    if( h != null )
+                    {
+                        using( _monitor.Monitor.OpenInfo( "Invoking StObjMapLoading event." ) )
+                        {
+                            h( this, EventArgs.Empty );
+                        }
+                    }
+                    _map = DoLoadStObjMap( _generatedAssemblyName, true );
+                    if( _map != null ) _lastAccessMapUtc = _lastLoadedMapUtc = DateTime.UtcNow;
+                }
+
                 if( _map == null )
                 {
-                    using( _monitor.Monitor.OpenInfo( $"Accessing null StObj map: invoking StObjMapLoading event." ) )
+                    using( _monitor.Monitor.OpenInfo( "Accessing null StObj map." ) )
                     {
-                        _stObjMapLoading?.Invoke( this, EventArgs.Empty );
-                        _map = DoLoadStObjMap( _generatedAssemblyName, true );
+                        Load();
+                    }
+                }
+                else
+                {
+                    var h = _stObjMapAccessed;
+                    if( h != null )
+                    {
+                        var now = DateTime.UtcNow;
+                        var e = new StObjMapAccessedEventArgs( _map, now - _lastAccessMapUtc, now - _lastLoadedMapUtc );
+                        h( this, e );
+                        if( e.ShouldReload )
+                        {
+                            using( _monitor.Monitor.OpenInfo( $"Accessing StObj map: current StObjMap should be reloaded." ) )
+                            {
+                                DoResetStObjMap( true );
+                                Load();
+                            }
+                        }
+                        else _lastAccessMapUtc = now;
                     }
                 }
                 return _map;
@@ -100,7 +142,9 @@ namespace CK.Testing
             }
         }
 
-        void IStObjMapTestHelperCore.ResetStObjMap( bool deleteGeneratedBinFolderAssembly )
+        void IStObjMapTestHelperCore.ResetStObjMap( bool deleteGeneratedBinFolderAssembly ) => DoResetStObjMap( deleteGeneratedBinFolderAssembly );
+
+        private void DoResetStObjMap( bool deleteGeneratedBinFolderAssembly )
         {
             if( _map == null ) _monitor.Monitor.Info( $"StObjMap is not loaded yet." );
             _map = null;
