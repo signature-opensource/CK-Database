@@ -34,7 +34,7 @@ namespace CodeCake
     {
         public ComponentProjects( string configuration )
         {
-            ComponentProjectPaths = new []
+            ComponentProjectPaths = new[]
             {
                 GetNet461BinFolder( "CK.StObj.Model", configuration ),
                 GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
@@ -46,15 +46,23 @@ namespace CodeCake
                 GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
                 GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
 
-                GetNetCoreBinFolder( "CK.StObj.Model", configuration ),
-                GetNetCoreBinFolder( "CK.StObj.Runtime", configuration ),
-                GetNetCoreBinFolder( "CK.StObj.Engine", configuration ) ,
-                GetNetCoreBinFolder( "CK.Setupable.Model", configuration ),
-                GetNetCoreBinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNetCoreBinFolder( "CK.Setupable.Engine", configuration ),
-                GetNetCoreBinFolder( "CK.SqlServer.Setup.Model", configuration ),
-                GetNetCoreBinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNetCoreBinFolder( "CK.SqlServer.Setup.Engine", configuration )
+                GetNetStandard20BinFolder( "CK.StObj.Model", configuration ),
+                GetNetStandard20BinFolder( "CK.Setupable.Model", configuration ),
+                GetNetStandard20BinFolder( "CK.SqlServer.Setup.Model", configuration ),
+
+                GetNetCoreApp20BinFolder( "CK.StObj.Runtime", configuration ),
+                GetNetCoreApp20BinFolder( "CK.StObj.Engine", configuration ) ,
+                GetNetCoreApp20BinFolder( "CK.Setupable.Runtime", configuration ),
+                GetNetCoreApp20BinFolder( "CK.Setupable.Engine", configuration ),
+                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
+
+                GetNetCoreApp21BinFolder( "CK.StObj.Runtime", configuration ),
+                GetNetCoreApp21BinFolder( "CK.StObj.Engine", configuration ),
+                GetNetCoreApp21BinFolder( "CK.Setupable.Engine", configuration ),
+                GetNetCoreApp21BinFolder( "CK.Setupable.Runtime", configuration ),
+                GetNetCoreApp21BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
+                GetNetCoreApp21BinFolder( "CK.SqlServer.Setup.Engine", configuration )
             };
         }
 
@@ -65,14 +73,19 @@ namespace CodeCake
             return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
         }
 
-        static NormalizedPath GetNetCoreBinFolder( string name, string configuration )
+        static NormalizedPath GetNetStandard20BinFolder( string name, string configuration )
         {
-            string pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
-            if( !Directory.Exists( pathToFramework ) )
-            {
-                pathToFramework = System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0/publish" );
-            }
-            return pathToFramework;
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
+        }
+
+        static NormalizedPath GetNetCoreApp20BinFolder( string name, string configuration )
+        {
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0/publish" );
+        }
+
+        static NormalizedPath GetNetCoreApp21BinFolder( string name, string configuration )
+        {
+            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.1/publish" );
         }
     }
 
@@ -134,12 +147,26 @@ namespace CodeCake
                  {
                      StandardSolutionBuild( solutionFileName, gitInfo, globalInfo.BuildConfiguration );
                      componentProjects = new ComponentProjects( globalInfo.BuildConfiguration );
-                     foreach( var pub in componentProjects.ComponentProjectPaths.Where( p => p.LastPart == "publish" ) )
+
+                     foreach( var pub in componentProjects.ComponentProjectPaths
+                                            .Where( p => p.LastPart == "publish"
+                                                         && p.Parts[p.Parts.Count - 2] == "netcoreapp2.0" ) )
                      {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart(4),
+                         Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
                             new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
                             {
                                 s.Framework = "netcoreapp2.0";
+                                s.Configuration = globalInfo.BuildConfiguration;
+                            } ) );
+                     }
+                     foreach( var pub in componentProjects.ComponentProjectPaths
+                                            .Where( p => p.LastPart == "publish"
+                                                         && p.Parts[p.Parts.Count - 2] == "netcoreapp2.1" ) )
+                     {
+                         Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
+                            new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
+                            {
+                                s.Framework = "netcoreapp2.1";
                                 s.Configuration = globalInfo.BuildConfiguration;
                             } ) );
                      }

@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;netcoreapp2.1;net461</TargetFrameworks>
     <Description>Contains NUnit test helpers.</Description>
     <IsTestProject>False</IsTestProject>
   </PropertyGroup>
@@ -10,7 +10,7 @@
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
     <PackageReference Include="CK.Testing.SqlTransform" Version="$(CKSqlServerParserVersion)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net461' ">
     <PackageReference Include="NUnit" Version="3.10.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
