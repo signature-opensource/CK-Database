@@ -9,6 +9,7 @@ using CK.Core;
 using CK.Setup;
 using CK.Testing.DBSetup;
 using CK.Testing.SqlServer;
+using CK.Testing.StObjMap;
 using CK.Text;
 using CKSetup;
 
@@ -27,6 +28,15 @@ namespace CK.Testing
             _setupableSetup = setupableSetup;
             _sqlServer = sqlServer;
             _setupableSetup.StObjSetupRunning += OnStObjSetupRunning;
+            _setupableSetup.StObjMapAccessed += OnStObjMapAccessed;
+        }
+
+        void OnStObjMapAccessed( object sender, StObjMapAccessedEventArgs e )
+        {
+            if( e.DeltaLastAccessTime > TimeSpan.FromSeconds( 3 ) )
+            {
+                e.ShouldReload |= _sqlServer.EnsureDatabase();
+            }
         }
 
         void OnStObjSetupRunning( object sender, StObjSetup.StObjSetupRunningEventArgs e )
