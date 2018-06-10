@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OriginProjectName>SqlCallDemo.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
