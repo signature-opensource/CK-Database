@@ -267,3 +267,4 @@ Tests/SqlActorPackage.Tests/CKSetupWorkingDirectory/
 /Tests/SqlCallDemo/SqlCallDemo.NetCore.Tests/Logs/
 CKSetupWorkingDirectory/
 CKSetup-WorkingDir/
+Logs/
