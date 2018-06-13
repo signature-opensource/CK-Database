@@ -44,6 +44,11 @@ namespace CK.Setup
             /// </summary>
             static public readonly XName RevertOrderingNames = XNamespace.None + "RevertOrderingNames";
 
+            /// <summary>
+            /// The KeepUnaccessedItemsVersion element name.
+            /// </summary>
+            static public readonly XName KeepUnaccessedItemsVersion = XNamespace.None + "KeepUnaccessedItemsVersion";
+
         }
 
         /// <summary>
@@ -57,6 +62,7 @@ namespace CK.Setup
             TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            KeepUnaccessedItemsVersion = string.Equals( e.Element( XmlNames.KeepUnaccessedItemsVersion )?.Value, "true", StringComparison.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -69,7 +75,8 @@ namespace CK.Setup
             e.Add( new XAttribute( StObjEngineConfiguration.XmlNames.Version, CurrentXmlVersion ),
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
                    TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
-                   TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null );
+                   TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
+                   KeepUnaccessedItemsVersion ? new XElement( XmlNames.KeepUnaccessedItemsVersion, "true" ) : null );
             return e;
         }
 
@@ -93,6 +100,13 @@ namespace CK.Setup
         /// Defaults to false.
         /// </summary>
         public bool TraceDependencySorterOutput { get; set; }
+
+        /// <summary>
+        /// Gets whether version of items that have not been accessed during the setup are
+        /// removed from the version tracking store (whatever its implementation is).
+        /// Defaults to false.
+        /// </summary>
+        public bool KeepUnaccessedItemsVersion { get; set; }
 
         /// <summary>
         /// Gets the 3 steps setup aspect engine Assmbly Qualified Name: "CK.Setup.SetupableAspect, CK.Setupable.Engine"
