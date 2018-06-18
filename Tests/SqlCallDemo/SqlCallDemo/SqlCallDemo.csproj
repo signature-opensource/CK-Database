@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Res\fCharFunction.sql" />
+    <None Remove="Res\fNCharFunction.sql" />
+    <None Remove="Res\sCharProc.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
   </ItemGroup>
 
