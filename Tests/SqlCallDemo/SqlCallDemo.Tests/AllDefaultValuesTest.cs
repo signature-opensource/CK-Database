@@ -26,7 +26,8 @@ namespace SqlCallDemo.Tests
                                 + " - @Float = -4.57586e-006"
                                 + " - @Real = -4.5588e-009"
                                 + " - @Bin = 0A3B"
-                              ));
+                                + " - @Char = c"
+                              ) );
             }
         }
 

@@ -1,4 +1,4 @@
-﻿-- SetupConfig: {}
+-- SetupConfig: {}
 alter procedure CK.sAllDefaultValues
 (
 	@NVarChar nvarchar(64) = N'All Defaults',
@@ -13,6 +13,7 @@ alter procedure CK.sAllDefaultValues
 	@Float float = -457.5858e-8,
 	@Real real = -45.588e-10,
 	@Bin varbinary(50) = 0xa3b,
+    @Char char = 'c',
 	@TextResult nvarchar(1024) output
 )
 as
@@ -29,6 +30,7 @@ begin
 	if @Float is null set @TextResult = @TextResult + ' - @Float is null'; else set @TextResult = @TextResult + ' - @Float = ' + cast( @Float as nvarchar(50)); 
 	if @Real is null set @TextResult = @TextResult + ' - @Real is null'; else set @TextResult = @TextResult + ' - @Real = ' + cast( @Real as nvarchar(50)); 
 	if @Bin is null set @TextResult = @TextResult + ' - @Bin is null'; else set @TextResult = @TextResult + ' - @Bin = ' + CONVERT(varchar(max),@Bin,2); 
+	if @Char is null set @TextResult = @TextResult + ' - @Char is null'; else set @TextResult = @TextResult + ' - @Char = ' + @Char; 
 	return 0;
 end
 

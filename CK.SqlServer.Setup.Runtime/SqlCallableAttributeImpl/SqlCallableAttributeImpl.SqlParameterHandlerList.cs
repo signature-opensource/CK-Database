@@ -447,21 +447,22 @@ namespace CK.SqlServer.Setup
                     .Append( " = " )
                     .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;")
                     .NewLine();
+
                 bool isNullable = true;
                 Type enumUnderlyingType = null;
-                if( targetType.GetTypeInfo().IsValueType )
+                bool isChar = false;
+                if( targetType.IsValueType )
                 {
                     isNullable = false;
-                    Type actualType = Nullable.GetUnderlyingType( targetType );
-                    if( actualType != null )
+                    if( !(isChar = (targetType == typeof(char))) )
                     {
-                        isNullable = true;
-                        if( actualType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( actualType );
-                    }
-                    else
-                    {
-                        //Debugger.Break();
-                        //if( targetType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( targetType );
+                        Type actualType = Nullable.GetUnderlyingType( targetType );
+                        if( actualType != null )
+                        {
+                            isNullable = true;
+                            if( actualType == typeof( char ) ) isChar = true;
+                            else if( actualType.IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( actualType );
+                        }
                     }
                 }
                 b.Append( "var " ).Append( resultName ).Append( '=' );
@@ -476,13 +477,18 @@ namespace CK.SqlServer.Setup
                         b.Append( '(' ).AppendCSharpName( enumUnderlyingType ).Append( ')' );
                     }
                 }
-                else
+                else if( !isChar )
                 {
                     b.Append( '(' )
                         .AppendCSharpName( targetType )
                         .Append( ')' );
                 }
-                b.Append( tempObjName() ).Append( ";" ).NewLine();
+                if( isChar )
+                {
+                    b.Append( "((string)" ).Append( tempObjName() ).Append( ")[0]" );
+                }
+                else b.Append( tempObjName() );
+                b.Append( ";" ).NewLine();
                 return resultName;
             }
 
