@@ -291,8 +291,8 @@ namespace CK.SqlServer.Setup
                 _manager = m;
                 _monitor = monitor;
                 _command = new SqlCommand();
-                // 8 minutes timeout... should be enough!
-                _command.CommandTimeout = 8 * 60;
+                // 12 hours timeout... should be enough!
+                _command.CommandTimeout = 18 * 60 * 60;
                 _command.Connection = _manager.Connection;
                 _databaseName = autoRestoreDatabase ? _command.Connection.Database : null;
                 if( checkTransactionCount )
