@@ -27,6 +27,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         class SqlParameterHandlerList
         {
+            readonly IPocoSupportResult _poco;
             readonly List<SqlParamHandler> _params;
             SqlParamHandler _simpleReturnType;
             ISqlServerParameter _funcReturnParameter;
@@ -318,8 +319,9 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject )
+            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject, IPocoSupportResult poco )
             {
+                _poco = poco;
                 _params = new List<SqlParamHandler>();
                 int idx = 0;
                 ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
@@ -393,13 +395,24 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    if( returnType.GetTypeInfo().IsInterface )
+                    if( returnType.IsInterface )
                     {
-                        monitor.Error( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
-                        return false;
+                        if( typeof( IPoco ).IsAssignableFrom( returnType ) )
+                        {
+                            IPocoInterfaceInfo info = _poco.Find( returnType );
+                            _complexReturnType = new ComplexTypeMapperModel( info.Root.PocoClass );
+                        }
+                        else
+                        {
+                            monitor.Error( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        _complexReturnType = new ComplexTypeMapperModel( returnType );
                     }
                     _unwrappedReturnedType = returnType;
-                    _complexReturnType = new ComplexTypeMapperModel( returnType );
                     _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName );
                     foreach( var p in _params )
                     {

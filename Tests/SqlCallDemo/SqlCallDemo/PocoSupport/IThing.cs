@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +10,7 @@ namespace SqlCallDemo
     public interface IThing : IPoco
     {
         string Name { get; set; }
+
+        Guid FromBatabaseOnly { get; }
     }
 }

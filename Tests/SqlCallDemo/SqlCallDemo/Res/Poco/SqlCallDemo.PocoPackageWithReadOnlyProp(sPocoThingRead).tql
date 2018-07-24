@@ -1,0 +1,10 @@
+-- SetupConfig: {}
+create transformer on CK.sPocoThingRead
+as
+begin
+  add parameter @ReadOnlyProp int output;
+  inject "set @ReadOnlyProp = 3712;
+  " before single {return 0};
+end
+
+

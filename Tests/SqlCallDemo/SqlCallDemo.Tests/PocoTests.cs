@@ -1,6 +1,8 @@
 using CK.Core;
 using CK.SqlServer;
+using FluentAssertions;
 using NUnit.Framework;
+using System;
 using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests
@@ -36,6 +38,29 @@ namespace SqlCallDemo.Tests
             {
                 var thing = p.Read( ctx );
                 Assert.That( thing, Is.Not.Null );
+            }
+        }
+
+        [Test]
+        public void reading_Poco_Thing_from_database()
+        {
+            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                var thing = p.ReadFromDatabase( ctx );
+                thing.Should().NotBeNull()
+                        .And.BeAssignableTo<PocoSupport.IThingWithAgeAndHeight>()
+                        .And.BeAssignableTo<PocoSupport.IThingWithPower>()
+                        .And.BeAssignableTo<PocoSupport.IThingReadOnlyProp>();
+                thing.Name.Should().Be( "ReadFromDatabase" );
+                thing.FromBatabaseOnly.Should().NotBe( Guid.Empty );
+                var p1 = (PocoSupport.IThingWithAgeAndHeight)thing;
+                p1.Age.Should().Be( 12 );
+                p1.Height.Should().Be( 154 );
+                var p2 = (PocoSupport.IThingWithPower)thing;
+                p2.Power.Should().Be( 872 );
+                var p3 = (PocoSupport.IThingReadOnlyProp)thing;
+                p3.ReadOnlyProp.Should().Be( 3712 );
             }
         }
     }

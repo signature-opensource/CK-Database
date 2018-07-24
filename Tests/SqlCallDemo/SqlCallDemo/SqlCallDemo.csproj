@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\..\Common\Shared.props" />
 
@@ -9,12 +9,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="**\*.sql;**\*.tql;**\*.y4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Res\fCharFunction.sql" />
-    <None Remove="Res\fNCharFunction.sql" />
-    <None Remove="Res\sCharProc.sql" />
   </ItemGroup>
 
   <ItemGroup>
