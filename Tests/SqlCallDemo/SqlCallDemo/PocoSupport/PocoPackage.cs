@@ -30,6 +30,9 @@ namespace SqlCallDemo
         [SqlProcedure( "sPocoThingRead" )]
         public abstract IThing ReadFromDatabase( ISqlCallContext ctx );
 
+        [SqlProcedure( "sPocoThingRead" )]
+        public abstract Task<IThing> ReadFromDatabaseAsync( ISqlCallContext ctx );
+
         public IThing Read( ISqlCallContext ctx )
         {
             var r = _factory.Create();
