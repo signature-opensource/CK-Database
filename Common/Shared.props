@@ -25,7 +25,7 @@
   </PropertyGroup
   >-->
   <!-- TEMPORARY: Enable Xml documentation only for .Model assemblies. -->
-  <PropertyGroup Condition="                    '$(IsInTestsFolder)' != 'true'                    And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release')                    And (($(MSBuildProjectName.EndsWith('.Model'))                         Or '$(MSBuildProjectName)' == 'CK.DB.AspNet'                         Or '$(MSBuildProjectName)' == 'CK.DB.Tests.NUnit'                         Or '$(MSBuildProjectName)' == 'CK.Testing.DBSetup'                         Or '$(MSBuildProjectName)' == 'CK.Testing.StObjMap'                         Or '$(MSBuildProjectName)' == 'CK.StObj.Runtime'                         Or '$(MSBuildProjectName)' == 'CK.Setupable.Runtime'                         Or '$(MSBuildProjectName)' == 'CK.SqlServer.Setup.Runtime' ))">
+  <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') And (($(MSBuildProjectName.EndsWith('.Model')) Or '$(MSBuildProjectName)' == 'CK.DB.AspNet' Or '$(MSBuildProjectName)' == 'CK.DB.Tests.NUnit' Or '$(MSBuildProjectName)' == 'CK.Testing.DBSetup' Or '$(MSBuildProjectName)' == 'CK.Testing.StObjMap' Or '$(MSBuildProjectName)' == 'CK.StObj.Runtime' Or '$(MSBuildProjectName)' == 'CK.Setupable.Runtime' Or '$(MSBuildProjectName)' == 'CK.SqlServer.Setup.Runtime' ))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
@@ -33,8 +33,8 @@
     <CKCoreVersion>10.1.0</CKCoreVersion>
     <CKActivityMonitorVersion>10.1.0</CKActivityMonitorVersion>
     <CKSetupDependencyVersion>7.1.0</CKSetupDependencyVersion>
-    <CKAspNetVersion>2.1.0</CKAspNetVersion>
-    <CKSqlServerParserVersion>9.0.1</CKSqlServerParserVersion>
+    <CKAspNetVersion>2.1.1</CKAspNetVersion>
+    <CKSqlServerParserVersion>9.0.2</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>6.1.1</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.0</CKReflectionVersion>
     <CKCodeGenVersion>0.3.0</CKCodeGenVersion>

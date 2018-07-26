@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -27,13 +27,24 @@ namespace SqlCallDemo
         [SqlProcedure( "sPocoThingWrite" )]
         public abstract string Write( ISqlCallContext ctx, [ParameterSource]IThing thing );
 
+        [SqlProcedure( "sPocoThingRead" )]
+        public abstract IThing ReadFromDatabase( ISqlCallContext ctx );
+
+        [SqlProcedure( "sPocoThingRead" )]
+        public abstract Task<IThing> ReadFromDatabaseAsync( ISqlCallContext ctx );
+
         public IThing Read( ISqlCallContext ctx )
         {
             var r = _factory.Create();
             int i = 0;
             foreach( var p in _factory.PocoClassType.GetProperties() )
             {
-                p.SetValue( r, p.Name == nameof(IThing.Name) ? (object)"name" : i++ );
+                switch( p.Name )
+                {
+                    case nameof( IThing.Name ): p.SetValue( r, "name" ); break;
+                    case nameof( IThing.FromBatabaseOnly ): p.SetValue( r, Guid.NewGuid() ); break;
+                    default: p.SetValue( r, ++i ); break;
+                }
             }
             return r;
         }

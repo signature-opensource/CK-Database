@@ -161,7 +161,7 @@ namespace CK.SqlServer.Setup
             // SqlCommand is created.
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
 
-            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoInfo() );
             // We initialize the SetUsedByReturnedType information on parameters 
             // so that they can relax their checks on Sql parameter direction accordingly.
             if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )

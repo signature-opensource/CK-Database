@@ -15,7 +15,7 @@ namespace CK.Core
         /// <summary>
         /// Creates a new Poco instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A new poco instance.</returns>
         T Create();
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace SqlCallDemo.Tests
             {
                 ActorId = 878,
                 CompanyName = "Invenietis",
-                LaunchnDate = new DateTime( 2016, 6, 30 )
+                LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
             var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
@@ -37,7 +37,7 @@ namespace SqlCallDemo.Tests
             {
                 ActorId = 878,
                 CompanyName = "Invenietis",
-                LaunchnDate = new DateTime( 2016, 6, 30 )
+                LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
             var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
