@@ -9,33 +9,16 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientContract"/> marker interface and manages to 
-    /// dispatch them among different contexts (identified by a string) with generalization/specialization handling.
+    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IAmbientService"/> marker interfaces
+    /// and manages to dispatch them among different contexts (identified by a string) with generalization/specialization
+    /// handling.
     /// </summary>
     /// <remarks>
-    /// The default context is identified by the empty string and contains all <see cref="IAmbientContract"/> that are 
-    /// not explicitely associated to a specific context.
+    /// The default context is identified by the empty string and contains all <see cref="IAmbientContract"/> and
+    /// <see cref="IAmbientService"/> that are not explicitely associated to a specific context.
     /// </remarks>
     public class AmbientContractCollector
     {
-
-        /// <summary>
-        /// Tests whether a Type is an <see cref="IAmbientContract"/>.
-        /// It applies to interfaces and classes (for a class <see cref="IAmbientContractDefiner"/> is 
-        /// checked on its base class).
-        /// </summary>
-        /// <param name="t">Type to challenge.</param>
-        /// <returns>True if the type is an ambient contract.</returns>
-        static public bool IsStaticallyTypedAmbientContract( Type t )
-        {
-            return
-                t != null
-                && t != typeof( object )
-                && (typeof( IAmbientContract ).GetTypeInfo().IsAssignableFrom( t )
-                    ||
-                   (t.GetTypeInfo().IsClass && typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )));
-        }
-
         /// <summary>
         /// Simple helper that centralizes the formatting of a context associated to a type.
         /// </summary>
@@ -71,25 +54,14 @@ namespace CK.Core
     /// <typeparam name="CT">A <see cref="AmbientContextualTypeMap{T,TC}"/> type.</typeparam>
     /// <typeparam name="T">A <see cref="AmbientTypeInfo"/> type.</typeparam>
     /// <typeparam name="TC">A <see cref="AmbientContextualTypeInfo{T,TC}"/> type.</typeparam>
-    public class AmbientContractCollector<CT,T,TC> : AmbientContractCollector
+    public partial class AmbientContractCollector<CT,T,TC> : AmbientContractCollector
         where CT : AmbientContextualTypeMap<T, TC>
         where T : AmbientTypeInfo
         where TC : AmbientContextualTypeInfo<T, TC>
     {
-        // Today, this collector contains 2 kind of information:
-        // - Type Classes mapped to their AmbientTypeInfo if considered as an Ambient contract.
-        // - Type Classes mapped to null when known to be NOT an Ambient contract (not statically typed nor "saved" by IAmbientContractDispatcher.IsAmbientContractClass).
-        //
-        // Tomorrow, it may contain:
-        // - Type Interfaces mapped to a special AmbientTypeInfo.InterfaceIsAnAmbientContract for interfaces considered as an Ambient contract.
-        // - Type Interfaces mapped to a special AmbientTypeInfo.InterfaceMustBeMappedInContext for interfaces that are not considered as Ambient contract (in the sense where
-        //   they do not make classes that implement them Ambient contract classes nor do they make their specialized interfaces Ambient contracts).
-        // - Type Interfaces mapped to null for interfaces that we already know as beeing "totally normal".
-        //
-        // But for the moment, interfaces can only be marked as Ambient Contract statically.
-        //
         readonly Dictionary<Type, T> _collector;
         readonly List<T> _roots;
+
         readonly IAmbientContractDispatcher _contextDispatcher;
 
         readonly Func<IActivityMonitor, AmbientTypeMap<CT>> _mapFactory;
@@ -123,6 +95,9 @@ namespace CK.Core
             _tempAssembly = tempAssembly;
             _collector = new Dictionary<Type, T>();
             _roots = new List<T>();
+            _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
+            _serviceRoots = new List<AmbientServiceClassInfo>();
+            _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _mapFactory = mapFactory;
             _typeInfoFactory = typeInfoFactory;
             _pocoRegisterer = new PocoRegisterer();
@@ -165,8 +140,7 @@ namespace CK.Core
             Debug.Assert( type != null && type != typeof( object ) );
             if( type.IsClass )
             {
-                T result;
-                DoRegisterClass( type, out result );
+                DoRegisterClass( type, out _, out _ );
                 return true;
             }
             if( type.IsInterface && typeof( IPoco ).IsAssignableFrom( type ) )
@@ -187,35 +161,55 @@ namespace CK.Core
         public bool RegisterClass( Type c )
         {
             if( c == null ) throw new ArgumentNullException( nameof( c ) );
-            if( !c.GetTypeInfo().IsClass ) throw new ArgumentException();
-            T result;
-            return c != typeof(object) ? DoRegisterClass( c, out result ) : false;
+            if( !c.IsClass ) throw new ArgumentException();
+            return c != typeof(object) ? DoRegisterClass( c, out _, out _ ) : false;
         }
 
-        bool DoRegisterClass( Type t, out T result )
+        bool DoRegisterClass( Type t, out T result, out AmbientServiceClassInfo serviceInfo )
         {
-            Debug.Assert( t != null && t != typeof( object ) && t.GetTypeInfo().IsClass );
+            Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
             // Skips already processed types.
-            if( _collector.TryGetValue( t, out result ) ) return false;
+            serviceInfo = null;
+            if( _collector.TryGetValue( t, out result )
+                || _serviceCollector.TryGetValue( t, out serviceInfo ) )
+            {
+                return false;
+            }
 
-            // Registers parent types whatever they are (null if not AmbientContract).
-            T parent = null;
-            if( t.GetTypeInfo().BaseType != typeof( object ) ) DoRegisterClass( t.GetTypeInfo().BaseType, out parent );
+            // Registers parent types whatever they are.
+            T acParent = null;
+            AmbientServiceClassInfo sParent = null;
+            if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
+            Debug.Assert( (acParent == null && sParent == null) || (acParent == null) != (sParent == null) );
 
             // This is an Ambient contract if:
             // - its parent is an ambient contract 
             // - or it is statically an ambient contract (via IAmbientContract support or IAmbientContractDefiner on base class)
             // - or the IAmbientContractDispatcher wants to consider it as one.
-            if( parent != null
-                || typeof( IAmbientContract ).IsAssignableFrom( t ) || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.GetTypeInfo().BaseType )
+            if( acParent != null
+                || typeof( IAmbientContract ).IsAssignableFrom( t )
+                || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType )
                 || (_contextDispatcher != null && _contextDispatcher.IsAmbientContractClass( t )) )
             {
-                result = CreateTypeInfo( t, parent );
+                result = CreateTypeInfo( t, acParent );
+                Debug.Assert( result != null );
             }
-            else
+            if( sParent != null || typeof( IAmbientService ).IsAssignableFrom( t ) )
             {
-                Debug.Assert( AmbientContractCollector.IsStaticallyTypedAmbientContract( t ) == false );
+                if( result != null )
+                {
+                    _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                }
+                else
+                {
+                    serviceInfo = RegisterServiceClass( t, sParent );
+                    Debug.Assert( serviceInfo != null );
+                    if( _contextDispatcher != null ) _contextDispatcher.Dispatch( t, serviceInfo.MutableFinalContexts );
+                }
+            }
+            if( result == null && serviceInfo == null )
+            {
                 // Marks the type as a registered one.
                 _collector.Add( t, null );
             }
@@ -226,6 +220,7 @@ namespace CK.Core
         {
             RegisterAssembly( t );
             T result = _typeInfoFactory( _monitor, parent, t );
+            if( result == null ) throw new Exception( $"typeInfoFactory returned null for type {t.AssemblyQualifiedName}." );
             if( parent == null ) _roots.Add( result );
             _collector.Add( t, result );
             if( _contextDispatcher != null ) _contextDispatcher.Dispatch( t, result.MutableFinalContexts );
@@ -236,7 +231,7 @@ namespace CK.Core
         {
             public readonly CT Context;
             readonly IActivityMonitor _monitor;
-            readonly IServiceProvider _services;
+            readonly IServiceProvider _serviceProvider;
             readonly IDynamicAssembly _tempAssembly;
 
             Dictionary<object,TC> _mappings;
@@ -250,7 +245,7 @@ namespace CK.Core
                 Debug.Assert( c != null );
                 Context = c;
                 _monitor = monitor;
-                _services = services;
+                _serviceProvider = services;
                 _tempAssembly = tempAssembly;
                 _mappings = c.RawMappings;
                 _concreteClasses = new List<List<TC>>();
@@ -263,7 +258,7 @@ namespace CK.Core
                 if( newOne.Generalization == null )
                 {
                     var deepestConcretes = new List<Tuple<TC,object>>();
-                    newOne.CollectDeepestConcrete<T, TC>( _monitor, _services, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
+                    newOne.CollectDeepestConcrete<T, TC>( _monitor, _serviceProvider, Context, null, _tempAssembly, deepestConcretes, _abstractTails );
                     if( deepestConcretes.Count == 1 )
                     {
                         var last = deepestConcretes[0].Item1;
@@ -337,8 +332,9 @@ namespace CK.Core
         /// <summary>
         /// Obtains the result of the collection.
         /// </summary>
+        /// <param name="serviceProvider">Service provider.</param>
         /// <returns>The result object.</returns>
-        public AmbientContractCollectorResult<CT,T,TC> GetResult( IServiceProvider services )
+        public AmbientContractCollectorResult<CT,T,TC> GetResult( IServiceProvider serviceProvider )
         {
             IPocoSupportResult pocoSupport;
             using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
@@ -357,11 +353,11 @@ namespace CK.Core
             byContext.Add( string.Empty, new PreResult(
                 _monitor,
                 mappings.CreateAndAddContext<T,TC>( _monitor, string.Empty ),
-                services,
+                serviceProvider,
                 _tempAssembly ) );
             foreach( AmbientTypeInfo m in _roots )
             {
-                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC>, services );
+                HandleContexts( m, byContext, mappings.CreateAndAddContext<T,TC>, serviceProvider );
             }
             var r = new AmbientContractCollectorResult<CT,T,TC>( mappings, pocoSupport, _collector, Assemblies );
             foreach( PreResult rCtx in byContext.Values )

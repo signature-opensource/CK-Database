@@ -72,13 +72,13 @@ namespace CK.Core
         /// Gets the specialization in this <see cref="Context"/>. 
         /// Null if this is the leaf of the specialization path.
         /// </summary>
-        public TC Specialization { get { return _specialization; } }
+        public TC Specialization => _specialization;
 
         /// <summary>
         /// Gets the generalization in this <see cref="Context"/>. 
         /// Null if this is the root of the specialization path.
         /// </summary>
-        public TC Generalization { get { return _generalization; } }
+        public TC Generalization => _generalization; 
 
         /// <summary>
         /// Gets whether this Type (that is abstract) must actually be considered as an abstract type or not.
@@ -90,7 +90,7 @@ namespace CK.Core
         /// <param name="abstractTypeInfo">Optional object that could be associated to concretize an abstract type.</param>
         internal protected virtual bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, IDynamicAssembly assembly, out object abstractTypeInfo )
         {
-            Debug.Assert( AmbientTypeInfo.Type.GetTypeInfo().IsAbstract && assembly != null );
+            Debug.Assert( AmbientTypeInfo.Type.IsAbstract && assembly != null );
             abstractTypeInfo = null;
             return false;
         }

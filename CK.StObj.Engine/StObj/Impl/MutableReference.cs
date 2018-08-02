@@ -18,10 +18,12 @@ namespace CK.Setup
     internal class MutableReference : IStObjMutableReference
     {
         /// <summary>
-        /// Owner of the reference corresponds to the exact type of the object that has the StObjConstruct method for parameters.
+        /// Owner of the reference corresponds to the exact type of the object that has the StObjConstruct method
+        /// for parameters.
         /// For Ambient Properties, the Owner is the Specialization.
-        /// This is because a property has de facto more than one Owner when masking is used (note that handling of mask and covariance type checking is done
-        /// by StObjTypeInfo: StObjTypeInfo.AmbientProperties already contains a merged information).
+        /// This is because a property has de facto more than one Owner when masking is used (note that handling of mask
+        /// and covariance type checking is done by StObjTypeInfo: StObjTypeInfo.AmbientProperties already contains a
+        /// merged information).
         /// </summary>
         internal readonly MutableItem Owner;
         readonly StObjMutableReferenceKind _kind;
