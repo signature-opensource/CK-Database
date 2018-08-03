@@ -30,11 +30,6 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the context where the structure object resides.
-        /// </summary>
-        string Context { get; }
-
-        /// <summary>
         /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// </summary>
@@ -148,12 +143,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">The monitor to use to describe any error.</param>
         /// <param name="propertyName">Name of the property to configure.</param>
-        /// <param name="context">See <see cref="IStObjMutableReference.Context"/>.</param>
         /// <param name="type">See <see cref="IStObjMutableReference.Type"/>.</param>
         /// <param name="behavior">See <see cref="IStObjMutableReference.StObjRequirementBehavior"/>.</param>
         /// <param name="sourceDescription">Optional description of the origin of the call to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, string context, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
+        bool SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
 
     }
 }

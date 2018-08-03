@@ -23,9 +23,9 @@ namespace CK.Core
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the context where the structure object resides.
+        /// Gets the StObj map.
         /// </summary>
-        IContextualStObjMap Context { get; }
+        IStObjObjectMap Context { get; }
 
         /// <summary>
         /// Gets the parent <see cref="IStObj"/> in the inheritance chain (the one associated to the base class of this <see cref="ObjectType"/>).

@@ -28,7 +28,7 @@ namespace SqlActorPackage.Basic
             monitor.Info( "BuggyPackage StObjConstruct called." );
         }
 
-        void StObjInitialize( IActivityMonitor monitor, IContextualStObjMap map )
+        void StObjInitialize( IActivityMonitor monitor, IStObjObjectMap map )
         {
             monitor.Info( "BuggyPackage StObjInitialize called." );
         }

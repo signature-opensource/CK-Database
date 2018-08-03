@@ -35,7 +35,7 @@ namespace CK.Setup
                 }
             }
 
-            if( AmbientTypeInfo.StObjConstruct == null ) return;
+            if( Type.StObjConstruct == null ) return;
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
@@ -85,10 +85,10 @@ namespace CK.Setup
                 }
                 parameters[i++] = t.Value;
             }
-            AmbientTypeInfo.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
+            Type.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
-        internal void SetPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
+        internal void SetPostBuildProperties( IActivityMonitor monitor )
         {
             Debug.Assert( Specialization == null, "Called on leaves only." );
             if( _leafData.PostBuildProperties != null )

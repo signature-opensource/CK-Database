@@ -7,12 +7,13 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Implements a cache for attributes associated to a type or to any of its members that support <see cref="IAttributeAmbientContextBound"/>.
+    /// Implements a cache for attributes associated to a type or to any of its members that
+    /// support <see cref="IAttributeAmbientContextBound"/>.
     /// Attribute inheritance is ignored: only attributes applied to the member are considered. 
     /// When used with another type or a member of another type from the one provided 
     /// in the constructor, an exception is thrown.
     /// </summary>
-    public class AmbientContextualAttributesCache : ICKCustomAttributeTypeMultiProvider
+    public class TypeAttributesCache : ICKCustomAttributeTypeMultiProvider
     {
         struct Entry
         {
@@ -28,20 +29,19 @@ namespace CK.Core
         readonly Entry[] _all;
         readonly MemberInfo[] _typeMembers;
         readonly bool _includeBaseClasses;
-        readonly TypeInfo _type;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextualAttributesCache"/> that considers only members explicitely 
+        /// Initializes a new <see cref="TypeAttributesCache"/> that considers only members explicitely 
         /// declared by the <paramref name="type"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="type">Type for which attributes must be cached.</param>
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="includeBaseClasses">True to include attributes of base classes and attributes on members of the base classes.</param>
-        public AmbientContextualAttributesCache(IActivityMonitor monitor, TypeInfo type, IServiceProvider services, bool includeBaseClasses)
+        public TypeAttributesCache(IActivityMonitor monitor, Type type, IServiceProvider services, bool includeBaseClasses)
         {
             if( type == null ) throw new ArgumentNullException( nameof(type) );
-            _type = type;
+            Type = type;
             var all = new List<Entry>();
             int initializerCount = Register( monitor, services, all, type, includeBaseClasses );
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
@@ -83,16 +83,9 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Get the Type that is managed by this cache for specialized classes.
-        /// They can use another name than 'Type' to expose it if they will.
+        /// Get the Type that is managed by this cache.
         /// </summary>
-        protected TypeInfo Type => _type; 
-
-        /// <summary>
-        /// The Type property of the ICustomAttributeTypeMultiProvider is hidden here to enable specialized classes
-        /// to expose it with a different name.
-        /// </summary>
-        TypeInfo ICKCustomAttributeTypeMultiProvider.Type => _type; 
+        public Type Type { get; } 
 
         /// <summary>
         /// Gets whether an attribute that is assignable to the given <paramref name="attributeType"/> 
@@ -107,7 +100,7 @@ namespace CK.Core
             if( attributeType == null ) throw new ArgumentNullException( nameof(attributeType) );
             return _all.Any( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) 
                                   && attributeType.IsAssignableFrom( e.Attr.GetType() ) )
-                    || ( (m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType() ))) 
+                    || ( (m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type ))) 
                          && m.GetCustomAttributes(false).Any( a => attributeType.IsAssignableFrom( a.GetType()) ) );
         }
 
@@ -124,7 +117,7 @@ namespace CK.Core
             if( m == null ) throw new ArgumentNullException( "m" );
             if( attributeType == null ) throw new ArgumentNullException( "attributeType" );
             var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
-            if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
+            if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
             {
                 return fromCache
                         .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
@@ -144,7 +137,7 @@ namespace CK.Core
         {
             if( m == null ) throw new ArgumentNullException( "m" );
             var fromCache = _all.Where( e => CK.Reflection.MemberInfoEqualityComparer.Default.Equals( e.M, m ) && e.Attr is T ).Select( e => (T)e.Attr );
-            if( m.DeclaringType == Type.AsType() || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type.AsType())) )
+            if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
             {
                 return fromCache
                         .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && a is T).Select( a => (T)(object)a ) );
@@ -173,10 +166,7 @@ namespace CK.Core
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 
-        IEnumerable<T> ICKCustomAttributeMultiProvider.GetAllCustomAttributes<T>()
-        {
-            return GetAllCustomAttributes<T>();
-        }
+        IEnumerable<T> ICKCustomAttributeMultiProvider.GetAllCustomAttributes<T>() => GetAllCustomAttributes<T>();
 
         /// <summary>
         /// Gets all attributes that are assignable to the given type, regardless of the <see cref="MemberInfo"/>
@@ -202,10 +192,7 @@ namespace CK.Core
         /// The <see cref="Type"/> is appended to this list.
         /// </summary>
         /// <returns>Enumeration of members.</returns>
-        public IEnumerable<MemberInfo> GetMembers()
-        {
-            return _typeMembers.Append( Type );
-        }
+        public IEnumerable<MemberInfo> GetMembers() => _typeMembers.Append( Type );
 
     }
 

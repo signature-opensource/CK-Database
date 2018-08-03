@@ -60,7 +60,7 @@ namespace SqlZonePackage.Tests
         [Test]
         public void checking_final_mappings()
         {
-            IContextualStObjMap map = TestHelper.StObjMap.Default;
+            IStObjObjectMap map = TestHelper.StObjMap.Default;
             var mappings = new List<KeyValuePair<Type, object>>();
             foreach (var t in map.Types) mappings.Add(new KeyValuePair<Type, object>(t,map.Obtain(t)));
             CollectionAssert.AreEquivalent(mappings, map.Mappings);

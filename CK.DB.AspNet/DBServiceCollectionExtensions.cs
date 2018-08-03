@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">This services.</param>
         /// <param name="map">Contextual StObj objects to register.</param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddStObjMap( this IServiceCollection services, IContextualStObjMap map )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, IStObjObjectMap map )
         {
             if( map == null ) throw new ArgumentNullException( nameof( map ) );
             foreach( var kv in map.Mappings )

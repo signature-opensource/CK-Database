@@ -11,15 +11,10 @@ using System.Collections.Generic;
 namespace CK.Core
 {
     /// <summary>
-    /// Exposes a contextual type to type mapping.
+    /// Exposes a type to type mapping.
     /// </summary>
-    public interface IContextualTypeMap
+    public interface IStObjTypeMap
     {
-        /// <summary>
-        /// Gets the name of the context.
-        /// </summary>
-        string Context { get; }
-
         /// <summary>
         /// Gets the number of type mapped.
         /// </summary>
@@ -40,13 +35,8 @@ namespace CK.Core
         bool IsMapped( Type t );
 
         /// <summary>
-        /// Gets all types mapped by this contextual map.
+        /// Gets all types mapped by this map.
         /// </summary>
         IEnumerable<Type> Types { get; }
-
-        /// <summary>
-        /// Access to all contexts.
-        /// </summary>
-        IContextualRoot<IContextualTypeMap> AllContexts { get; }
     }
 }

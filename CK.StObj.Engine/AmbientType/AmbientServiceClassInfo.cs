@@ -26,12 +26,13 @@ namespace CK.Core
 
         internal AmbientServiceClassInfo(
             IActivityMonitor m,
+            IServiceProvider serviceProvider,
             AmbientServiceClassInfo parent,
             Type t,
             AmbientServiceInterfaceInfo[] interfaces,
             Func<Type, AmbientServiceClassInfo> registerClass,
             Func<Type, AmbientServiceInterfaceInfo> registerInterface )
-            : base( parent, t )
+            : base( m, parent, t, serviceProvider )
         {
             Interfaces = interfaces;
             var ctors = t.GetConstructors();

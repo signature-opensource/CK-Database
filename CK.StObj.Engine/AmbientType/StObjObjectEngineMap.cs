@@ -5,48 +5,40 @@ using System.Text;
 using System.Diagnostics;
 using System.Collections;
 using System.Reflection;
+using CK.Setup;
 
 namespace CK.Core
 {
 
     /// <summary>
-    /// Concrete base implementation for a <see cref="IContextualTypeMap"/>.
+    /// Mutable implementation of <see cref="IStObjTypeMap"/> that handles <see cref="MutableItem"/>
     /// </summary>
-    public class AmbientContextualTypeMap<T, TC> : IContextualTypeMap
-        where T : AmbientTypeInfo
-        where TC : AmbientContextualTypeInfo<T, TC>
+    class StObjObjectEngineMap : IStObjTypeMap
     {
-        Dictionary<object,TC> _map;
-        string _context;
-        IContextualRoot<IContextualTypeMap> _owner;
+        readonly Dictionary<object, MutableItem> _map;
+        readonly MutableItem[] _allSpecializations;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientContextualTypeMap{T,TC}"/>.
+        /// Initializes a new <see cref="StObjObjectEngineMap"/>.
         /// </summary>
-        /// <param name="owner">The root context.</param>
-        /// <param name="context">Name of this context.</param>
-        internal protected AmbientContextualTypeMap( IContextualRoot<IContextualTypeMap> owner, string context )
+        internal protected StObjObjectEngineMap( MutableItem[] allSpecializations )
         {
-            Debug.Assert( context != null );
-            _context = context;
-            _map = new Dictionary<object, TC>();
-            _owner = owner;
+            _map = new Dictionary<object, MutableItem>();
+            _allSpecializations = allSpecializations;
         }
 
-        /// <summary>
-        /// Gets all the contexts including this one.
-        /// </summary>
-        public IContextualRoot<IContextualTypeMap> AllContexts => _owner; 
+        internal void AddClassMapping( Type t, MutableItem m )
+        {
+            Debug.Assert( t.IsClass );
+            _map.Add( t, m );
+        }
 
-        /// <summary>
-        /// Gets the mappings between types (base types as well as ambient contract interfaces) to objects. 
-        /// </summary>
-        public Dictionary<object, TC> RawMappings  => _map; 
-
-        /// <summary>
-        /// Gets this context name.
-        /// </summary>
-        public string Context => _context; 
+        internal void AddInterfaceMapping( Type t, MutableItem m, MutableItem finalType )
+        {
+            Debug.Assert( t.IsInterface );
+            _map.Add( t, finalType );
+            _map.Add( new AmbientContractInterfaceKey( t ), m );
+        }
 
         /// <summary>
         /// Gets the number of existing mappings.
@@ -60,16 +52,27 @@ namespace CK.Core
         /// <returns>Most specialized type or null if not found.</returns>
         public Type ToLeafType( Type t )
         {
-            TC c = ToLeaf( t );
-            return c != null ? c.AmbientTypeInfo.Type : null;
+            MutableItem c = ToLeaf( t );
+            return c != null ? c.Type.Type : null;
         }
 
-        internal TC ToLeaf( Type t )
+        internal MutableItem ToLeaf( Type t )
         {
-            TC c;
-            if( _map.TryGetValue( t, out c ) ) return c;
-            return null;
+            _map.TryGetValue( t, out var c );
+            return c;
         }
+
+        /// <summary>
+        /// Gets all the specialization. If there is no error, this list corresponds to the
+        /// last items of the <see cref="AmbientContractCollectorResult.ConcreteClasses"/>.
+        /// </summary>
+        internal IReadOnlyCollection<MutableItem> AllSpecializations => _allSpecializations;
+
+        /// <summary>
+        /// Gets all the mapping from object (including <see cref="AmbientContractInterfaceKey"/>) to
+        /// <see cref="MutableItem"/>.
+        /// </summary>
+        internal IEnumerable<KeyValuePair<object, MutableItem>> RawMappings => _map;
 
         /// <summary>
         /// Gets the most abstract type for any type mapped.
@@ -78,17 +81,17 @@ namespace CK.Core
         /// <returns>The most abstract, less specialized, associated type.</returns>
         public Type ToHighestImplType( Type t )
         {
-            TC c = ToHighestImpl( t );
-            return c != null ? c.AmbientTypeInfo.Type : null;
+            MutableItem c = ToHighestImpl( t );
+            return c != null ? c.Type.Type : null;
         }
 
-        internal TC ToHighestImpl( Type t )
+        internal MutableItem ToHighestImpl( Type t )
         {
             if( t == null ) throw new ArgumentNullException( "t" );
-            TC c;
+            MutableItem c;
             if( _map.TryGetValue( t, out c ) )
             {
-                if( c.AmbientTypeInfo.Type != t )
+                if( c.Type.Type != t )
                 {
                     if( t.GetTypeInfo().IsInterface )
                     {
@@ -98,7 +101,7 @@ namespace CK.Core
                     {
                         while( (c = c.Generalization) != null )
                         {
-                            if( c.AmbientTypeInfo.Type == t ) break;
+                            if( c.Type.Type == t ) break;
                         }
                     }
                 }

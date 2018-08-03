@@ -338,10 +338,11 @@ namespace CK.Setup
                 var configurator = _startContext.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
+                    _startContext.ServiceContainer,
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
-                    configurator, configurator, configurator,
+                    configurator, configurator,
                     secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
@@ -359,7 +360,7 @@ namespace CK.Setup
                 {
                     using( _monitor.OpenInfo( "Resolving StObj dependency graph." ) )
                     {
-                        result = stObjC.GetResult( _startContext.ServiceContainer );
+                        result = stObjC.GetResult();
                         Debug.Assert( !result.HasFatalError || hasError, "result.HasFatalError ==> An error has been logged." );
                     }
                     if( !result.HasFatalError ) return result;

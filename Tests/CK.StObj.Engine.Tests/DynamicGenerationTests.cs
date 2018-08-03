@@ -215,7 +215,7 @@ namespace CK.StObj.Engine.Tests
                     monitor.Trace( $"At A level: StObjPower = '{StObjPower}'." );
                 }
 
-                void StObjInitialize( IActivityMonitor monitor, IContextualStObjMap map )
+                void StObjInitialize( IActivityMonitor monitor, IStObjObjectMap map )
                 {
                     Assert.That( map.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
@@ -237,7 +237,7 @@ namespace CK.StObj.Engine.Tests
                     monitor.Trace( $"At ASpec level: StObjPower = '{StObjPower}'." );
                 }
 
-                void StObjInitialize( IActivityMonitor monitor, IContextualStObjMap map )
+                void StObjInitialize( IActivityMonitor monitor, IStObjObjectMap map )
                 {
                     Assert.That( map.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );

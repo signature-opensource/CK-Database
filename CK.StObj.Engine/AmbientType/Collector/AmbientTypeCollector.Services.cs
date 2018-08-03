@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace CK.Core
 {
-    public partial class AmbientContractCollector<CT,T,TC> 
+    public partial class AmbientTypeCollector
     {
         readonly Dictionary<Type, AmbientServiceClassInfo> _serviceCollector;
         readonly List<AmbientServiceClassInfo> _serviceRoots;
@@ -18,7 +18,7 @@ namespace CK.Core
         {
             RegisterAssembly( t );
             var baseServices = RegisterServiceInterfaces( t.GetInterfaces() ).ToArray();
-            AmbientServiceClassInfo serviceInfo = new AmbientServiceClassInfo( _monitor, parent, t, baseServices, RegisterCtorDepClass, RegisterServiceInterface );
+            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, baseServices, RegisterCtorDepClass, RegisterServiceInterface );
             if( parent == null ) _serviceRoots.Add( serviceInfo );
             _serviceCollector.Add( t, serviceInfo );
             return serviceInfo;

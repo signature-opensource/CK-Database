@@ -12,7 +12,7 @@ namespace CK.Setup
     /// It does nothing at its level except calling the <see cref="Next"/> configurator if it is not null.
     /// Methods are defined here in the order where they are called.
     /// </summary>
-    public class StObjConfigurationLayer : IAmbientContractDispatcher, IStObjStructuralConfigurator, IStObjValueResolver
+    public class StObjConfigurationLayer : IStObjStructuralConfigurator, IStObjValueResolver
     {
         StObjConfigurationLayer _next;
         StObjEngineConfigurator _host;
@@ -38,31 +38,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Step n°1 - Called during Assembly/Types discovering: allows a Type not marked with <see cref="IAmbientContract"/> to be considered as an Ambiant Contract.
-        /// Empty implementation of <see cref="IAmbientContractDispatcher.IsAmbientContractClass"/>.
-        /// Returns the result of the <see cref="Next"/> if it exist, otherwise returns always false: only classes that are explicitely marked with <see cref="IAmbientContract"/>
-        /// or types that inherit from a <see cref="IAmbientContractDefiner"/> are considered as Ambient Contracts.
-        /// </summary>
-        /// <param name="t">A type that is not, structurally through the interfaces it supports, an Ambient Contract.</param>
-        /// <returns>True to consider the given type (and all its specializations) as an Ambient Contract.</returns>
-        public virtual bool IsAmbientContractClass( Type t )
-        {
-            return _next != null ? _next.IsAmbientContractClass( t ) : false;
-        }
-
-        /// <summary>
-        /// Step n°2 - Once Ambient Contracts have been discovered, this allows types to be removed/added to different contexts.
-        /// This empty implementation of <see cref="IAmbientContractDispatcher.Dispatch"/> calls <see cref="Next"/> if it is not null.
-        /// </summary>
-        /// <param name="t">The type to map.</param>
-        /// <param name="contexts">Context names into which the type is defined. This set can be changed.</param>
-        public virtual void Dispatch( Type t, ISet<string> contexts )
-        {
-            if( _next != null ) _next.Dispatch( t, contexts );
-        }
-
-        /// <summary>
-        /// Step n°3 - Once most specialized objects are created, the configuration for each "slice" (StObj) from top to bottom of the inheritance chain 
+        /// Step n°1 - Once most specialized objects are created, the configuration for each "slice" (StObj) from top to bottom of the inheritance chain 
         /// can be altered: properties can be set, dependencies like Container, Requires, Children, etc. but also parameters' value of the StObjConstruct method can be changed.
         /// This empty implementation of <see cref="IStObjStructuralConfigurator.Configure"/> calls <see cref="Next"/> if it is not null.
         /// </summary>
@@ -74,7 +50,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Step n°4 - Last step before ordering. Ambient properties that had not been resolved can be set to a value here.
+        /// Step n°2 - Last step before ordering. Ambient properties that had not been resolved can be set to a value here.
         /// This empty implementation of <see cref="IStObjValueResolver.ResolveExternalPropertyValue"/> calls <see cref="Next"/> if it is not null.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
@@ -85,7 +61,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Step n°5 - StObj dependency graph has been ordered, properties that was settable before initialization
+        /// Step n°3 - StObj dependency graph has been ordered, properties that was settable before initialization
         /// have been set, the StObjConstruct method is called and for each of their parameters, this method enables
         /// the parameter value to be set or changed.
         /// This is the last step of the pure StObj level work: after this one, object graph dependencies have been resolved, objects are configured.

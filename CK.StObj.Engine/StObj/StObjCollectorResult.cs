@@ -18,75 +18,40 @@ namespace CK.Setup
     /// <summary>
     /// Encapsulates the result of the <see cref="StObjCollector"/> work.
     /// </summary>
-    public partial class StObjCollectorResult : MultiContextualResult<StObjCollectorContextualResult>
+    public partial class StObjCollectorResult
     {
-        readonly AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> _contractResult;
-        readonly int _totalSpecializationCount;
-        readonly BuildValueCollector _buildValueCollector;
         readonly DynamicAssembly _tempAssembly;
-        readonly Func<string,object> _secondaryRunAccessor;
-        IReadOnlyList<MutableItem> _orderedStObjs;
-        bool _fatal;
 
-        internal StObjCollectorResult( 
-            StObjMapper owner, 
-            AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo, MutableItem> contractResult,
+        internal StObjCollectorResult(
+            AmbientTypeCollectorResult typeResult,
             DynamicAssembly tempAssembly,
-            Dictionary<string,object> primaryRunCache )
+            Dictionary<string,object> primaryRunCache,
+            IReadOnlyList<MutableItem> orderedStObjs )
         {
-            Debug.Assert( contractResult != null );
-            _contractResult = contractResult;
+            AmbientTypeResult = typeResult;
             _tempAssembly = tempAssembly;
-            if( primaryRunCache != null ) _secondaryRunAccessor = key => primaryRunCache[key];
-            foreach( var r in contractResult.Contexts )
-            {
-                var c = Add( new StObjCollectorContextualResult( r ) );
-                _totalSpecializationCount += c._specializations.Length;
-            }
-            _buildValueCollector = new BuildValueCollector();
+            if( primaryRunCache != null ) SecondaryRunAccessor = key => primaryRunCache[key];
+            OrderedStObjs = orderedStObjs;
         }
 
         /// <summary>
         /// Gets an accessor for the primary run cache only if this result comes
         /// from a primary run, null otherwise.
         /// </summary>
-        public Func<string, object> SecondaryRunAccessor => _secondaryRunAccessor;
+        public Func<string, object> SecondaryRunAccessor { get; }
 
         /// <summary>
         /// True if a fatal error occured. Result should be discarded.
         /// </summary>
-        public override bool HasFatalError
-        {
-            get { return _fatal || _contractResult.HasFatalError || base.HasFatalError; }
-        }
+        public bool HasFatalError => OrderedStObjs == null || (AmbientTypeResult?.HasFatalError ?? false); 
 
-        /// <summary>
-        /// Gets the total number of of specializations.
-        /// </summary>
-        public int TotalSpecializationCount => _totalSpecializationCount; 
+        public AmbientTypeCollectorResult AmbientTypeResult { get; }
 
         /// <summary>
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
-        /// Empty if <see cref="HasFatalError"/> is true.
+        /// Null if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObjResult> OrderedStObjs => _orderedStObjs; 
+        public IReadOnlyList<IStObjResult> OrderedStObjs { get; } 
 
-        internal BuildValueCollector BuildValueCollector => _buildValueCollector; 
-
-        internal IEnumerable<MutableItem> AllMutableItems => Contexts.SelectMany( r => r.InternalMapper.RawMappings.Values ); 
-
-        internal IEnumerable<MutableItem> FindHighestImplFor( Type t ) => Contexts.Select( r => r.InternalMapper.ToHighestImpl( t ) ).Where( m => m != null );
-
-        internal void SetFatal()
-        {
-            _fatal = true;
-            _orderedStObjs = Util.Array.Empty<MutableItem>();
-        }
-
-        internal void SetSuccess( IReadOnlyList<MutableItem> ordered )
-        {
-            Debug.Assert( !HasFatalError && _orderedStObjs == null );
-            _orderedStObjs = ordered;
-        }
     }
 }

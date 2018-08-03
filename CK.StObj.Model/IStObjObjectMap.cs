@@ -1,18 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace CK.Core
 {
     /// <summary>
-    /// Extends <see cref="IContextualTypeMap"/> to expose <see cref="IStObj"/> and Type to Object resolution.
+    /// Extends <see cref="IStObjTypeMap"/> to expose <see cref="IStObj"/> and Type to Object resolution.
     /// </summary>
-    public interface IContextualStObjMap : IContextualTypeMap
+    public interface IStObjObjectMap : IStObjTypeMap
     {
-        /// <summary>
-        /// Access to all contexts.
-        /// </summary>
-        new IStObjMap AllContexts { get; }
-
         /// <summary>
         /// Gets the most specialized <see cref="IStObj"/> or null if no mapping exists.
         /// </summary>
@@ -40,8 +35,9 @@ namespace CK.Core
         IEnumerable<StObjImplementation> StObjs { get; }
 
         /// <summary>
-        /// Gets all the types to implementation objects that this context contains.
-        /// The types are interfaces (<see cref="IAmbientContract"/>) as well as classes.
+        /// Gets all the <see cref="IAmbientContract"/> types to implementation objects that this
+        /// context contains.
+        /// The key types are interfaces (IAmbientContract) as well as classes.
         /// </summary>
         IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
 
