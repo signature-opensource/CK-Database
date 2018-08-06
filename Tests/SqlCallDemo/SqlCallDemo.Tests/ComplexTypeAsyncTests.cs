@@ -14,7 +14,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task getting_a_totally_stupid_empty_object()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<ComplexTypePackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var o = await p.GetComplexTypeStupidEmptyAsync( ctx ).ConfigureAwait( false );
@@ -28,7 +28,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task getting_a_simple_complex_type()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<ComplexTypePackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 {
@@ -52,7 +52,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task getting_a_simple_complex_typeWithCtor()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<ComplexTypePackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 {
@@ -73,7 +73,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task getting_a_simple_complex_type_with_extra_property_is_fine()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<ComplexTypePackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var o = await p.GetComplexTypeSimpleWithExtraPropertyAsync( ctx ).ConfigureAwait( false );
@@ -87,7 +87,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task getting_a_simple_complex_type_with_missing_property_is_fine()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<ComplexTypePackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var o = await p.GetComplexTypeSimpleWithMissingPropertyAsync( ctx ).ConfigureAwait( false );

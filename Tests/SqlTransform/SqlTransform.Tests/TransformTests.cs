@@ -43,7 +43,7 @@ namespace SqlTransform.Tests
         [Test]
         public void calling_SimpleReplaceTest_method()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 SimpleReplaceTestGenerated( ctx, "Pouf!", p.Database.ConnectionString );
@@ -58,8 +58,8 @@ namespace SqlTransform.Tests
         [Test]
         public void calling_SimpleTransformTest_method()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
-            var p2 = TestHelper.StObjMap.Default.Obtain<CKLevel2.Package>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CKLevel0.Package>();
+            var p2 = TestHelper.StObjMap.StObjs.Obtain<CKLevel2.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string s;
@@ -73,7 +73,7 @@ namespace SqlTransform.Tests
         [Test]
         public void calling_SimplY4TemplateTest_method()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<CKLevel0.Package>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CKLevel0.Package>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string s = p.SimplY4TemplateTest( ctx );

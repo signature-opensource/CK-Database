@@ -14,9 +14,9 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_base_Write_actually_take_the_Poco_class()
         {
-            var factoryThing = TestHelper.StObjMap.Default.Obtain<IPocoFactory<IThing>>();
-            var factoryThingAH = TestHelper.StObjMap.Default.Obtain<IPocoFactory<PocoSupport.IThingWithAgeAndHeight>>();
-            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            var factoryThing = TestHelper.StObjMap.StObjs.Obtain<IPocoFactory<IThing>>();
+            var factoryThingAH = TestHelper.StObjMap.StObjs.Obtain<IPocoFactory<PocoSupport.IThingWithAgeAndHeight>>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var t = factoryThing.Create( o => o.Name = "a thing" );
@@ -34,7 +34,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void reading_Poco_Thing()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var thing = p.Read( ctx );
@@ -45,7 +45,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void reading_Poco_Thing_from_database()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var thing = p.ReadFromDatabase( ctx );
@@ -69,7 +69,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task reading_Poco_Thing_from_database_async()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PocoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var thing = await p.ReadFromDatabaseAsync( ctx );

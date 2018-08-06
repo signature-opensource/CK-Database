@@ -11,9 +11,9 @@ namespace CK.Core
 {
 
     /// <summary>
-    /// Mutable implementation of <see cref="IStObjTypeMap"/> that handles <see cref="MutableItem"/>
+    /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
     /// </summary>
-    class StObjObjectEngineMap : IStObjTypeMap
+    class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap
     {
         readonly Dictionary<object, MutableItem> _map;
         readonly MutableItem[] _allSpecializations;
@@ -21,8 +21,15 @@ namespace CK.Core
         /// <summary>
         /// Initializes a new <see cref="StObjObjectEngineMap"/>.
         /// </summary>
-        internal protected StObjObjectEngineMap( MutableItem[] allSpecializations )
+        /// <param name="mapName">The final map name.</param>
+        /// <param name="allSpecializations">
+        /// Predimensioned array that will be filled with actual
+        /// mutable items by <see cref="StObjCollector.GetResult()"/>.
+        /// </param>
+        internal protected StObjObjectEngineMap( string mapName, MutableItem[] allSpecializations )
         {
+            Debug.Assert( mapName != null );
+            MapName = mapName;
             _map = new Dictionary<object, MutableItem>();
             _allSpecializations = allSpecializations;
         }
@@ -41,9 +48,19 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// This map auto implements the root <see cref="IStObjMap"/>.
+        /// </summary>
+        IStObjObjectMap IStObjMap.StObjs => this;
+
+        /// <summary>
+        /// Gets the map name. Never null.
+        /// </summary>
+        public string MapName { get; }
+
+        /// <summary>
         /// Gets the number of existing mappings.
         /// </summary>
-        public int MappedTypeCount  => _map.Count; 
+        public int MappedTypeCount => _map.Count;
 
         /// <summary>
         /// Gets the final mapped type for any type that is mapped.
@@ -79,11 +96,7 @@ namespace CK.Core
         /// </summary>
         /// <param name="t">Any mapped type.</param>
         /// <returns>The most abstract, less specialized, associated type.</returns>
-        public Type ToHighestImplType( Type t )
-        {
-            MutableItem c = ToHighestImpl( t );
-            return c != null ? c.Type.Type : null;
-        }
+        public Type ToHighestImplType( Type t ) => ToHighestImpl( t ).Type.Type;
 
         internal MutableItem ToHighestImpl( Type t )
         {
@@ -110,18 +123,50 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets the most abstract mapped StObj for a type.
+        /// See <see cref="ToHighestImplType(Type)"/>.
+        /// </summary>
+        /// <param name="t">Any mapped type.</param>
+        /// <returns>The most abstract, less specialized, associated StObj.</returns>
+        public IStObjResult ToStObj( Type t ) => ToHighestImpl( t );
+
+        /// <summary>
         /// Gets whether a type is mapped.
         /// </summary>
         /// <param name="t">Any type.</param>
         /// <returns>True if the type is mapped.</returns>
         public bool IsMapped( Type t ) => _map.ContainsKey( t );
 
+        public object Obtain( Type t ) => ToLeaf( t )?.InitialObject;
+
         /// <summary>
         /// Gets all types mapped by this contextual map.
         /// </summary>
-        public IEnumerable<Type> Types
+        public IEnumerable<Type> Types => _map.Keys.OfType<Type>(); 
+
+        IEnumerable<object> IStObjObjectMap.Implementations => _allSpecializations.Select( m => m.InitialObject );
+
+        public IEnumerable<StObjImplementation> StObjs
         {
-            get { return _map.Keys.Select( o => o is Type ? (Type)o : ((AmbientContractInterfaceKey)o).InterfaceType ); }
+            get
+            {
+                return _map.Where( kv => kv.Key is Type )
+                            .Select( kv => new StObjImplementation( kv.Value, kv.Value.InitialObject ) );
+            }
         }
+
+        IEnumerable<KeyValuePair<Type, object>> IStObjObjectMap.Mappings
+        {
+            get
+            {
+                return _map.Where( kv => kv.Key is Type )
+                            .Select( kv => new KeyValuePair<Type, object>( (Type)kv.Key, kv.Value.InitialObject ) );
+            }
+        }
+
+        IStObjResult IStObjObjectEngineMap.ToLeaf( Type t ) => ToLeaf( t );
+
+        IStObj IStObjObjectMap.ToLeaf( Type t ) => ToLeaf( t );
+
     }
 }

@@ -25,25 +25,25 @@ namespace CK.StObj.Engine.Tests
                             .Where( t => t.IsClass )
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
             
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
 
-            IStObjResult oa = result.Default.StObjMap.ToStObj( typeof(ObjectA) );
+            IStObjResult oa = result.StObjs.ToStObj( typeof(ObjectA) );
             Assert.That( oa.Container.ObjectType == typeof( PackageForAB ) );
             Assert.That( oa.LeafSpecialization.ObjectType == typeof( ObjectALevel3 ) );
 
-            IStObjResult oa1 = result.Default.StObjMap.ToStObj( typeof( ObjectALevel1 ) );
+            IStObjResult oa1 = result.StObjs.ToStObj( typeof( ObjectALevel1 ) );
             Assert.That( oa1.Generalization == oa );
             Assert.That( oa1.Container.ObjectType == typeof( PackageForABLevel1 ) );
 
-            IStObjResult oa2 = result.Default.StObjMap.ToStObj( typeof( ObjectALevel2 ) );
+            IStObjResult oa2 = result.StObjs.ToStObj( typeof( ObjectALevel2 ) );
             Assert.That( oa2.Generalization == oa1 );
             Assert.That( oa2.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
 
-            IStObjResult oa3 = result.Default.StObjMap.ToStObj( typeof( ObjectALevel3 ) );
+            IStObjResult oa3 = result.StObjs.ToStObj( typeof( ObjectALevel3 ) );
             Assert.That( oa3.Generalization == oa2 );
             Assert.That( oa3.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
             Assert.That( oa.RootGeneralization.ObjectType == typeof( ObjectA ) );
@@ -61,10 +61,10 @@ namespace CK.StObj.Engine.Tests
                                               || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
                                              && t.Name != "ObjectALevel4" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult( );
                 Assert.That( result.HasFatalError, Is.False );
             }
 
@@ -75,10 +75,10 @@ namespace CK.StObj.Engine.Tests
                                 .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult();
                 Assert.That( result.HasFatalError, Is.False );
             }
         }
@@ -95,10 +95,10 @@ namespace CK.StObj.Engine.Tests
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
                                              || t.Name == "ObjectBLevel3_InPackageForAB" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult(  );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -114,10 +114,10 @@ namespace CK.StObj.Engine.Tests
                                              || t.Name == "ObjectYNeedsX"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
 
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult(  );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -132,9 +132,9 @@ namespace CK.StObj.Engine.Tests
                                .Where( t => t.Name == "ObjectXNeedsY"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult(  );
                 Assert.That( result.HasFatalError, Is.True );
             }
         }
@@ -147,12 +147,12 @@ namespace CK.StObj.Engine.Tests
                 var types = TestHelper.Assembly.GetTypes()
                                 .Where( t => t.Name == "LoggerInjected" );
 
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
-                var result = collector.GetResult( new SimpleServiceContainer() );
+                var result = collector.GetResult(  );
                 Assert.That( result.HasFatalError, Is.False );
 
-                IStObjResult theObject = result.Default.StObjMap.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
+                IStObjResult theObject = result.StObjs.ToLeaf( typeof(CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected) );
                 Assert.That( theObject, Is.Not.Null );
                 Assert.That( theObject.InitialObject, Is.Not.Null.And.InstanceOf<CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
@@ -192,9 +192,9 @@ namespace CK.StObj.Engine.Tests
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1" );
 
 
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult( );
             Assert.That( result.HasFatalError, Is.True );
         }
 
@@ -217,9 +217,9 @@ namespace CK.StObj.Engine.Tests
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1" );
 
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult(  );
             Assert.That( result.HasFatalError, Is.True );
         }
 
@@ -238,9 +238,9 @@ namespace CK.StObj.Engine.Tests
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1" );
 
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult(  );
             Assert.That( result.HasFatalError, Is.False );
         
         }

@@ -100,8 +100,9 @@ namespace CK.Setup
         static readonly string _sourceGStObj = @"
 class GStObj : IStObj
 {
-    public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType )
+    public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType, IStObjMap m )
     {
+        StObjMap = m;
         ObjectType = t;
         Generalization = g;
         if( actualType != null ) 
@@ -110,6 +111,8 @@ class GStObj : IStObj
             Leaf = this;
         }
     }
+
+    public IStObjMap StObjMap { get; }
 
     public Type ObjectType { get; }
 
@@ -122,54 +125,6 @@ class GStObj : IStObj
     internal GStObj Leaf;
 
     internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
-}";
-
-        static readonly string _sourceGContext = @"
-class GContext : IContextualStObjMap
-{
-    readonly Dictionary<Type, GStObj> _mappings;
-
-    public GContext( " + StObjContextRoot.RootContextTypeName + @" allContexts, Dictionary<Type, GStObj> map, string name)
-    {
-        AllContexts = allContexts;
-        _mappings = map;
-        Context = name;
-        var distinct = new HashSet<object>();
-        foreach( var gs in map.Values ) 
-        { 
-            gs.Context = this;
-            distinct.Add( gs.Instance ); 
-        }
-        Implementations = distinct.ToArray();
-    }
-
-    public IEnumerable<object> Implementations { get; }
-
-    public IEnumerable<StObjImplementation> StObjs => AllContexts._stObjs.Where( s => s.Context == this ).Select( s => s.AsStObjImplementation );
-
-    public IEnumerable<KeyValuePair<Type, object>> Mappings => _mappings.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
-
-    public int MappedTypeCount => _mappings.Count;
-
-    public IEnumerable<Type> Types => _mappings.Keys;
-
-    public bool IsMapped( Type t ) => _mappings.ContainsKey( t );
-
-    public object Obtain( Type t ) => GToLeaf( t )?.Instance;
-
-    public IStObj ToLeaf( Type t ) => GToLeaf( t );
-
-    public Type ToLeafType( Type t ) => GToLeaf( t )?.ObjectType;
-
-    GStObj GToLeaf( Type t )
-    {
-        GStObj s;
-        if( _mappings.TryGetValue( t, out s ) )
-        {
-            return s.Leaf;
-        }
-        return null;
-    }
 }";
         #endregion
 
@@ -186,7 +141,6 @@ class GContext : IContextualStObjMap
             var ns = global.FindOrCreateNamespace( "CK.StObj" );
 
             ns.Append( _sourceGStObj ).NewLine();
-            ns.Append( _sourceGContext ).NewLine();
             var rootCtx = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap, IStObjObjectMap" )
                                 .Append( "readonly GStObj[] _stObjs;" ).NewLine()
                                 .Append( "readonly GStObj[] _implStObjs;" ).NewLine()
@@ -205,13 +159,13 @@ class GContext : IContextualStObjMap
                 string actualTypeName = m.Specialization == null 
                                             ? "typeof("+m.GetFinalTypeCSharpName( monitor, a )+")"
                                             : "null";
-                rootCtx.Append( $"_implStObjs[{iImplStObj++}] = " );
+                rootCtx.Append( $"_stObjs[{iStObj++}] = " );
                 if( m.Specialization == null )
                 {
-                    rootCtx.Append( $"_stObjs[{iStObj++}] = " );
+                    rootCtx.Append( $"_implStObjs[{iImplStObj++}] = " );
                 }
                 rootCtx.Append( "new GStObj(" )
-                       .Append( $"rb,typeof({typeName}),{generalization},{actualTypeName});" )
+                       .Append( $"rb,typeof({typeName}),{generalization},{actualTypeName},this);" )
                        .NewLine();
             }
 
@@ -221,7 +175,7 @@ class GContext : IContextualStObjMap
             // there is no ToStObj mapping (to root generalization) on final (runtime) IContextualStObjMap.
             foreach( var e in allMappings.Where( e => e.Key is Type ) )
             {
-                rootCtx.Append( $"map.Add( typeof({((Type)e.Key).ToCSharpName()}), _stObjs[{e.Value.IndexOrdered}] );" ).NewLine();
+                rootCtx.Append( $"_map.Add( typeof({((Type)e.Key).ToCSharpName()}), _stObjs[{e.Value.IndexOrdered}] );" ).NewLine();
             }
 
             rootCtx.Append( $"int iStObj = {OrderedStObjs.Count};" ).NewLine();
@@ -318,11 +272,13 @@ class GContext : IContextualStObjMap
                 {
                     rootCtx.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
                            .NewLine();
-                    rootCtx.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, _stObjs[{m.IndexOrdered}].Context }} );" )
+                    rootCtx.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, this }} );" )
                            .NewLine();
                 }
             }
             rootCtx.Append( "} // /ctor" ).NewLine();
+
+            rootCtx.Append( $"public string MapName => " ).AppendSourceString( MapName ).Append( ';' ).NewLine();
 
             rootCtx.Append( @"
             public IStObjObjectMap StObjs => this;
@@ -330,7 +286,7 @@ class GContext : IContextualStObjMap
             int IStObjTypeMap.MappedTypeCount => _map.Count;
             Type IStObjTypeMap.ToLeafType( Type t ) => GToLeaf( t )?.ObjectType;
             bool IStObjTypeMap.IsMapped( Type t ) => _map.ContainsKey( t );
-            IEnumerable<Type> IStObjTypeMap.Types => _mappings.Keys;
+            IEnumerable<Type> IStObjTypeMap.Types => _map.Keys;
 
             IStObj IStObjObjectMap.ToLeaf( Type t ) => GToLeaf( t );
             object IStObjObjectMap.Obtain( Type t ) => _map.TryGetValue( t, out var s ) ? s.Instance : null;

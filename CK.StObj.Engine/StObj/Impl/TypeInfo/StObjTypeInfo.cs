@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\TypeInfo\StObjTypeInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,8 +122,6 @@ namespace CK.Setup
                 }
             }
         }
-
-        //internal static readonly StObjTypeInfo Empty = new StObjTypeInfo();
 
         internal StObjTypeInfo( IActivityMonitor monitor, StObjTypeInfo parent, Type t, IServiceProvider provider )
             : base( monitor, parent, t, provider )
@@ -266,7 +257,7 @@ namespace CK.Setup
             }
             #endregion
 
-            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IContextualStObjMap)
+            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IStObjObjectMap)
             var initialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             if( initialize != null )
             {
@@ -279,9 +270,9 @@ namespace CK.Setup
                     var parameters = initialize.GetParameters();
                     if( parameters.Length != 2
                         || parameters[0].ParameterType != typeof( IActivityMonitor )
-                        || parameters[1].ParameterType != typeof( IStObjObjectMap ) )
+                        || parameters[1].ParameterType != typeof( IStObjMap ) )
                     {
-                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IContextualStObjMap)." );
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IStObjMap)." );
                     }
                 }
             }

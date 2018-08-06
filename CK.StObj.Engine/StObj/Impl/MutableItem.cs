@@ -142,11 +142,18 @@ namespace CK.Setup
         PrepareState _prepareState;
 
         /// <summary>
+        /// Only used for empty object pattern for markers.
+        /// </summary>
+        internal MutableItem()
+        {
+        }
+
+        /// <summary>
         /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo type, MutableItem generalization, StObjObjectEngineMap stObjMap )
+        internal MutableItem( StObjTypeInfo type, MutableItem generalization, StObjObjectEngineMap engineMap )
         {
-            Context = stObjMap;
+            EngineMap = engineMap;
             Type = type;
             Generalization = generalization;
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
@@ -270,7 +277,7 @@ namespace CK.Setup
 
         #endregion
 
-        public StObjObjectEngineMap Context { get; }
+        public StObjObjectEngineMap EngineMap { get; }
 
         public StObjTypeInfo Type { get; }
 
@@ -483,12 +490,12 @@ namespace CK.Setup
             Debug.Assert( _container != null && _constructParameterEx != null );
             bool result = true;
             _dFullName = Type.Type.FullName;
-            _dContainer = _container.ResolveToStObj( monitor, Context );
+            _dContainer = _container.ResolveToStObj( monitor, EngineMap );
             // Requirement initialization.
             HashSet<MutableItem> req = new HashSet<MutableItem>();
             {
                 // Requires are... Required (when not configured as optional by IStObjStructuralConfigurator).
-                foreach( MutableItem dep in _requires.AsList.Select( r => r.ResolveToStObj( monitor, Context ) ) )
+                foreach( MutableItem dep in _requires.AsList.Select( r => r.ResolveToStObj( monitor, EngineMap ) ) )
                 {
                     if( dep != null ) req.Add( dep );
                 }
@@ -505,7 +512,7 @@ namespace CK.Setup
                     {
                         if( t.Value == System.Type.Missing )
                         {
-                            MutableItem dep = t.ResolveToStObj( monitor, Context );
+                            MutableItem dep = t.ResolveToStObj( monitor, EngineMap );
                             if( dep != null ) req.Add( dep );
                         }
                     }
@@ -517,17 +524,17 @@ namespace CK.Setup
             // RequiredBy initialization.
             if( _requiredBy.Count > 0 )
             {
-                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, Context ) ).Where( m => m != null ).ToArray();
+                _dRequiredBy = _requiredBy.AsList.Select( r => r.ResolveToStObj( monitor, EngineMap ) ).Where( m => m != null ).ToArray();
             }
             // Children Initialization.
             if( _children.Count > 0 )
             {
-                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, Context ) ).Where( m => m != null ).ToArray();
+                _dChildren = _children.AsList.Select( r => r.ResolveToStObj( monitor, EngineMap ) ).Where( m => m != null ).ToArray();
             }
             // Groups Initialization.
             if( _groups.Count > 0 )
             {
-                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, Context ) ).Where( m => m != null ).ToArray();
+                _dGroups = _groups.AsList.Select( r => r.ResolveToStObj( monitor, EngineMap ) ).Where( m => m != null ).ToArray();
             }
             return result;
         }
@@ -627,10 +634,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="idx">The index in the whole ordered list of items.</param>
         /// <param name="idxSpecialization">Maintained index for specialization only.</param>
+        /// <param name="rank">Rank in the depedency graph. This is used for Service association.</param>
         /// <param name="requiresFromSorter">Required items.</param>
         /// <param name="childrenFromSorter">Children items.</param>
         /// <param name="groupsFromSorter">Groups items.</param>
-        internal void SetSorterData( int idx, ref int idxSpecialization, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
+        internal void SetSorterData( int idx, ref int idxSpecialization, int rank, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );
             IndexOrdered = idx;
@@ -782,7 +790,7 @@ namespace CK.Setup
 
         IReadOnlyList<IStObjTrackedAmbientPropertyInfo> IStObjResult.TrackedAmbientProperties => _trackedAmbientProperties;
 
-        IStObjObjectMap IStObj.Context => throw new NotImplementedException();
+        IStObjMap IStObj.StObjMap => EngineMap;
 
         object IStObjResult.GetStObjProperty( string propertyName )
         {

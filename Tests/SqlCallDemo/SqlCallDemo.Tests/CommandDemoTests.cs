@@ -21,7 +21,7 @@ namespace SqlCallDemo.Tests
                 LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
-            var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 CmdDemo.ResultPOCO r = await p.RunCommandAsync( ctx, cmd ).ConfigureAwait( false );
@@ -40,7 +40,7 @@ namespace SqlCallDemo.Tests
                 LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
-            var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 CmdDemo.ResultReadOnly r = await p.RunCommandROAsync( ctx, cmd ).ConfigureAwait( false );
@@ -53,7 +53,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_with_a_data_object()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<CmdDemoPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 int id = p.CreateProtoUser( ctx, 67893, new ProtoUserData() { UserName = "jj", Email = "@", Phone = "06" } );

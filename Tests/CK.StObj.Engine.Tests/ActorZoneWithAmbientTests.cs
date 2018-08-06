@@ -141,19 +141,19 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollectorResult r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
-            r.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
+            r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
+            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
+            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
 
             var basicPackage = r.StObjs.Obtain<BasicPackage>();
             Assert.That( basicPackage is ZonePackage );
             Assert.That( basicPackage.GroupHome is ZoneGroup );
             Assert.That( basicPackage.Schema, Is.EqualTo( "CK" ) );
 
-            var authenticationUser = r.Default.StObjMap.Obtain<AuthenticationUser>();
+            var authenticationUser = r.Default.Obtain<AuthenticationUser>();
             Assert.That( authenticationUser.Schema, Is.EqualTo( "CK" ) );
             
-            var authenticationDetail = r.Default.StObjMap.Obtain<AuthenticationDetail>();
+            var authenticationDetail = r.Default.Obtain<AuthenticationDetail>();
             Assert.That( authenticationDetail.Schema, Is.EqualTo( "CKAuth" ) );
         }
     }

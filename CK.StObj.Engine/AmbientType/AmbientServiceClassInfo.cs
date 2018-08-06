@@ -7,10 +7,25 @@ namespace CK.Core
 {
     public class AmbientServiceClassInfo : AmbientTypeInfo
     {
+        /// <summary>
+        /// Constructor parameter info: some of them are <see cref="AmbientServiceClassInfo"/>
+        /// or <see cref="AmbientServiceInterfaceInfo"/>.
+        /// </summary>
         public class CtorParameter
         {
+            /// <summary>
+            /// The parameter info.
+            /// </summary>
             public readonly ParameterInfo ParameterInfo;
+
+            /// <summary>
+            /// Not null if this parameter is a service class (ie. an implementation).
+            /// </summary>
             public readonly AmbientServiceClassInfo ServiceClass;
+
+            /// <summary>
+            /// Not null if this parameter is a service interface.
+            /// </summary>
             public readonly AmbientServiceInterfaceInfo ServiceInterface;
 
             internal CtorParameter(

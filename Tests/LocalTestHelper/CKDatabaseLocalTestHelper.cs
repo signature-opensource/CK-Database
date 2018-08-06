@@ -5,6 +5,7 @@ using CK.Testing.CKDatabaseLocal;
 using CK.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,17 +93,50 @@ namespace CK.Testing
             {
                 using( _dbSetup.Monitor.OpenInfo( $"LocalHelper initializing Tests/LocalTestHelper/LocalTestStore." ) )
                 {
-                    _dbSetup.CKSetup.RemoveComponentsFromStore(
-                                        c => c.Version == CSemVer.SVersion.ZeroVersion,
-                                        storePath: e.StorePath );
-                    if( !_dbSetup.CKSetup.PublishAndAddComponentFoldersToStore(
-                                            GetAllLocalComponentsPaths().Select( p => p.ToString() ),
-                                            storePath: e.StorePath ) )
+                    var dirty = GetAllLocalComponentsPaths().Where( p => IsPublishedRequired( p ) ).ToList();
+                    if( dirty.Any() )
                     {
-                        throw new InvalidOperationException( "Unable to add CK-Database components to Tests/LocalTestHelper/LocalTestStore." );
+                        _dbSetup.Monitor.Info( $"Dirty components: {dirty.Select( p => p.ToString() ).Concatenate()}" );
+                        _dbSetup.Monitor.Info( $"Publishing all of them." );
+                        _dbSetup.CKSetup.RemoveComponentsFromStore(
+                                            c => c.Version == CSemVer.SVersion.ZeroVersion,
+                                            storePath: e.StorePath );
+                        if( !_dbSetup.CKSetup.PublishAndAddComponentFoldersToStore(
+                                                GetAllLocalComponentsPaths().Select( p => p.ToString() ),
+                                                storePath: e.StorePath ) )
+                        {
+                            throw new InvalidOperationException( "Unable to add CK-Database components to Tests/LocalTestHelper/LocalTestStore." );
+                        }
                     }
+                    else _dbSetup.Monitor.Info( "All components are already published." );
                 }
             }
+        }
+
+        bool IsPublishedRequired( string pathToFramework )
+        {
+            NormalizedPath path = Path.GetFullPath( pathToFramework );
+            var framework = path.LastPart;
+            if( !framework.StartsWith( "netcoreapp", StringComparison.OrdinalIgnoreCase ) ) return false;
+            var publishPath = path.AppendPart( "publish" );
+            // If there is no publish folder, we need to publish.
+            if( !Directory.Exists( publishPath ) ) return true;
+            var projectName = path.Parts[path.Parts.Count - 4];
+
+            // If we don't find a .dll or .exe with the projectName, in doubt, we need to publish.
+            var dllOrExeName = path.AppendPart( projectName );
+            string source = dllOrExeName + ".dll";
+            if( !File.Exists( source ) )
+            {
+                source = dllOrExeName + ".exe";
+                if( !File.Exists( source ) ) return false;
+            }
+            var pubName = publishPath.AppendPart( Path.GetFileName(source) );
+            if( !File.Exists( pubName ) ) return true;
+
+            DateTime sourceTime = File.GetLastWriteTimeUtc( source );
+            DateTime pubTime = File.GetLastWriteTimeUtc( pubName );
+            return pubTime < sourceTime;
         }
 
         void ICKDatabaseLocalTestHelperCore.DeleteAllLocalComponentsPublishedFolders()

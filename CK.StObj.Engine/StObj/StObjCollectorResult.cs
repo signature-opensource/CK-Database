@@ -21,6 +21,7 @@ namespace CK.Setup
     public partial class StObjCollectorResult
     {
         readonly DynamicAssembly _tempAssembly;
+        readonly StObjObjectEngineMap _liftedMap;
 
         internal StObjCollectorResult(
             AmbientTypeCollectorResult typeResult,
@@ -29,6 +30,7 @@ namespace CK.Setup
             IReadOnlyList<MutableItem> orderedStObjs )
         {
             AmbientTypeResult = typeResult;
+            _liftedMap = AmbientTypeResult?.AmbientContracts?.EngineMap;
             _tempAssembly = tempAssembly;
             if( primaryRunCache != null ) SecondaryRunAccessor = key => primaryRunCache[key];
             OrderedStObjs = orderedStObjs;
@@ -45,7 +47,23 @@ namespace CK.Setup
         /// </summary>
         public bool HasFatalError => OrderedStObjs == null || (AmbientTypeResult?.HasFatalError ?? false); 
 
+        /// <summary>
+        /// Gets the result of the types discovery and analysis.
+        /// </summary>
         public AmbientTypeCollectorResult AmbientTypeResult { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IStObjObjectEngineMap"/> that extends runtime <see cref="IStObjObjectMap"/>.
+        /// </summary>
+        public IStObjObjectEngineMap StObjs => _liftedMap;
+
+        /// <summary>
+        /// Gets the name of this StObj map.
+        /// Never null, defaults to the empty string.
+        /// </summary>
+        string MapName => _liftedMap?.MapName ?? String.Empty;
+
+        public IStObjObjectEngineMap Default => AmbientTypeResult?.AmbientContracts?.EngineMap;
 
         /// <summary>
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.

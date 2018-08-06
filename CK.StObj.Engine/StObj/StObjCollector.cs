@@ -285,7 +285,7 @@ namespace CK.Setup
                             // Calls StObjConstruct on Head for Groups.
                             if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                             {
-                                m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Requires, sorted.Children, sorted.Groups );
+                                m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Rank, sorted.Requires, sorted.Children, sorted.Groups );
                                 using( _monitor.OpenTrace( $"Constructing '{m.ToString()}'." ) )
                                 {
                                     try

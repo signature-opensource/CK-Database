@@ -44,11 +44,11 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void AbstractDetection()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( A2 ) );
-            StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
+            StObjCollectorResult result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
-            Assert.That( result.Default.StObjMap.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
+            Assert.That( result.StObjs.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
         }
 
     }

@@ -16,7 +16,7 @@ namespace CK.StObj.Engine.Tests
         {
             StObjCollectorResult result = BuildPocoSample();
 
-            IStObjResult p = result.Default.StObjMap.ToStObj( typeof( PackageWithBasicPoco ) );
+            IStObjResult p = result.StObjs.ToStObj( typeof( PackageWithBasicPoco ) );
             var package = (PackageWithBasicPoco)p.InitialObject;
             IBasicPoco poco = package.Factory.Create();
             Assert.That( poco is IEAlternateBasicPoco );
@@ -24,7 +24,7 @@ namespace CK.StObj.Engine.Tests
             Assert.That( poco is IECombineBasicPoco );
             Assert.That( poco is IEIndependentBasicPoco );
 
-            var fEI = result.Default.StObjMap.Obtain<IPocoFactory<IEIndependentBasicPoco>>();
+            var fEI = result.StObjs.Obtain<IPocoFactory<IEIndependentBasicPoco>>();
             IEIndependentBasicPoco ei = fEI.Create();
             ei.BasicProperty = 3;
             ei.IndependentProperty = 9;
@@ -35,10 +35,10 @@ namespace CK.StObj.Engine.Tests
             var types = TestHelper.Assembly.GetTypes()
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.Poco" );
 
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
 
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
             return result;
         }
@@ -47,7 +47,7 @@ namespace CK.StObj.Engine.Tests
         public void poco_factory_exposes_the_final_type()
         {
             StObjCollectorResult result = BuildPocoSample();
-            var p = result.Default.StObjMap.Obtain<IPocoFactory<IBasicPoco>>();
+            var p = result.StObjs.Obtain<IPocoFactory<IBasicPoco>>();
 
             Type pocoType = p.PocoClassType;
             Assert.That( typeof( IBasicPoco ).IsAssignableFrom( pocoType ) );
@@ -62,11 +62,11 @@ namespace CK.StObj.Engine.Tests
         public void poco_support_read_only_properties()
         {
             StObjCollectorResult result = BuildPocoSample();
-            var p = result.Default.StObjMap.Obtain<IPocoFactory<IEBasicPocoWithReadOnly>>();
+            var p = result.StObjs.Obtain<IPocoFactory<IEBasicPocoWithReadOnly>>();
             var o = p.Create();
 
             Assert.That( o.ReadOnlyProperty, Is.EqualTo( 0 ) );
-            p.PocoClassType.GetProperty( nameof(IEBasicPocoWithReadOnly.ReadOnlyProperty) )
+            p.PocoClassType.GetProperty( nameof( IEBasicPocoWithReadOnly.ReadOnlyProperty ) )
                 .SetValue( o, 3712 );
             Assert.That( o.ReadOnlyProperty, Is.EqualTo( 3712 ) );
         }

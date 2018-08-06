@@ -47,9 +47,9 @@ namespace SqlActorPackage.Basic
         /// </summary>
         public IReadOnlyList<IAnyService> AllServices => _allServices;
 
-        void StObjInitialize( IActivityMonitor m, IStObjObjectMap map )
+        void StObjInitialize( IActivityMonitor m, IStObjMap map )
         {
-            _allServices = map.Implementations.OfType<IAnyService>().ToArray();
+            _allServices = map.StObjs.Implementations.OfType<IAnyService>().ToArray();
         }
 
         [InjectContract]

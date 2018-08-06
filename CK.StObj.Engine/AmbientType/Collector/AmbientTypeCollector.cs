@@ -21,6 +21,7 @@ namespace CK.Core
         readonly HashSet<Assembly> _assemblies;
         readonly Dictionary<Type, StObjTypeInfo> _collector;
         readonly List<StObjTypeInfo> _roots;
+        readonly string _mapName;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientTypeCollector"/> instance.
@@ -28,10 +29,12 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
         /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
+        /// <param name="mapName">Optional map name. Defaults to the empty string.</param>
         public AmbientTypeCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
-            IDynamicAssembly tempAssembly )
+            IDynamicAssembly tempAssembly,
+            string mapName = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( serviceProvider == null ) throw new ArgumentNullException( nameof( serviceProvider ) );
@@ -46,6 +49,7 @@ namespace CK.Core
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer();
+            _mapName = mapName ?? String.Empty;
         }
 
         /// <summary>
@@ -199,7 +203,7 @@ namespace CK.Core
         AmbientContractCollectorResult GetAmbientContractResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
-            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( allSpecializations );
+            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations );
             List<List<MutableItem>> concreteClasses = new List<List<MutableItem>>();
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();

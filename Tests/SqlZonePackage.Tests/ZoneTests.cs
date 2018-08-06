@@ -14,7 +14,7 @@ namespace SqlZonePackage.Tests
         [Test]
         public void auto_header_injection_by_attribute_on_member()
         {
-            var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
+            var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
             textA.Should().StartWith( 
@@ -33,34 +33,34 @@ namespace SqlZonePackage.Tests
         [Test]
         public void construct_injection_of_unresolved_AmbientContract_is_null()
         {
-            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.UnexistingByConstructParam, Is.Null);
         }
 
         [Test]
         public void optional_property_InjectContract_of_resolved_AmbientContract()
         {
-            var a = TestHelper.StObjMap.Default.Obtain<Package>();
-            Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.Default.Obtain<Zone.SecurityZoneHome>()));
+            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>()));
             Assert.That(a.UnexistingByInjectContract, Is.Null, "Remains null.");
         }
 
         [Test]
         public void Initialize_method_provides_a_way_to_register_multiple_services()
         {
-            var a = TestHelper.StObjMap.Default.Obtain<Package>();
+            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.AllServices.Count, Is.EqualTo(2));
             CollectionAssert.AreEquivalent(new object[] 
             {
-                TestHelper.StObjMap.Default.Obtain<Zone.GroupHome>(),
-                TestHelper.StObjMap.Default.Obtain<Zone.Package>()
+                TestHelper.StObjMap.StObjs.Obtain<Zone.GroupHome>(),
+                TestHelper.StObjMap.StObjs.Obtain<Zone.Package>()
             }, a.AllServices );
         }
 
         [Test]
         public void checking_final_mappings()
         {
-            IStObjObjectMap map = TestHelper.StObjMap.Default;
+            IStObjObjectMap map = TestHelper.StObjMap.StObjs;
             var mappings = new List<KeyValuePair<Type, object>>();
             foreach (var t in map.Types) mappings.Add(new KeyValuePair<Type, object>(t,map.Obtain(t)));
             CollectionAssert.AreEquivalent(mappings, map.Mappings);

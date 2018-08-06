@@ -65,7 +65,7 @@ namespace CK.SqlServer.Setup
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data, typeof(SqlDatabaseItemDriver) )
         {
-            Context = data.StObj.Context.Context;
+            Context = data.StObj.StObjMap.MapName;
             Location = ActualObject.Name;
             Name = SqlDatabaseItemName;
             ConnectionItem = new SqlDatabaseConnectionItem( this );

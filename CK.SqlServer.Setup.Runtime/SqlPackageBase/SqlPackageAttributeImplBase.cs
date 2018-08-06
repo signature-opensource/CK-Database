@@ -56,10 +56,10 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    o.SetAmbiantPropertyConfiguration( monitor, "Database", null, Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
+                    o.SetAmbiantPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
                 }
             }
-            else o.SetAmbiantPropertyConfiguration( monitor, "Database", null, typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
+            else o.SetAmbiantPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
             // ResourceLocation is a StObjProperty.
             o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ObjectType ) );
             if( Attribute.Schema != null )

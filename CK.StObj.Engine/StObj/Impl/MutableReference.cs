@@ -28,7 +28,7 @@ namespace CK.Setup
         internal readonly MutableItem Owner;
         readonly StObjMutableReferenceKind _kind;
 
-        static protected readonly MutableItem UnresolvedMarker = new MutableItem( null, null, null );
+        static protected readonly MutableItem UnresolvedMarker = new MutableItem();
 
         internal MutableReference( MutableItem owner, StObjMutableReferenceKind kind )
         {

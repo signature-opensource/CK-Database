@@ -164,7 +164,7 @@ namespace CK.Setup
             }
             foreach( var c in _leafData.AllAmbientContracts )
             {
-                MutableItem m = c.ResolveToStObj( monitor, Context );
+                MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )
                 {
                     AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, valueCollector );
@@ -373,7 +373,7 @@ namespace CK.Setup
                 else
                 {
                     // No value found from containers or generalization: we may have to solve it.
-                    a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( monitor, Context ) );
+                    a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( monitor, EngineMap ) );
                 }
                 return a;
             }

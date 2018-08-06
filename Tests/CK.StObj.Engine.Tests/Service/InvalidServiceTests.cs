@@ -57,17 +57,17 @@ namespace CK.StObj.Engine.Tests.Service
         public void services_must_have_one_and_only_one_public_ctor()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterType( typeof( ServiceWith2Ctors ) );
                 collector.RegisteringFatalOrErrorCount.Should().Be( 1 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterType( typeof( ServiceWithOneCtor ) );
                 collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterType( typeof( ServiceWithDefaultCtor ) );
                 collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             }
@@ -80,12 +80,12 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void AmbientServiceAttribute_is_required()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( ServiceWithoutAmbientServiceAttribute ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 1 );
         }
 
-        [AmbientService(typeof(PackageA))]
+        [AmbientService( typeof( PackageA ) )]
         class ServiceBase : IAmbientService
         {
             public ServiceBase( int a )
@@ -106,10 +106,10 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void base_service_is_registered()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( ServiceInherited ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
-            var r = collector.GetResult( new SimpleServiceContainer() );
+            var r = collector.GetResult();
         }
 
 

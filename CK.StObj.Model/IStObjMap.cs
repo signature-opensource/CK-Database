@@ -21,5 +21,11 @@ namespace CK.Core
         /// Gets the StObjs map.
         /// </summary>
         IStObjObjectMap StObjs { get; }
+
+        /// <summary>
+        /// Gets the name of this StObj map.
+        /// Never null, defaults to the empty string.
+        /// </summary>
+        string MapName { get; }
     }
 }
