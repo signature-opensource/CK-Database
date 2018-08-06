@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\AmbientContract\AmbientTypeInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,9 +25,19 @@ namespace CK.Core
         /// <param name="t">Type itself. Can not be null.</param>
         /// <param name="parent">Parent AmbientTypeInfo (Generalization). Null if the base type is not an Ambient type.</param>
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
-        public AmbientTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t, IServiceProvider services )
+        /// <param name="isExcluded">True to actually exclude this type from the registration.</param>
+        public AmbientTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t, IServiceProvider services, bool isExcluded )
         {
-            _attributes = new TypeAttributesCache( monitor, t, services, parent == null );
+            if( (parent?.IsExcluded ?? false) )
+            {
+                monitor.Warn( $"Type {t.FullName} is excluded since its parent is excluded." );
+                IsExcluded = true;
+            }
+            else if( IsExcluded = isExcluded )
+            {
+                monitor.Info( $"Type {t.FullName} is excluded." );
+            }
+            else _attributes = new TypeAttributesCache( monitor, t, services, parent == null );
             if( (Generalization = parent) == null )
             {
                 _nextSibling = null;
@@ -52,7 +55,12 @@ namespace CK.Core
         public Type Type => _attributes.Type;
 
         /// <summary>
-        /// Gets the generalizatiuon of this <see cref="Type"/>.
+        /// Gets whether this Type is excluded from registration.
+        /// </summary>
+        public bool IsExcluded { get; }
+
+        /// <summary>
+        /// Gets the generalization of this <see cref="Type"/>.
         /// </summary>
         public AmbientTypeInfo Generalization { get; }
 
@@ -66,7 +74,7 @@ namespace CK.Core
         /// <returns>Concrete Type builder or null.</returns>
         protected ImplementableTypeInfo CreateAbstractTypeImplementation( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
-            Debug.Assert( Type.IsAbstract && assembly != null );
+            Debug.Assert( Type.IsAbstract && assembly != null && !IsExcluded );
 
             List<ICKCustomAttributeProvider> combined = new List<ICKCustomAttributeProvider>();
             var p = this;
@@ -83,6 +91,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
         /// and can keep an internal state if needed.
+        /// This is null if <see cref="IsExcluded"/> is true.
         /// </summary>
         /// <remarks>
         /// All attributes related to ObjectType (either on the type itself or on any of its members) should be retrieved 

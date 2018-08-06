@@ -16,22 +16,24 @@ namespace CK.Core
 
         AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent )
         {
-            RegisterAssembly( t );
-            var baseServices = RegisterServiceInterfaces( t.GetInterfaces() ).ToArray();
-            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, baseServices, RegisterCtorDepClass, RegisterServiceInterface );
-            if( parent == null ) _serviceRoots.Add( serviceInfo );
+            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( t ) );
+            if( !serviceInfo.IsExcluded )
+            {
+                RegisterAssembly( t );
+                if( parent == null ) _serviceRoots.Add( serviceInfo );
+            }
             _serviceCollector.Add( t, serviceInfo );
             return serviceInfo;
         }
 
-        AmbientServiceClassInfo RegisterCtorDepClass( Type t )
+        internal AmbientServiceClassInfo RegisterCtorDepClass( Type t )
         {
             Debug.Assert( typeof( IAmbientService ).IsAssignableFrom( t ) && t.IsClass );
             DoRegisterClass( t, out _, out var info );
             return info;
         }
 
-        AmbientServiceInterfaceInfo RegisterServiceInterface( Type t )
+        internal AmbientServiceInterfaceInfo RegisterServiceInterface( Type t )
         {
             Debug.Assert( typeof( IAmbientService ).IsAssignableFrom( t ) && t != typeof( IAmbientService ) && t.IsInterface );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
@@ -42,7 +44,7 @@ namespace CK.Core
             return info;
         }
 
-        IEnumerable<AmbientServiceInterfaceInfo> RegisterServiceInterfaces( IEnumerable<Type> interfaces )
+        internal IEnumerable<AmbientServiceInterfaceInfo> RegisterServiceInterfaces( IEnumerable<Type> interfaces )
         {
             foreach( var iT in interfaces )
             {

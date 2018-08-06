@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Represents a service class/implementation.
+    /// 
+    /// </summary>
     public class AmbientServiceClassInfo : AmbientTypeInfo
     {
         /// <summary>
@@ -44,12 +49,18 @@ namespace CK.Core
             IServiceProvider serviceProvider,
             AmbientServiceClassInfo parent,
             Type t,
-            AmbientServiceInterfaceInfo[] interfaces,
-            Func<Type, AmbientServiceClassInfo> registerClass,
-            Func<Type, AmbientServiceInterfaceInfo> registerInterface )
-            : base( m, parent, t, serviceProvider )
+            AmbientTypeCollector collector,
+            bool isExcluded )
+            : base( m, parent, t, serviceProvider, isExcluded )
         {
-            Interfaces = interfaces;
+            Container = t.GetCustomAttribute<AmbientServiceAttribute>()?.Container;
+            if( Container == null )
+            {
+                m.Error( $"Missing {nameof( AmbientServiceAttribute )} on {t.FullName}. This attribute is required." );
+            }
+            Interfaces = collector.RegisterServiceInterfaces( IsExcluded ? Array.Empty<Type>() : t.GetInterfaces() ).ToArray();
+
+            if( IsExcluded ) return;
             var ctors = t.GetConstructors();
             if( ctors.Length == 0 ) m.Error( $"No public constructor found for {t.FullName}." );
             else if( ctors.Length > 1 ) m.Error( $"Multiple public constructors found for {t.FullName}. Only one must exist." );
@@ -60,48 +71,52 @@ namespace CK.Core
                 bool error = false;
                 foreach( var p in parameters )
                 {
-                    AmbientServiceClassInfo sClass = null;
-                    AmbientServiceInterfaceInfo sInterface = null;
-                    if( typeof( IAmbientService ).IsAssignableFrom( p.ParameterType ) )
-                    {
-                        if( typeof( IAmbientService ) == p.ParameterType )
-                        {
-                            m.Error( $"Invalid use of {nameof( IAmbientService )} constructor parameter {p.Name} in {p.Member}." );
-                            error = true;
-                        }
-                        else
-                        {
-                            if( p.ParameterType.IsClass )
-                            {
-                                sClass = registerClass( p.ParameterType );
-                                if( sClass == null )
-                                {
-                                    m.Error( $"Unable to resolve {p.ParameterType.Name} service type for parameter {p.Name} in {p.Member}" );
-                                    error = true;
-                                }
-                            }
-                            else
-                            {
-                                sInterface = registerInterface( p.ParameterType );
-                            }
-                        }
-                    }
+                    var (success, sClass, sInterface) = HandleParameterTypes( m, collector, p );
+                    error |= !success;
                     mParameters[p.Position] = new CtorParameter( p, sClass, sInterface );
                 }
-                ConstructorParameters = mParameters;
                 if( !error )
                 {
-                    Container = t.GetCustomAttribute<AmbientServiceAttribute>()?.Container;
-                    if( Container == null )
+                    ConstructorParameters = mParameters;
+                    ConstructorInfo = ctors[0];
+                }
+            }
+        }
+
+        static (bool,AmbientServiceClassInfo, AmbientServiceInterfaceInfo) HandleParameterTypes( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
+        {
+            if( !typeof( IAmbientService ).IsAssignableFrom( p.ParameterType ) )
+            {
+                return (true, null, null);
+            }
+            if( typeof( IAmbientService ) == p.ParameterType )
+            {
+                m.Error( $"Invalid use of {nameof( IAmbientService )} constructor parameter {p.Name} in {p.Member}." );
+                return (false,null, null);
+            }
+            if( p.ParameterType.IsClass )
+            {
+                var sClass = collector.RegisterCtorDepClass( p.ParameterType );
+                if( sClass == null )
+                {
+                    m.Error( $"Unable to resolve {p.ParameterType.Name} service type for parameter {p.Name} in {p.Member}" );
+                    return (false, null, null);
+                }
+                if( sClass.IsExcluded )
+                {
+                    if( p.HasDefaultValue )
                     {
-                        m.Error( $"Missing {nameof( AmbientServiceAttribute )} on {t.FullName}. This attribute is required." );
+                        m.Info( $"Service type {p.ParameterType.Name} is excluded from registration. Parameter {p.Name} in {p.Member} will use its default value." );
                     }
                     else
                     {
-                        ConstructorInfo = ctors[0];
+                        m.Error( $"Service type {p.ParameterType.Name} is excluded from registration. Parameter {p.Name} in {p.Member} can not be resolved." );
+                        return (false, null, null);
                     }
                 }
+                return (true, sClass, null);
             }
+            return (true, null, collector.RegisterServiceInterface( p.ParameterType ));
         }
 
         /// <summary>

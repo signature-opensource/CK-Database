@@ -22,6 +22,7 @@ namespace CK.Core
         readonly Dictionary<Type, StObjTypeInfo> _collector;
         readonly List<StObjTypeInfo> _roots;
         readonly string _mapName;
+        readonly Func<Type, bool> _typeFilter;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientTypeCollector"/> instance.
@@ -34,12 +35,14 @@ namespace CK.Core
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
             IDynamicAssembly tempAssembly,
+            Func<Type,bool> typeFilter = null,
             string mapName = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( serviceProvider == null ) throw new ArgumentNullException( nameof( serviceProvider ) );
             if( tempAssembly == null ) throw new ArgumentNullException( nameof( tempAssembly ) );
             _monitor = monitor;
+            _typeFilter = typeFilter ?? (type => true);
             _tempAssembly = tempAssembly;
             _serviceProvider = serviceProvider;
             _assemblies = new HashSet<Assembly>();
@@ -48,7 +51,7 @@ namespace CK.Core
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
-            _pocoRegisterer = new PocoRegisterer();
+            _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -94,8 +97,7 @@ namespace CK.Core
             }
             if( type.IsInterface && typeof( IPoco ).IsAssignableFrom( type ) )
             {
-                RegisterAssembly( type );
-                _pocoRegisterer.Register( _monitor, type );
+                if( _pocoRegisterer.Register( _monitor, type ) ) RegisterAssembly( type );
                 return true;
             }
             return false;
@@ -164,10 +166,13 @@ namespace CK.Core
 
         StObjTypeInfo CreateStObjTypeInfo( Type t, StObjTypeInfo parent )
         {
-            RegisterAssembly( t );
-            StObjTypeInfo result = new StObjTypeInfo( _monitor, parent, t, _serviceProvider );
+            StObjTypeInfo result = new StObjTypeInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( t ) );
             if( result == null ) throw new Exception( $"typeInfoFactory returned null for type {t.AssemblyQualifiedName}." );
-            if( parent == null ) _roots.Add( result );
+            if( !result.IsExcluded )
+            {
+                RegisterAssembly( t );
+                if( parent == null ) _roots.Add( result );
+            }
             _collector.Add( t, result );
             return result;
         }

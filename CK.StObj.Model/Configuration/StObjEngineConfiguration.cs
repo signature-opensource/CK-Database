@@ -26,6 +26,7 @@ namespace CK.Core
         {
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
+            ExcludedTypes = new HashSet<string>();
             Aspects = new List<IStObjEngineAspectConfiguration>();
             SetupFolders = new List<SetupFolder>();
         }
@@ -59,6 +60,11 @@ namespace CK.Core
             /// The Types element name.
             /// </summary>
             static public readonly XName Types = XNamespace.None + "Types";
+
+            /// <summary>
+            /// The ExcludedTypes element name.
+            /// </summary>
+            static public readonly XName ExcludedTypes = XNamespace.None + "ExcludedTypes";
 
             /// <summary>
             /// The Type element name.
@@ -133,6 +139,7 @@ namespace CK.Core
             GenerateSourceFiles = string.Equals( e.Element( XmlNames.GenerateSourceFiles )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
+            ExcludedTypes = new HashSet<string>( FromXml( e, XmlNames.ExcludedTypes, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
             Aspects = new List<IStObjEngineAspectConfiguration>();
             foreach( var a in e.Elements( XmlNames.Aspect ) )
@@ -172,6 +179,7 @@ namespace CK.Core
                         : null,
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
+                   ToXml( XmlNames.ExcludedTypes, XmlNames.Type, ExcludedTypes ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, CleanName( a.GetType() ) ) ) ) ),
                    SetupFolders.Select( f => f.ToXml() ) );
             return e;
@@ -225,9 +233,14 @@ namespace CK.Core
         /// <summary>
         /// List of assembly qualified type names that must be explicitely registered 
         /// in <see cref="AppContext.BaseDirectory"/> regardless of <see cref="Assemblies"/>.
-        /// All other types in the assemblies that contain these explicit classes are ignored.
         /// </summary>
         public HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that must be excluded from  
+        /// registration in <see cref="AppContext.BaseDirectory"/>.
+        /// </summary>
+        public HashSet<string> ExcludedTypes { get; }
 
         /// <summary>
         /// Gets a list of optional <see cref="SetupFolder"/>.

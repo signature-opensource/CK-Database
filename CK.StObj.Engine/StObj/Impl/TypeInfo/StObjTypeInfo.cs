@@ -123,9 +123,12 @@ namespace CK.Setup
             }
         }
 
-        internal StObjTypeInfo( IActivityMonitor monitor, StObjTypeInfo parent, Type t, IServiceProvider provider )
-            : base( monitor, parent, t, provider )
+        internal StObjTypeInfo( IActivityMonitor monitor, StObjTypeInfo parent, Type t, IServiceProvider provider, bool isExcluded )
+            : base( monitor, parent, t, provider, isExcluded )
         {
+            Debug.Assert( parent == Generalization );
+            if( IsExcluded ) return;
+
             IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
@@ -133,7 +136,7 @@ namespace CK.Setup
             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
             if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
             // StObj properties are then read from StObjPropertyAttribute on class
-            foreach( StObjPropertyAttribute p in t.GetTypeInfo().GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
+            foreach( StObjPropertyAttribute p in t.GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
