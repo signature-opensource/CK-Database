@@ -22,7 +22,7 @@ namespace CK.Core
         readonly Dictionary<Type, StObjTypeInfo> _collector;
         readonly List<StObjTypeInfo> _roots;
         readonly string _mapName;
-        readonly Func<Type, bool> _typeFilter;
+        readonly Func<IActivityMonitor, Type, bool> _typeFilter;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientTypeCollector"/> instance.
@@ -35,21 +35,20 @@ namespace CK.Core
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
             IDynamicAssembly tempAssembly,
-            Func<Type,bool> typeFilter = null,
+            Func<IActivityMonitor,Type,bool> typeFilter = null,
             string mapName = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( serviceProvider == null ) throw new ArgumentNullException( nameof( serviceProvider ) );
             if( tempAssembly == null ) throw new ArgumentNullException( nameof( tempAssembly ) );
             _monitor = monitor;
-            _typeFilter = typeFilter ?? (type => true);
+            _typeFilter = typeFilter ?? ((m,type) => true);
             _tempAssembly = tempAssembly;
             _serviceProvider = serviceProvider;
             _assemblies = new HashSet<Assembly>();
             _collector = new Dictionary<Type, StObjTypeInfo>();
             _roots = new List<StObjTypeInfo>();
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
-            _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
             _mapName = mapName ?? String.Empty;
@@ -166,8 +165,7 @@ namespace CK.Core
 
         StObjTypeInfo CreateStObjTypeInfo( Type t, StObjTypeInfo parent )
         {
-            StObjTypeInfo result = new StObjTypeInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( t ) );
-            if( result == null ) throw new Exception( $"typeInfoFactory returned null for type {t.AssemblyQualifiedName}." );
+            StObjTypeInfo result = new StObjTypeInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( _monitor, t ) );
             if( !result.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -201,9 +199,11 @@ namespace CK.Core
                 }
             }
             AmbientContractCollectorResult contracts = GetAmbientContractResult();
-            AmbientServiceCollectorResult services = new AmbientServiceCollectorResult();
+            Debug.Assert( contracts != null );
+            AmbientServiceCollectorResult services = GetAmbientServiceResult( contracts );
             return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services );
         }
+
 
         AmbientContractCollectorResult GetAmbientContractResult()
         {
@@ -213,6 +213,7 @@ namespace CK.Core
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();
             int idxSpecialization = 0;
+            Debug.Assert( _roots.All( info => !info.IsExcluded ), "_roots contains only not Excluded types." );
             foreach( StObjTypeInfo newOne in _roots )
             {
                 Debug.Assert( newOne.Generalization == null );

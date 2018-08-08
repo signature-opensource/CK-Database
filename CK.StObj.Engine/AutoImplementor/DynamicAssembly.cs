@@ -62,7 +62,8 @@ namespace CK.Core
 
         /// <summary>
         /// Gets a shared dictionary associated to the dynamic assembly. 
-        /// Methods that generate code can rely on this to store shared information as required by their generation process.
+        /// Methods that generate code can rely on this to store shared information as required by
+        /// their generation process.
         /// </summary>
         public IDictionary Memory => _memory;
 

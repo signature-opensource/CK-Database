@@ -17,6 +17,7 @@ namespace CK.Core
         readonly TypeAttributesCache _attributes;
         readonly AmbientTypeInfo _nextSibling;
         AmbientTypeInfo _firstChild;
+        int _specializationCount;
 
         /// <summary>
         /// Initializes a new <see cref="AmbientTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
@@ -38,14 +39,11 @@ namespace CK.Core
                 monitor.Info( $"Type {t.FullName} is excluded." );
             }
             else _attributes = new TypeAttributesCache( monitor, t, services, parent == null );
-            if( (Generalization = parent) == null )
+            if( (Generalization = parent) != null && !IsExcluded )
             {
-                _nextSibling = null;
-            }
-            else
-            {
-                _nextSibling = Generalization._firstChild;
-                Generalization._firstChild = this;
+                _nextSibling = parent._firstChild;
+                parent._firstChild = this;
+                ++parent._specializationCount;
             }
         }
 
@@ -60,7 +58,9 @@ namespace CK.Core
         public bool IsExcluded { get; }
 
         /// <summary>
-        /// Gets the generalization of this <see cref="Type"/>.
+        /// Gets the generalization of this <see cref="Type"/>, it is be null if no base class exists.
+        /// This property is valid even if this type is excluded (however this AmbientTypeInfo does not
+        /// appear in generalization's <see cref="Specializations"/>).
         /// </summary>
         public AmbientTypeInfo Generalization { get; }
 
@@ -72,7 +72,7 @@ namespace CK.Core
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
         /// <returns>Concrete Type builder or null.</returns>
-        protected ImplementableTypeInfo CreateAbstractTypeImplementation( IActivityMonitor monitor, IDynamicAssembly assembly )
+        internal protected ImplementableTypeInfo CreateAbstractTypeImplementation( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
             Debug.Assert( Type.IsAbstract && assembly != null && !IsExcluded );
 
@@ -94,13 +94,25 @@ namespace CK.Core
         /// This is null if <see cref="IsExcluded"/> is true.
         /// </summary>
         /// <remarks>
-        /// All attributes related to ObjectType (either on the type itself or on any of its members) should be retrieved 
-        /// thanks to this method otherwise stateful attributes will not work correctly.
+        /// All attributes related to <see cref="Type"/> (either on the type itself or on any of its members) should be retrieved 
+        /// thanks to this property otherwise stateful attributes will not work correctly.
         /// </remarks>
         public ICKCustomAttributeTypeMultiProvider Attributes => _attributes;
 
         /// <summary>
-        /// Gets the different specialized <see cref="AmbientTypeInfo"/>.
+        /// Gets whether this type has at least one <see cref="Specializations"/>
+        /// (only non excluded specializations are considered).
+        /// </summary>
+        public bool IsSpecialized => _firstChild != null;
+
+        /// <summary>
+        /// Gets the number of <see cref="Specializations"/>.
+        /// (only non excluded specializations are considered).
+        /// </summary>
+        public int SpecializationsCount => _specializationCount;
+
+        /// <summary>
+        /// Gets the different specialized <see cref="AmbientTypeInfo"/> that are not excluded.
         /// </summary>
         /// <returns>An enumerable of <see cref="AmbientTypeInfo"/> that specialize this one.</returns>
         public IEnumerable<AmbientTypeInfo> Specializations
@@ -115,6 +127,12 @@ namespace CK.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Overridden to return a readable string.
+        /// </summary>
+        /// <returns>Readable string.</returns>
+        public override string ToString() => $"{(IsExcluded ? "[Excluded]" : "")}{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
 
     }
 }

@@ -11,9 +11,10 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes a certain <see cref="Kind"/> of reference originating from a <see cref="Owner"/>, targeting a <see cref="Type"/> in a <see cref="Context"/> that can 
-    /// have some <see cref="StObjRequirementBehavior">requirements</see>.
-    /// This interface describes an immutable object. Specialized interfaces like <see cref="IStObjMutableReference"/> mask its properties with setter and/or gives access
+    /// Describes a certain <see cref="Kind"/> of reference originating from a <see cref="Owner"/>,
+    /// targeting a <see cref="Type"/> that can have some <see cref="StObjRequirementBehavior">requirements</see>.
+    /// This interface describes an immutable object.
+    /// Specialized interfaces like <see cref="IStObjMutableReference"/> mask its properties with setter and/or gives access
     /// to other mutable objects (like <see cref="IStObjMutableReference.Owner"/> that is a <see cref="IStObjMutableItem"/>).
     /// </summary>
     public interface IStObjReference

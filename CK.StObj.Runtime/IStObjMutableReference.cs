@@ -11,7 +11,8 @@ using System;
 namespace CK.Setup
 {
     /// <summary>
-    /// Mutable version of <see cref="IStObjReference"/>: <see cref="Context"/>, <see cref="Type"/> and <see cref="StObjRequirementBehavior"/> properties are settable.
+    /// Mutable version of <see cref="IStObjReference"/>: <see cref="Type"/>
+    /// and <see cref="StObjRequirementBehavior"/> properties are settable.
     /// </summary>
     public interface IStObjMutableReference : IStObjReference
     {

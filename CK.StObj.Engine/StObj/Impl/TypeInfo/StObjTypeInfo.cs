@@ -8,6 +8,9 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Specialized <see cref="AmbientTypeInfo"/> for <see cref="IAmbientContract"/> classes.
+    /// </summary>
     internal class StObjTypeInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
     {
         Type[] _ambientInterfaces;
@@ -341,6 +344,7 @@ namespace CK.Setup
             bool concreteBelow = false;
             foreach( StObjTypeInfo c in Specializations )
             {
+                Debug.Assert( !c.IsExcluded );
                 concreteBelow |= c.CreateMutableItemsPath( monitor, services, context, item, tempAssembly, lastConcretes, abstractTails );
             }
             if( !concreteBelow )

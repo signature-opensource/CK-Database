@@ -42,6 +42,7 @@ namespace CK.Setup
             bool traceDepencySorterInput = false,
             bool traceDepencySorterOutput = false,
             IStObjRuntimeBuilder runtimeBuilder = null,
+            IStObjTypeFilter typeFilter = null,
             IStObjStructuralConfigurator configurator = null,
             IStObjValueResolver valueResolver = null,
             Func<string, object> secondaryRunAccessor = null )
@@ -55,7 +56,9 @@ namespace CK.Setup
                 _primaryRunCache = new Dictionary<string, object>();
                 _tempAssembly = new DynamicAssembly( _primaryRunCache );
             }
-            _cc = new AmbientTypeCollector( _monitor, serviceProvider, _tempAssembly );
+            Func<IActivityMonitor,Type,bool> tFilter = null;
+            if( typeFilter != null ) tFilter = typeFilter.TypeFilter;
+            _cc = new AmbientTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );

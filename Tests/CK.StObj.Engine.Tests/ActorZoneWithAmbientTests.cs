@@ -150,10 +150,10 @@ namespace CK.StObj.Engine.Tests
             Assert.That( basicPackage.GroupHome is ZoneGroup );
             Assert.That( basicPackage.Schema, Is.EqualTo( "CK" ) );
 
-            var authenticationUser = r.Default.Obtain<AuthenticationUser>();
+            var authenticationUser = r.StObjs.Obtain<AuthenticationUser>();
             Assert.That( authenticationUser.Schema, Is.EqualTo( "CK" ) );
             
-            var authenticationDetail = r.Default.Obtain<AuthenticationDetail>();
+            var authenticationDetail = r.StObjs.Obtain<AuthenticationDetail>();
             Assert.That( authenticationDetail.Schema, Is.EqualTo( "CKAuth" ) );
         }
     }

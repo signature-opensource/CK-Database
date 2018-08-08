@@ -5,9 +5,13 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Service type descriptor exists only if the type is not excluded: excluding a
+    /// service type is like removing the <see cref="IAmbientService"/> interface marker from
+    /// its interfaces.
+    /// </summary>
     public class AmbientServiceInterfaceInfo
     {
-
         /// <summary>
         /// The interface type.
         /// </summary>
@@ -25,10 +29,22 @@ namespace CK.Core
         public bool IsSpecialized { get; private set; }
 
         /// <summary>
+        /// Gets the most specialized interface that must be unique.
+        /// </summary>
+        public AmbientServiceInterfaceInfo MostSpecialized { get; private set; }
+
+        /// <summary>
         /// Gets the base service interfaces that are specialized by this one.
         /// Never null and often empty.
         /// </summary>
         public readonly IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces;
+
+        /// <summary>
+        /// Overridden to return a readable string.
+        /// </summary>
+        /// <returns>Readable string.</returns>
+        public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{InterfaceType.Name}";
+
 
         internal AmbientServiceInterfaceInfo( Type t, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
         {
@@ -46,19 +62,28 @@ namespace CK.Core
             Interfaces = bases;
         }
 
-        List<AmbientServiceInterfaceInfo> _unifiedBy;
-
-        internal void CheckUnification( IActivityMonitor m )
+        internal bool CheckUnification( IActivityMonitor m )
         {
             Debug.Assert( !IsSpecialized );
-            foreach( var iT in Interfaces ) iT.SetUnifier( m, this );
+            bool result = true;
+            foreach( var iT in Interfaces ) result &= iT.SetMostSpecialized( m, this );
+            return result;
         }
 
-        void SetUnifier( IActivityMonitor m, AmbientServiceInterfaceInfo u )
+        bool SetMostSpecialized( IActivityMonitor m, AmbientServiceInterfaceInfo u )
         {
-            if( _unifiedBy == null ) _unifiedBy = new List<AmbientServiceInterfaceInfo>() { u };
-            else _unifiedBy.Add( u );
-            foreach( var iT in Interfaces ) iT.SetUnifier( m, this );
+            bool result = true;
+            if( MostSpecialized == null )
+            {
+                MostSpecialized = u;
+                foreach( var iT in Interfaces ) result &= iT.SetMostSpecialized( m, u );
+            }
+            else if( MostSpecialized != u )
+            {
+                m.Error( $"Service interface '{InterfaceType.FullName}' is extended by both '{MostSpecialized.InterfaceType.FullName}' and '{u.InterfaceType.FullName}' and no unification. One of them must be excluded." );
+                result = false;
+            }
+            return result;
         }
     }
 }

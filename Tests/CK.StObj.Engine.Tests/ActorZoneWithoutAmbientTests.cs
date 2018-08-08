@@ -115,8 +115,8 @@ namespace CK.StObj.Engine.Tests
             Assert.That( r.HasFatalError, Is.False );
 
             r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
+            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
+            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
         }
     }
 }

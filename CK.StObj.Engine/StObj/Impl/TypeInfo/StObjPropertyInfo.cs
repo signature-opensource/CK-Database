@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\TypeInfo\StObjPropertyInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,17 +25,11 @@ namespace CK.Setup
             ResolutionSource = source;
         }
 
-        public Type DeclaringType { get; private set; }
+        public Type DeclaringType { get; }
 
-        string INamedPropertyInfo.Name
-        {
-            get { return Name; }
-        }
+        string INamedPropertyInfo.Name => Name;
 
-        string INamedPropertyInfo.Kind
-        {
-            get { return "[StObjProperty]"; }
-        }
+        string INamedPropertyInfo.Kind => "[StObjProperty]"; 
 
     }
 }

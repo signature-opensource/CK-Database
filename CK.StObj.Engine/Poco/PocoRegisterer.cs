@@ -40,7 +40,7 @@ namespace CK.Core
         readonly Dictionary<Type, PocoType> _all;
         readonly List<List<Type>> _result;
         readonly string _namespace;
-        readonly Func<Type, bool> _typeFilter;
+        readonly Func<IActivityMonitor, Type, bool> _typeFilter;
         int _uniqueNumber;
 
         /// <summary>
@@ -48,12 +48,12 @@ namespace CK.Core
         /// </summary>
         /// <param name="namespace">Namespace into which dynamic types will be created.</param>
         /// <param name="typeFilter">Optional type filter.</param>
-        public PocoRegisterer( string @namespace = "CK._g.poco", Func<Type,bool> typeFilter = null )
+        public PocoRegisterer( string @namespace = "CK._g.poco", Func<IActivityMonitor, Type, bool> typeFilter = null )
         {
             _namespace = @namespace ?? "CK._g.poco";
             _all = new Dictionary<Type, PocoType>();
             _result = new List<List<Type>>();
-            _typeFilter = typeFilter ?? (type => true);
+            _typeFilter = typeFilter ?? ((m,type) => true);
         }
 
         /// <summary>
@@ -83,7 +83,11 @@ namespace CK.Core
 
         PocoType CreatePocoType( IActivityMonitor monitor, Type t )
         {
-            if( !_typeFilter( t ) ) return null;
+            if( !_typeFilter( monitor, t ) )
+            {
+                monitor.Info( $"Poco interface '{t.AssemblyQualifiedName}' is excluded." );
+                return null;
+            }
             PocoType theOnlyRoot = null;
             foreach( Type b in t.GetInterfaces() )
             {
@@ -169,6 +173,12 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Finalize registrations by creating emiting a <see cref="IPocoSupportResult"/>.
+        /// </summary>
+        /// <param name="moduleB">The module builder into which dynamic code is generated.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <returns>Null on error.</returns>
         public IPocoSupportResult Finalize( ModuleBuilder moduleB, IActivityMonitor monitor )
         {
             _uniqueNumber = 0;

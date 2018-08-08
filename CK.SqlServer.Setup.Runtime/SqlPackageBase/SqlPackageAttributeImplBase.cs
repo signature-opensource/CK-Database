@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlPackageBase\SqlPackageAttributeImplBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Core;
 using CK.Setup;
@@ -33,7 +26,7 @@ namespace CK.SqlServer.Setup
         /// Gets the attribute.
         /// </summary>
         protected SqlPackageAttributeBase Attribute => _attr;
-
+       
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
             if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.GetTypeInfo().BaseType ) )

@@ -353,7 +353,7 @@ namespace CK.Setup
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
-                    configurator, configurator,
+                    configurator, configurator, configurator,
                     secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );

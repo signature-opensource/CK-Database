@@ -63,8 +63,6 @@ namespace CK.Setup
         /// </summary>
         string MapName => _liftedMap?.MapName ?? String.Empty;
 
-        public IStObjObjectEngineMap Default => AmbientTypeResult?.AmbientContracts?.EngineMap;
-
         /// <summary>
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// Null if <see cref="HasFatalError"/> is true.
