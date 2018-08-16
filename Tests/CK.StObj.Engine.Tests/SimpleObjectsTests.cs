@@ -12,12 +12,33 @@ using CK.Setup;
 using CK.StObj.Engine.Tests.SimpleObjects;
 using NUnit.Framework;
 using System.Linq;
+using FluentAssertions;
 
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
     public class SimpleObjectsTests
     {
+        public class ObjectALevel1Conflict : ObjectA
+        {
+        }
+
+        [Test]
+        public void StObj_must_have_only_one_specialization_chain()
+        {
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.IsClass )
+                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
+
+            var collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+            collector.RegisterType( typeof( ObjectALevel1Conflict ) );
+            var result = collector.GetResult();
+            result.HasFatalError.Should().BeTrue();
+        }
+
+
+
         [Test]
         public void DiscoverSimpleObjects()
         {

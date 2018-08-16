@@ -72,7 +72,7 @@ namespace CK.Setup
                             // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
                             monitor.Fatal( $"{t}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors." );
                         }
-                        t.SetParameterValue( t.Type.GetTypeInfo().IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                        t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
                     if( resolved != null && t.Value == resolved.InitialObject )
                     {

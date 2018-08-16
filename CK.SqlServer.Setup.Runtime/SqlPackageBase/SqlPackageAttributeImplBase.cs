@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
        
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.GetTypeInfo().BaseType ) )
+            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
             {
                 monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackageBase." );
             }

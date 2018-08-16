@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace CK.StObj.Engine.Tests.Service.StObj
 {
     [TestFixture]
-    public class BasicServiceTests
+    public class BasicServiceTests : TestsBase
     {
         interface IServiceRegistered : IAmbientService
         {
@@ -20,9 +20,10 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         [Test]
         public void only_IPoco_or_classes_can_be_registered()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            var collector = CreateStObjCollector();
             collector.RegisterType( typeof( IServiceRegistered ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 1 );
+            CheckFailure( collector );
         }
 
     }

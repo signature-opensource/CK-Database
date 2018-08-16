@@ -15,7 +15,7 @@ namespace CK.Core
     public class AmbientTypeInfo
     {
         readonly TypeAttributesCache _attributes;
-        readonly AmbientTypeInfo _nextSibling;
+        AmbientTypeInfo _nextSibling;
         AmbientTypeInfo _firstChild;
         int _specializationCount;
 
@@ -124,6 +124,37 @@ namespace CK.Core
                 {
                     yield return c;
                     c = c._nextSibling;
+                }
+            }
+        }
+
+        internal bool IsAssignableFrom( AmbientTypeInfo child )
+        {
+            Debug.Assert( child != null );
+            do
+            {
+                if( child == this ) return true;
+            }
+            while( (child = child.Generalization) != null );
+            return false;
+        }
+
+        internal void RemoveSpecialization( AmbientTypeInfo child )
+        {
+            Debug.Assert( child.Generalization == this );
+            if( _firstChild == child )
+            {
+                _firstChild = child._nextSibling;
+                --_specializationCount;
+            }
+            else
+            {
+                AmbientTypeInfo c = _firstChild;
+                while( c != null && c._nextSibling != child ) c = c._nextSibling;
+                if( c != null )
+                {
+                    c._nextSibling = child._nextSibling;
+                    --_specializationCount;
                 }
             }
         }

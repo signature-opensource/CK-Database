@@ -34,7 +34,7 @@ namespace CK.Core
                         ? Array.Empty<KeyValuePair<object, Type>>()
                         : (Required)requiredParameters.Select( r => new KeyValuePair<object, Type>( r, r.GetType() ) ).ToList();
 
-                var longestCtor = t.GetTypeInfo().GetConstructors()
+                var longestCtor = t.GetConstructors()
                                     .Select( x => ValueTuple.Create( x, x.GetParameters() ) )
                                     .Where( x => x.Item2.Length >= required.Count )
                                     .OrderByDescending( x => x.Item2.Length )

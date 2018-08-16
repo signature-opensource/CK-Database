@@ -10,10 +10,8 @@ using System.Collections.Generic;
 
 namespace CK.Core
 {
-
     /// <summary>
-    /// Main interface that offers access to type mapping and 
-    /// Ambient Contract instantiation.
+    /// Main interface that offers access to type mapping and Ambient Contract instances.
     /// </summary>
     public interface IStObjMap
     {
@@ -21,6 +19,11 @@ namespace CK.Core
         /// Gets the StObjs map.
         /// </summary>
         IStObjObjectMap StObjs { get; }
+
+        /// <summary>
+        /// Gets the Services map.
+        /// </summary>
+        IStObjServiceMap Services { get; }
 
         /// <summary>
         /// Gets the name of this StObj map.

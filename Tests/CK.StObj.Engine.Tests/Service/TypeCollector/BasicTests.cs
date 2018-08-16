@@ -44,11 +44,10 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
             
             var r = CheckSuccess( collector );
-            var interfaces = r.AmbientServices.Interfaces;
+            var interfaces = r.AmbientServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
-            interfaces[0].InterfaceType.Should().Be( typeof( IServiceRegistered ) );
-            interfaces[0].MostSpecialized.Should().BeNull();
-            var classes = r.AmbientServices.Classes;
+            interfaces[0].Type.Should().Be( typeof( IServiceRegistered ) );
+            var classes = r.AmbientServices.RootClasses;
             classes.Should().HaveCount( 1 );
             classes[0].IsExcluded.Should().BeFalse();
             classes[0].Generalization.Should().BeNull();
@@ -63,26 +62,24 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             var collector = CreateAmbientTypeCollector();
             collector.RegisterClassOrPoco( typeof( ServiceNotRegisteredImpl ) );
             var r = CheckSuccess( collector );
-            var interfaces = r.AmbientServices.Interfaces;
+            var interfaces = r.AmbientServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
             var iSpec = interfaces[0];
             var iBase = iSpec.Interfaces[0];
-            iBase.InterfaceType.Should().Be( typeof( IServiceRegistered ) );
+            iBase.Type.Should().Be( typeof( IServiceRegistered ) );
             iBase.SpecializationDepth.Should().Be( 0 );
             iBase.IsSpecialized.Should().BeTrue();
-            iBase.MostSpecialized.Should().BeSameAs( iSpec );
             iBase.Interfaces.Should().BeEmpty();
-            iSpec.InterfaceType.Should().Be( typeof( IServiceNotRegisteredSinceNotImplemented ) );
+            iSpec.Type.Should().Be( typeof( IServiceNotRegisteredSinceNotImplemented ) );
             iSpec.SpecializationDepth.Should().Be( 1 );
-            iSpec.MostSpecialized.Should().BeNull();
             iSpec.IsSpecialized.Should().BeFalse();
             iSpec.Interfaces.Should().ContainSingle().And.Contain( iBase );
-            var classes = r.AmbientServices.Classes;
+            var classes = r.AmbientServices.RootClasses;
             classes.Should().HaveCount( 1 );
-            var cSpec = classes[0];
-            var cBase = cSpec.Generalization;
+            var cBase = classes[0];
             cBase.Type.Should().Be( typeof( ServiceRegisteredImpl ) );
             cBase.IsSpecialized.Should().BeTrue();
+            var cSpec = cBase.MostSpecialized;
             cBase.Specializations.Should().ContainSingle().And.Contain( cSpec );
             cSpec.Type.Should().Be( typeof( ServiceNotRegisteredImpl ) );
             cSpec.Generalization.Should().BeSameAs( cBase );

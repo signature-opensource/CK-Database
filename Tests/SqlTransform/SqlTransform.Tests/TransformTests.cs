@@ -48,7 +48,7 @@ namespace SqlTransform.Tests
             {
                 SimpleReplaceTestGenerated( ctx, "Pouf!", p.Database.ConnectionString );
 
-                var aFromType = typeof( string ).GetTypeInfo().Assembly;
+                var aFromType = typeof( string ).Assembly;
 
                 string s = p.SimpleReplaceTest( ctx, "Hello!" );
                 Assert.That( s, Is.EqualTo( "Return: Hello! 0" ) );

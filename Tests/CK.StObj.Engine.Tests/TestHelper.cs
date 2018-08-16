@@ -33,7 +33,7 @@ namespace CK.StObj.Engine.Tests
             get { return _monitor; }
         }
 
-        public static Assembly Assembly => typeof( TestHelper ).GetTypeInfo().Assembly;
+        public static Assembly Assembly => typeof( TestHelper ).Assembly;
 
         public static bool LogsToConsole
         {

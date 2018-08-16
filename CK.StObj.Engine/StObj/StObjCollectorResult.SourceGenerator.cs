@@ -96,7 +96,6 @@ namespace CK.Setup
             }
         }
 
-        #region GStObj
         static readonly string _sourceGStObj = @"
 class GStObj : IStObj
 {
@@ -126,7 +125,40 @@ class GStObj : IStObj
 
     internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
 }";
-        #endregion
+        static readonly string _sourceServiceSupport = @"
+        class StObjServiceParameterInfo : IStObjServiceParameterInfo
+        {
+            public StObjServiceParameterInfo( Type t, int p, string n, IStObjServiceClassFactoryInfo v )
+            {
+                ParameterType = t;
+                Position = p;
+                Name = n;
+                Value = v;
+            }
+
+            public Type ParameterType { get; }
+
+            public int Position { get; }
+
+            public string Name { get; }
+
+            public IStObjServiceClassFactoryInfo Value { get; }
+        }
+
+        class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
+        {
+            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a )
+            {
+                ClassType = t;
+                Assignments = a;
+            }
+
+            public Type ClassType { get; }
+
+            public IReadOnlyList<IStObjServiceParameterInfo> Assignments { get; }
+        }
+
+";
 
         void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a )
         {
@@ -141,10 +173,20 @@ class GStObj : IStObj
             var ns = global.FindOrCreateNamespace( "CK.StObj" );
 
             ns.Append( _sourceGStObj ).NewLine();
-            var rootCtx = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap, IStObjObjectMap" )
+
+            ns.Append( _sourceServiceSupport ).NewLine();
+            var serviceGen = new ServiceFactoryInfoGenerator( ns );
+            foreach( var serviceFactory in _liftedMap.ServiceManualList )
+            {
+                serviceGen.CreateServiceClassFactory( serviceFactory );
+            }
+
+            var rootCtx = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap, IStObjObjectMap, IStObjServiceMap" )
                                 .Append( "readonly GStObj[] _stObjs;" ).NewLine()
                                 .Append( "readonly GStObj[] _implStObjs;" ).NewLine()
-                                .Append( "readonly Dictionary<Type,GStObj> _map;" ).NewLine();
+                                .Append( "readonly Dictionary<Type,GStObj> _map;" ).NewLine()
+                                .Append( "Dictionary<Type, Type> _simpleServiceMappings;" ).NewLine()
+                                .Append( "Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;" ).NewLine();
 
             rootCtx.Append( "public " ).Append( StObjContextRoot.RootContextTypeName ).Append( "(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" ).NewLine()
                    .Append( "{" ).NewLine()
@@ -276,6 +318,25 @@ class GStObj : IStObj
                            .NewLine();
                 }
             }
+            // Service mappings (Simple).
+            rootCtx.Append( $"_simpleServiceMappings = new Dictionary<Type, Type>();" ).NewLine();
+            foreach( var map in Services.SimpleMappings )
+            {
+                rootCtx.Append( $"_simpleServiceMappings.Add( " )
+                       .AppendCSharpName( map.Key, false )
+                       .Append( ", " )
+                       .AppendCSharpName( map.Value, false )
+                       .Append( " )" )
+                       .NewLine();
+            }
+            // Service mappings (Not so Simple :)).
+            rootCtx.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>();" ).NewLine();
+            foreach( var map in _liftedMap.ServiceManualMappings )
+            {
+                rootCtx.Append( $"_manualServiceMappings.Add( " )
+                       .AppendCSharpName( map.Key, false )
+                       .Append( ", " ).Append( serviceGen.GetServiceClassFactoryName( map.Value ) ).Append( " )" ).NewLine();
+            }
             rootCtx.Append( "} // /ctor" ).NewLine();
 
             rootCtx.Append( $"public string MapName => " ).AppendSourceString( MapName ).Append( ';' ).NewLine();
@@ -294,7 +355,14 @@ class GStObj : IStObj
             IEnumerable<StObjImplementation> IStObjObjectMap.StObjs => _implStObjs.Select( s => s.AsStObjImplementation );
             IEnumerable<KeyValuePair<Type, object>> IStObjObjectMap.Mappings => _map.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
 
-            GStObj GToLeaf( Type t ) => _map.TryGetValue( t, out var s ) ? s.Leaf : null; " ).NewLine();
+            GStObj GToLeaf( Type t ) => _map.TryGetValue( t, out var s ) ? s.Leaf : null;
+
+            public IStObjServiceMap Services => this;
+            IReadOnlyDictionary<Type, Type> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
+            IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;
+
+            " ).NewLine();
+
         }
 
         static void GenerateValue( ICodeWriter b, object o )
@@ -310,6 +378,81 @@ class GStObj : IStObj
             else
             {
                 b.Append( o );
+            }
+        }
+
+        class ServiceFactoryInfoGenerator
+        {
+            readonly ITypeScope _b;
+            readonly Dictionary<IStObjServiceClassFactoryInfo, string> _names;
+
+            public ServiceFactoryInfoGenerator( INamespaceScope ns )
+            {
+                _b = ns.CreateType( "public static class SFInfo" );
+                _names = new Dictionary<IStObjServiceClassFactoryInfo, string>();
+            }
+
+            public string GetServiceClassFactoryName( IStObjServiceFinalManualMapping f )
+            {
+                return $"SFInfo.S{f.Number}.Default";
+            }
+
+            public void CreateServiceClassFactory( IStObjServiceFinalManualMapping f )
+            {
+                var b = _b.CreatePart();
+                b.Append( "class S" ).Append( f.Number )
+                 .Append( ": StObjServiceClassFactoryInfo, IStObjServiceClassFactory" ).NewLine()
+                 .Append( '{' ).NewLine()
+                 .Append( "public SF" ).Append( f.Number ).Append( "()" ).NewLine()
+                 .Append( ": base( typeof(" ).AppendCSharpName( f.ClassType, false ).Append( "), " ).NewLine();
+                GenerateStObjServiceFactortInfoAssignments( b, f.Assignments );
+                b.Append( ") {}" ).NewLine()
+                 .Append( "public object CreateInstance( IServiceProvider provider )" ).NewLine()
+                 .Append( '{' ).NewLine();
+
+                b.Append( "throw new NotImplementedException();" );
+
+                b.Append( '}' ).NewLine();
+                b.Append( "public static readonly StObjServiceClassFactoryInfo Instance = new SF" ).Append( f.Number ).Append( "();" ).NewLine();
+                b.Append( '}' ).NewLine();
+            }
+
+            string GetInfoName( IStObjServiceClassFactoryInfo info )
+            {
+                if( info == null ) return "null";
+                if( !_names.TryGetValue( info, out var n ) )
+                {
+                    n = $"I{_names.Count}";
+                    var localPart = _b.CreatePart();
+                    localPart.Append( "static readonly StObjServiceClassFactoryInfo " ).Append( n )
+                             .Append( " = new StObjServiceClassFactoryInfo( " )
+                             .AppendCSharpName( info.ClassType, false ).Append( ',' ).NewLine();
+                    GenerateStObjServiceFactortInfoAssignments( localPart, info.Assignments );
+                    localPart.Append( ");" ).NewLine();
+                }
+                return n;
+            }
+
+            void GenerateStObjServiceFactortInfoAssignments( ICodeWriter b, IReadOnlyList<IStObjServiceParameterInfo> assignments )
+            {
+                if( assignments.Count == 0 )
+                {
+                    b.Append( "Array.Empty<StObjServiceParameterInfo>()" );
+                }
+                else
+                {
+                    b.Append( "new[]{" ).NewLine();
+                    foreach( var a in assignments )
+                    {
+                        b.Append( "new StObjServiceParameterInfo(" )
+                         .AppendCSharpName( a.ParameterType, false ).Append( ", " )
+                         .Append( a.Position ).Append( ", " )
+                         .AppendSourceString( a.Name ).Append( ", " ).NewLine();
+                        GetInfoName( a.Value );
+                        b.Append( ')' );
+                    }
+                    b.Append( '}' ).NewLine();
+                }
             }
         }
 

@@ -49,6 +49,7 @@ namespace CK.Core
             _collector = new Dictionary<Type, StObjTypeInfo>();
             _roots = new List<StObjTypeInfo>();
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
+            _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
             _mapName = mapName ?? String.Empty;
@@ -177,7 +178,7 @@ namespace CK.Core
 
         protected void RegisterAssembly(Type t)
         {
-            var a = t.GetTypeInfo().Assembly;
+            var a = t.Assembly;
             if( !a.IsDynamic ) _assemblies.Add( a );
         }
 
@@ -212,12 +213,14 @@ namespace CK.Core
             List<List<MutableItem>> concreteClasses = new List<List<MutableItem>>();
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();
+            var deepestConcretes = new List<(MutableItem, ImplementableTypeInfo)>();
             int idxSpecialization = 0;
-            Debug.Assert( _roots.All( info => !info.IsExcluded ), "_roots contains only not Excluded types." );
+
+            Debug.Assert( _roots.All( info => info != null && !info.IsExcluded && info.Generalization == null),
+                "_roots contains only not Excluded types." );
             foreach( StObjTypeInfo newOne in _roots )
             {
-                Debug.Assert( newOne.Generalization == null );
-                var deepestConcretes = new List<(MutableItem, ImplementableTypeInfo)>();
+                deepestConcretes.Clear();
                 newOne.CreateMutableItemsPath( _monitor, _serviceProvider, engineMap, null, _tempAssembly, deepestConcretes, abstractTails );
                 if( deepestConcretes.Count == 1 )
                 {

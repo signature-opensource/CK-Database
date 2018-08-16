@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
+using CK.Text;
 
 namespace CK.Setup
 {
@@ -12,7 +13,7 @@ namespace CK.Setup
     /// Discovers available structure objects and instanciates them. 
     /// Once Types are registered, the <see cref="GetResult"/> method initializes the full object graph.
     /// </summary>
-    public class StObjCollector
+    public partial class StObjCollector
     {
         readonly AmbientTypeCollector _cc;
         readonly IStObjStructuralConfigurator _configurator;
@@ -159,7 +160,7 @@ namespace CK.Setup
         {
             if( types == null ) throw new ArgumentNullException();
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
-            using( _monitor.OpenTrace( $"Explicitely registering {count} type(s)." ) )
+            using( _monitor.OpenTrace( $"Explicitly registering {count} type(s)." ) )
             {
                 try
                 {
@@ -197,6 +198,10 @@ namespace CK.Setup
                 throw new CKException( $"There are {_registerFatalOrErrorCount} registration errors." );
             }
             var (typeResult, orderedItems) = CreateTypeAndContractResults();
+            if( orderedItems != null )
+            {
+                if( !RegisterServices( typeResult ) ) orderedItems = null;
+            }
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }
 
@@ -281,14 +286,13 @@ namespace CK.Setup
                 {
                     using( _monitor.OpenInfo( "Calling StObjConstruct." ) )
                     {
-                        int idxSpecialization = 0;
                         foreach( ISortedItem sorted in sortResult.SortedItems )
                         {
                             var m = (MutableItem)sorted.Item;
                             // Calls StObjConstruct on Head for Groups.
                             if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                             {
-                                m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Rank, sorted.Requires, sorted.Children, sorted.Groups );
+                                m.SetSorterData( ordered.Count, sorted.Rank, sorted.Requires, sorted.Children, sorted.Groups );
                                 using( _monitor.OpenTrace( $"Constructing '{m.ToString()}'." ) )
                                 {
                                     try
@@ -372,7 +376,6 @@ namespace CK.Setup
             }
             return nbItems;
         }
-
     }
 
 }

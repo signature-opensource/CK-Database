@@ -64,7 +64,7 @@ namespace CK.Setup
                                 result.ItemKind = (DependentItemKind)a.ItemKind;
                                 result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
-                            Type tAbove = t.GetTypeInfo().BaseType;
+                            Type tAbove = t.BaseType;
                             while( tAbove != typeof( object ) )
                             {
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
@@ -78,7 +78,7 @@ namespace CK.Setup
                                         if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
                                     }
                                 }
-                                tAbove = tAbove.GetTypeInfo().BaseType;
+                                tAbove = tAbove.BaseType;
                             }
                             // Ambient, Contracts & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
@@ -118,7 +118,7 @@ namespace CK.Setup
                     IList<InjectContractInfo> acCollector;
                     AmbientPropertyOrInjectContractInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
 
-                    CreateAllAmbientPropertyList( monitor, type.GetTypeInfo().BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
 
                     apListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
                     acListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
@@ -296,6 +296,9 @@ namespace CK.Setup
 
         public Type Container { get; private set; }
 
+        /// <summary>
+        /// Gets the specialization depth from root object type (Object's depth being 0).
+        /// </summary>
         public int SpecializationDepth { get; private set; }
         
         public DependentItemKind ItemKind { get; private set; }
@@ -334,27 +337,28 @@ namespace CK.Setup
         internal bool CreateMutableItemsPath(
             IActivityMonitor monitor,
             IServiceProvider services,
-            StObjObjectEngineMap context,
+            StObjObjectEngineMap engineMap,
             MutableItem generalization,
             IDynamicAssembly tempAssembly,
             List<(MutableItem, ImplementableTypeInfo)> lastConcretes,
             List<Type> abstractTails )
         {
-            var item = new MutableItem( this, generalization, context );
+            Debug.Assert( tempAssembly != null );
+            var item = new MutableItem( this, generalization, engineMap );
             bool concreteBelow = false;
             foreach( StObjTypeInfo c in Specializations )
             {
                 Debug.Assert( !c.IsExcluded );
-                concreteBelow |= c.CreateMutableItemsPath( monitor, services, context, item, tempAssembly, lastConcretes, abstractTails );
+                concreteBelow |= c.CreateMutableItemsPath( monitor, services, engineMap, item, tempAssembly, lastConcretes, abstractTails );
             }
             if( !concreteBelow )
             {
                 ImplementableTypeInfo autoImplementor = null;
                 if( Type.IsAbstract
-                    && (tempAssembly == null
-                        || (autoImplementor = CreateAbstractTypeImplementation( monitor, tempAssembly)) == null ) )
+                    && (autoImplementor = CreateAbstractTypeImplementation( monitor, tempAssembly)) == null )
                 {
                     abstractTails.Add( Type );
+                    Generalization?.RemoveSpecialization( this );
                 }
                 else
                 {

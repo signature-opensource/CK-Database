@@ -35,7 +35,7 @@ namespace CK.Core
                                                  .Append( root.PocoClass.Name )
                                                  .Append( " : " )
                                                  .Append( root.Interfaces.Select( i => i.PocoInterface.ToCSharpName() ) ) );
-                    foreach( var p in root.PocoClass.GetTypeInfo().GetProperties() )
+                    foreach( var p in root.PocoClass.GetProperties() )
                     {
                         tB.Append("public " ).AppendCSharpName( p.PropertyType ).Space().Append( p.Name ).Append( "{" );
                         tB.Append( "get;" );

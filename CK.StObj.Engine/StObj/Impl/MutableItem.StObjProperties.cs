@@ -98,7 +98,7 @@ namespace CK.Setup
                     {
                         if( v == null )
                         {
-                            if( p.Type.GetTypeInfo().IsValueType && !(p.Type.GetTypeInfo().IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
+                            if( p.Type.IsValueType && !(p.Type.IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
                                 monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' has been set to null but its type '{p.Type.Name}' is not nullable." );
                                 setIt = false;

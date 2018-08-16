@@ -633,40 +633,32 @@ namespace CK.Setup
         /// Called by StObjCollector once the mutable items have been sorted.
         /// </summary>
         /// <param name="idx">The index in the whole ordered list of items.</param>
-        /// <param name="idxSpecialization">Maintained index for specialization only.</param>
         /// <param name="rank">Rank in the depedency graph. This is used for Service association.</param>
         /// <param name="requiresFromSorter">Required items.</param>
         /// <param name="childrenFromSorter">Children items.</param>
         /// <param name="groupsFromSorter">Groups items.</param>
-        internal void SetSorterData( int idx, ref int idxSpecialization, int rank, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
+        internal void SetSorterData( int idx, int rank, IEnumerable<ISortedItem> requiresFromSorter, IEnumerable<ISortedItem> childrenFromSorter, IEnumerable<ISortedItem> groupsFromSorter )
         {
             Debug.Assert( IndexOrdered == 0 );
             IndexOrdered = idx;
+            RankOrdered = rank;
             _dRequires = requiresFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
             _dChildren = childrenFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
             _dGroups = groupsFromSorter.Select( s => (MutableItem)s.Item ).ToArray();
             // requiredBy are useless.
             _dRequiredBy = null;
-            // Increments Specialization index.
-            if( Specialization == null )
-            {
-                _leafData.SpecializationIndexOrdered = idxSpecialization++;
-            }
         }
 
         /// <summary>
-        /// This is the index to use to reference a IStObj in a setup phase (cross context).
-        /// To reference a StructuredObject, use the <see cref="SpecializationIndexOrdered"/>.
+        /// Gets the index of this IStObj. Available once ordering has been done.
         /// </summary>
         public int IndexOrdered { get; private set; }
 
         /// <summary>
-        /// Index to use to reference the specialization among all other specialization (cross context).
+        /// Gets the rank of this IStObj. Available once ordering has been done.
         /// </summary>
-        public int SpecializationIndexOrdered 
-        {
-            get { return _leafData.SpecializationIndexOrdered; } 
-        }
+        public int RankOrdered { get; private set; }
+
 
         #region IDependentItemContainerAsk Members
 

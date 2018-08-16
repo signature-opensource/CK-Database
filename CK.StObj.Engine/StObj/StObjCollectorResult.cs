@@ -58,6 +58,11 @@ namespace CK.Setup
         public IStObjObjectEngineMap StObjs => _liftedMap;
 
         /// <summary>
+        /// Gets the <see cref="IStObjServiceMap"/>.
+        /// </summary>
+        public IStObjServiceMap Services => _liftedMap;
+
+        /// <summary>
         /// Gets the name of this StObj map.
         /// Never null, defaults to the empty string.
         /// </summary>

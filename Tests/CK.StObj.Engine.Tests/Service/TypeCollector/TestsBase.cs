@@ -27,16 +27,16 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public static AmbientTypeCollectorResult CheckSuccess( AmbientTypeCollector c )
         {
             var r = c.GetResult();
-            r.HasFatalError.Should().Be( false );
             r.LogErrorAndWarnings( TestHelper.Monitor );
+            r.HasFatalError.Should().Be( false, "There must be no error." );
             return r;
         }
 
         public static AmbientTypeCollectorResult CheckFailure( AmbientTypeCollector c )
         {
             var r = c.GetResult();
-            r.HasFatalError.Should().Be( true );
             r.LogErrorAndWarnings( TestHelper.Monitor );
+            r.HasFatalError.Should().Be( true, "There must be at least one fatal error." );
             return r;
         }
 

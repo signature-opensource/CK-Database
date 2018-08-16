@@ -13,7 +13,7 @@ namespace CK.Core
     /// <summary>
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
     /// </summary>
-    class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap
+    partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
     {
         readonly Dictionary<object, MutableItem> _map;
         readonly MutableItem[] _allSpecializations;
@@ -32,6 +32,11 @@ namespace CK.Core
             MapName = mapName;
             _map = new Dictionary<object, MutableItem>();
             _allSpecializations = allSpecializations;
+            _serviceMap = new Dictionary<Type, AmbientServiceClassInfo>();
+            _exposedServiceMap = new ServiceMapTypeAdapter( _serviceMap );
+            _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
+            _exposedManualServiceMap = new ServiceManualMapTypeAdapter( _serviceManualMap );
+            _serviceManualList = new List<IStObjServiceFinalManualMapping>();
         }
 
         internal void AddClassMapping( Type t, MutableItem m )
@@ -106,7 +111,7 @@ namespace CK.Core
             {
                 if( c.Type.Type != t )
                 {
-                    if( t.GetTypeInfo().IsInterface )
+                    if( t.IsInterface )
                     {
                         _map.TryGetValue( new AmbientContractInterfaceKey( t ), out c );
                     }
@@ -167,6 +172,5 @@ namespace CK.Core
         IStObjResult IStObjObjectEngineMap.ToLeaf( Type t ) => ToLeaf( t );
 
         IStObj IStObjObjectMap.ToLeaf( Type t ) => ToLeaf( t );
-
     }
 }
