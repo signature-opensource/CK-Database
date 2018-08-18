@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CK.Core
 {
@@ -14,7 +13,8 @@ namespace CK.Core
     {
         /// <summary>
         /// Gets the actual Type that must be instanciated.
-        /// This Type has, by design, one and only one public constructor.
+        /// This Type has, by design, one and only one public constructor
+        /// (see <see cref="StObjServiceClassFactoryInfoExtension.GetSingleConstructor"/>).
         /// </summary>
         Type ClassType { get; }
 

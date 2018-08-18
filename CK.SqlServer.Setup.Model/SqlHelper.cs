@@ -72,7 +72,7 @@ namespace CK.SqlServer
                 if( p.Direction != ParameterDirection.ReturnValue )
                 {
                     if( atLeastOne ) w.Write( ", " );
-                    else atLeastOne = true;
+                    atLeastOne = true;
                     w.Write( p.ParameterName );
                     w.Write( '=' );
                     w.Write( SqlValue( p.Value, p.SqlDbType ) );

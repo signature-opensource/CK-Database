@@ -42,13 +42,13 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<PropertySetter> PreConstructProperties => _preConstruct;
 
-        public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
-        {
-            Debug.Assert( Specialization == null );
-            return _leafData.ImplementableTypeInfo == null
-                        ? ObjectType.ToCSharpName() 
-                        : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
-        }
+        //public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
+        //{
+        //    Debug.Assert( Specialization == null );
+        //    return _leafData.ImplementableTypeInfo == null
+        //                ? ObjectType.ToCSharpName() 
+        //                : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
+        //}
 
         /// <summary>
         /// Gets the post build properties to set. Potentially not null only on leaves.

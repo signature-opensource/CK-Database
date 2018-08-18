@@ -58,7 +58,8 @@ namespace CK.Setup
             public object StructuredObject;
 
             /// <summary>
-            /// Concerns the specialization.
+            /// The ImplementableTypeInfo is not null only if the Type is abstract but
+            /// a <see cref="ImplementableTypeInfo.StubType"/> has been successfuly created.
             /// </summary>
             public ImplementableTypeInfo ImplementableTypeInfo;
 
@@ -66,12 +67,6 @@ namespace CK.Setup
             /// Useless to store it at each level.
             /// </summary>
             public MutableItem RootGeneralization;
-
-            /// <summary>
-            /// The index in the final ordered list of specialization.
-            /// This is updated right after items have been sorted.
-            /// </summary>
-            public int SpecializationIndexOrdered;
 
             public List<PropertySetter> PostBuildProperties;
 
@@ -279,7 +274,16 @@ namespace CK.Setup
 
         public StObjObjectEngineMap EngineMap { get; }
 
+        /// <summary>
+        /// Gets the StObjTypeInfo basic and immutable information.
+        /// </summary>
         public StObjTypeInfo Type { get; }
+
+        /// <summary>
+        /// The ImplementableTypeInfo is not null only if the Type is abstract but
+        /// a <see cref="ImplementableTypeInfo.StubType"/> has been successfuly created.
+        /// </summary>
+        public ImplementableTypeInfo ImplementableTypeInfo => _leafData.ImplementableTypeInfo;
 
         /// <summary>
         /// Gets the generalization. 

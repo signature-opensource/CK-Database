@@ -139,9 +139,16 @@ namespace CK.Core
         public IReadOnlyList<CtorParameter> ConstructorParameters { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="AmbientTypeInfo.Type"/> is abstract.
+        /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="AmbientTypeInfo.Type"/>
+        /// is abstract, null otherwise.
         /// </summary>
         public ImplementableTypeInfo ImplementableTypeInfo { get; private set; }
+
+        /// <summary>
+        /// Gets the final type that must be used: it is <see cref="ImplementableTypeInfo.StubType"/>
+        /// if this type is abstract otherwise it is the associated concrete <see cref="AmbientTypeInfo.Type"/>.
+        /// </summary>
+        public Type FinalType => ImplementableTypeInfo?.StubType ?? Type;
 
         /// <summary>
         /// Gets the specialization depth from the first top AmbientServiceClassInfo.

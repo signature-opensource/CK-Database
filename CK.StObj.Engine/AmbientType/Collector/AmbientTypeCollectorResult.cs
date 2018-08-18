@@ -57,6 +57,23 @@ namespace CK.Core
         public bool HasFatalError => PocoSupport == null || AmbientContracts.HasFatalError || AmbientServices.HasFatalError;
 
         /// <summary>
+        /// Gets all the <see cref="ImplementableTypeInfo"/>: Abstract types that require a code generation
+        /// that are either StObjs (AmbientContracts) or service classes (AmbientServices).
+        /// </summary>
+        public IEnumerable<ImplementableTypeInfo> TypesToImplement
+        {
+            get
+            {
+                var all = AmbientContracts.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
+                            .Concat( AmbientServices.RootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
+                            .Concat( AmbientServices.SubGraphRootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
+                            .Where( i => i != null );
+                Debug.Assert( all.GroupBy( i => i ).Where( g => g.Count() > 1 ).Any() == false, "No duplicates." );
+                return all;
+            }
+        }
+
+        /// <summary>
         /// Logs detailed information about discovered items.
         /// </summary>
         /// <param name="monitor">Logger (must not be null).</param>

@@ -50,7 +50,7 @@ namespace CK.Setup
                 _params = new List<CtorParameter>();
                 foreach( var p in Class.ConstructorParameters )
                 {
-                    var afterMe = f.Classes.Where( c => !IsNecessarilyBefore( c ) );
+                    var afterMe = f.Classes.Where( c => c != this && CanBeFollowedBy( c ) );
                     var typeCompatible = afterMe.Where( t => p.ParameterInfo.ParameterType.IsAssignableFrom( t.Class.Type ) );
                     var sSet = new HashSet<SCRClass>( typeCompatible );
                     if( sSet.Count > 0 )
@@ -68,13 +68,13 @@ namespace CK.Setup
                 _isHeadCandidate = !f.Interfaces.Except( Class.Interfaces ).Any();
             }
 
-            public bool IsNecessarilyBefore( SCRClass other )
+            public bool CanBeFollowedBy( SCRClass other )
             {
                 // Other may not have been initialized yet.
                 // Debug.Assert( other._family == _family );
                 int thisRank = Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
                 int otherRank = other.Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
-                return thisRank > otherRank;
+                return thisRank >= otherRank;
             }
 
             public InterfaceFamily Family => _family;
@@ -232,9 +232,12 @@ namespace CK.Setup
             {
                 Parameter = p;
                 Value = v;
+                IsRequired = Value == BuildClassInfo.NullValue
+                             || ParameterType.IsInterface
+                             || Value.Assignments.Any( a => a.IsRequired );
             }
 
-            public bool IsRequired => Value == BuildClassInfo.NullValue || ParameterType.IsInterface;
+            public bool IsRequired { get; }
 
             public Type ParameterType => Parameter.Parameter.ParameterInfo.ParameterType;
 
@@ -325,7 +328,8 @@ namespace CK.Setup
                     {
                         using( _monitor.OpenInfo( $"Service Chaining resolution required for {f}." ) )
                         {
-                            if( !f.InitializeClasses( _monitor ) || !ResolveChain( engineMap, f ) )
+                            if( !f.InitializeClasses( _monitor )
+                                || !ResolveChain( engineMap, f ) )
                             {
                                 _monitor.CloseGroup( "Failed." );
                                 success = false;
@@ -351,16 +355,24 @@ namespace CK.Setup
                 var solved = new List<BuildClassInfo>();
                 for( int i = 0; i < heads.Count; ++i )
                 {
-                    var cache = new Dictionary<SCRClass, BuildClassInfo>();
-                    var chain = BuildChain( heads[i], f.Classes, cache );
-                    if( chain != null )
+                    using( _monitor.OpenTrace( $"Trying to resolve from '{heads[i].Class.Type.Name}' head." ) )
                     {
-                        Debug.Assert( cache.Count <= f.Classes.Count );
-                        if( cache.Count < f.Classes.Count )
+                        var cache = new Dictionary<SCRClass, BuildClassInfo>();
+                        var chain = BuildChain( heads[i], f.Classes, cache );
+                        if( chain != null )
                         {
-                            _monitor.Debug( $"Chain {solved} is too short." );
+                            Debug.Assert( cache.Count <= f.Classes.Count );
+                            if( cache.Count < f.Classes.Count )
+                            {
+                                _monitor.CloseGroup( $"Chain {chain} is too short." );
+                            }
+                            else
+                            {
+                                solved.Add( chain );
+                                _monitor.CloseGroup( $"-> {chain}." );
+                            }
                         }
-                        else solved.Add( chain );
+                        else _monitor.CloseGroup( $"Failed." );
                     }
                 }
                 if( solved.Count == 1 )
@@ -400,17 +412,11 @@ namespace CK.Setup
                 var cInfo = BindParameter( head.Parameters[i], remainders, cache );
                 if( cInfo == null )
                 {
-                    _monitor.Error( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
+                    _monitor.Warn( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
                     return null;
                 }
                 bindings[i] = new ParameterAssignment( p, cInfo );
             }
-            //var bindings = head.Parameters.Select( p => new ParameterAssignment( p, BindParameter( p, remainders, cache ) ) ).ToArray();
-            //if( bindings.Any( b => b.Value == null ) )
-            //{
-            //    _monitor.Error( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate( "', '" )}'." );
-            //    return null;
-            //}
             result = new BuildClassInfo( head, bindings );
             cache.Add( head, result );
             return result;
@@ -421,6 +427,7 @@ namespace CK.Setup
             var possible = p.StatisficationSet
                                 .Intersect( remainders )
                                 .ToList();
+            SCRClass unambiguousPossible = null;
             if( possible.Count == 0 )
             {
                 if( p.HasDefault )
@@ -428,15 +435,42 @@ namespace CK.Setup
                     _monitor.Trace( $"Using null default for parameter {p}." );
                     return BuildClassInfo.NullValue;
                 }
-                _monitor.Error( $"Unable to bind parameter {p}." );
+                _monitor.Warn( $"Unable to bind parameter {p}." );
                 return null;
             }
-            if( possible.Count > 1 )
+            if( possible.Count == 1 ) unambiguousPossible = possible[0];
+            else
             {
-                _monitor.Error( $"Ambiguous binding for parameter {p}: {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
-                return null;
+                // Heuristic: consider that the class that more parameters are more general.
+                possible.Sort( ( c1, c2 ) => c2.Parameters.Count - c1.Parameters.Count );
+                // Do not rely on RankOrder, only on the IsNecessarilyBefore predicate: this way, the "ordering"
+                // can rely on any other rules and has not to be a projection on scalar.
+                // This is awfully n² but we don't care for the moment.
+                for( int i = 0; i < possible.Count; ++i )
+                {
+                    bool found = true;
+                    for( int j = 0; j < possible.Count; j++ )
+                    {
+                        if( i == j ) continue;
+                        if( !possible[i].CanBeFollowedBy( possible[j] ) )
+                        {
+                            found = false;
+                            break;
+                        }
+                    }
+                    if( found )
+                    {
+                        unambiguousPossible = possible[i];
+                        break;
+                    }
+                }
+                if( unambiguousPossible == null )
+                {
+                    _monitor.Warn( $"Ambiguous binding for parameter {p}: {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
+                    return null;
+                }
             }
-            var result = BuildChain( possible[0], remainders, cache );
+            var result = BuildChain( unambiguousPossible, remainders, cache );
             return result;
         }
 

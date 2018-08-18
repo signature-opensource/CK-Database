@@ -86,7 +86,6 @@ namespace CK.StObj.Engine.Tests
             {
                 var runtimeBuilder = new StObjRuntimeBuilder();
 
-
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), runtimeBuilder: runtimeBuilder );
                 collector.RegisterType( typeof( B ) );
                 collector.RegisterType( typeof( D ) );

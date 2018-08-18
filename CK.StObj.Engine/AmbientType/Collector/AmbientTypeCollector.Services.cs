@@ -137,11 +137,16 @@ namespace CK.Core
                 List<(AmbientServiceClassInfo Root, AmbientServiceClassInfo[] Leaves)> ambiguities = null;
                 // We must wait until all paths have been initialized before ensuring constructor parameters
                 AmbientServiceClassInfo[] resolvedLeaves = new AmbientServiceClassInfo[_serviceRoots.Count];
-                for( int i = 0; i < resolvedLeaves.Length; ++i )
+                for( int i = 0; i < _serviceRoots.Count; ++i )
                 {
                     var c = _serviceRoots[i];
                     deepestConcretes.Clear();
-                    c.InitializePath( _monitor, this, null, _tempAssembly, deepestConcretes, ref abstractTails );
+                    if( !c.InitializePath( _monitor, this, null, _tempAssembly, deepestConcretes, ref abstractTails ) )
+                    {
+                        _monitor.Warn( $"Service '{c.Type.Name}' is abstract. It is ignored." );
+                        _serviceRoots.RemoveAt( i-- );
+                        continue;
+                    }
                     // If deepestConcretes is empty it means that the whole chain is purely abstract.
                     // We ignore it.
                     if( deepestConcretes.Count == 1 )
@@ -155,9 +160,9 @@ namespace CK.Core
                         ambiguities.Add( (c, deepestConcretes.ToArray()) );
                     }
                 }
-                _monitor.Trace( $"Found {resolvedLeaves.Length} unambiguous paths." );
+                _monitor.Trace( $"Found {_serviceRoots.Count} unambiguous paths." );
                 // Initializes all non ambiguous paths.
-                for( int i = 0; i < resolvedLeaves.Length; ++i )
+                for( int i = 0; i < _serviceRoots.Count; ++i )
                 {
                     var leaf = resolvedLeaves[i];
                     if( leaf != null )

@@ -31,12 +31,12 @@ namespace CK.Core
                 get
                 {
                     if( !_map.TryGetValue( key, out var c ) ) return null;
-                    return c.ImplementableTypeInfo?.StubType ?? c.Type;
+                    return c.FinalType;
                 }
             }
             public IEnumerable<Type> Keys => _map.Keys;
 
-            public IEnumerable<Type> Values => _map.Values.Select( c => c.ImplementableTypeInfo?.StubType ?? c.Type );
+            public IEnumerable<Type> Values => _map.Values.Select( c => c.FinalType );
 
             public int Count => _map.Count;
 
@@ -44,14 +44,14 @@ namespace CK.Core
 
             public IEnumerator<KeyValuePair<Type, Type>> GetEnumerator()
             {
-                return _map.Select( kv => new KeyValuePair<Type, Type>( kv.Key, kv.Value.ImplementableTypeInfo?.StubType ?? kv.Value.Type ) ).GetEnumerator();
+                return _map.Select( kv => new KeyValuePair<Type, Type>( kv.Key, kv.Value.FinalType ) ).GetEnumerator();
             }
 
             public bool TryGetValue( Type key, out Type value )
             {
                 value = null;
                 if( !_map.TryGetValue( key, out var c ) ) return false;
-                value = c.ImplementableTypeInfo?.StubType ?? c.Type;
+                value = c.FinalType;
                 return true;
             }
 
@@ -120,35 +120,40 @@ namespace CK.Core
 
             public object CreateInstance( IServiceProvider provider )
             {
-                return Create( provider, this );
+                return Create( provider, this, new Dictionary<IStObjServiceClassFactoryInfo,object>() );
             }
 
-            static object Create( IServiceProvider provider, IStObjServiceClassFactoryInfo c )
+            static object Create( IServiceProvider provider, IStObjServiceClassFactoryInfo c, Dictionary<IStObjServiceClassFactoryInfo,object> cache )
             {
-                var ctor = c.ClassType.GetConstructors().Single();
-                var parameters = ctor.GetParameters();
-                var values = new object[parameters.Length];
-                for( int i = 0; i < parameters.Length; ++i )
+                if( !cache.TryGetValue( c, out var result ) )
                 {
-                    var p = parameters[i];
-                    var mapped = c.Assignments.Where( a => a.Position == p.Position ).FirstOrDefault();
-                    if( mapped == null )
+                    var ctor = c.GetSingleConstructor();
+                    var parameters = ctor.GetParameters();
+                    var values = new object[parameters.Length];
+                    for( int i = 0; i < parameters.Length; ++i )
                     {
-                        values[i] = provider.GetService( p.ParameterType );
-                    }
-                    else
-                    {
-                        if( mapped.Value == null )
+                        var p = parameters[i];
+                        var mapped = c.Assignments.Where( a => a.Position == p.Position ).FirstOrDefault();
+                        if( mapped == null )
                         {
-                            values[i] = null;
+                            values[i] = provider.GetService( p.ParameterType );
                         }
                         else
                         {
-                            values[i] = Create( provider, mapped.Value );
+                            if( mapped.Value == null )
+                            {
+                                values[i] = null;
+                            }
+                            else
+                            {
+                                values[i] = Create( provider, mapped.Value, cache );
+                            }
                         }
                     }
+                    result = ctor.Invoke( values );
+                    cache.Add( c, result );
                 }
-                return ctor.Invoke( values );
+                return result;
             }
         }
 

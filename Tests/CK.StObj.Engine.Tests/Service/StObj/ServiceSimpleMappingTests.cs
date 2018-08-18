@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class ServiceSimpleMappingTests : TestsBase
     {
-        interface ISBase : IAmbientService
+        public interface ISBase : IAmbientService
         {
         }
 
@@ -214,6 +214,53 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( S3 )].Should().BeSameAs( typeof( S3 ) );
             r.Services.SimpleMappings[typeof( S4 )].Should().BeSameAs( typeof( S4 ) );
         }
+
+        public abstract class AbstractS1 : ISBase
+        {
+            public AbstractS1( AbstractS2 s2 )
+            {
+            }
+        }
+
+        public abstract class AbstractS2 : ISBase
+        {
+            public AbstractS2( AbstractS3 s3 )
+            {
+            }
+        }
+
+        public abstract class AbstractS3 : ISBase
+        {
+            public AbstractS3()
+            {
+            }
+        }
+
+        [Test]
+        public void Linked_list_of_service_abstract_classes()
+        {
+            var collector = CreateStObjCollector();
+            collector.RegisterType( typeof( AbstractS1 ) );
+            collector.RegisterType( typeof( AbstractS2 ) );
+            collector.RegisterType( typeof( AbstractS3 ) );
+            var (r, map) = CheckSuccessAndEmit( collector );
+
+            var final = r.Services.SimpleMappings[typeof( ISBase )];
+            final.Should().NotBeSameAs( typeof( AbstractS1 ) );
+            final.Should().BeAssignableTo( typeof( AbstractS1 ) );
+            r.Services.SimpleMappings[typeof( AbstractS1 )].Should().BeSameAs( final );
+
+            r.Services.SimpleMappings[typeof( AbstractS2 )].Should().NotBeSameAs( typeof( AbstractS2 ) );
+            r.Services.SimpleMappings[typeof( AbstractS2 )].Should().BeAssignableTo( typeof( AbstractS2 ) );
+            r.Services.SimpleMappings[typeof( AbstractS3 )].Should().NotBeSameAs( typeof( AbstractS3 ) );
+            r.Services.SimpleMappings[typeof( AbstractS3 )].Should().BeAssignableTo( typeof( AbstractS3 ) );
+
+            IServiceProvider p = TestHelper.CreateAndConfigureSimpleContainer( map );
+            var oG = p.GetService<ISBase>();
+            oG.GetType().FullName.Should().StartWith( "CK._g.AbstractS1" );
+
+        }
+
 
     }
 }
