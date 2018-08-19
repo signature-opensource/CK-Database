@@ -83,7 +83,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             oG2.Collect().Should().Be( "SOnFront1_3[SFront1_2[SBaseLeaf_1]]" );
         }
 
-        Lazy<(StObjCollectorResult, IStObjMap)> SFront1InP1Graph = new Lazy<(StObjCollectorResult, IStObjMap)>( () =>
+        (StObjCollectorResult, IStObjMap) GetSFront1InP1Graph()
         {
             var collector = CreateStObjCollector( SamplePackages );
             collector.RegisterType( typeof( Samples.SFront1 ) );
@@ -91,12 +91,12 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisterType( typeof( Samples.SOnFront1 ) );
             collector.RegisterType( typeof( Samples.SFront1InP1 ) );
             return CheckSuccessAndEmit( collector );
-        } );
+        }
 
         [Test]
         public void SFront1InP1_is_necessarily_before()
         {
-            var (r, map) = SFront1InP1Graph.Value;
+            var (r, map) = GetSFront1InP1Graph();
             Samples.ObjectNumber = 0;
             IServiceProvider p = TestHelper.CreateAndConfigureSimpleContainer( map );
             var o = p.GetService<Samples.ISBase>();
@@ -107,7 +107,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         [Test]
         public void asking_for_a_link_class_bound_to_the_abstraction_in_a_chain_leads_to_funny_result()
         {
-            var (r, map) = SFront1InP1Graph.Value;
+            var (r, map) = GetSFront1InP1Graph();
             Samples.ObjectNumber = 0;
             IServiceProvider p = TestHelper.CreateAndConfigureSimpleContainer( map );
 

@@ -68,14 +68,9 @@ namespace CK.Setup
                 _isHeadCandidate = !f.Interfaces.Except( Class.Interfaces ).Any();
             }
 
-            public bool CanBeFollowedBy( SCRClass other )
-            {
-                // Other may not have been initialized yet.
-                // Debug.Assert( other._family == _family );
-                int thisRank = Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
-                int otherRank = other.Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
-                return thisRank >= otherRank;
-            }
+            public bool CanBeFollowedBy( SCRClass other ) => RankOrdered >= other.RankOrdered;
+
+            public int RankOrdered => Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
 
             public InterfaceFamily Family => _family;
 
@@ -268,7 +263,19 @@ namespace CK.Setup
                 Class = c;
                 Assignments = a;
                 _finalAssignments = Assignments.Where( s => s.IsRequired ).ToArray();
+                var content = new HashSet<SCRClass>();
+                foreach( var ac in a )
+                {
+                    if( ac.Value != null )
+                    {
+                        content.Add( ac.Value.Class );
+                        content.UnionWith( ac.Value.Content );
+                    }
+                }
+                Content = content;
             }
+
+            public IReadOnlyCollection<SCRClass> Content { get; }
 
             Type IStObjServiceClassFactoryInfo.ClassType => Class.Class.Type;
 
@@ -352,29 +359,23 @@ namespace CK.Setup
             }
             else
             {
-                var solved = new List<BuildClassInfo>();
-                for( int i = 0; i < heads.Count; ++i )
+                var cache = new Dictionary<SCRClass, BuildClassInfo>();
+                bool foundNewOne = false;
+                do
                 {
-                    using( _monitor.OpenTrace( $"Trying to resolve from '{heads[i].Class.Type.Name}' head." ) )
+                    foundNewOne = false;
+                    foreach( var c in f.Classes )
                     {
-                        var cache = new Dictionary<SCRClass, BuildClassInfo>();
-                        var chain = BuildChain( heads[i], f.Classes, cache );
-                        if( chain != null )
+                        if( !cache.ContainsKey( c ) )
                         {
-                            Debug.Assert( cache.Count <= f.Classes.Count );
-                            if( cache.Count < f.Classes.Count )
-                            {
-                                _monitor.CloseGroup( $"Chain {chain} is too short." );
-                            }
-                            else
-                            {
-                                solved.Add( chain );
-                                _monitor.CloseGroup( $"-> {chain}." );
-                            }
+                            foundNewOne |= BuildChain( c, f.Classes, cache ) != null;
                         }
-                        else _monitor.CloseGroup( $"Failed." );
                     }
                 }
+                while( foundNewOne );
+
+                var solved = cache.Values.Where( info => info.Class.IsHeadCandidate && info.Content.Count + 1 == f.Classes.Count ).ToList();
+
                 if( solved.Count == 1 )
                 {
                     f.FinalRegister( engineMap, solved[0] );
@@ -399,27 +400,35 @@ namespace CK.Setup
             IEnumerable<SCRClass> remainders,
             Dictionary<SCRClass, BuildClassInfo> cache )
         {
-            remainders = remainders.Where( r => r != head );
-            if( cache.TryGetValue( head, out var result ))
+            if( cache.TryGetValue( head, out var result ) )
             {
-                if( !remainders.Contains( result.Class ) ) return null;
                 return result;
             }
-            var bindings = new ParameterAssignment[head.Parameters.Count];
-            for( int i = 0; i < bindings.Length; ++i )
+            using( _monitor.OpenDebug( () => $"Resolving {head}." ) )
             {
-                var p = head.Parameters[i];
-                var cInfo = BindParameter( head.Parameters[i], remainders, cache );
-                if( cInfo == null )
+                // Currently parameter order matters. Since this is a stable information, go for it.
+                // To be parameter order indepedent we need to wrap the cache in a ParameterLocalCache
+                // that can isolate parameters from each other. Only if all parameters are successfully bound
+                // can we merge all ParameterLocalCache in the current cache (this current cache being a
+                // ParameterLocalCache or the root cache for for to heads).
+                remainders = remainders.Where( r => r != head );
+                var bindings = new ParameterAssignment[head.Parameters.Count];
+                for( int i = 0; i < bindings.Length; ++i )
                 {
-                    _monitor.Warn( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
-                    return null;
+                    var p = head.Parameters[i];
+                    var cInfo = BindParameter( head.Parameters[i], remainders, cache );
+                    if( cInfo == null )
+                    {
+                        _monitor.Trace( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
+                        return null;
+                    }
+                    bindings[i] = new ParameterAssignment( p, cInfo );
                 }
-                bindings[i] = new ParameterAssignment( p, cInfo );
+                result = new BuildClassInfo( head, bindings );
+                cache.Add( head, result );
+                _monitor.Trace( $"Chain found: {result}." );
+                return result;
             }
-            result = new BuildClassInfo( head, bindings );
-            cache.Add( head, result );
-            return result;
         }
 
         BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, Dictionary<SCRClass, BuildClassInfo> cache )
@@ -435,45 +444,54 @@ namespace CK.Setup
                     _monitor.Trace( $"Using null default for parameter {p}." );
                     return BuildClassInfo.NullValue;
                 }
-                _monitor.Warn( $"Unable to bind parameter {p}." );
+                _monitor.Trace( $"Unable to bind parameter {p}." );
                 return null;
             }
             if( possible.Count == 1 ) unambiguousPossible = possible[0];
             else
             {
-                // Heuristic: consider that the class that more parameters are more general.
-                possible.Sort( ( c1, c2 ) => c2.Parameters.Count - c1.Parameters.Count );
-                // Do not rely on RankOrder, only on the IsNecessarilyBefore predicate: this way, the "ordering"
-                // can rely on any other rules and has not to be a projection on scalar.
-                // This is awfully n² but we don't care for the moment.
-                for( int i = 0; i < possible.Count; ++i )
+                _monitor.Debug( () => $"Ambiguous parameter candidates for {p} : {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
+                // Removes the pure tail (tail candidate and no other parameter) if any.
+                possible.RemoveAll( c => c.IsTailCandidate && c.Parameters.Count == 0 );
+                if( possible.Count == 1 )
                 {
-                    bool found = true;
-                    for( int j = 0; j < possible.Count; j++ )
+                    unambiguousPossible = possible[0];
+                    _monitor.Debug( "Solved by removing necessary tail." );
+                }
+                else
+                {
+                    // Considering thet a unique best Rank is the one.
+                    int maxRank = possible.Select( c => c.RankOrdered ).Max();
+                    possible.RemoveAll( c => c.RankOrdered < maxRank );
+                    if( possible.Count == 1 )
                     {
-                        if( i == j ) continue;
-                        if( !possible[i].CanBeFollowedBy( possible[j] ) )
-                        {
-                            found = false;
-                            break;
-                        }
+                        unambiguousPossible = possible[0];
+                        _monitor.Debug( "Solved by max RankOrdered." );
                     }
-                    if( found )
+                    else
                     {
-                        unambiguousPossible = possible[i];
-                        break;
+                        // Rank conflict. Use the cache to keep only the top of any
+                        // already resolved chains.
+                        var covered = new HashSet<SCRClass>( possible
+                                                                .Select( pc => cache.GetValueWithDefault( pc, null )?.Content )
+                                                                .Where( content => content != null )
+                                                                .SelectMany( content => content ) );
+                        unambiguousPossible = possible.SingleOrDefault( c => !covered.Contains( c ) );
+                        if( unambiguousPossible != null )
+                        {
+                            _monitor.Debug( "Solved by already built chains." );
+                        }
                     }
                 }
                 if( unambiguousPossible == null )
                 {
-                    _monitor.Warn( $"Ambiguous binding for parameter {p}: {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
+                    _monitor.Trace( $"Ambiguous binding for parameter {p} between {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
                     return null;
                 }
             }
             var result = BuildChain( unambiguousPossible, remainders, cache );
             return result;
         }
-
 
     }
 }
