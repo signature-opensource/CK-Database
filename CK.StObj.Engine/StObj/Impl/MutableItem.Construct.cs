@@ -35,7 +35,7 @@ namespace CK.Setup
                 }
             }
 
-            if( AmbientTypeInfo.StObjConstruct == null ) return;
+            if( Type.StObjConstruct == null ) return;
 
             object[] parameters = new object[_constructParameterEx.Count];
             int i = 0;
@@ -72,7 +72,7 @@ namespace CK.Setup
                             // This behavior (FailFastOnFailureToResolve) may be an option once. For the moment: log the error.
                             monitor.Fatal( $"{t}: Unable to resolve non optional. Attempting to use a default value to continue the setup process in order to detect other errors." );
                         }
-                        t.SetParameterValue( t.Type.GetTypeInfo().IsValueType ? Activator.CreateInstance( t.Type ) : null );
+                        t.SetParameterValue( t.Type.IsValueType ? Activator.CreateInstance( t.Type ) : null );
                     }
                     if( resolved != null && t.Value == resolved.InitialObject )
                     {
@@ -85,10 +85,10 @@ namespace CK.Setup
                 }
                 parameters[i++] = t.Value;
             }
-            AmbientTypeInfo.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
+            Type.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
-        internal void SetPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedContext )
+        internal void SetPostBuildProperties( IActivityMonitor monitor )
         {
             Debug.Assert( Specialization == null, "Called on leaves only." );
             if( _leafData.PostBuildProperties != null )

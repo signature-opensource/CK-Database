@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,7 +66,7 @@ namespace CK.Setupable.Engine.Tests
             }
             _solutionFolder = p;
             Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
-            Console.WriteLine($"Core path: {typeof(string).GetTypeInfo().Assembly.CodeBase}.");
+            Console.WriteLine($"Core path: {typeof(string).Assembly.CodeBase}.");
         }
 
     }

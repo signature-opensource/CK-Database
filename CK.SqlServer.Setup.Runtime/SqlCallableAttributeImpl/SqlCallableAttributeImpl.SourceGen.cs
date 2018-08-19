@@ -188,7 +188,7 @@ namespace CK.SqlServer.Setup
                 int iSFound = sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
-                    Debug.Assert( SqlObjectItem.TypeConnection.GetTypeInfo().IsSealed && SqlObjectItem.TypeTransaction.GetTypeInfo().IsSealed );
+                    Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
                     // Catches first Connection and Transaction parameters.
                     if( firstSqlConnectionParameter == null && mP.ParameterType == SqlObjectItem.TypeConnection && !mP.ParameterType.IsByRef )
                     {

@@ -23,9 +23,14 @@ namespace CK.Core
         /// <summary>
         /// Gets a set of assembly qualified type names that must be explicitely registered 
         /// regardless of <see cref="Assemblies"/>.
-        /// All other types in the assemblies that contain these explicit classes are ignored.
         /// </summary>
         HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that must be excluded from  
+        /// registration.
+        /// </summary>
+        HashSet<string> ExcludedTypes { get; }
 
     }
 }

@@ -114,7 +114,7 @@ namespace CK.Core
         public IEnumerable<string> GetNames( string namePrefix )
         {
             if( Type == null ) return Util.Array.Empty<string>();
-            IReadOnlyList<string> a = Type.GetTypeInfo().Assembly.GetSortedResourceNames();
+            IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );
             namePrefix = p + namePrefix;
@@ -208,7 +208,7 @@ namespace CK.Core
         /// <returns>The assembly:path string.</returns>
         public override string ToString()
         {
-            return String.Format( "{0}:{1}", Type != null ? Type.GetTypeInfo().Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
+            return String.Format( "{0}:{1}", Type != null ? Type.Assembly.GetName().Name : "(no assembly)", ResourceName( "*" ) );
         }
 
         /// <summary>
@@ -288,7 +288,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            return LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError );
+            return LoadStream( resourceHolder.Assembly, fullName, name, throwError );
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace CK.Core
                 return null;
             }
             string fullName = ResourceName( resourceHolder, path, name );
-            using( Stream stream = LoadStream( resourceHolder.GetTypeInfo().Assembly, fullName, name, throwError ) )
+            using( Stream stream = LoadStream( resourceHolder.Assembly, fullName, name, throwError ) )
             {
                 if( stream == null ) return null;
                 using( StreamReader reader = new StreamReader( stream, true ) )

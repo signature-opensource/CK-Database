@@ -16,14 +16,12 @@ namespace CK.Setup
     /// <summary>
     /// This interface allows dynamic configuration of items.
     /// It can be supported by attributes (to be aplied on Structured Object type or on its members) or be 
-    /// used globally as a configuration of StObjCollector object in StObj.Engine (an instance can be passed 
-    /// as a parameter to the constructor of StObjCollector).
+    /// used globally as a configuration of StObjCollector object.
     /// </summary>
     public interface IStObjStructuralConfigurator
     {
         /// <summary>
         /// Enables configuration of items before setup process.
-        /// To remove a class from a setup, <see cref="IAmbientContractDispatcher"/> must be used.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The item to configure.</param>

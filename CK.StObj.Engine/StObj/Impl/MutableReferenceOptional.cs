@@ -45,7 +45,7 @@ namespace CK.Setup
             } 
         }
 
-        internal override MutableItem ResolveToStObj( IActivityMonitor monitor, StObjCollectorResult collector, StObjCollectorContextualResult cachedCollector )
+        internal override MutableItem ResolveToStObj( IActivityMonitor monitor, StObjObjectEngineMap collector )
         {
             if( _resolved != UnresolvedMarker ) return _resolved;
             if( Type == null && !IsOptional )
@@ -59,7 +59,7 @@ namespace CK.Setup
                 Error( monitor, $"Type '{Type.FullName}' is not compatible with the {KindName} type ('{UnderlyingType.FullName}')" );
                 return _resolved = null;
             }
-            return _resolved = base.ResolveToStObj( monitor, collector, cachedCollector );
+            return _resolved = base.ResolveToStObj( monitor, collector );
         }
 
         protected override void WarnOrErrorIfStObjRequired(IActivityMonitor monitor, bool skipWarnOnValueType, string text)

@@ -12,7 +12,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void CKCore_invariants_checking()
         {
-            var a = TestHelper.StObjMap.Default.Obtain<ActorHome>();
+            var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
             try
             {
                 a.Database.GetCKCoreInvariantsViolations();

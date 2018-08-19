@@ -39,7 +39,7 @@ namespace CK.SqlServer.Setup
             var nT = Nullable.GetUnderlyingType( t );
             if( nT != null ) t = nT;
             if( t == typeof( char ) ) return true;
-            if( t.GetTypeInfo().IsEnum ) t = t.GetTypeInfo().GetEnumUnderlyingType();
+            if( t.IsEnum ) t = t.GetEnumUnderlyingType();
             return SqlHelper.HasDirectMapping( t );
         }
 

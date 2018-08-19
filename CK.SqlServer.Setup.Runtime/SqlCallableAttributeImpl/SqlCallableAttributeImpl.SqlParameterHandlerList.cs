@@ -50,7 +50,7 @@ namespace CK.SqlServer.Setup
 
                 ParameterInfo _methodParam;
                 SqlCallContextInfo.Property _ctxProp;
-                TypeInfo _actualParameterType;
+                Type _actualParameterType;
                 bool _isIgnoredOutputParameter;
                 bool _isUseDefaultSqlValue;
                 bool _isUsedByReturnedType;
@@ -91,8 +91,8 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _methodParam = mP;
-                    _actualParameterType = mP.ParameterType.GetTypeInfo();
-                    if( _actualParameterType.IsByRef ) _actualParameterType = _actualParameterType.GetElementType().GetTypeInfo();
+                    _actualParameterType = mP.ParameterType;
+                    if( _actualParameterType.IsByRef ) _actualParameterType = _actualParameterType.GetElementType();
                     if( !CheckParameter( mP, SqlExprParam, monitor ) ) return false;
                     return true;
                 }
@@ -203,7 +203,7 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _ctxProp = prop;
-                    _actualParameterType = _ctxProp.Prop.PropertyType.GetTypeInfo();
+                    _actualParameterType = _ctxProp.Prop.PropertyType;
                 }
 
                 /// <summary>
@@ -314,7 +314,7 @@ namespace CK.SqlServer.Setup
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
 
-                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType.AsType() );
+                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType );
                     b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
                 }
             }
@@ -357,7 +357,7 @@ namespace CK.SqlServer.Setup
             {
                 if( returnType == typeof( Task ) ) return _isAsyncCall = true;
                 bool isSimpleType = IsSimpleReturnType( returnType );
-                if( !isSimpleType && returnType.GetTypeInfo().IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
+                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
                 {
                     _isAsyncCall = true;
                     returnType = returnType.GetGenericArguments()[0];

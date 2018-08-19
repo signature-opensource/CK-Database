@@ -10,17 +10,25 @@ using System.Collections.Generic;
 
 namespace CK.Core
 {
-
     /// <summary>
-    /// Main interface that offers access to multi contextual type mapping and 
-    /// Ambient Contract instantiation.
+    /// Main interface that offers access to type mapping and Ambient Contract instances.
     /// </summary>
-    public interface IStObjMap : IContextualRoot<IContextualStObjMap>
+    public interface IStObjMap
     {
         /// <summary>
-        /// Gets all the mappings (<see cref="IStObj"/> and their final implementation) this 
-        /// StObjMap contains regardless of <see cref="IStObj.Context"/>.
+        /// Gets the StObjs map.
         /// </summary>
-        IEnumerable<StObjImplementation> AllStObjs { get; }
+        IStObjObjectMap StObjs { get; }
+
+        /// <summary>
+        /// Gets the Services map.
+        /// </summary>
+        IStObjServiceMap Services { get; }
+
+        /// <summary>
+        /// Gets the name of this StObj map.
+        /// Never null, defaults to the empty string.
+        /// </summary>
+        string MapName { get; }
     }
 }

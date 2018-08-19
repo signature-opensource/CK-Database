@@ -27,7 +27,7 @@ namespace SqlActorPackage.Tests
         {
             if( File.Exists( _configFile ) ) File.Delete( _configFile );
 
-            var p = TestHelper.StObjMap.Default.Obtain<BuggyPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<BuggyPackage>();
             using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
@@ -55,7 +55,7 @@ namespace SqlActorPackage.Tests
 
             var map = TestHelper.StObjMap;
             map.Should().NotBeNull();
-            var p = map.Default.Obtain<BuggyPackage>();
+            var p = map.StObjs.Obtain<BuggyPackage>();
             using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );

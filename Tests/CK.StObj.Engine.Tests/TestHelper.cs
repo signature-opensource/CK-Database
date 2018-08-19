@@ -33,7 +33,7 @@ namespace CK.StObj.Engine.Tests
             get { return _monitor; }
         }
 
-        public static Assembly Assembly => typeof( TestHelper ).GetTypeInfo().Assembly;
+        public static Assembly Assembly => typeof( TestHelper ).Assembly;
 
         public static bool LogsToConsole
         {
@@ -52,6 +52,29 @@ namespace CK.StObj.Engine.Tests
                 }
             }
         }
+
+        public static SimpleServiceContainer CreateAndConfigureSimpleContainer( IStObjMap map )
+        {
+            var container = new SimpleServiceContainer();
+            // Singletons: the StObjMap has alreay created the instances.
+            foreach( var kv in map.StObjs.Mappings )
+            {
+                container.Add( kv.Key, kv.Value );
+            }
+            // Scoped (created on demand and cached).
+            // 1 - Direct type mapping: use the SimpleObjectActivator helper.
+            foreach( var kv in map.Services.SimpleMappings )
+            {
+                container.Add( kv.Key, () => SimpleObjectActivator.Create( Monitor, kv.Value, container ) );
+            }
+            // 2 - Manual type: Use the automatically generated code.
+            foreach( var kv in map.Services.ManualMappings )
+            {
+                container.Add( kv.Key, () => kv.Value.CreateInstance( container ) );
+            }
+            return container;
+        }
+
 
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in
@@ -142,12 +165,12 @@ namespace CK.StObj.Engine.Tests
         }
         #endregion
 
-        public static void CheckChildren<T>( this StObjCollectorContextualResult @this, string childrenTypeNames )
+        public static void CheckChildren<T>( this IStObjObjectEngineMap @this, string childrenTypeNames )
         {
-            Check( @this, @this.StObjMap.ToStObj( typeof(T) ).Children, childrenTypeNames );
+            Check( @this, @this.ToStObj( typeof( T ) ).Children, childrenTypeNames );
         }
 
-        public static void Check( this StObjCollectorContextualResult @this, IEnumerable<IStObjResult> items, string typeNames )
+        public static void Check( this IStObjObjectEngineMap @this, IEnumerable<IStObjResult> items, string typeNames )
         {
             var s1 = items.Select( i => i.ObjectType.Name ).OrderBy( Util.FuncIdentity );
             var s2 = typeNames.Split( ',' ).OrderBy( Util.FuncIdentity );

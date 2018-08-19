@@ -97,7 +97,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LayeredArchitecture()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( BasicPackage ) );
             collector.RegisterType( typeof( BasicActor ) );
             collector.RegisterType( typeof( BasicUser ) );
@@ -111,12 +111,12 @@ namespace CK.StObj.Engine.Tests
             collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
             
-            var r = collector.GetResult( new SimpleServiceContainer() );
+            var r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
 
-            r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
+            r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
+            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
+            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
         }
     }
 }

@@ -14,7 +14,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_ExecuteNonQuery_method_with_the_standard_SqlStandardCallContext()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
             using( var ctx = new SqlStandardCallContext() )
@@ -28,7 +28,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_ExecuteNonQuery_method_with_the_standard_SqlStandardCallContext_with_a_return_value()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             using( var ctx = new SqlStandardCallContext() )
             {
@@ -41,7 +41,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_ExecuteNonQuery_method_with_the_standard_SqlStandardCallContext_with_a_return_value_that_is_a_ref_param()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<GuidRefTestPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
             using( var ctx = new SqlStandardCallContext() )

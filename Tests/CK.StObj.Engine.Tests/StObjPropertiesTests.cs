@@ -38,9 +38,9 @@ namespace CK.StObj.Engine.Tests
         public void OneObject()
         {
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterType( typeof( SimpleContainer ) );
-                StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
+                StObjCollectorResult result = collector.GetResult();
                 Assert.That( result.OrderedStObjs.First().GetStObjProperty( "OneIntValue" ), Is.EqualTo( 3712 ) );
             }
         }
@@ -82,19 +82,19 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void SchmurtzPropagation()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new SchmurtzConfigurator() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new SchmurtzConfigurator() );
             collector.RegisterType( typeof( SimpleContainer ) );
             collector.RegisterType( typeof( SpecializedContainer ) );
             collector.RegisterType( typeof( BaseObject ) );
             collector.RegisterType( typeof( SpecializedObject ) );
             collector.RegisterType( typeof( SpecializedObjectWithExplicitContainer ) );
-            StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
+            StObjCollectorResult result = collector.GetResult();
 
             Assert.That( result.OrderedStObjs.First( s => s.ObjectType == typeof( BaseObject ) ).GetStObjProperty( "SchmurtzProp" ).ToString(),
                 Is.EqualTo( "Root => SpecializedContainer specializes Root => BaseObject belongs to SpecializedContainer" ) );
 
             Assert.That( result.OrderedStObjs.First( s => s.ObjectType == typeof( SpecializedObject ) ).GetStObjProperty( "SchmurtzProp" ).ToString(),
-                Is.EqualTo( "Root => SpecializedContainer specializes Root => BaseObject belongs to SpecializedContainer => Finally: SpecializedObject inherits from BaseObject" ), 
+                Is.EqualTo( "Root => SpecializedContainer specializes Root => BaseObject belongs to SpecializedContainer => Finally: SpecializedObject inherits from BaseObject" ),
                 "Here, we follow the Generalization link, since there is NO direct Container." );
 
             Assert.That( result.OrderedStObjs.First( s => s.ObjectType == typeof( SpecializedObjectWithExplicitContainer ) ).GetStObjProperty( "SchmurtzProp" ).ToString(),

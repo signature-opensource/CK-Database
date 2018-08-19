@@ -15,7 +15,7 @@ namespace CK.Setup
             Debug.Assert( monitor != null );
             Debug.Assert( t != null );
             DependentItemGroupList result = new DependentItemGroupList();
-            var all = (GroupsAttribute[])t.GetTypeInfo().GetCustomAttributes( typeof( GroupsAttribute ), false );
+            var all = (GroupsAttribute[])t.GetCustomAttributes( typeof( GroupsAttribute ), false );
             foreach( var a in all )
             {
                 result.AddCommaSeparatedString( a.Groups );
@@ -29,7 +29,7 @@ namespace CK.Setup
             Debug.Assert( t != null );
             Debug.Assert( attrType != null && typeof( RequiresAttribute ).IsAssignableFrom( attrType ) );
             DependentItemList result = new DependentItemList();
-            var all = (RequiresAttribute[])t.GetTypeInfo().GetCustomAttributes( attrType, false );
+            var all = (RequiresAttribute[])t.GetCustomAttributes( attrType, false );
             foreach( var a in all )
             {
                 result.AddCommaSeparatedString( a.Requirements );
@@ -39,7 +39,7 @@ namespace CK.Setup
 
         static internal SetupAttribute GetSetupAttribute( Type t )
         {
-            return (SetupAttribute)t.GetTypeInfo().GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
+            return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();
         }
 
         static internal string GetFullName( IActivityMonitor monitor, bool warnWhenDefaultToTypeFullName, Type t, string alreadyNamed = null )
@@ -69,7 +69,7 @@ namespace CK.Setup
 
         static internal string GetVersionsString( Type t )
         {
-            var a = (VersionsAttribute)t.GetTypeInfo().GetCustomAttributes( typeof( VersionsAttribute ), false ).SingleOrDefault();
+            var a = (VersionsAttribute)t.GetCustomAttributes( typeof( VersionsAttribute ), false ).SingleOrDefault();
             return a != null ? a.VersionsString : null;
         }
 

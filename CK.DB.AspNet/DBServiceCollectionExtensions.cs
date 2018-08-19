@@ -13,8 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class DBServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers all the StObj mappings from the default context of an assembly and also
-        /// registers the <see cref="IStObjMap"/>.
+        /// Registers all the StObj mappings from an assembly and also registers the <see cref="IStObjMap"/>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -34,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
         {
             if( stobjAssembly == null ) throw new ArgumentNullException( nameof( stobjAssembly ) );
 
@@ -44,10 +43,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if( !String.IsNullOrEmpty( defaultConnectionString ) )
             {
-                var db = map.Default.Obtain<SqlDefaultDatabase>();
+                var db = map.StObjs.Obtain<SqlDefaultDatabase>();
                 db.ConnectionString = defaultConnectionString;
             }
-            return AddStObjMap( services, map.Default );
+            return AddStObjMap( services, map );
         }
 
         /// <summary>
@@ -72,16 +71,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <remarks>
-        /// On NetCore runtime,  Assembly.LoadFrom is used to resolves the assembly from its full path.
+        /// On NetCore runtime, Assembly.LoadFrom is used to resolves the assembly from its full path.
         /// </remarks>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, string assemblyName, string defaultConnectionString = null )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, string assemblyName, string defaultConnectionString = null )
         {
 #if NET461
             return services.AddDefaultStObjMap( new AssemblyName( assemblyName ), defaultConnectionString );
 #else
             string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, assemblyName + ".dll" );
-            return services.AddDefaultStObjMap( Assembly.LoadFrom( path ), defaultConnectionString );
+            return services.AddStObjMap( Assembly.LoadFrom( path ), defaultConnectionString );
 #endif
         }
 
@@ -109,23 +108,33 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>This services collection.</returns>
         public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, AssemblyName assemblyName, string defaultConnectionString = null )
         {
-            return services.AddDefaultStObjMap( Assembly.Load( assemblyName ), defaultConnectionString );
+            return services.AddStObjMap( Assembly.Load( assemblyName ), defaultConnectionString );
         }
 
         /// <summary>
-        /// Registers all the StObj mappings from a StObj context and also registers the <see cref="IStObjMap"/>.
+        /// Registers all the StObj mappings from a StObj maping and also registers the <see cref="IStObjMap"/>.
         /// </summary>
         /// <param name="services">This services.</param>
-        /// <param name="map">Contextual StObj objects to register.</param>
+        /// <param name="map">StObj objects to register.</param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddStObjMap( this IServiceCollection services, IContextualStObjMap map )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, IStObjMap map )
         {
             if( map == null ) throw new ArgumentNullException( nameof( map ) );
-            foreach( var kv in map.Mappings )
+            foreach( var kv in map.StObjs.Mappings )
             {
                 services.AddSingleton( kv.Key, kv.Value );
             }
-            services.AddSingleton( map.AllContexts );
+            // Serice direct type mapping.
+            foreach( var kv in map.Services.SimpleMappings )
+            {
+                services.AddScoped( kv.Key, kv.Value );
+            }
+            // Manual type: Use the automatically generated code.
+            foreach( var kv in map.Services.ManualMappings )
+            {
+                services.AddScoped( kv.Key, p => kv.Value.CreateInstance( p ) );
+            }
+            services.AddSingleton( map );
             return services;
         }
 

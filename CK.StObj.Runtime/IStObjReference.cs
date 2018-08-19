@@ -11,9 +11,10 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes a certain <see cref="Kind"/> of reference originating from a <see cref="Owner"/>, targeting a <see cref="Type"/> in a <see cref="Context"/> that can 
-    /// have some <see cref="StObjRequirementBehavior">requirements</see>.
-    /// This interface describes an immutable object. Specialized interfaces like <see cref="IStObjMutableReference"/> mask its properties with setter and/or gives access
+    /// Describes a certain <see cref="Kind"/> of reference originating from a <see cref="Owner"/>,
+    /// targeting a <see cref="Type"/> that can have some <see cref="StObjRequirementBehavior">requirements</see>.
+    /// This interface describes an immutable object.
+    /// Specialized interfaces like <see cref="IStObjMutableReference"/> mask its properties with setter and/or gives access
     /// to other mutable objects (like <see cref="IStObjMutableReference.Owner"/> that is a <see cref="IStObjMutableItem"/>).
     /// </summary>
     public interface IStObjReference
@@ -40,14 +41,6 @@ namespace CK.Setup
         /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter, AmbientProperty or AmbientContract).
         /// </summary>
         StObjMutableReferenceKind Kind { get; }
-
-        /// <summary>
-        /// Gets the context associated to the <see cref="P:Type"/> of this reference.
-        /// When not null, the type is searched in this context only. 
-        /// When null, the type is first searched in the same context as this <see cref="Owner"/>.
-        /// If not found, the type is searched in all context and, if it exists, it must exist in one and only one <see cref="IContextualStObjMap"/> (otherwise an error will be logged).
-        /// </summary>
-        string Context { get; }
 
         /// <summary>
         /// Gets the type of the reference. Can be null: container and requirements are ignored and 
