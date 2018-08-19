@@ -123,7 +123,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void LayeredArchitecture()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( BasicPackage ) );
             collector.RegisterType( typeof( BasicActor ) );
             collector.RegisterType( typeof( BasicUser ) );
@@ -139,21 +139,21 @@ namespace CK.StObj.Engine.Tests
             collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
 
 
-            var r = collector.GetResult( new SimpleServiceContainer() );
+            StObjCollectorResult r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
-            r.Default.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.Default.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.Default.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
+            r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
+            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
+            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
 
-            var basicPackage = r.Default.StObjMap.Obtain<BasicPackage>();
+            var basicPackage = r.StObjs.Obtain<BasicPackage>();
             Assert.That( basicPackage is ZonePackage );
             Assert.That( basicPackage.GroupHome is ZoneGroup );
             Assert.That( basicPackage.Schema, Is.EqualTo( "CK" ) );
 
-            var authenticationUser = r.Default.StObjMap.Obtain<AuthenticationUser>();
+            var authenticationUser = r.StObjs.Obtain<AuthenticationUser>();
             Assert.That( authenticationUser.Schema, Is.EqualTo( "CK" ) );
             
-            var authenticationDetail = r.Default.StObjMap.Obtain<AuthenticationDetail>();
+            var authenticationDetail = r.StObjs.Obtain<AuthenticationDetail>();
             Assert.That( authenticationDetail.Schema, Is.EqualTo( "CKAuth" ) );
         }
     }

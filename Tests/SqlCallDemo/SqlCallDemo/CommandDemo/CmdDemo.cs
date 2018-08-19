@@ -17,7 +17,7 @@ namespace SqlCallDemo.CommandDemo
 
         public string CompanyName { get; set; }
 
-        public DateTime LaunchnDate { get; set; }
+        public DateTime LaunchDate { get; set; }
 
         /// <summary>
         /// Result POCO as a mutable object.

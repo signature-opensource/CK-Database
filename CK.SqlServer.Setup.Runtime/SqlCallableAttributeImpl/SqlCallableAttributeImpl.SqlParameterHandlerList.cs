@@ -27,6 +27,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         class SqlParameterHandlerList
         {
+            readonly IPocoSupportResult _poco;
             readonly List<SqlParamHandler> _params;
             SqlParamHandler _simpleReturnType;
             ISqlServerParameter _funcReturnParameter;
@@ -49,7 +50,7 @@ namespace CK.SqlServer.Setup
 
                 ParameterInfo _methodParam;
                 SqlCallContextInfo.Property _ctxProp;
-                TypeInfo _actualParameterType;
+                Type _actualParameterType;
                 bool _isIgnoredOutputParameter;
                 bool _isUseDefaultSqlValue;
                 bool _isUsedByReturnedType;
@@ -90,8 +91,8 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _methodParam = mP;
-                    _actualParameterType = mP.ParameterType.GetTypeInfo();
-                    if( _actualParameterType.IsByRef ) _actualParameterType = _actualParameterType.GetElementType().GetTypeInfo();
+                    _actualParameterType = mP.ParameterType;
+                    if( _actualParameterType.IsByRef ) _actualParameterType = _actualParameterType.GetElementType();
                     if( !CheckParameter( mP, SqlExprParam, monitor ) ) return false;
                     return true;
                 }
@@ -202,7 +203,7 @@ namespace CK.SqlServer.Setup
                 {
                     Debug.Assert( !IsMappedToMethodParameterOrParameterSourceProperty );
                     _ctxProp = prop;
-                    _actualParameterType = _ctxProp.Prop.PropertyType.GetTypeInfo();
+                    _actualParameterType = _ctxProp.Prop.PropertyType;
                 }
 
                 /// <summary>
@@ -313,13 +314,14 @@ namespace CK.SqlServer.Setup
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
 
-                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType.AsType() );
+                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType );
                     b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
                 }
             }
 
-            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject )
+            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject, IPocoSupportResult poco )
             {
+                _poco = poco;
                 _params = new List<SqlParamHandler>();
                 int idx = 0;
                 ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
@@ -355,7 +357,7 @@ namespace CK.SqlServer.Setup
             {
                 if( returnType == typeof( Task ) ) return _isAsyncCall = true;
                 bool isSimpleType = IsSimpleReturnType( returnType );
-                if( !isSimpleType && returnType.GetTypeInfo().IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
+                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
                 {
                     _isAsyncCall = true;
                     returnType = returnType.GetGenericArguments()[0];
@@ -393,13 +395,24 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    if( returnType.GetTypeInfo().IsInterface )
+                    if( returnType.IsInterface )
                     {
-                        monitor.Error( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
-                        return false;
+                        if( typeof( IPoco ).IsAssignableFrom( returnType ) )
+                        {
+                            IPocoInterfaceInfo info = _poco.Find( returnType );
+                            _complexReturnType = new ComplexTypeMapperModel( info.Root.PocoClass );
+                        }
+                        else
+                        {
+                            monitor.Error( $"Return type '{returnType.Name}' is an interface. This is not yet supported." );
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        _complexReturnType = new ComplexTypeMapperModel( returnType );
                     }
                     _unwrappedReturnedType = returnType;
-                    _complexReturnType = new ComplexTypeMapperModel( returnType );
                     _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName );
                     foreach( var p in _params )
                     {
@@ -447,21 +460,22 @@ namespace CK.SqlServer.Setup
                     .Append( " = " )
                     .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;")
                     .NewLine();
+
                 bool isNullable = true;
                 Type enumUnderlyingType = null;
-                if( targetType.GetTypeInfo().IsValueType )
+                bool isChar = false;
+                if( targetType.IsValueType )
                 {
                     isNullable = false;
-                    Type actualType = Nullable.GetUnderlyingType( targetType );
-                    if( actualType != null )
+                    if( !(isChar = (targetType == typeof(char))) )
                     {
-                        isNullable = true;
-                        if( actualType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( actualType );
-                    }
-                    else
-                    {
-                        //Debugger.Break();
-                        //if( targetType.GetTypeInfo().IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( targetType );
+                        Type actualType = Nullable.GetUnderlyingType( targetType );
+                        if( actualType != null )
+                        {
+                            isNullable = true;
+                            if( actualType == typeof( char ) ) isChar = true;
+                            else if( actualType.IsEnum ) enumUnderlyingType = Enum.GetUnderlyingType( actualType );
+                        }
                     }
                 }
                 b.Append( "var " ).Append( resultName ).Append( '=' );
@@ -476,13 +490,18 @@ namespace CK.SqlServer.Setup
                         b.Append( '(' ).AppendCSharpName( enumUnderlyingType ).Append( ')' );
                     }
                 }
-                else
+                else if( !isChar )
                 {
                     b.Append( '(' )
                         .AppendCSharpName( targetType )
                         .Append( ')' );
                 }
-                b.Append( tempObjName() ).Append( ";" ).NewLine();
+                if( isChar )
+                {
+                    b.Append( "((string)" ).Append( tempObjName() ).Append( ")[0]" );
+                }
+                else b.Append( tempObjName() );
+                b.Append( ";" ).NewLine();
                 return resultName;
             }
 

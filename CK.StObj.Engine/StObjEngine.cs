@@ -88,13 +88,15 @@ namespace CK.Setup
             public readonly string Directory;
             public readonly HashSet<string> Assemblies;
             public readonly HashSet<string> Types;
+            public readonly HashSet<string> ExcludedTypes;
             public readonly bool SameAsRoot;
 
-            public NormalizedFolder( string d, HashSet<string> a, HashSet<string> t, bool sameAsRoot )
+            public NormalizedFolder( string d, ISetupFolder f, bool sameAsRoot )
             {
                 Directory = d;
-                Assemblies = a;
-                Types = t;
+                Assemblies = f.Assemblies;
+                Types = f.Types;
+                ExcludedTypes = f.ExcludedTypes;
                 SameAsRoot = sameAsRoot;
             }
         }
@@ -271,7 +273,7 @@ namespace CK.Setup
                 {
                     var normalized = new List<NormalizedFolder>();
                     string baseDir = FileUtil.NormalizePathSeparator( AppContext.BaseDirectory, true );
-                    var root = new NormalizedFolder( baseDir, _config.Assemblies, _config.Types, false );
+                    var root = new NormalizedFolder( baseDir, _config, false );
                     normalized.Add( root );
                     foreach( var f in _config.SetupFolders )
                     {
@@ -305,10 +307,19 @@ namespace CK.Setup
                                             _monitor.Error( $"SetupFolder '{n}' contains at least one explicit class that is not in global configuration: {aliens.Concatenate()}" );
                                             ok = false;
                                         }
+                                        // Reverse for excluded types.
+                                        aliens = root.ExcludedTypes.Except( f.ExcludedTypes );
+                                        if( aliens.Any() )
+                                        {
+                                            _monitor.Error( $"SetupFolder '{n}' MUST exlude all types that are excluded at the global configuration level: {aliens.Concatenate()}" );
+                                            ok = false;
+                                        }
                                         if( ok )
                                         {
-                                            bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count && f.Types.Count == root.Types.Count;
-                                            normalized.Add( new NormalizedFolder( n, f.Assemblies, f.Types, sameAsRoot ) );
+                                            bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
+                                                              && f.Types.Count == root.Types.Count
+                                                              && root.ExcludedTypes.Count == f.ExcludedTypes.Count;
+                                            normalized.Add( new NormalizedFolder( n, f, sameAsRoot ) );
                                         }
                                     }
                                 }
@@ -338,6 +349,7 @@ namespace CK.Setup
                 var configurator = _startContext.Configurator.FirstLayer;
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
+                    _startContext.ServiceContainer,
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
@@ -359,7 +371,7 @@ namespace CK.Setup
                 {
                     using( _monitor.OpenInfo( "Resolving StObj dependency graph." ) )
                     {
-                        result = stObjC.GetResult( _startContext.ServiceContainer );
+                        result = stObjC.GetResult();
                         Debug.Assert( !result.HasFatalError || hasError, "result.HasFatalError ==> An error has been logged." );
                     }
                     if( !result.HasFatalError ) return result;

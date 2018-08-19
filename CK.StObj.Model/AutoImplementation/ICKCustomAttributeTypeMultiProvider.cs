@@ -23,7 +23,7 @@ namespace CK.Core
         /// Gets the type info to which this provider is bound.
         /// The attributes of this type are available (recall that a Type is a MemberInfo).
         /// </summary>
-        TypeInfo Type { get; }
+        Type Type { get; }
 
         /// <summary>
         /// Gets all attributes that are assignable to the given <paramref name="attributeType"/>, regardless of the <see cref="MemberInfo"/>

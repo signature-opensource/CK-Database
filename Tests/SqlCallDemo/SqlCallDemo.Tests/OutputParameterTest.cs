@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_an_input_output_with_default_parameter_value_uses_the_Sql_default_value()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = p.OutputInputParameterWithDefault( ctx );
@@ -23,7 +23,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_an_input_output_with_default_parameter_value_can_also_specify_the_input_value()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = p.OutputInputParameterWithDefault( ctx, "It F... Works!" );
@@ -34,7 +34,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_the_Sql_default_value_applies()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = p.OutputParameterWithDefault( ctx );
@@ -45,7 +45,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_one_can_also_specify_the_input_value()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = p.OutputParameterWithDefault( ctx, "What a mess..." );
@@ -56,7 +56,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_one_can_also_specify_the_input_value_that_is_null()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = p.OutputParameterWithDefault( ctx, null );
@@ -68,7 +68,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_calling_a_pure_output_with_default_parameter()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<OutputParameterPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string result = await p.OutputParameterWithDefaultAsync( ctx, null ).ConfigureAwait( false );

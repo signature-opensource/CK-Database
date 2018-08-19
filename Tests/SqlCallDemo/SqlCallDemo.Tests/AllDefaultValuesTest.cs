@@ -11,7 +11,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void all_default_values_at_work()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<AllDefaultValuesPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<AllDefaultValuesPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 Assert.That( p.AllDefaultValues( ctx ), 
@@ -26,7 +26,8 @@ namespace SqlCallDemo.Tests
                                 + " - @Float = -4.57586e-006"
                                 + " - @Real = -4.5588e-009"
                                 + " - @Bin = 0A3B"
-                              ));
+                                + " - @Char = c"
+                              ) );
             }
         }
 

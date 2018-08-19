@@ -77,7 +77,7 @@ namespace CK.SqlServer.Setup
                         _generateCallType = GenerateCallType.ExecuteNonQueryAsync;
                         _sourceExecutorCallNonQuery = "ExecuteNonQueryAsync";
                     }
-                    else if( returnedType.GetTypeInfo().IsGenericType
+                    else if( returnedType.IsGenericType
                              && returnedType.GetGenericTypeDefinition() == typeof(Task<>) )
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
@@ -95,8 +95,8 @@ namespace CK.SqlServer.Setup
 
             public bool AddParameterSourceOrSqlCallContext( ParameterInfo param, IActivityMonitor monitor, IPocoSupportResult poco )
             {
-                TypeInfo paramTypeInfo = param.ParameterType.GetTypeInfo();
-                if( paramTypeInfo.IsValueType || typeof( string ).IsAssignableFrom( param.ParameterType ) ) return false;
+                Type paramType = param.ParameterType;
+                if( paramType.IsValueType || typeof( string ).IsAssignableFrom( paramType ) ) return false;
 
                 bool isParameterSource = param.GetCustomAttribute<ParameterSourceAttribute>() != null;
                 bool isParameterSourcePoco = isParameterSource && typeof( IPoco ).IsAssignableFrom( param.ParameterType );
@@ -113,7 +113,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        rawProperties = paramTypeInfo.IsInterface
+                        rawProperties = paramType.IsInterface
                                                 ? ReflectionHelper.GetFlattenProperties( param.ParameterType )
                                                 : param.ParameterType.GetProperties();
                     }
@@ -195,7 +195,7 @@ namespace CK.SqlServer.Setup
             /// <returns>True for parameter that are parameter sources.</returns>
             static internal bool IsSqlParameterSource( ParameterInfo mP )
             {
-                return !(mP.ParameterType.GetTypeInfo().IsValueType || typeof(string).IsAssignableFrom( mP.ParameterType ))
+                return !(mP.ParameterType.IsValueType || typeof(string).IsAssignableFrom( mP.ParameterType ))
                         && mP.GetCustomAttribute<ParameterSourceAttribute>() != null;
             }
 

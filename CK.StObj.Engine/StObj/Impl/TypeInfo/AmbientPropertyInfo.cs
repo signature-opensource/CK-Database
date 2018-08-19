@@ -46,9 +46,6 @@ namespace CK.Setup
             Generalization = gen;
         }
 
-        public override string Kind 
-        { 
-            get { return KindName; } 
-        }
+        public override string Kind  => KindName; 
     }
 }

@@ -73,7 +73,7 @@ namespace CK.Setup
                     StObjSetupData generalizationData = null;
                     StObjSetupDataRootClass fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.GetTypeInfo().BaseType );
+                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );

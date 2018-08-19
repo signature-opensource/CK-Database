@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace SqlCallDemo
 {
 
     [SqlPackage( Schema = "CK", ResourcePath = "Res.Poco" ), Versions( "1.0.0" )]
-    [SqlObjectItem( "transform:sPocoThingWrite" )]
+    [SqlObjectItem( "transform:sPocoThingWrite, transform:sPocoThingRead" )]
     public class PocoPackageWithAgeAndHeight : SqlPackage
     {
         void StObjConstruct( PocoPackage p )

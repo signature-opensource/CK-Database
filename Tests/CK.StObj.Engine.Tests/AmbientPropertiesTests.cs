@@ -71,17 +71,17 @@ namespace CK.StObj.Engine.Tests
         {
             var container = new SimpleServiceContainer();
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container );
                 collector.RegisterType( typeof( SimpleObjectDirect ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectDirect." );
                 Assert.That( result.OrderedStObjs.First().InitialObject, Is.InstanceOf<SimpleObjectDirect>() );
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Direct properties can be set by Attribute." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container, configurator: new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterType( typeof( SimpleObjectDirect ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( ((SimpleObjectDirect)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Direct properties can be set by any IStObjStructuralConfigurator participant (here the global one)." );
             }
         }
@@ -91,17 +91,17 @@ namespace CK.StObj.Engine.Tests
         {
             var container = new SimpleServiceContainer();
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container );
                 collector.RegisterType( typeof( SimpleObjectAmbient ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( result.OrderedStObjs.FirstOrDefault(), Is.Not.Null, "We registered SimpleObjectAmbient." );
                 Assert.That( result.OrderedStObjs.First().InitialObject, Is.InstanceOf<SimpleObjectAmbient>() );
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 3712 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container, configurator: new ConfiguratorOneIntValueSetTo42() );
                 collector.RegisterType( typeof( SimpleObjectAmbient ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( ((SimpleObjectAmbient)result.OrderedStObjs.First().InitialObject).OneIntValue, Is.EqualTo( 42 ), "Same as Direct properties (above) regarding direct setting. The difference between Ambient and non-ambient lies in value propagation." );
             }
         }
@@ -125,18 +125,18 @@ namespace CK.StObj.Engine.Tests
         {
             var container = new SimpleServiceContainer();
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container );
                 collector.RegisterType( typeof( SpecializedObjectDirect ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectDirect and SimpleObjectDirect." );
-                Assert.That( result.Default.StObjMap.Obtain<SpecializedObjectDirect>().OneIntValue, Is.EqualTo( 999 ), "Direct properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
+                Assert.That( result.StObjs.Obtain<SpecializedObjectDirect>().OneIntValue, Is.EqualTo( 999 ), "Direct properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
             }
             {
-                StObjCollector collector = new StObjCollector( TestHelper.Monitor );
+                StObjCollector collector = new StObjCollector( TestHelper.Monitor, container );
                 collector.RegisterType( typeof( SpecializedObjectAmbient ) );
-                StObjCollectorResult result = collector.GetResult( container );
+                StObjCollectorResult result = collector.GetResult( );
                 Assert.That( result.OrderedStObjs.Count, Is.EqualTo( 2 ), "SpecializedObjectAmbient and SimpleObjectAmbient." );
-                Assert.That( result.Default.StObjMap.Obtain<SpecializedObjectAmbient>().OneIntValue, Is.EqualTo( 999 ), "Ambient properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
+                Assert.That( result.StObjs.Obtain<SpecializedObjectAmbient>().OneIntValue, Is.EqualTo( 999 ), "Ambient properties can be set by Attribute (or any IStObjStructuralConfigurator)." );
             }
         }
 
@@ -159,22 +159,22 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void PropagationFromDirectPropertyDoesNotWork()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterType( typeof( SimpleObjectDirect ) );
             collector.RegisterType( typeof( SimpleObjectInsideDirect ) );
-            StObjCollectorResult result = collector.GetResult(new SimpleServiceContainer());
-            Assert.That( result.Default.StObjMap.Obtain<SimpleObjectInsideDirect>().OneIntValue, Is.EqualTo( 0 ), "A direct property (not an ambient property) CAN NOT be a source for ambient properties." );
-            Assert.That( result.Default.StObjMap.Obtain<SimpleObjectDirect>().OneIntValue, Is.EqualTo( 42 ), "...But it can be set by any IStObjStructuralConfigurator participant." );
+            StObjCollectorResult result = collector.GetResult();
+            Assert.That( result.StObjs.Obtain<SimpleObjectInsideDirect>().OneIntValue, Is.EqualTo( 0 ), "A direct property (not an ambient property) CAN NOT be a source for ambient properties." );
+            Assert.That( result.StObjs.Obtain<SimpleObjectDirect>().OneIntValue, Is.EqualTo( 42 ), "...But it can be set by any IStObjStructuralConfigurator participant." );
         }
 
         [Test]
         public void PropagationFromAmbientProperty()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new ConfiguratorOneIntValueSetTo42() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterType( typeof( SimpleObjectAmbient ) );
             collector.RegisterType( typeof( SimpleObjectInsideAmbiant ) );
-            StObjCollectorResult result = collector.GetResult( new SimpleServiceContainer() );
-            Assert.That( result.Default.StObjMap.Obtain<SimpleObjectInsideAmbiant>().OneIntValue, Is.EqualTo( 42 ), "Of course, ambient properties propagate their values." );
+            StObjCollectorResult result = collector.GetResult();
+            Assert.That( result.StObjs.Obtain<SimpleObjectInsideAmbiant>().OneIntValue, Is.EqualTo( 42 ), "Of course, ambient properties propagate their values." );
         }
 
         #endregion
@@ -218,7 +218,7 @@ namespace CK.StObj.Engine.Tests
         {
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                if( o.ObjectType == typeof( C1 ) ) o.SetAmbiantPropertyConfiguration( monitor, "Ambient", null, typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
+                if( o.ObjectType == typeof( C1 ) ) o.SetAmbiantPropertyConfiguration( monitor, "Ambient", typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
             }
         }
 
@@ -226,18 +226,18 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void TypeResolution()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, configurator: new AmbientResolutionTypeSetter() );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new AmbientResolutionTypeSetter() );
             collector.RegisterType( typeof( O2InC2 ) );
             collector.RegisterType( typeof( C2 ) );
             collector.RegisterType( typeof( TypeToMap ) );
-            var result = collector.GetResult( new SimpleServiceContainer() );
+            var result = collector.GetResult( );
             Assert.That( result.HasFatalError, Is.False );
-            TypeToMap o = result.Default.StObjMap.Obtain<TypeToMap>();
-            Assert.That( result.Default.StObjMap.Obtain<C1>().Ambient, Is.SameAs( o ) );
-            Assert.That( result.Default.StObjMap.Obtain<O1InC1>().Ambient, Is.SameAs( o ) );
+            TypeToMap o = result.StObjs.Obtain<TypeToMap>();
+            Assert.That( result.StObjs.Obtain<C1>().Ambient, Is.SameAs( o ) );
+            Assert.That( result.StObjs.Obtain<O1InC1>().Ambient, Is.SameAs( o ) );
 
-            Assert.That( result.Default.StObjMap.Obtain<C2>(), Is.SameAs( result.Default.StObjMap.Obtain<C1>() ) );
-            Assert.That( result.Default.StObjMap.Obtain<O2InC2>(), Is.SameAs( result.Default.StObjMap.Obtain<O1InC1>() ) );
+            Assert.That( result.StObjs.Obtain<C2>(), Is.SameAs( result.StObjs.Obtain<C1>() ) );
+            Assert.That( result.StObjs.Obtain<O2InC2>(), Is.SameAs( result.StObjs.Obtain<O1InC1>() ) );
         }
         
         #endregion

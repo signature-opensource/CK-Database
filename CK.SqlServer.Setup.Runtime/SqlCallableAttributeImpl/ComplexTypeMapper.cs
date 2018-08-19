@@ -46,6 +46,23 @@ namespace CK.SqlServer.Setup
             {
                 get { return Parameters.All( p => p.InputIndex != -1 ); }
             }
+
+            public bool TryMapInput( string name, Func<Type,bool> typeMatcher, int inputIdex )
+            {
+                bool found = false;
+                foreach( var p in Parameters )
+                {
+                    if( typeMatcher == null || typeMatcher( p.Type ) )
+                    {
+                        if( name == null || StringComparer.OrdinalIgnoreCase.Equals( p.Name, name ) )
+                        {
+                            found = true;
+                            p.InputIndex = inputIdex;
+                        }
+                    }
+                }
+                return found;
+            }
         }
 
         class MappedCtor : Mapped
@@ -95,26 +112,29 @@ namespace CK.SqlServer.Setup
         public ComplexTypeMapperModel( Type t )
         {
             CreatedType = t;
-            _ctors = t.GetConstructors( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Select( c => new MappedCtor( c, c.GetParameters() ) ).ToArray();
+            _ctors = t.GetConstructors( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )
+                        .Select( c => new MappedCtor( c, c.GetParameters() ) )
+                        .ToArray();
             _props = t.GetProperties()
                             .Where( p => p.CanWrite && p.GetSetMethod() != null )
                             .Select( p => new MappedProperty( p ) ).ToArray();
         }
 
-        IEnumerable<Mapped> AllMapped { get { return ((IEnumerable<Mapped>)_ctors).Concat( _props ); } }
-
+        IEnumerable<Mapped> AllMapped => ((IEnumerable<Mapped>)_ctors).Concat( _props );
 
         /// <summary>
         /// Registers an input. Name or typeMatcher can be null (but not both at the same time). 
         /// </summary>
         /// <param name="index">Zero based index of the input. Must be positive.</param>
-        /// <param name="name">Name of th input (can be null).</param>
+        /// <param name="name">Name of the input (can be null).</param>
         /// <param name="typeMatcher">
         /// Type matcher for the input (can be null).
         /// When the actual type is known (inputType), it is typically the revert of <see cref="T:Type.IsAssignableFrom"/>, this lambda is fine: t => t.IsAsignableFrom( inputType ).
         /// </param>
         /// <param name="inputTypeName">Optional string with the type name used for warnings and errors.</param>
-        /// <param name="shouldBeMapped">False to state that the input is not considered sensitive regarding the mapping.</param>
+        /// <param name="shouldBeMapped">
+        /// False to state that the input is not considered sensitive regarding the mapping.
+        /// </param>
         /// <returns>True if the input has been mapped at least once.</returns>
         public bool AddInput( int index, string name, Func<Type,bool> typeMatcher, string inputTypeName, bool shouldBeMapped = true )
         {
@@ -128,40 +148,13 @@ namespace CK.SqlServer.Setup
             return false;
         }
 
-
-        /// <summary>
-        /// Registers an input. Name or type can be null (but not both at the same time). 
-        /// </summary>
-        /// <param name="index">Zero based index of the input. Must be positive.</param>
-        /// <param name="name">Name of th input (can be null).</param>
-        /// <param name="type">Type matcher for the input (can be null).</param>
-        /// <param name="shouldBeMapped">False to state that the input is not considered sensitive regarding the mapping.</param>
-        /// <returns>True if the input has been mapped at least once.</returns>
-        public bool AddInput( int index, string name, Type type, bool shouldBeMapped = true )
-        {
-            Func<Type,bool> matcher = type != null 
-                                        ? delegate( Type t ) { return t.IsAssignableFrom( type ); }
-                                        : (Func<Type,bool>)null;
-            return AddInput( index, name, matcher, type != null ? type.Name : null, shouldBeMapped );
-        }
-
         bool DoAdd( int index, string name, Func<Type, bool> typeMatcher, IEnumerable<Mapped> mappings )
         {
             Debug.Assert( typeMatcher != null || name != null );
             bool found = false;
             foreach( var m in mappings )
             {
-                foreach( var p in m.Parameters )
-                {
-                    if( typeMatcher == null || typeMatcher( p.Type ) )
-                    {
-                        if( name == null || StringComparer.OrdinalIgnoreCase.Equals( p.Name, name ) )
-                        {
-                            found = true;
-                            p.InputIndex = index;
-                        }
-                    }
-                }
+                found |= m.TryMapInput( name, typeMatcher, index );
             }
             return found;
         }

@@ -161,7 +161,7 @@ namespace CK.SqlServer.Setup
             // SqlCommand is created.
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
 
-            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoInfo() );
             // We initialize the SetUsedByReturnedType information on parameters 
             // so that they can relax their checks on Sql parameter direction accordingly.
             if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )
@@ -188,7 +188,7 @@ namespace CK.SqlServer.Setup
                 int iSFound = sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
-                    Debug.Assert( SqlObjectItem.TypeConnection.GetTypeInfo().IsSealed && SqlObjectItem.TypeTransaction.GetTypeInfo().IsSealed );
+                    Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
                     // Catches first Connection and Transaction parameters.
                     if( firstSqlConnectionParameter == null && mP.ParameterType == SqlObjectItem.TypeConnection && !mP.ParameterType.IsByRef )
                     {

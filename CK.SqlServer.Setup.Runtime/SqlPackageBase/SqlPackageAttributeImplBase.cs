@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlPackageBase\SqlPackageAttributeImplBase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Core;
 using CK.Setup;
@@ -33,10 +26,10 @@ namespace CK.SqlServer.Setup
         /// Gets the attribute.
         /// </summary>
         protected SqlPackageAttributeBase Attribute => _attr;
-
+       
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.GetTypeInfo().BaseType ) )
+            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
             {
                 monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackageBase." );
             }
@@ -56,10 +49,10 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    o.SetAmbiantPropertyConfiguration( monitor, "Database", null, Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
+                    o.SetAmbiantPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
                 }
             }
-            else o.SetAmbiantPropertyConfiguration( monitor, "Database", null, typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
+            else o.SetAmbiantPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
             // ResourceLocation is a StObjProperty.
             o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ObjectType ) );
             if( Attribute.Schema != null )

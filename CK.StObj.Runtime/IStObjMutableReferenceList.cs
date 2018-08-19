@@ -22,11 +22,10 @@ namespace CK.Setup
         /// <summary>
         /// Adds a new <see cref="IStObjMutableReference"/> to the list.
         /// </summary>
-        /// <param name="context">Context for the <paramref name="type"/>.</param>
         /// <param name="type">Type of the reference.</param>
         /// <param name="behavior">Requirement for the referenced type.</param>
         /// <returns>The newly added <see cref="IStObjMutableReference"/>.</returns>
-        IStObjMutableReference AddNew( string context, Type type, StObjRequirementBehavior behavior );
+        IStObjMutableReference AddNew( Type type, StObjRequirementBehavior behavior );
 
         /// <summary>
         /// Removes a reference at a given index from this list. 

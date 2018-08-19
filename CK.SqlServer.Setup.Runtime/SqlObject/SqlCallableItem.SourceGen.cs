@@ -83,6 +83,7 @@ namespace CK.SqlServer.Setup
         static string GenerateCreateSqlParameter( IFunctionScope b, string name, ISqlServerParameter p )
         {
             int size = p.SqlType.SyntaxSize;
+            if( size == 0 ) size = 1;
             b.Append( "var " )
              .Append( name )
              .Append( " = new SqlParameter( " )

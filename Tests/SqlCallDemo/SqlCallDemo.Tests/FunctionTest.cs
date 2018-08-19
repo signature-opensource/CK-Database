@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_string_with_nullable_parameter()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string t1 = await p.StringFunctionAsync( ctx, 3712 ).ConfigureAwait( false );
@@ -27,7 +27,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_string_with_nullable_parameter()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string t1 = p.StringFunction( ctx, 3712 );
@@ -42,7 +42,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_null_string()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string shouldBeNull = await p.StringFunctionAsync( ctx, -1 ).ConfigureAwait( false );
@@ -53,7 +53,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_null_string()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string shouldBeNull = p.StringFunction( ctx, -1 );
@@ -64,7 +64,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_byte()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 byte t1 = await p.ByteFunctionAsync( ctx, 2 ).ConfigureAwait( false );
@@ -77,7 +77,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_byte()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 byte t1 = p.ByteFunction( ctx, 3 );
@@ -90,7 +90,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_null_nullable_byte()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 byte? b = await p.NullableByteFunctionAsync( ctx ).ConfigureAwait( false );
@@ -101,7 +101,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_null_nullable_byte()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<FunctionPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 byte? b = p.NullableByteFunction( ctx );

@@ -98,7 +98,7 @@ namespace CK.Setup
                     {
                         if( v == null )
                         {
-                            if( p.Type.GetTypeInfo().IsValueType && !(p.Type.GetTypeInfo().IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
+                            if( p.Type.IsValueType && !(p.Type.IsGenericType && p.Type.GetGenericTypeDefinition() == typeof( Nullable<> )) )
                             {
                                 monitor.Error( $"StObjProperty '{ToString()}.{p.Name}' has been set to null but its type '{p.Type.Name}' is not nullable." );
                                 setIt = false;
@@ -134,9 +134,9 @@ namespace CK.Setup
                     // It is a warning because if actual values work, everything is okay... but one day, it should fail.
                     var msg = String.Format( "StObjProperty '{0}.{1}' of type '{2}' is not compatible with the one of its {6} ('{3}.{4}' of type '{5}'). Type should be compatible since {6}'s property value will be propagated if no explicit value is set for '{7}.{1}' or if '{3}.{4}' is set with an incompatible value.",
                         ToString(), p.Name, p.Type.Name,
-                        _dContainer.Type.Name, c.Name, c.Type.Name,
+                        _dContainer.Type.Type.Name, c.Name, c.Type.Name,
                         sourceName,
-                        Type.Name );
+                        Type.Type.Name );
                     monitor.Warn( msg ); 
                 }
                 if( doSetOrMerge )

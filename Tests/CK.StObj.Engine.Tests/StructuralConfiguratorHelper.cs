@@ -1,28 +1,28 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\StructuralConfiguratorHelper.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Setup;
 using CK.Core;
 
 namespace CK.StObj.Engine.Tests
 {
-    class StructuralConfiguratorHelper : IStObjStructuralConfigurator
+    class StructuralConfiguratorHelper : IStObjTypeFilter, IStObjStructuralConfigurator
     {
         readonly Action<IStObjMutableItem> _conf;
+        readonly Func<Type,bool> _typeFilter;
 
-        public StructuralConfiguratorHelper( Action<IStObjMutableItem> conf )
+        public StructuralConfiguratorHelper( Action<IStObjMutableItem> conf = null, Func<Type, bool> typefilter = null )
         {
             _conf = conf;
+            _typeFilter = typefilter;
+        }
+
+        public bool TypeFilter( IActivityMonitor monitor, Type t )
+        {
+            return _typeFilter?.Invoke( t ) ?? true;
         }
 
         public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            _conf( o );
+            _conf?.Invoke( o );
         }
     }
 }

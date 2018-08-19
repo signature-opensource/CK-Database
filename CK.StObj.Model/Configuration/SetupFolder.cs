@@ -17,6 +17,7 @@ namespace CK.Core
         {
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
+            ExcludedTypes = new HashSet<string>();
         }
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace CK.Core
             Directory = e.Element( StObjEngineConfiguration.XmlNames.Directory )?.Value;
             Assemblies = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly ) );
             Types = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type ) );
+            ExcludedTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type ) );
         }
 
         /// <summary>
@@ -38,7 +40,8 @@ namespace CK.Core
             return new XElement( StObjEngineConfiguration.XmlNames.SetupFolder,
                                     new XElement( StObjEngineConfiguration.XmlNames.Directory, Directory ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly, Assemblies ),
-                                    StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type, Types ) );
+                                    StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type, Types ),
+                                    StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type, ExcludedTypes ) );
         }
 
         /// <summary>
@@ -56,9 +59,14 @@ namespace CK.Core
         /// <summary>
         /// Gets a set of assembly qualified type names that must be explicitely registered 
         /// regardless of <see cref="Assemblies"/>.
-        /// All other types in the assemblies that contain these explicit classes are ignored.
         /// </summary>
         public HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that must be excluded from  
+        /// registration.
+        /// </summary>
+        public HashSet<string> ExcludedTypes { get; }
 
     }
 }

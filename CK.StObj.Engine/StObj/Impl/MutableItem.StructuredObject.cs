@@ -19,25 +19,6 @@ namespace CK.Setup
 
     partial class MutableItem
     {
-        protected internal override bool AbstractTypeCanBeInstanciated( IActivityMonitor monitor, IDynamicAssembly assembly, out object abstractTypeInfo )
-        {
-            Debug.Assert(assembly != null );
-            Debug.Assert(Specialization == null && Type.IsAbstract);
-
-            List<ICKCustomAttributeProvider> combined = new List<ICKCustomAttributeProvider>();
-            var p = this;
-            do { combined.Add( p ); p = p.Generalization; } while( p != null );
-
-            ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( monitor, Type.AsType(), new CustomAttributeProviderComposite( combined ) );
-            if( autoImpl != null && autoImpl.CreateStubType( monitor, assembly ) != null )
-            {
-                abstractTypeInfo = autoImpl;
-                return true;
-            }
-            abstractTypeInfo = null;
-            return false;
-        }
-
 
         public object CreateStructuredObject( IActivityMonitor monitor, IStObjRuntimeBuilder runtimeBuilder )
         {
@@ -61,13 +42,13 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<PropertySetter> PreConstructProperties => _preConstruct;
 
-        public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
-        {
-            Debug.Assert( Specialization == null );
-            return _leafData.ImplementableTypeInfo == null
-                        ? ObjectType.ToCSharpName() 
-                        : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
-        }
+        //public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
+        //{
+        //    Debug.Assert( Specialization == null );
+        //    return _leafData.ImplementableTypeInfo == null
+        //                ? ObjectType.ToCSharpName() 
+        //                : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
+        //}
 
         /// <summary>
         /// Gets the post build properties to set. Potentially not null only on leaves.

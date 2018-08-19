@@ -73,10 +73,10 @@ namespace CK.Core
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( abstractType == null ) throw new ArgumentNullException( nameof( abstractType ) );
-            if( !abstractType.GetTypeInfo().IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof( abstractType ) );
+            if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof( abstractType ) );
             if( attributeProvider == null ) throw new ArgumentNullException( nameof( attributeProvider ) );
 
-            if( abstractType.GetTypeInfo().IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
+            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
 
             var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
             int nbUncovered = 0;
