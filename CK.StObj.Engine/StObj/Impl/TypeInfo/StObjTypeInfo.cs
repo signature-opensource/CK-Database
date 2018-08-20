@@ -263,7 +263,7 @@ namespace CK.Setup
             }
             #endregion
 
-            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IStObjObjectMap)
+            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IStObjMap )
             var initialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             if( initialize != null )
             {
