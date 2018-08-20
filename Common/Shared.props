@@ -41,7 +41,7 @@
     <YodiiScriptVersion>0.7.1-C0002-local</YodiiScriptVersion>
     <CKSetupVersion>7.0.1-C0009-local</CKSetupVersion>
     <CKTestingVersion>0.5.1-C0007-local</CKTestingVersion>
-    <FluentAssertionsVersion>5.3.2</FluentAssertionsVersion>
+    <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
