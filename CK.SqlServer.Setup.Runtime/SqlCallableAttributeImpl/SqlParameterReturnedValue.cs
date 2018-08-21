@@ -1,4 +1,4 @@
-﻿using CK.SqlServer.Parser;
+using CK.SqlServer.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +36,8 @@ namespace CK.SqlServer.Setup
         public string Name => "RETURN_VALUE";
 
         public ISqlServerUnifiedTypeDecl SqlType { get; }
+
+        public bool IsNotNull => false;
 
         public string ToStringClean() => "(return)";
     }

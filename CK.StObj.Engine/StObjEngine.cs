@@ -339,6 +339,44 @@ namespace CK.Setup
             return null;
         }
 
+        class TypeFilterFromConfiguration : IStObjTypeFilter
+        {
+            readonly StObjConfigurationLayer _firstLayer;
+            readonly HashSet<string> _excludedTypes;
+
+            public TypeFilterFromConfiguration( NormalizedFolder f, StObjConfigurationLayer firstLayer )
+            {
+                _excludedTypes = f.Types;
+                _firstLayer = firstLayer;
+            }
+
+            bool IStObjTypeFilter.TypeFilter( IActivityMonitor monitor, Type t )
+            {
+                if( _excludedTypes.Contains( t.Name ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type Name." );
+                    return false;
+                }
+                if( _excludedTypes.Contains( t.FullName ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type FullName." );
+                    return false;
+                }
+                if( _excludedTypes.Contains( t.AssemblyQualifiedName ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type AssemblyQualifiedName." );
+                    return false;
+                }
+                if( SimpleTypeFinder.WeakenAssemblyQualifiedName( t.AssemblyQualifiedName, out var weaken )
+                    && _excludedTypes.Contains( weaken ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its weak type name ({weaken})." );
+                    return false;
+                }
+                return _firstLayer.TypeFilter( monitor, t );
+            }
+        }
+
         StObjCollectorResult SafeBuildStObj( NormalizedFolder f, Func<string,object> secondaryRunAccessor )
         {
             bool hasError = false;
@@ -347,13 +385,14 @@ namespace CK.Setup
             {
                 StObjCollectorResult result;
                 var configurator = _startContext.Configurator.FirstLayer;
+                var typeFilter = new TypeFilterFromConfiguration( f, configurator );
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
                     _startContext.ServiceContainer,
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
-                    configurator, configurator, configurator,
+                    typeFilter, configurator, configurator,
                     secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
