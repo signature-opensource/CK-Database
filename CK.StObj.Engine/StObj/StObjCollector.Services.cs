@@ -25,7 +25,20 @@ namespace CK.Setup
             {
                 public readonly AmbientServiceClassInfo.CtorParameter Parameter;
                 public readonly HashSet<SCRClass> StatisficationSet;
+                bool _canUseDefault;
+
                 public bool HasDefault => Parameter.ParameterInfo.HasDefaultValue;
+
+                public bool CanUseDefault
+                {
+                    get => _canUseDefault;
+                    set
+                    {
+                        Debug.Assert( value == false || HasDefault );
+                        _canUseDefault = value;
+                    }
+                }
+
 
                 public CtorParameter( AmbientServiceClassInfo.CtorParameter p, HashSet<SCRClass> sSet )
                 {
@@ -348,6 +361,35 @@ namespace CK.Setup
             }
         }
 
+        class BuildClassInfoCache
+        {
+            readonly BuildClassInfoCache _owner;
+            readonly Dictionary<SCRClass, BuildClassInfo> _c;
+
+            public BuildClassInfoCache( BuildClassInfoCache owner )
+            {
+                _owner = owner;
+                _c = new Dictionary<SCRClass, BuildClassInfo>();
+            }
+
+            public void Add( SCRClass c, BuildClassInfo info ) => _c.Add( c, info );
+
+            public bool TryGetValue( SCRClass c, out BuildClassInfo info ) => _c.TryGetValue( c, out info ) || (_owner?.TryGetValue( c, out info ) ?? false);
+
+            public BuildClassInfo this[ SCRClass c ] => _c.GetValueWithDefault( c, null ) ?? _owner?._c.GetValueWithDefault( c, null );
+
+            public IEnumerable<BuildClassInfo> AllInfo => _owner == null ? _c.Values : _c.Values.Concat( _owner.AllInfo );
+
+            public void Commit()
+            {
+                Debug.Assert( _owner != null );
+                foreach( var kv in _owner._c ) _c.Add( kv.Key, kv.Value );
+            }
+
+            public bool IsMapped( SCRClass c ) => _c.ContainsKey( c ) || (_owner?.IsMapped( c ) ?? false);
+
+        }
+
         bool ResolveChain( StObjObjectEngineMap engineMap, InterfaceFamily f )
         {
             bool success = true;
@@ -359,58 +401,56 @@ namespace CK.Setup
             }
             else
             {
-                var cache = new Dictionary<SCRClass, BuildClassInfo>();
-                bool foundNewOne = false;
-                do
-                {
-                    foundNewOne = false;
-                    foreach( var c in f.Classes )
-                    {
-                        if( !cache.ContainsKey( c ) )
-                        {
-                            foundNewOne |= BuildChain( c, f.Classes, cache ) != null;
-                        }
-                    }
-                }
-                while( foundNewOne );
+                var cache = new BuildClassInfoCache( null );
+                success = OneRound( engineMap, f, cache );
+            }
+            return success;
+        }
 
-                var solved = cache.Values.Where( info => info.Class.IsHeadCandidate && info.Content.Count + 1 == f.Classes.Count ).ToList();
-
-                if( solved.Count == 1 )
+        bool OneRound( StObjObjectEngineMap engineMap, InterfaceFamily f, BuildClassInfoCache cache )
+        {
+            var solved = new List<BuildClassInfo>();
+            bool foundNewOne;
+            do
+            {
+                foundNewOne = false;
+                foreach( var c in f.Classes )
                 {
-                    f.FinalRegister( engineMap, solved[0] );
-                }
-                else
-                {
-                    success = false;
-                    if( solved.Count > 1 )
+                    if( !cache.IsMapped( c ) )
                     {
-                        using( _monitor.OpenError( $"Multiple possible chains found:" ) )
-                        {
-                            foreach( var c in solved ) _monitor.Trace( c.ToString() );
-                        }
+                        foundNewOne |= BuildChain( c, f.Classes, cache ) != null;
                     }
                 }
             }
-            return success;
+            while( foundNewOne );
+            solved.AddRange( cache.AllInfo.Where( info => info.Class.IsHeadCandidate && info.Content.Count + 1 == f.Classes.Count ) );
+            if( solved.Count == 1 )
+            {
+                f.FinalRegister( engineMap, solved[0] );
+                return true;
+            }
+            if( solved.Count > 1 )
+            {
+                using( _monitor.OpenError( $"Multiple possible chains found:" ) )
+                {
+                    foreach( var c in solved ) _monitor.Trace( c.ToString() );
+                }
+            }
+            return false;
         }
 
         BuildClassInfo BuildChain(
             SCRClass head,
             IEnumerable<SCRClass> remainders,
-            Dictionary<SCRClass, BuildClassInfo> cache )
+            BuildClassInfoCache cache )
         {
-            if( cache.TryGetValue( head, out var result ) )
-            {
-                return result;
-            }
+            if( cache.TryGetValue( head, out var result ) ) return result;
             using( _monitor.OpenDebug( () => $"Resolving {head}." ) )
             {
-                // Currently parameter order matters. Since this is a stable information, go for it.
-                // To be parameter order indepedent we need to wrap the cache in a ParameterLocalCache
-                // that can isolate parameters from each other. Only if all parameters are successfully bound
-                // can we merge all ParameterLocalCache in the current cache (this current cache being a
-                // ParameterLocalCache or the root cache for for to heads).
+                // Currently parameter order matters.
+                // To be parameter order indepedent we whould use a local cache here
+                // and run the loop like the primary one (until none succeed).
+                // This is already done by the primary lopp so this is useless.
                 remainders = remainders.Where( r => r != head );
                 var bindings = new ParameterAssignment[head.Parameters.Count];
                 for( int i = 0; i < bindings.Length; ++i )
@@ -431,7 +471,7 @@ namespace CK.Setup
             }
         }
 
-        BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, Dictionary<SCRClass, BuildClassInfo> cache )
+        BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, BuildClassInfoCache cache )
         {
             var possible = p.StatisficationSet
                                 .Intersect( remainders )
@@ -439,7 +479,7 @@ namespace CK.Setup
             SCRClass unambiguousPossible = null;
             if( possible.Count == 0 )
             {
-                if( p.HasDefault )
+                if( p.CanUseDefault )
                 {
                     _monitor.Trace( $"Using null default for parameter {p}." );
                     return BuildClassInfo.NullValue;
@@ -473,7 +513,7 @@ namespace CK.Setup
                         // Rank conflict. Use the cache to keep only the top of any
                         // already resolved chains.
                         var covered = new HashSet<SCRClass>( possible
-                                                                .Select( pc => cache.GetValueWithDefault( pc, null )?.Content )
+                                                                .Select( pc => cache[ pc ]?.Content )
                                                                 .Where( content => content != null )
                                                                 .SelectMany( content => content ) );
                         unambiguousPossible = possible.SingleOrDefault( c => !covered.Contains( c ) );
