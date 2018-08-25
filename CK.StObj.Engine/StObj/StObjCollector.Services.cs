@@ -63,7 +63,8 @@ namespace CK.Setup
                 _params = new List<CtorParameter>();
                 foreach( var p in Class.ConstructorParameters )
                 {
-                    var afterMe = f.Classes.Where( c => c != this && CanBeFollowedBy( c ) );
+                    var afterMe = f.Classes.Where( c => CanBeFollowedBy( c, true ) );
+                    Debug.Assert( !afterMe.Contains( this ) );
                     var typeCompatible = afterMe.Where( t => p.ParameterInfo.ParameterType.IsAssignableFrom( t.Class.Type ) );
                     var sSet = new HashSet<SCRClass>( typeCompatible );
                     if( sSet.Count > 0 )
@@ -81,7 +82,11 @@ namespace CK.Setup
                 _isHeadCandidate = !f.Interfaces.Except( Class.Interfaces ).Any();
             }
 
-            public bool CanBeFollowedBy( SCRClass other ) => RankOrdered >= other.RankOrdered;
+            public bool CanBeFollowedBy( SCRClass other, bool allowFinalRank )
+            {
+                return other != this
+                        && (RankOrdered >= other.RankOrdered || (allowFinalRank && other.RankOrdered == Int32.MaxValue));
+            }
 
             public int RankOrdered => Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
 
@@ -361,33 +366,97 @@ namespace CK.Setup
             }
         }
 
-        class BuildClassInfoCache
+        interface IBuildClassInfoContext
         {
-            readonly BuildClassInfoCache _owner;
+            BuildClassInfo this[SCRClass c] { get; }
+
+            void Register( SCRClass c, BuildClassInfo info );
+
+            //IBuildClassInfoContext CreateSubCache();
+        }
+
+        class BuildClassInfoCache : IBuildClassInfoContext
+        {
+            readonly InterfaceFamily _f;
             readonly Dictionary<SCRClass, BuildClassInfo> _c;
+            readonly List<BuildClassInfo> _solved;
 
-            public BuildClassInfoCache( BuildClassInfoCache owner )
+            class SubCache : IBuildClassInfoContext
             {
-                _owner = owner;
+                readonly BuildClassInfoCache _primary;
+                readonly IBuildClassInfoContext _parent;
+                readonly Dictionary<SCRClass, BuildClassInfo> _c;
+
+                public SubCache( BuildClassInfoCache primary )
+                {
+                    _parent = _primary = primary;
+                    _c = new Dictionary<SCRClass, BuildClassInfo>();
+                }
+
+                public SubCache( SubCache parent )
+                {
+                    _parent = parent;
+                    _primary = parent._primary;
+                    _c = new Dictionary<SCRClass, BuildClassInfo>();
+                }
+
+                public BuildClassInfo this[SCRClass c] => _c.GetValueWithDefault( c, null ) ?? _parent[c];
+
+                public void Register( SCRClass c, BuildClassInfo info )
+                {
+                    Debug.Assert( this[c] == null );
+                    _c[c] = info;
+                    if( info.Class.IsHeadCandidate && info.Content.Count + 1 == _primary._f.Classes.Count )
+                    {
+                        _primary._solved.Add( info );
+                    }
+                }
+
+                IBuildClassInfoContext CreateSubCache() => new SubCache( this );
+            }
+
+            public BuildClassInfoCache( InterfaceFamily f )
+            {
+                _f = f;
                 _c = new Dictionary<SCRClass, BuildClassInfo>();
+                foreach( var c in f.Classes ) _c.Add( c, null );
+                _solved = new List<BuildClassInfo>();
             }
 
-            public void Add( SCRClass c, BuildClassInfo info ) => _c.Add( c, info );
-
-            public bool TryGetValue( SCRClass c, out BuildClassInfo info ) => _c.TryGetValue( c, out info ) || (_owner?.TryGetValue( c, out info ) ?? false);
-
-            public BuildClassInfo this[ SCRClass c ] => _c.GetValueWithDefault( c, null ) ?? _owner?._c.GetValueWithDefault( c, null );
-
-            public IEnumerable<BuildClassInfo> AllInfo => _owner == null ? _c.Values : _c.Values.Concat( _owner.AllInfo );
-
-            public void Commit()
+            public void Register( SCRClass c, BuildClassInfo info )
             {
-                Debug.Assert( _owner != null );
-                foreach( var kv in _owner._c ) _c.Add( kv.Key, kv.Value );
+                Debug.Assert( this[c] == null );
+                _c[c] = info;
+                if( info.Class.IsHeadCandidate && info.Content.Count + 1 == _f.Classes.Count )
+                {
+                    _solved.Add( info );
+                }
             }
 
-            public bool IsMapped( SCRClass c ) => _c.ContainsKey( c ) || (_owner?.IsMapped( c ) ?? false);
+            public IBuildClassInfoContext CreateSubCache() => new SubCache( this );
 
+            public BuildClassInfo this[ SCRClass c ] => _c[c];
+
+            public IEnumerable<SCRClass> Unregistered => _c.Where( kv => kv.Value == null ).Select( kv => kv.Key );
+
+            public IReadOnlyList<BuildClassInfo> CurrentlySolved => _solved;
+
+            public bool Finalize( IActivityMonitor m, StObjObjectEngineMap engineMap )
+            {
+                if( _solved.Count == 1 )
+                {
+                    _f.FinalRegister( engineMap, _solved[0] );
+                    return true;
+                }
+                if( _solved.Count > 1 )
+                {
+                    using( m.OpenError( $"Multiple possible chains found:" ) )
+                    {
+                        foreach( var c in _solved ) m.Trace( c.ToString() );
+                    }
+                }
+                return false;
+            }
         }
 
         bool ResolveChain( StObjObjectEngineMap engineMap, InterfaceFamily f )
@@ -401,50 +470,63 @@ namespace CK.Setup
             }
             else
             {
-                var cache = new BuildClassInfoCache( null );
-                success = OneRound( engineMap, f, cache );
+                var cache = new BuildClassInfoCache( f );
+                // Primary round: no null gates opened.
+                OneRound( f, cache );
+                success = cache.Finalize( _monitor, engineMap );
+                if( !success && cache.CurrentlySolved.Count == 0 )
+                {
+                    var nullGates = cache.Unregistered.SelectMany( c => c.Parameters.Where( p => p.HasDefault ) ).ToList();
+                    _monitor.Debug( $"{nullGates.Count} null gates." );
+                    if( nullGates.Count > 0 )
+                    {
+                        // Secondary round: only one null gate opened at a time,
+                        // but all these hypothesis must lead to one and only one
+                        // chain. The subcache isolates the intermediate infos that may
+                        // be created during the loop and solved chains are added to the
+                        // root solved chains.
+                        // Finalize then does its job and check that only one solved chain
+                        // has been found.
+                        var oneNullAllowed = cache.CreateSubCache();
+                        SCRClass.CtorParameter prev = null;
+                        for( int nullIdx = 0; nullIdx < nullGates.Count; ++nullIdx )
+                        {
+                            if( prev != null ) prev.CanUseDefault = false;
+                            (prev = nullGates[nullIdx]).CanUseDefault = true;
+                            OneRound( f, oneNullAllowed );
+                        }
+                        prev.CanUseDefault = false;
+                    }
+                    success = cache.Finalize( _monitor, engineMap );
+                }
             }
             return success;
         }
 
-        bool OneRound( StObjObjectEngineMap engineMap, InterfaceFamily f, BuildClassInfoCache cache )
+        void OneRound( InterfaceFamily f, IBuildClassInfoContext cache )
         {
-            var solved = new List<BuildClassInfo>();
             bool foundNewOne;
             do
             {
                 foundNewOne = false;
                 foreach( var c in f.Classes )
                 {
-                    if( !cache.IsMapped( c ) )
+                    if( cache[c] == null )
                     {
                         foundNewOne |= BuildChain( c, f.Classes, cache ) != null;
                     }
                 }
             }
             while( foundNewOne );
-            solved.AddRange( cache.AllInfo.Where( info => info.Class.IsHeadCandidate && info.Content.Count + 1 == f.Classes.Count ) );
-            if( solved.Count == 1 )
-            {
-                f.FinalRegister( engineMap, solved[0] );
-                return true;
-            }
-            if( solved.Count > 1 )
-            {
-                using( _monitor.OpenError( $"Multiple possible chains found:" ) )
-                {
-                    foreach( var c in solved ) _monitor.Trace( c.ToString() );
-                }
-            }
-            return false;
         }
 
         BuildClassInfo BuildChain(
             SCRClass head,
             IEnumerable<SCRClass> remainders,
-            BuildClassInfoCache cache )
+            IBuildClassInfoContext cache )
         {
-            if( cache.TryGetValue( head, out var result ) ) return result;
+            var result = cache[head];
+            if( result != null ) return result;
             using( _monitor.OpenDebug( () => $"Resolving {head}." ) )
             {
                 // Currently parameter order matters.
@@ -459,19 +541,19 @@ namespace CK.Setup
                     var cInfo = BindParameter( head.Parameters[i], remainders, cache );
                     if( cInfo == null )
                     {
-                        _monitor.Trace( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
+                        _monitor.Debug( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
                         return null;
                     }
                     bindings[i] = new ParameterAssignment( p, cInfo );
                 }
                 result = new BuildClassInfo( head, bindings );
-                cache.Add( head, result );
+                cache.Register( head, result );
                 _monitor.Trace( $"Chain found: {result}." );
                 return result;
             }
         }
 
-        BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, BuildClassInfoCache cache )
+        BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, IBuildClassInfoContext cache )
         {
             var possible = p.StatisficationSet
                                 .Intersect( remainders )

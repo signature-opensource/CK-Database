@@ -103,7 +103,6 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             o.Collect().Should().Be( "SFront1InP1_4[SOnFront1_3[SFront1_2[SBaseLeaf_1]]]" );
         }
 
-
         [Test]
         public void asking_for_a_link_class_bound_to_the_abstraction_in_a_chain_leads_to_funny_result()
         {
@@ -116,6 +115,21 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             var o = p.GetService<Samples.SFront1>();
             o.Collect().Should().Be( "SFront1_5[SFront1InP1_4[SOnFront1_3[SFront1_2[SBaseLeaf_1]]]]" );
         }
+
+
+        [Test]
+        public void ambiguous_nulls_bindings_are_detected()
+        {
+            using( TestHelper.Monitor.TemporarilySetMinimalFilter( LogFilter.Debug ) )
+            {
+                var collector = CreateStObjCollector( SamplePackages );
+                collector.RegisterType( typeof( Samples.SBaseLeaf ) );
+                collector.RegisterType( typeof( Samples.SBaseOrFrontLeaf1 ) );
+                collector.RegisterType( typeof( Samples.SBaseOrFrontLeaf2 ) );
+                CheckFailure( collector );
+            }
+        }
+
 
     }
 }

@@ -33,7 +33,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             string Collect();
         }
 
-        [AmbientService( typeof(P0))]
+        [AmbientService( typeof( P0 ) )]
         public class SBaseLeaf : ISBase
         {
             readonly int _gNum;
@@ -59,6 +59,36 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             }
 
             public string Collect() => $"SFront1_{_gNum}[" + _next.Collect() + "]";
+        }
+
+        [AmbientService( typeof( P0 ) )]
+        public class SBaseOrFrontLeaf1 : ISBase
+        {
+            readonly int _gNum;
+            readonly ISBase _next;
+
+            public SBaseOrFrontLeaf1( ISBase next = null )
+            {
+                _next = next;
+                _gNum = ++ObjectNumber;
+            }
+
+            public string Collect() => $"SBaseOrFrontLeaf1_{_gNum}[" + _next.Collect() + "]";
+        }
+
+        [AmbientService( typeof( P0 ) )]
+        public class SBaseOrFrontLeaf2 : ISBase
+        {
+            readonly int _gNum;
+            readonly ISBase _next;
+
+            public SBaseOrFrontLeaf2( ISBase next = null )
+            {
+                _next = next;
+                _gNum = ++ObjectNumber;
+            }
+
+            public string Collect() => $"SBaseOrFrontLeaf2_{_gNum}[" + _next.Collect() + "]";
         }
 
         [AmbientService( typeof( P0 ) )]

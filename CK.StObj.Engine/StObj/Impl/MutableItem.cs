@@ -663,6 +663,12 @@ namespace CK.Setup
         /// </summary>
         public int RankOrdered { get; private set; }
 
+        /// <summary>
+        /// Overridden to return the Type full name.
+        /// </summary>
+        /// <returns>The type's full name.</returns>
+        public override string ToString() => Type.Type.FullName;
+
 
         #region IDependentItemContainerAsk Members
 
