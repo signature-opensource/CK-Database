@@ -81,18 +81,12 @@ namespace CK.Core
             List<AmbientServiceClassInfo> subGraphs = new List<AmbientServiceClassInfo>();
             if( success && classAmbiguities == null )
             {
-                using( _monitor.OpenInfo( "Generating Service Class mappings." ) )
+                foreach( var s in _serviceRoots )
                 {
-                    int currentCount = contracts.EngineMap.ServiceSimpleMappings.Count;
-                    foreach( var s in _serviceRoots )
-                    {
-                        s.FillFinalClassMappings( contracts.EngineMap.ServiceSimpleMappings, subGraphs );
-                    }
-                    Debug.Assert( contracts.EngineMap.ServiceSimpleMappings.Values.All( c => c.MostSpecialized != null ) );
-                    Debug.Assert( subGraphs.All( c => c.MostSpecialized != null ) );
-                    int deltaMappings = contracts.EngineMap.ServiceSimpleMappings.Count - currentCount;
-                    _monitor.CloseGroup( $"{deltaMappings} mappings for {_serviceRoots.Count} root services with {subGraphs.Count} sub graphs." );
+                    s.FinalizeMostSpecializedAndCollectSubGraphs( subGraphs );
                 }
+                Debug.Assert( _serviceRoots.All( c => c.MostSpecialized != null ) );
+                Debug.Assert( subGraphs.All( c => c.MostSpecialized != null ) );
             }
             // Collecting all, roots and leaves interfaces.
             var leafInterfaces = new List<AmbientServiceInterfaceInfo>();
@@ -167,8 +161,10 @@ namespace CK.Core
                     var leaf = resolvedLeaves[i];
                     if( leaf != null )
                     {
-                        error |= !leaf.EnsureCtorBinding( _monitor, this )
-                                 || !_serviceRoots[i].SetMostSpecialized( _monitor, engineMap, leaf );
+                        // Here, calling leaf.EnsureCtorBinding() would be enough but Service Resolution requires
+                        // the closure on all leaves. GetCtorParametersClassClosure calls EnsureCtorBinding.
+                        leaf.GetCtorParametersClassClosure( _monitor, this, ref error );
+                        error |= !_serviceRoots[i].SetMostSpecialized( _monitor, engineMap, leaf );
                     }
                 }
                 // Every non ambiguous paths have been initialized.

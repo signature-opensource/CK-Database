@@ -13,12 +13,13 @@ namespace CK.Setup
         static readonly string _sourceServiceSupport = @"
         public class StObjServiceParameterInfo : IStObjServiceParameterInfo
         {
-            public StObjServiceParameterInfo( Type t, int p, string n, IStObjServiceClassFactoryInfo v )
+            public StObjServiceParameterInfo( Type t, int p, string n, IReadOnlyList<Type> v, bool isEnum )
             {
                 ParameterType = t;
                 Position = p;
                 Name = n;
                 Value = v;
+                IsEnumeration = isEnum;
             }
 
             public Type ParameterType { get; }
@@ -27,7 +28,9 @@ namespace CK.Setup
 
             public string Name { get; }
 
-            public IStObjServiceClassFactoryInfo Value { get; }
+            public bool IsEnumeration { get; }
+
+            public IReadOnlyList<Type> Value { get; }
         }
 
         public class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
@@ -98,88 +101,58 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
 
         string GetServiceClassFactoryName( IStObjServiceFinalManualMapping f ) => $"SFInfo.S{f.Number}.Default";
 
-        void CreateServiceClassFactory( IStObjServiceFinalManualMapping f )
+        void CreateServiceClassFactory( IStObjServiceFinalManualMapping c )
         {
-            var t = _infoType.CreateType( $"public class S{f.Number} : StObjServiceClassFactoryInfo, IStObjServiceClassFactory" );
+            var t = _infoType.CreateType( $"public class S{c.Number} : StObjServiceClassFactoryInfo, IStObjServiceClassFactory" );
 
             t.CreateFunction( ctor =>
             {
-                ctor.Append( "public S" ).Append( f.Number ).Append( "()" ).NewLine()
-                    .Append( ": base( " ).AppendTypeOf( f.ClassType ).Append( ", " ).NewLine();
-                GenerateStObjServiceFactortInfoAssignments( ctor, f.Assignments );
+                ctor.Append( "public S" ).Append( c.Number ).Append( "()" ).NewLine()
+                    .Append( ": base( " ).AppendTypeOf( c.ClassType ).Append( ", " ).NewLine();
+                GenerateStObjServiceFactortInfoAssignments( ctor, c.Assignments );
                 ctor.Append( ")" );
             } );
 
             t.CreateFunction( func =>
             {
                 func.Append( "public object CreateInstance( IServiceProvider p ) {" );
-                var locals = func.CreatePart();
-                func.Append( "return " );
-                var cache = new Dictionary<IStObjServiceClassFactoryInfo, string>();
-                GenerateNew( f, locals, func, cache );
-                func.Append( ";" ).NewLine();
-            } );
-            t.Append( "public static readonly IStObjServiceClassFactory Default = new S" ).Append( f.Number ).Append( "();" ).NewLine();
-        }
-
-        void GenerateNew( IStObjServiceClassFactoryInfo c, IFunctionScopePart locals, IFunctionScope func, Dictionary<IStObjServiceClassFactoryInfo, string> cache )
-        {
-            func.Append( "new " ).AppendCSharpName( c.ClassType ).Append( "(" );
-            var ctor = c.GetSingleConstructor();
-            var parameters = ctor.GetParameters();
-            for( int i = 0; i < parameters.Length; ++i )
-            {
-                var p = parameters[i];
-                if( i > 0 ) func.Append( ", " );
-                var mapped = c.Assignments.Where( a => a.Position == p.Position ).FirstOrDefault();
-                if( mapped == null )
+                func.Append( "return new " ).AppendCSharpName( c.ClassType ).Append( "(" );
+                var ctor = c.GetSingleConstructor();
+                var parameters = ctor.GetParameters();
+                for( int i = 0; i < parameters.Length; ++i )
                 {
-                    func.Append( "p.GetService( " ).AppendTypeOf( p.ParameterType ).Append( ")" );
-                }
-                else
-                {
-                    if( mapped.Value == null )
+                    var p = parameters[i];
+                    if( i > 0 ) func.Append( ", " );
+                    var mapped = c.Assignments.Where( a => a.Position == p.Position ).FirstOrDefault();
+                    if( mapped == null )
                     {
-                        func.Append( "null" );
+                        func.Append( "p.GetService( " ).AppendTypeOf( p.ParameterType ).Append( ")" );
                     }
                     else
                     {
-                        func.Append( GetLocalName( mapped.Value, locals, cache ) );
+                        if( mapped.Value == null )
+                        {
+                            func.Append( "null" );
+                        }
+                        else if( mapped.IsEnumeration )
+                        {
+                            func.Append( "new " ).AppendCSharpName( p.ParameterType ).Append( "[]{" );
+                            for( int idxType = 0; idxType < mapped.Value.Count; ++idxType )
+                            {
+                                if( idxType > 0 ) func.Append( ", " );
+                                func.Append( "p.GetService( " ).AppendTypeOf( mapped.Value[idxType] ).Append( ")" );
+                            }
+                            func.Append( "}" );
+                        }
+                        else
+                        {
+                            func.Append( "p.GetService( " ).AppendTypeOf( mapped.Value[0] ).Append( ")" );
+                        }
                     }
                 }
-            }
-            func.Append( ")" );
-        }
-
-        private string GetLocalName( IStObjServiceClassFactoryInfo c, IFunctionScopePart part, Dictionary<IStObjServiceClassFactoryInfo, string> cache )
-        {
-            if( !cache.TryGetValue( c, out var name ) )
-            {
-                var locals = part.CreatePart();
-                name = $"v{cache.Count}";
-                cache.Add( c, name );
-                part.Append( "var " ).Append( name ).Append( " = " );
-                GenerateNew( c, locals, part, cache );
-                part.Append( ";" ).NewLine();
-            }
-            return name;
-        }
-
-        string GetInfoName( IStObjServiceClassFactoryInfo info )
-        {
-            if( info == null ) return "null";
-            if( !_names.TryGetValue( info, out var n ) )
-            {
-                n = $"I{_names.Count}";
-                _names.Add( info, n );
-                var part = _infoType.CreatePart( top: true );
-                part.Append( "static readonly StObjServiceClassFactoryInfo " ).Append( n )
-                         .Append( " = new StObjServiceClassFactoryInfo( " )
-                         .AppendTypeOf( info.ClassType ).Append( ", " );
-                GenerateStObjServiceFactortInfoAssignments( part, info.Assignments );
-                part.Append( ");" ).NewLine();
-            }
-            return n;
+                func.Append( ");" ).NewLine();
+            } );
+            t.Append( "public static readonly IStObjServiceClassFactory Default = new S" ).Append( c.Number ).Append( "();" ).NewLine();
         }
 
         void GenerateStObjServiceFactortInfoAssignments( ICodeWriter b, IReadOnlyList<IStObjServiceParameterInfo> assignments )
@@ -199,9 +172,24 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                     b.Append( "new StObjServiceParameterInfo( " )
                      .AppendTypeOf( a.ParameterType ).Append( ", " )
                      .Append( a.Position ).Append( ", " )
-                     .AppendSourceString( a.Name ).Append( ", " )
-                     .Append( GetInfoName( a.Value ) ).Append( ')' )
-                     .NewLine();
+                     .AppendSourceString( a.Name ).Append( ", " );
+                    if( a.Value == null )
+                    {
+                        b.Append( "null" );
+                    }
+                    else
+                    {
+                        b.Append( "new Type[]{ " );
+                        for( int idxType = 0; idxType < a.Value.Count; ++idxType )
+                        {
+                            if( idxType > 0 ) b.Append( ", " );
+                            b.AppendTypeOf( a.Value[idxType] );
+                        }
+                        b.Append( "}" );
+                    }
+                    b.Append( ", " )
+                     .Append( a.IsEnumeration )
+                     .Append( ")" ).NewLine();
                 }
                 b.Append( '}' );
             }

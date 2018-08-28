@@ -144,9 +144,13 @@ namespace CK.Core
                             {
                                 values[i] = null;
                             }
+                            else if( mapped.IsEnumeration )
+                            {
+                                values[i] = mapped.Value.Select( v => provider.GetService( v ) ).ToArray();
+                            }
                             else
                             {
-                                values[i] = Create( provider, mapped.Value, cache );
+                                values[i] = provider.GetService( mapped.Value[0] );
                             }
                         }
                     }

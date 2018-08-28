@@ -16,11 +16,6 @@ namespace CK.Core
     public interface IStObjTypeMap
     {
         /// <summary>
-        /// Gets the number of type mapped.
-        /// </summary>
-        int MappedTypeCount { get; }
-
-        /// <summary>
         /// Gets the mapped type or null if no mapping exists.
         /// </summary>
         /// <param name="t">Key type.</param>

@@ -16,6 +16,7 @@ namespace CK.StObj.Engine.Tests
         public void toggle_console()
         {
             TestHelper.LogsToConsole = !TestHelper.LogsToConsole;
+            TestHelper.Monitor.MinimalFilter = LogFilter.Debug;
         }
 
         [Explicit]

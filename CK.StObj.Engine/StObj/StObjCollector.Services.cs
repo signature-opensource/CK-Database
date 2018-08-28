@@ -11,76 +11,75 @@ namespace CK.Setup
 {
     public partial class StObjCollector
     {
-
         class SCRClass
         {
             public readonly AmbientServiceClassInfo Class;
+            public readonly InterfaceFamily Family;
 
-            InterfaceFamily _family;
             List<CtorParameter> _params;
             bool _isHeadCandidate;
-            bool _isTailCandidate;
+            bool _isHead;
 
             public class CtorParameter
             {
                 public readonly AmbientServiceClassInfo.CtorParameter Parameter;
-                public readonly HashSet<SCRClass> StatisficationSet;
+                bool _canUseDefault;
+
                 public bool HasDefault => Parameter.ParameterInfo.HasDefaultValue;
 
-                public CtorParameter( AmbientServiceClassInfo.CtorParameter p, HashSet<SCRClass> sSet )
+                public bool CanUseDefault
+                {
+                    get => _canUseDefault;
+                    set
+                    {
+                        Debug.Assert( value == false || HasDefault );
+                        _canUseDefault = value;
+                    }
+                }
+
+                public CtorParameter( AmbientServiceClassInfo.CtorParameter p )
                 {
                     Parameter = p;
-                    StatisficationSet = sSet;
                 }
 
                 public override string ToString() => Parameter.ToString();
             }
 
-            public SCRClass( AmbientServiceClassInfo c )
+            public SCRClass( InterfaceFamily f, AmbientServiceClassInfo c )
             {
+                Family = f;
                 Class = c;
             }
 
             public IReadOnlyList<CtorParameter> Parameters => _params;
 
-            internal void Initialize( InterfaceFamily f, ref List<SCRClass> candidateTail )
+            internal bool Initialize( IActivityMonitor m )
             {
-                _family = f;
-                bool tailCandidate = true;
+                bool success = true;
                 _params = new List<CtorParameter>();
                 foreach( var p in Class.ConstructorParameters )
                 {
-                    var afterMe = f.Classes.Where( c => c != this && CanBeFollowedBy( c ) );
-                    var typeCompatible = afterMe.Where( t => p.ParameterInfo.ParameterType.IsAssignableFrom( t.Class.Type ) );
-                    var sSet = new HashSet<SCRClass>( typeCompatible );
-                    if( sSet.Count > 0 )
+                    if( p.ServiceInterface != null && Family.Interfaces.Contains( p.ServiceInterface ))
                     {
-                        var param = new CtorParameter( p, sSet );
-                        _params.Add( param );
-                        tailCandidate &= !param.HasDefault;
+                        if( !p.IsEnumerated )
+                        {
+                            m.Error( $"Invalid parameter {p}: it can not be an Ambient Service of its own family." );
+                            success = false;
+                        }
                     }
                 }
-                if( (_isTailCandidate = tailCandidate) )
+                if( success )
                 {
-                    if( candidateTail == null ) candidateTail = new List<SCRClass>();
-                    candidateTail.Add( this );
+                    _isHeadCandidate = !Family.Interfaces.Except( Class.Interfaces ).Any();
+                    _isHead = _isHeadCandidate && Family.Classes.Where( c => c != this )
+                                                   .All( c => Class.ComputedCtorParametersClassClosure.Contains( c.Class ) );
                 }
-                _isHeadCandidate = !f.Interfaces.Except( Class.Interfaces ).Any();
+                return success;
             }
-
-            public bool CanBeFollowedBy( SCRClass other ) => RankOrdered >= other.RankOrdered;
-
-            public int RankOrdered => Class.ContainerItem?.RankOrdered ?? Int32.MaxValue;
-
-            public InterfaceFamily Family => _family;
 
             public bool IsHeadCandidate => _isHeadCandidate;
 
-            public bool IsTailCandidate => _isTailCandidate;
-
-            public override int GetHashCode() => Class.GetHashCode();
-
-            public override bool Equals( object obj ) => obj is SCRClass c && c.Class == Class;
+            public bool IsHead => _isHead;
 
             public override string ToString() => Class.ToString();
         }
@@ -88,67 +87,80 @@ namespace CK.Setup
         class InterfaceFamily
         {
             readonly HashSet<AmbientServiceInterfaceInfo> _interfaces;
-            readonly HashSet<SCRClass> _classes;
-            List<SCRClass> _necessaryTail;
+            readonly Dictionary<AmbientServiceClassInfo,SCRClass> _classes;
 
             public IReadOnlyCollection<AmbientServiceInterfaceInfo> Interfaces => _interfaces;
 
-            public IReadOnlyCollection<SCRClass> Classes => _classes;
+            public IReadOnlyCollection<SCRClass> Classes => _classes.Values;
 
-            public IReadOnlyList<SCRClass> NecessaryTail => _necessaryTail;
+            public AmbientServiceClassInfo Resolved { get; private set; }
 
             InterfaceFamily()
             {
                 _interfaces = new HashSet<AmbientServiceInterfaceInfo>();
-                _classes = new HashSet<SCRClass>();
+                _classes = new Dictionary<AmbientServiceClassInfo, SCRClass>();
             }
 
-            public bool InitializeClasses( IActivityMonitor m )
+            bool InitializeClasses( IActivityMonitor m )
             {
                 Debug.Assert( Classes.Count > 0 );
-                List<SCRClass> candidateTails = null;
+                bool success = true;
                 foreach( var c in Classes )
                 {
-                    c.Initialize( this, ref candidateTails );
+                    success &= c.Initialize( m );
                 }
-                if( candidateTails == null )
-                {
-                    m.Error( $"No valid tail found. At least one class must implement at least one of the root interface '{RootInterfacesToString()} and must not require any dependency." );
-                    return false;
-                }
-                _necessaryTail = candidateTails.Where( tail => tail.Parameters.Count == 0 ).ToList();
-                if( _necessaryTail.Count > 1 )
-                {
-                    m.Error( $"Duplicate tails found: '{_necessaryTail.Select( t => t.ToString() ).Concatenate("', '")}'." );
-                    return false;
-                }
-                return true;
+                return success;
             }
 
-            public void FinalRegister( StObjObjectEngineMap engineMap, SCRClass winner )
+            public bool Resolve( IActivityMonitor m, FinalRegisterer finalRegisterer )
             {
-                Debug.Assert( _classes.Contains( winner ) );
-                foreach( var i in _interfaces )
+                bool success = true;
+                Debug.Assert( Classes.Count > 0 && Interfaces.Count > 0 );
+                if( Classes.Count == 1 )
                 {
-                    engineMap.ServiceSimpleMappings.Add( i.Type, winner.Class );
+                    Resolved = Classes.Single().Class;
                 }
-            }
-
-            public void FinalRegister( StObjObjectEngineMap engineMap, BuildClassInfo head )
-            {
-                Debug.Assert( _classes.Contains( head.Class ) );
-                if( head.Assignments.Any( a => a.IsRequired ) )
+                else
                 {
-                    var factory = engineMap.CreateStObjServiceFinalManualMapping( head );
-                    foreach( var i in _interfaces )
+                    using( m.OpenInfo( $"Service resolution required for {ToString()}." ) )
                     {
-                        engineMap.ServiceManualMappings.Add( i.Type, factory );
+                        if( success = InitializeClasses( m ) )
+                        {
+                            var headCandidates = Classes.Where( c => c.IsHeadCandidate ).ToList();
+                            var heads = headCandidates.Where( c => c.IsHead ).ToList();
+                            if( headCandidates.Count == 0 )
+                            {
+                                m.Error( $"No possible implementation found. A class that implements '{BaseInterfacesToString()}' interfaces is required." );
+                                success = false;
+                            }
+                            else if( heads.Count == 0 )
+                            {
+                                m.Error( $"Among '{headCandidates.Select( c => c.ToString() ).Concatenate( "', '" )}' possible implementations, none covers the whole set of other implementations." );
+                                success = false;
+                            }
+                            else if( heads.Count > 1 )
+                            {
+                                m.Error( $"Multiple possible implementations found: '{heads.Select( c => c.ToString() ).Concatenate( "', '" )}'. They must be unified." );
+                                success = false;
+                            }
+                            else
+                            {
+                                // Here comes the "dispatcher" handling and finalRegisterer must
+                                // register all BuildClassInfo required by special handling of
+                                // handled parameters (IReadOnlyCollection<IService>...).
+                                m.CloseGroup( $"Resolved to '{heads[0]}'." );
+                                Resolved = heads[0].Class;
+                            }
+                        }
                     }
                 }
-                else FinalRegister( engineMap, head.Class );
+                return success;
             }
 
-            public static IReadOnlyCollection<InterfaceFamily> Build( IActivityMonitor m, IEnumerable<AmbientServiceClassInfo> classes )
+            public static IReadOnlyCollection<InterfaceFamily> Build(
+                IActivityMonitor m,
+                StObjObjectEngineMap engineMap,
+                IEnumerable<AmbientServiceClassInfo> classes )
             {
                 var families = new Dictionary<AmbientServiceInterfaceInfo, InterfaceFamily>();
                 bool familiesHasBeenMerged = false;
@@ -185,7 +197,10 @@ namespace CK.Setup
                         }
                         if( currentF != null )
                         {
-                            currentF._classes.Add( new SCRClass( c ) );
+                            if( !currentF._classes.ContainsKey( c ) )
+                            {
+                                currentF._classes.Add( c, new SCRClass( currentF, c ) );
+                            }
                         }
                     }
                 }
@@ -193,7 +208,6 @@ namespace CK.Setup
                 if( familiesHasBeenMerged ) result = result.Distinct().ToList();
                 return result;
             }
-
 
             void MergeWith( InterfaceFamily f )
             {
@@ -221,18 +235,12 @@ namespace CK.Setup
         class ParameterAssignment : IStObjServiceParameterInfo
         {
             public SCRClass.CtorParameter Parameter { get; }
-            public BuildClassInfo Value { get; }
 
-            public ParameterAssignment( SCRClass.CtorParameter p, BuildClassInfo v )
+            public ParameterAssignment( SCRClass.CtorParameter p, IReadOnlyList<Type> v )
             {
                 Parameter = p;
                 Value = v;
-                IsRequired = Value == BuildClassInfo.NullValue
-                             || ParameterType.IsInterface
-                             || Value.Assignments.Any( a => a.IsRequired );
             }
-
-            public bool IsRequired { get; }
 
             public Type ParameterType => Parameter.Parameter.ParameterInfo.ParameterType;
 
@@ -240,15 +248,17 @@ namespace CK.Setup
 
             string IStObjServiceParameterInfo.Name => Parameter.Parameter.ParameterInfo.Name;
 
-            IStObjServiceClassFactoryInfo IStObjServiceParameterInfo.Value => Value != BuildClassInfo.NullValue ? Value : null;
+            public bool IsEnumeration => throw new NotImplementedException();
 
+            public IReadOnlyList<Type> Value { get; }
         }
 
         class BuildClassInfo : IStObjServiceClassFactoryInfo
         {
-            readonly IReadOnlyList<IStObjServiceParameterInfo> _finalAssignments;
+            IStObjServiceFinalManualMapping _finalMapping;
+            bool _finalMappingDone;
 
-            public SCRClass Class { get; }
+            public AmbientServiceClassInfo Class { get; }
 
             public IReadOnlyList<ParameterAssignment> Assignments { get; }
 
@@ -258,41 +268,55 @@ namespace CK.Setup
             {
             }
 
-            public BuildClassInfo( SCRClass c, IReadOnlyList<ParameterAssignment> a )
+            public BuildClassInfo( AmbientServiceClassInfo c, IReadOnlyList<ParameterAssignment> a )
             {
                 Class = c;
                 Assignments = a;
-                _finalAssignments = Assignments.Where( s => s.IsRequired ).ToArray();
-                var content = new HashSet<SCRClass>();
-                foreach( var ac in a )
-                {
-                    if( ac.Value != null )
-                    {
-                        content.Add( ac.Value.Class );
-                        content.UnionWith( ac.Value.Content );
-                    }
-                }
-                Content = content;
             }
 
-            public IReadOnlyCollection<SCRClass> Content { get; }
+            Type IStObjServiceClassFactoryInfo.ClassType => Class.Type;
 
-            Type IStObjServiceClassFactoryInfo.ClassType => Class.Class.Type;
+            IReadOnlyList<IStObjServiceParameterInfo> IStObjServiceClassFactoryInfo.Assignments => Assignments;
 
-            IReadOnlyList<IStObjServiceParameterInfo> IStObjServiceClassFactoryInfo.Assignments => _finalAssignments;
+            public IStObjServiceFinalManualMapping GetFinalMapping( StObjObjectEngineMap engineMap )
+            {
+                if( !_finalMappingDone )
+                {
+                    _finalMappingDone = true;
+                    if( Assignments.Any() )
+                    {
+                        _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
+                    }
+                }
+                return _finalMapping;
+            }
+
+            public BuildClassInfo Merge( BuildClassInfo c )
+            {
+                Debug.Assert( Class == c.Class );
+                Debug.Assert( Assignments.Select( a => a.Parameter ).Intersect( c.Assignments.Select( a => a.Parameter ) ).Any() == false );
+                var assignments = Assignments.Concat( c.Assignments ).ToList();
+                return new BuildClassInfo( Class, assignments );
+            }
 
             public StringBuilder ToString( StringBuilder b )
             {
                 if( Class == null ) b.Append( "null" );
                 else
                 {
-                    b.Append( Class.Class.Type.Name ).Append( '(' );
+                    b.Append( Class.Type.Name ).Append( '(' );
                     bool atLeastOne = false;
                     foreach( var a in Assignments )
                     {
                         if( atLeastOne ) b.Append( ',' );
                         atLeastOne = true;
-                        a.Value.ToString( b );
+                        if( a.IsEnumeration )
+                        {
+                            b.Append( '[' );
+                            b.AppendStrings( a.Value.Select( t => t.Name ) );
+                            b.Append( ']' );
+                        }
+                        else b.Append( a.Value[0].Name );
                     }
                     b.Append( ')' );
                 }
@@ -302,6 +326,69 @@ namespace CK.Setup
             public override string ToString() => ToString( new StringBuilder() ).ToString();
         }
 
+        class FinalRegisterer
+        {
+            readonly IActivityMonitor _monitor;
+            readonly StObjObjectEngineMap _engineMap;
+            readonly Dictionary<AmbientServiceClassInfo, BuildClassInfo> _infos;
+
+            public FinalRegisterer( IActivityMonitor monitor, StObjObjectEngineMap engineMap )
+            {
+                _monitor = monitor;
+                _engineMap = engineMap;
+                _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
+            }
+
+            public void Register( BuildClassInfo c )
+            {
+                if( _infos.TryGetValue( c.Class, out var exists ) )
+                {
+                    _infos[c.Class] = exists.Merge( c );
+                }
+                else _infos.Add( c.Class, c );
+            }
+
+            public void FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
+            {
+                foreach( var c in typeResult.RootClasses )
+                {
+                    RegisterClassMapping( c );
+                }
+                foreach( var f in families )
+                {
+                    foreach( var i in f.Interfaces )
+                    {
+                        RegisterMapping( i.Type, f.Resolved );
+                    }
+                }
+            }
+
+            void RegisterClassMapping( AmbientServiceClassInfo c )
+            {
+                RegisterMapping( c.Type, c.MostSpecialized );
+                foreach( var s in c.Specializations )
+                {
+                    RegisterClassMapping( s );
+                }
+            }
+
+            void RegisterMapping( Type t, AmbientServiceClassInfo final )
+            {
+                IStObjServiceFinalManualMapping manual = null;
+                if( _infos.TryGetValue( final, out var build )
+                    && (manual = build.GetFinalMapping( _engineMap )) != null )
+                {
+                    _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
+                    _engineMap.ServiceManualMappings.Add( t, manual );
+                }
+                else
+                {
+                    _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
+                    _engineMap.ServiceSimpleMappings.Add( t, final );
+                }
+            }
+        }
+
         /// <summary>
         /// Called once Mutable items have been created.
         /// </summary>
@@ -309,188 +396,33 @@ namespace CK.Setup
         /// <returns>True on success, false on error.</returns>
         bool RegisterServices( AmbientTypeCollectorResult typeResult )
         {
+            var engineMap = typeResult.AmbientContracts.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
             {
-                // Registering Interface => Class or List<Class> from classes' supported interfaces.
+                // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
                 var allClasses = typeResult.AmbientServices.RootClasses
                                     .Concat( typeResult.AmbientServices.SubGraphRootClasses )
                                     .Select( c => c.MostSpecialized );
-                IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, allClasses );
+                Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
+                IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
                 if( families.Count == 0 )
                 {
                     _monitor.Warn( "No Service interface found. Nothing can be mapped at the Service Interface level." );
                     return true;
                 }
                 _monitor.Trace( $"{families.Count} Service families found." );
-                var engineMap = typeResult.AmbientContracts.EngineMap;
                 bool success = true;
+                var manuals = new FinalRegisterer( _monitor, engineMap ); 
                 foreach( var f in families )
                 {
-                    Debug.Assert( f.Classes.Count > 0 && f.Interfaces.Count > 0 );
-                    if( f.Classes.Count == 1 )
-                    {
-                        f.FinalRegister( engineMap, f.Classes.First() );
-                    }
-                    else
-                    {
-                        using( _monitor.OpenInfo( $"Service Chaining resolution required for {f}." ) )
-                        {
-                            if( !f.InitializeClasses( _monitor )
-                                || !ResolveChain( engineMap, f ) )
-                            {
-                                _monitor.CloseGroup( "Failed." );
-                                success = false;
-                            }
-                        }
-                    }
+                    success &= f.Resolve( _monitor, manuals );
+                }
+                if( success )
+                {
+                    manuals.FinalRegistration( typeResult.AmbientServices, families );
                 }
                 return success;
             }
-        }
-
-        bool ResolveChain( StObjObjectEngineMap engineMap, InterfaceFamily f )
-        {
-            bool success = true;
-            var heads = f.Classes.Where( c => c.IsHeadCandidate ).ToList();
-            if( heads.Count == 0 )
-            {
-                _monitor.Error( $"No valid head found. A class that implements '{f.BaseInterfacesToString()}' interfaces is required." );
-                success = false;
-            }
-            else
-            {
-                var cache = new Dictionary<SCRClass, BuildClassInfo>();
-                bool foundNewOne = false;
-                do
-                {
-                    foundNewOne = false;
-                    foreach( var c in f.Classes )
-                    {
-                        if( !cache.ContainsKey( c ) )
-                        {
-                            foundNewOne |= BuildChain( c, f.Classes, cache ) != null;
-                        }
-                    }
-                }
-                while( foundNewOne );
-
-                var solved = cache.Values.Where( info => info.Class.IsHeadCandidate && info.Content.Count + 1 == f.Classes.Count ).ToList();
-
-                if( solved.Count == 1 )
-                {
-                    f.FinalRegister( engineMap, solved[0] );
-                }
-                else
-                {
-                    success = false;
-                    if( solved.Count > 1 )
-                    {
-                        using( _monitor.OpenError( $"Multiple possible chains found:" ) )
-                        {
-                            foreach( var c in solved ) _monitor.Trace( c.ToString() );
-                        }
-                    }
-                }
-            }
-            return success;
-        }
-
-        BuildClassInfo BuildChain(
-            SCRClass head,
-            IEnumerable<SCRClass> remainders,
-            Dictionary<SCRClass, BuildClassInfo> cache )
-        {
-            if( cache.TryGetValue( head, out var result ) )
-            {
-                return result;
-            }
-            using( _monitor.OpenDebug( () => $"Resolving {head}." ) )
-            {
-                // Currently parameter order matters. Since this is a stable information, go for it.
-                // To be parameter order indepedent we need to wrap the cache in a ParameterLocalCache
-                // that can isolate parameters from each other. Only if all parameters are successfully bound
-                // can we merge all ParameterLocalCache in the current cache (this current cache being a
-                // ParameterLocalCache or the root cache for for to heads).
-                remainders = remainders.Where( r => r != head );
-                var bindings = new ParameterAssignment[head.Parameters.Count];
-                for( int i = 0; i < bindings.Length; ++i )
-                {
-                    var p = head.Parameters[i];
-                    var cInfo = BindParameter( head.Parameters[i], remainders, cache );
-                    if( cInfo == null )
-                    {
-                        _monitor.Trace( $"Failed to resolve '{head.Class.Type.Name}' considering classes: '{remainders.Select( r => r.Class.Type.Name ).Concatenate("', '")}'." );
-                        return null;
-                    }
-                    bindings[i] = new ParameterAssignment( p, cInfo );
-                }
-                result = new BuildClassInfo( head, bindings );
-                cache.Add( head, result );
-                _monitor.Trace( $"Chain found: {result}." );
-                return result;
-            }
-        }
-
-        BuildClassInfo BindParameter( SCRClass.CtorParameter p, IEnumerable<SCRClass> remainders, Dictionary<SCRClass, BuildClassInfo> cache )
-        {
-            var possible = p.StatisficationSet
-                                .Intersect( remainders )
-                                .ToList();
-            SCRClass unambiguousPossible = null;
-            if( possible.Count == 0 )
-            {
-                if( p.HasDefault )
-                {
-                    _monitor.Trace( $"Using null default for parameter {p}." );
-                    return BuildClassInfo.NullValue;
-                }
-                _monitor.Trace( $"Unable to bind parameter {p}." );
-                return null;
-            }
-            if( possible.Count == 1 ) unambiguousPossible = possible[0];
-            else
-            {
-                _monitor.Debug( () => $"Ambiguous parameter candidates for {p} : {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
-                // Removes the pure tail (tail candidate and no other parameter) if any.
-                possible.RemoveAll( c => c.IsTailCandidate && c.Parameters.Count == 0 );
-                if( possible.Count == 1 )
-                {
-                    unambiguousPossible = possible[0];
-                    _monitor.Debug( "Solved by removing necessary tail." );
-                }
-                else
-                {
-                    // Considering thet a unique best Rank is the one.
-                    int maxRank = possible.Select( c => c.RankOrdered ).Max();
-                    possible.RemoveAll( c => c.RankOrdered < maxRank );
-                    if( possible.Count == 1 )
-                    {
-                        unambiguousPossible = possible[0];
-                        _monitor.Debug( "Solved by max RankOrdered." );
-                    }
-                    else
-                    {
-                        // Rank conflict. Use the cache to keep only the top of any
-                        // already resolved chains.
-                        var covered = new HashSet<SCRClass>( possible
-                                                                .Select( pc => cache.GetValueWithDefault( pc, null )?.Content )
-                                                                .Where( content => content != null )
-                                                                .SelectMany( content => content ) );
-                        unambiguousPossible = possible.SingleOrDefault( c => !covered.Contains( c ) );
-                        if( unambiguousPossible != null )
-                        {
-                            _monitor.Debug( "Solved by already built chains." );
-                        }
-                    }
-                }
-                if( unambiguousPossible == null )
-                {
-                    _monitor.Trace( $"Ambiguous binding for parameter {p} between {possible.Select( t => t.Class.Type.Name ).Concatenate()}." );
-                    return null;
-                }
-            }
-            var result = BuildChain( unambiguousPossible, remainders, cache );
-            return result;
         }
 
     }

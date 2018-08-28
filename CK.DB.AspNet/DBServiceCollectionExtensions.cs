@@ -49,6 +49,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return AddStObjMap( services, map );
         }
 
+        [Obsolete( "There is no more 'Context'. Use 'AddStObjMap' instead." )]
+        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
+        {
+            return AddStObjMap( services, stobjAssembly, defaultConnectionString );
+        }
+
+        [Obsolete( "There is no more 'Context'. Use 'AddStObjMap' instead." )]
+        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, string assemblyName, string defaultConnectionString = null )
+        {
+            return AddStObjMap( services, assemblyName, defaultConnectionString );
+        }
+
         /// <summary>
         /// Registers all the StObj mappings from the default context of an assembly and also
         /// registers the <see cref="IStObjMap"/>.

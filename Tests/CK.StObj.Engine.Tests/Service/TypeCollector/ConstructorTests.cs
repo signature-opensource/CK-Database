@@ -74,10 +74,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
                 var r = CheckSuccess( collector );
                 var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ServiceWithOneCtor ) );
                 c.ConstructorInfo.Should().NotBeNull();
-                var p = c.ConstructorParameters.Single();
-                p.ParameterInfo.ParameterType.Should().Be( typeof( int ) );
-                p.ServiceClass.Should().BeNull();
-                p.ServiceInterface.Should().BeNull();
+                var p = c.ConstructorParameters.Should().BeEmpty();
             }
             {
                 var collector = CreateAmbientTypeCollector();
@@ -136,18 +133,17 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             r.AmbientServices.RootClasses.Should().HaveCount( mode == "RegisteredDependentService" ? 2 : 1 );
             var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( Consumer1Service ) );
             c.ConstructorInfo.Should().NotBeNull();
-            c.ConstructorParameters.Should().HaveCount( 3 );
-            c.ConstructorParameters[0].ParameterInfo.Name.Should().Be( "normal" );
-            c.ConstructorParameters[0].ServiceClass.Should().BeNull();
-            c.ConstructorParameters[0].ServiceInterface.Should().BeNull();
-            c.ConstructorParameters[1].ParameterInfo.Name.Should().Be( "notReg" );
-            c.ConstructorParameters[1].ServiceClass.Should().BeNull();
-            c.ConstructorParameters[1].ServiceInterface.Should().BeNull();
-            c.ConstructorParameters[2].ParameterInfo.Name.Should().Be( "reg" );
-            c.ConstructorParameters[2].ServiceClass.Should().BeNull();
             if( mode == "RegisteredDependentService" )
-                c.ConstructorParameters[2].ServiceInterface.Should().BeSameAs( iRegistered );
-            else c.ConstructorParameters[2].ServiceInterface.Should().BeNull();
+            {
+                c.ConstructorParameters.Should().HaveCount( 1 );
+                c.ConstructorParameters[0].ParameterInfo.Name.Should().Be( "reg" );
+                c.ConstructorParameters[0].ServiceClass.Should().BeNull();
+                c.ConstructorParameters[0].ServiceInterface.Should().BeSameAs( iRegistered );
+            }
+            else
+            {
+                c.ConstructorParameters.Should().BeEmpty();
+            }
         }
 
         class ConsumerWithClassDependencyService : IAmbientService
@@ -180,7 +176,10 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
                 var r = CheckSuccess( collector );
                 var dep = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ServiceForISRegistered ) );
                 var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithClassDependencyService ) );
-                c.ConstructorParameters[2].ServiceClass.Should().BeSameAs( dep );
+                c.ConstructorParameters.Should().HaveCount( 1, "'INotAnAmbientService normal' and 'ISNotRegistered notReg' are ignored." );
+                c.ConstructorParameters[0].Position.Should().Be( 2 );
+                c.ConstructorParameters[0].Name.Should().Be( "classDependency" );
+                c.ConstructorParameters[0].ServiceClass.Should().BeSameAs( dep );
             }
             {
                 var collector = CreateAmbientTypeCollector();
@@ -199,7 +198,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
                 var r = CheckSuccess( collector );
                 r.AmbientServices.RootClasses.Should().HaveCount( 1 );
                 var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithDefaultService ) );
-                c.ConstructorParameters[2].ServiceClass.Should().BeNull();
+                c.ConstructorParameters.Should().BeEmpty();
             }
 
         }
