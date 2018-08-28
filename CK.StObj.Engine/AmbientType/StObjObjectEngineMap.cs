@@ -57,15 +57,18 @@ namespace CK.Core
         /// </summary>
         IStObjObjectMap IStObjMap.StObjs => this;
 
+        [Obsolete( "There is no more 'Context'. 'Default' must be replaced by the 'StObjs' property." )]
+        IStObjObjectMap IStObjMap.Default => this;
+
         /// <summary>
         /// Gets the map name. Never null.
         /// </summary>
         public string MapName { get; }
 
         /// <summary>
-        /// Gets the number of existing mappings.
+        /// Gets the number of existing mappings (the <see cref="RawMappings"/>.Count).
         /// </summary>
-        public int MappedTypeCount => _map.Count;
+        internal int MappedTypeCount => _map.Count;
 
         /// <summary>
         /// Gets the final mapped type for any type that is mapped.

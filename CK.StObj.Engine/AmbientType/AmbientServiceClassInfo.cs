@@ -18,8 +18,8 @@ namespace CK.Core
         bool? _ctorBinding;
 
         /// <summary>
-        /// Constructor parameter info: some of them are <see cref="AmbientServiceClassInfo"/>
-        /// or <see cref="AmbientServiceInterfaceInfo"/>.
+        /// Constructor parameter info: either a <see cref="AmbientServiceClassInfo"/>,
+        /// <see cref="AmbientServiceInterfaceInfo"/> or a enumeration of one of them.
         /// </summary>
         public class CtorParameter
         {
@@ -38,14 +38,58 @@ namespace CK.Core
             /// </summary>
             public readonly AmbientServiceInterfaceInfo ServiceInterface;
 
+            /// <summary>
+            /// Currently unused.
+            /// </summary>
+            public readonly AmbientServiceClassInfo EnumeratedServiceClass;
+
+            /// <summary>
+            /// Currently unused.
+            /// </summary>
+            public readonly AmbientServiceInterfaceInfo EnumeratedServiceInterface;
+
+            /// <summary>
+            /// Gets the (unwrapped) Type of this parameter.
+            /// When <see cref="IsEnumeration"/> is true, this is the type of the enumerated object:
+            /// for IReadOnlyList&lt;X&gt;, this is typeof(X).
+            /// </summary>
+            Type ParameterType { get; }
+
+            /// <summary>
+            /// Gets whether this is an enumerable of class or interface.
+            /// </summary>
+            public bool IsEnumerated { get; }
+
+            /// <summary>
+            /// Gets the zero-based position of the parameter in the parameter list.
+            /// </summary>
+            public int Position => ParameterInfo.Position;
+
+            /// <summary>
+            /// Gets the name of the parameter.
+            /// </summary>
+            public string Name => ParameterInfo.Name;
+
             internal CtorParameter(
                 ParameterInfo p,
                 AmbientServiceClassInfo cS,
-                AmbientServiceInterfaceInfo iS )
+                AmbientServiceInterfaceInfo iS,
+                bool isEnumerable )
             {
+                Debug.Assert( (cS != null) ^ (iS != null) );
                 ParameterInfo = p;
-                ServiceClass = cS;
-                ServiceInterface = iS;
+                ParameterType = cS?.Type ?? iS.Type;
+                if( isEnumerable )
+                {
+                    IsEnumerated = true;
+                    EnumeratedServiceClass = cS;
+                    EnumeratedServiceInterface = iS;
+                }
+                else
+                {
+                    ServiceClass = cS;
+                    ServiceInterface = iS;
+                }
             }
 
             public override string ToString()
@@ -134,7 +178,8 @@ namespace CK.Core
         public ConstructorInfo ConstructorInfo { get; private set; }
 
         /// <summary>
-        /// Gets the constructor parameters.
+        /// Gets the constructor parameters that we need to consider.
+        /// Parameters that are not <see cref="IAmbientService"/> do not appear here.
         /// </summary>
         public IReadOnlyList<CtorParameter> ConstructorParameters { get; private set; }
 
@@ -164,15 +209,14 @@ namespace CK.Core
         /// </summary>
         public bool IsIncluded => Interfaces != null;
 
-        internal void FillFinalClassMappings( Dictionary<Type,AmbientServiceClassInfo> mappings, List<AmbientServiceClassInfo> subGraphCollector )
+        internal void FinalizeMostSpecializedAndCollectSubGraphs( List<AmbientServiceClassInfo> subGraphCollector )
         {
             Debug.Assert( IsIncluded );
             if( MostSpecialized == null ) MostSpecialized = this;
-            mappings.Add( Type, MostSpecialized );
             foreach( var s in Specializations )
             {
                 if( s.MostSpecialized != MostSpecialized ) subGraphCollector.Add( s );
-                s.FillFinalClassMappings( mappings, subGraphCollector );
+                s.FinalizeMostSpecializedAndCollectSubGraphs( subGraphCollector );
             }
         }
 
@@ -299,7 +343,11 @@ namespace CK.Core
             return success;
         }
 
-        internal HashSet<AmbientServiceClassInfo> ComputedCtorParametersClassClosure
+        /// <summary>
+        /// Gets the parameters closure (including "Inheritance Constructor Parameters rule" and
+        /// external intermediate classes).
+        /// </summary>
+        public HashSet<AmbientServiceClassInfo> ComputedCtorParametersClassClosure
         {
             get
             {
@@ -341,60 +389,82 @@ namespace CK.Core
         {
             Debug.Assert( IsIncluded );
             if( _ctorBinding.HasValue ) return _ctorBinding.Value;
-            bool succces = false;
+            bool success = false;
             var ctors = Type.GetConstructors();
             if( ctors.Length == 0 ) m.Error( $"No public constructor found for '{Type.FullName}'." );
             else if( ctors.Length > 1 ) m.Error( $"Multiple public constructors found for '{Type.FullName}'. Only one must exist." );
             else
             {
-                succces = Generalization?.EnsureCtorBinding( m, collector ) ?? true;
+                success = Generalization?.EnsureCtorBinding( m, collector ) ?? true;
                 var parameters = ctors[0].GetParameters();
-                var mParameters = new CtorParameter[parameters.Length];
+                var mParameters = new List<CtorParameter>();
                 foreach( var p in parameters )
                 {
-                    var (success, sClass, sInterface) = RegisterParameterTypes( m, collector, p );
-                    succces &= success;
-                    var param = new CtorParameter( p, sClass, sInterface );
-                    mParameters[p.Position] = param;
+                    var (ok, sClass, sInterface, isEnumerable) = CreateCtorParameter( m, collector, p );
+                    success &= ok;
+                    if( sClass != null || sInterface != null )
+                    {
+                        mParameters.Add( new CtorParameter( p, sClass, sInterface, isEnumerable ) );
+                    }
+                    // Temporary: Enumeration is not implemented yet.
+                    if( success && isEnumerable )
+                    {
+                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is IAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
+                        success = false;
+                    }
                 }
                 ConstructorParameters = mParameters;
                 ConstructorInfo = ctors[0];
             }
-            _ctorBinding = succces;
-            return succces;
+            _ctorBinding = success;
+            return success;
         }
 
-        (bool, AmbientServiceClassInfo, AmbientServiceInterfaceInfo) RegisterParameterTypes( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
+        (bool, AmbientServiceClassInfo, AmbientServiceInterfaceInfo, bool) CreateCtorParameter( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
         {
             // We only consider IAmbientService interface or type parameters.
             if( !typeof( IAmbientService ).IsAssignableFrom( p.ParameterType ) )
             {
-                return (true, null, null);
+                return (true, null, null, false);
             }
             // Edge case: using IAmbientService is an error.
             if( typeof( IAmbientService ) == p.ParameterType )
             {
                 m.Error( $"Invalid use of {nameof( IAmbientService )} constructor parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                return (false, null, null);
+                return (false, null, null, false);
             }
-            if( p.ParameterType.IsClass )
+            bool isEnumerable = false;
+            var tParam = p.ParameterType;
+            if( tParam.IsGenericType )
             {
-                var sClass = collector.FindServiceClassInfo( p.ParameterType );
+                var tGen = tParam.GetGenericTypeDefinition();
+                if( tGen == typeof( IEnumerable<> )
+                    || tGen == typeof( IReadOnlyCollection<> )
+                    || tGen == typeof( IReadOnlyList<> ) )
+                {
+                    isEnumerable = true;
+                    tParam = tParam.GetGenericArguments()[0];
+                }
+            }
+
+            if( tParam.IsClass )
+            {
+                var sClass = collector.FindServiceClassInfo( tParam );
                 if( sClass == null )
                 {
-                    m.Error( $"Unable to resolve '{p.ParameterType.FullName}' service type for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                    return (false, null, null);
+                    m.Error( $"Unable to resolve '{tParam.FullName}' service type for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
+                    return (false, null, null, isEnumerable);
                 }
                 if( !sClass.IsIncluded )
                 {
                     var reason = sClass.IsExcluded
                                     ? "excluded from registration"
                                     : "abstract (and can not be concretized)";
-                    var prefix = $"Service type '{p.ParameterType.Name}' is {reason}. Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
+                    var prefix = $"Service type '{tParam.Name}' is {reason}. Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     if( !p.HasDefaultValue )
                     {
                         m.Error( prefix + "can not be resolved." );
-                        return (false, null, null);
+                        return (false, null, null, isEnumerable);
                     }
                     m.Info( prefix + "will use its default value." );
                     sClass = null;
@@ -403,17 +473,17 @@ namespace CK.Core
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be this class or one of its specializations." );
-                    return (false, null, null);
+                    return (false, null, null, isEnumerable);
                 }
                 else if( sClass.IsAssignableFrom( this ) )
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be one of its base class." );
-                    return (false, null, null);
+                    return (false, null, null, isEnumerable);
                 }
-                return (true, sClass, null);
+                return (true, sClass, null, isEnumerable);
             }
-            return (true, null, collector.FindServiceInterfaceInfo( p.ParameterType ) );
+            return (true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable);
         }
 
     }
