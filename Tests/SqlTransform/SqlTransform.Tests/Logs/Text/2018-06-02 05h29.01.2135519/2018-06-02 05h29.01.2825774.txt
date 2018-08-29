@@ -1,0 +1,953 @@
+0~~~~                            ~~ Monitor: f66ac470-6ce0-43af-9256-492d2509e7f3
+   2018-06-02 05h29.01.2357045 i Topic: CK.Monitoring.DispatcherSink
+   2018-06-02 05h29.01.2669521   > Initializing TextFile handler (MaxCountPerFile = 20000).
+   2018-06-02 05h29.01.2669521   < 
+1~~~~                            ~~ Monitor: 7656ba69-93b6-401a-a434-029a7bc72b6d
+   2018-06-02 05h29.01.3672377 i Folder 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\TestStores' has been cleaned up.
+   2018-06-02 05h29.01.3984853 i > Accessing null StObj map: invoking StObjMapLoading event.
+   2018-06-02 05h29.01.4141084 i | File 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461\Transform.Tests.Generated.dll' does not exist. Running StObjSetup to create it.
+   2018-06-02 05h29.01.4206152 i | > Running StObjSetup.
+   2018-06-02 05h29.01.4675100 i | | Using default connection string: Server=.;Database=master;Integrated Security=SSPI
+   2018-06-02 05h29.01.9845122 i | | > Ensuring database 'Database:CKTEST_SqlTransform, Collation:Latin1_General_100_BIN2, CompatibilityLevel:130'.
+   2018-06-02 05h29.02.0691770 i | | <  | 1 conclusion:
+                                 | |    | Database already exists, collation and compatiblity level match.
+   2018-06-02 05h29.02.1004063 i | | No 'CKSetup/DefaultBinPaths' configuration. Using current BinFolder.
+   2018-06-02 05h29.02.1225785 i | | > Running Setup on 'C:\Dev\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore' for the first time.
+   2018-06-02 05h29.02.1225785 i | | | No 'CKSetup/AutoRegisterLocalComponentPaths' components specified.
+   2018-06-02 05h29.02.1382266 i | | | > LocalHelper initializing Tests/LocalTestHelper/LocalTestStore.
+   2018-06-02 05h29.02.2228700   | | | | Opened store with 27 components.
+   2018-06-02 05h29.02.2228700   | | | | Local store opened on : 'C:\Dev\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-02 05h29.02.2228700 i | | | | > Removing components.
+   2018-06-02 05h29.02.2228700 i | | | | <  | 1 conclusion:
+                                 | | | |    | 2 component(s) removed.
+   2018-06-02 05h29.02.2853883 i | | | | > Closing Store.
+   2018-06-02 05h29.02.2853883 i | | | | < 
+   2018-06-02 05h29.02.3010128 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\netstandard2.0'.
+   2018-06-02 05h29.02.5236872 i | | | | < 
+   2018-06-02 05h29.02.5236872 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\net461'.
+   2018-06-02 05h29.02.5393335 i | | | | < 
+   2018-06-02 05h29.02.5393335 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.02.5631582 i | | | | < 
+   2018-06-02 05h29.02.5631582 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\net461'.
+   2018-06-02 05h29.02.6548723 i | | | | < 
+   2018-06-02 05h29.02.6548723 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.02.6861061 i | | | | < 
+   2018-06-02 05h29.02.6861061 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\net461'.
+   2018-06-02 05h29.02.7864007 i | | | | < 
+   2018-06-02 05h29.02.7864007 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\netstandard2.0'.
+   2018-06-02 05h29.02.7864007 i | | | | < 
+   2018-06-02 05h29.02.7864007 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\net461'.
+   2018-06-02 05h29.02.8020238 i | | | | < 
+   2018-06-02 05h29.02.8020238 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.02.8241376 i | | | | < 
+   2018-06-02 05h29.02.8241376 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\net461'.
+   2018-06-02 05h29.02.9244286 i | | | | < 
+   2018-06-02 05h29.02.9244286 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.02.9556998 i | | | | < 
+   2018-06-02 05h29.02.9556998 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\net461'.
+   2018-06-02 05h29.03.0871857 i | | | | < 
+   2018-06-02 05h29.03.0871857 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\netstandard2.0'.
+   2018-06-02 05h29.03.0871857 i | | | | < 
+   2018-06-02 05h29.03.0871857 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\net461'.
+   2018-06-02 05h29.03.1028285 i | | | | < 
+   2018-06-02 05h29.03.1028285 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.03.1406230 W | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.1406230 W | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.1406230 W | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.1406230 i | | | | < 
+   2018-06-02 05h29.03.1406230 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\net461'.
+   2018-06-02 05h29.03.2565228 i | | | | < 
+   2018-06-02 05h29.03.2565228 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.03.3034065 W | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.3190341 W | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.3190341 W | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.3190341 i | | | | < 
+   2018-06-02 05h29.03.3190341 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\net461'.
+   2018-06-02 05h29.03.4193036 i | | | | < 
+   2018-06-02 05h29.03.4193036 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\netstandard2.0'.
+   2018-06-02 05h29.03.4258073 i | | | | < 
+   2018-06-02 05h29.03.4258073 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\net461'.
+   2018-06-02 05h29.03.4258073 i | | | | < 
+   2018-06-02 05h29.03.4258073 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.03.4883087 W | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.4883087 W | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.4883087 W | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.4883087 i | | | | < 
+   2018-06-02 05h29.03.4883087 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\net461'.
+   2018-06-02 05h29.03.6041996 i | | | | < 
+   2018-06-02 05h29.03.6041996 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\netstandard2.0'.
+   2018-06-02 05h29.03.6041996 i | | | | < 
+   2018-06-02 05h29.03.6041996 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\net461'.
+   2018-06-02 05h29.03.6263478 i | | | | < 
+   2018-06-02 05h29.03.6263478 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-02 05h29.03.6732430 W | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.6732430 W | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.6732430 W | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-02 05h29.03.6732430 i | | | | < 
+   2018-06-02 05h29.03.6732430 i | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\net461'.
+   2018-06-02 05h29.03.7891455 i | | | | < 
+   2018-06-02 05h29.03.7891455   | | | | Opened store with 25 components.
+   2018-06-02 05h29.03.7891455   | | | | Local store opened on : 'C:\Dev\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-02 05h29.03.7891455   | | | | > Creating client remote store on 'https://cksetup.invenietis.net/'.
+   2018-06-02 05h29.03.7891455   | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | > Importing 26 local folders.
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\netstandard2.0\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.StObj.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\netstandard2.0\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\net461\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.StObj.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\netstandard2.0\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\net461\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\netstandard2.0\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'SqlActorPackage/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\net461\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Model/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\netstandard2.0\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'SqlZonePackage/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\net461\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'SqlActorPackage/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\net461\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'SqlZonePackage/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.StObj.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.StObj.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8047695 i | | | | | < 
+   2018-06-02 05h29.03.8047695 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8047695 i | | | | | | > Found 'SqlActorPackage.Runtime/0.0.0-0/NetCoreApp20/' to register.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 3 files thanks to already registered 'CK.SqlServer.Setup.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 24 files thanks to already registered 'CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 17 files thanks to already registered 'CK.StObj.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8268816 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-02 05h29.03.8425096 i | | | | | | > Found 'SqlZonePackage.Runtime/0.0.0-0/NetCoreApp20/' to register.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'CK.SqlServer.Setup.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 24 files thanks to already registered 'CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 17 files thanks to already registered 'CK.StObj.Runtime/6.0.1-C0017-develop/NetCoreApp20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | | Removing 3 files thanks to already registered 'SqlZonePackage/6.0.1-C0017-develop/NetStandard20/'.
+   2018-06-02 05h29.03.8425096 i | | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.StObj.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.StObj.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Engine/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'SqlActorPackage.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8425096 i | | | | | > Adding C:\Dev\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\net461\.
+   2018-06-02 05h29.03.8425096 W | | | | | | No component added (found already registered Components: 'SqlZonePackage.Runtime/6.0.1-C0017-develop')
+   2018-06-02 05h29.03.8425096 i | | | | | < 
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'CK.SqlServer.Parser.dll (322560), sV: 8.0.1-C0016-develop, sha1: e0300822946738d4e6477f9b348d2f83d81b2146'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlActorPackage.Runtime.deps.json (78208), fV: 0.0.0.0 aV: , sha1: d30d6b4d07a810ad3b1bd689b526c277bf9c4ad7'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlActorPackage.Runtime.dll (10752), sV: 0.0.0-0, sha1: 02d476a19ae8a8149e913988203e34285e09bcab'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlActorPackage.Runtime.pdb (2084), fV: 0.0.0.0 aV: , sha1: 6564e3f74e47c65bf7e05fc9575c7895f458430b'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'System.Collections.Immutable.dll (302216), fV: 4.6.26515.6 aV: 1.2.3.0, sha1: eef943e4369166a039dee90f2d81504613d49ca0'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'CK.SqlServer.Parser.dll (322560), sV: 8.0.1-C0016-develop, sha1: e0300822946738d4e6477f9b348d2f83d81b2146'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlZonePackage.Runtime.deps.json (78563), fV: 0.0.0.0 aV: , sha1: 5329db0541eb9b7a1826fdc819a265bfc7a6e6a8'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlZonePackage.Runtime.dll (8192), sV: 0.0.0-0, sha1: 5d3a458b445ac1aa7da5722aff62ee943ea62666'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'SqlZonePackage.Runtime.pdb (1592), fV: 0.0.0.0 aV: , sha1: e624c8941056277febef2b748580205d5e9d83b5'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336   | | | | | > Importing file 'System.Collections.Immutable.dll (302216), fV: 4.6.26515.6 aV: 1.2.3.0, sha1: eef943e4369166a039dee90f2d81504613d49ca0'.
+   2018-06-02 05h29.03.8581336   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-02 05h29.03.8581336 i | | | | < 
+   2018-06-02 05h29.03.8581336 i | | | | > Closing Store.
+   2018-06-02 05h29.03.8581336 i | | | | < 
+   2018-06-02 05h29.03.8581336 i | | | < 
+   2018-06-02 05h29.03.8581336 i | | < 
+   2018-06-02 05h29.03.8581336 i | | Using store 'C:\Dev\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-02 05h29.03.8581336 i | | Using remote 'https://cksetup.invenietis.net/'.
+   2018-06-02 05h29.03.8737581   | | Opened store with 27 components.
+   2018-06-02 05h29.03.8737581   | | Local store opened on : 'C:\Dev\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-02 05h29.03.8737581   | | > Creating client remote store on 'https://cksetup.invenietis.net/'.
+   2018-06-02 05h29.03.8737581   | | < 
+   2018-06-02 05h29.03.8737581 i | | > Running Setup.
+   2018-06-02 05h29.03.8737581   | | | > Initializing SetupContext (ignoring signatures).
+   2018-06-02 05h29.03.8737581 i | | | | <Root>
+                                 | | | |     <CKSetup>
+                                 | | | |       <BinPaths>
+                                 | | | |         <BinPath>C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461</BinPath>
+                                 | | | |       </BinPaths>
+                                 | | | |       <Dependencies />
+                                 | | | |       <EngineAssemblyQualifiedName>CK.Setup.StObjEngine, CK.StObj.Engine</EngineAssemblyQualifiedName>
+                                 | | | |     </CKSetup>
+                                 | | | |     <Configuration>
+                                 | | | |       <AppContextAssemblyGeneratedDirectoryTarget>C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461</AppContextAssemblyGeneratedDirectoryTarget>
+                                 | | | |       <GenerateSourceFiles>true</GenerateSourceFiles>
+                                 | | | |       <GeneratedAssemblyName>Transform.Tests.Generated</GeneratedAssemblyName>
+                                 | | | |       <Assemblies />
+                                 | | | |       <Types />
+                                 | | | |       <Aspect Type="CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model" Version="1" />
+                                 | | | |       <Aspect Type="CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model">
+                                 | | | |         <Databases />
+                                 | | | |         <DefaultDatabaseConnectionString>Data Source=.;Initial Catalog=CKTEST_SqlTransform;Integrated Security=True</DefaultDatabaseConnectionString>
+                                 | | | |         <GlobalResolution>true</GlobalResolution>
+                                 | | | |       </Aspect>
+                                 | | | |     </Configuration>
+                                 | | | |   </Root>
+   2018-06-02 05h29.03.8737581 i | | | | Configuration BasePath is empty: using current directory 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461'.
+   2018-06-02 05h29.03.8737581 i | | | | > Reading binary folders.
+   2018-06-02 05h29.03.8737581 i | | | | | > Reading files from 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461'.
+   2018-06-02 05h29.04.0208814 i | | | | | < 
+   2018-06-02 05h29.04.0208814 i | | | | <  | 1 conclusion:
+                                 | | | |    | 1 folders read.
+   2018-06-02 05h29.04.0898896 i | | | | Created temporary Working Directory: C:\Users\olivi\AppData\Local\Temp\CKSetup2018-06-02 05h29.04.0898896\.
+   2018-06-02 05h29.04.0898896   | | | < 
+   2018-06-02 05h29.04.0898896 i | | | > Resolving runtime support for 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461\'.
+   2018-06-02 05h29.04.0898896 i | | | | > Creating runtime dependencies resolver for C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461\.
+   2018-06-02 05h29.04.0898896 i | | | | | > Detecting runtimes for: CK.Setupable.Model/Net461, CK.SqlServer.Setup.Model/Net461, CK.StObj.Model/Net461
+   2018-06-02 05h29.04.1276430 i | | | | | | Multiple possible runtime: Net461, Net462, Net47.
+   2018-06-02 05h29.04.1276430 i | | | | | <  | 1 conclusion:
+                                 | | | | |    | Lowest selected runtime: Net461.
+   2018-06-02 05h29.04.1432920 i | | | | < 
+   2018-06-02 05h29.04.1432920 i | | | | > Initializing root dependencies.
+   2018-06-02 05h29.04.1432920   | | | | | Resolved required dependency -> CK.Setupable.Runtime/6.0.1-C0017-develop to local CK.Setupable.Runtime/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop to local CK.SqlServer.Setup.Runtime/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CK.StObj.Runtime/6.0.1-C0017-develop to local CK.StObj.Runtime/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CKSetup.Runner/6.0.1-C0020-develop to local CKSetup.Runner/6.0.1-C0020-develop/Net461/.
+   2018-06-02 05h29.04.1589071 i | | | | < 
+   2018-06-02 05h29.04.1589071 i | | | | > Resolving dependencies.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CK.Setupable.Engine/6.0.1-C0017-develop to local CK.Setupable.Engine/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CK.SqlServer.Setup.Engine/6.0.1-C0017-develop to local CK.SqlServer.Setup.Engine/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071   | | | | | Resolved required dependency -> CK.StObj.Engine/6.0.1-C0017-develop to local CK.StObj.Engine/6.0.1-C0017-develop/Net461/.
+   2018-06-02 05h29.04.1589071 i | | | | < 
+   2018-06-02 05h29.04.1589071 i | | | | > Selected 129 setup files.
+   2018-06-02 05h29.04.1745391 i | | | | < 
+   2018-06-02 05h29.04.1745391 i | | | < 
+   2018-06-02 05h29.04.1745391 i | | | > Copying files to 'C:\Users\olivi\AppData\Local\Temp\CKSetup2018-06-02 05h29.04.0898896\'.
+   2018-06-02 05h29.05.9633097 i | | | < 
+   2018-06-02 05h29.05.9633097 i | | | > Copying 144 files from bin folders.
+   2018-06-02 05h29.06.6807632 i | | | <  | 1 conclusion:
+                                 | | |    | Skipped 106 file(s).
+   2018-06-02 05h29.06.6807632 i | | | > Generating CKSetup.Runner.Config.xml file.
+   2018-06-02 05h29.06.7120108 i | | | < 
+   2018-06-02 05h29.06.7120108 i | | | > Launching CKSetup.Runner process.
+   2018-06-02 05h29.06.7341549   | | | | > C:\Users\olivi\AppData\Local\Temp\CKSetup2018-06-02 05h29.04.0898896\CKSetup.Runner.exe  /silent /logPipe:2288
+   2018-06-02 05h29.06.8812956 i | | | | | > Starting CKSetup.Runner - 6.0.1--ci.20.develop (6.0.1-C0020-develop) - SHA1: da0b5d75e8d10df75c81d3606102f8c737b71370 - CommitDate: 2018-06-02 00:06:22Z
+   2018-06-02 05h29.06.9346775 i | | | | | | > Applying CKSetup configuration.
+   2018-06-02 05h29.06.9503216 i | | | | | | | Handling 1 BinPath(s).
+   2018-06-02 05h29.06.9503216 i | | | | | | < 
+   2018-06-02 05h29.06.9503216 i | | | | | | > Validating configuration.
+   2018-06-02 05h29.06.9659461 i | | | | | | < 
+   2018-06-02 05h29.06.9659461   | | | | | | > Creating and configuring 2 aspect(s).
+   2018-06-02 05h29.07.0128173   | | | | | | | > Configuring aspect 'CK.Setup.SetupableAspect'.
+   2018-06-02 05h29.07.0128173   | | | | | | | < 
+   2018-06-02 05h29.07.0284292   | | | | | | | > Configuring aspect 'CK.SqlServer.Setup.SqlSetupAspect'.
+   2018-06-02 05h29.07.0349382 i | | | | | | | | > Connection to Data Source=.;Initial Catalog=CKTEST_SqlTransform;Integrated Security=True.
+   2018-06-02 05h29.07.0818259 i | | | | | | | | | Connected to database.
+   2018-06-02 05h29.07.0818259 i | | | | | | | | < 
+   2018-06-02 05h29.07.0818259 i | | | | | | | | Registering SqlVersionedItemReader on the default database as the version reader.
+   2018-06-02 05h29.07.0974436 i | | | | | | | | Registering SqlVersionedItemWriter on the default database as the version writer.
+   2018-06-02 05h29.07.0974436 i | | | | | | | | Registering SqlSetupSessionMemoryProvider on the default database as the memory provider.
+   2018-06-02 05h29.07.1508438   | | | | | | | < 
+   2018-06-02 05h29.07.1508438 i | | | | | | | > Executing initial 1 deferred actions.
+   2018-06-02 05h29.07.1508438 i | | | | | | | <  | 1 conclusion:
+                                 | | | | | | |    | Executed 1 actions.
+   2018-06-02 05h29.07.1664540 i | | | | | | | No explicit ISimpleObjectActivator has been registered. Using a default SimpleObjectActivator.
+   2018-06-02 05h29.07.1664540   | | | | | | < 
+   2018-06-02 05h29.07.1664540 i | | | | | | > Building StObj objects.
+   2018-06-02 05h29.07.1977065 i | | | | | | | > Registering StObj types.
+   2018-06-02 05h29.07.1977065   | | | | | | | | > Registering 12 assemblies.
+   2018-06-02 05h29.07.1977065   | | | | | | | | | > Registering assembly 'CK.Setupable.Model'.
+   2018-06-02 05h29.07.1977065   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 16 types(s) registered.
+   2018-06-02 05h29.07.1977065   | | | | | | | | | > Registering assembly 'CK.SqlServer.Setup.Model'.
+   2018-06-02 05h29.07.2289496   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 43 types(s) registered.
+   2018-06-02 05h29.07.2289496   | | | | | | | | | > Registering assembly 'CK.StObj.Model'.
+   2018-06-02 05h29.07.2289496   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 22 types(s) registered.
+   2018-06-02 05h29.07.2289496   | | | | | | | | | > Registering assembly 'CK.DB.Tests.NUnit'.
+   2018-06-02 05h29.07.2354711   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 8 types(s) registered.
+   2018-06-02 05h29.07.2354711   | | | | | | | | | > Registering assembly 'CK.Testing.DBSetup'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 2 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'CK.Testing.SetupableSetup'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 2 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'CK.Testing.StObjMap'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 2 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'CK.Testing.StObjSetup'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 5 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'CKLevel0'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 1 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'CKLevel2'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 7 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'LocalTestHelper'.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 7 types(s) registered.
+   2018-06-02 05h29.07.2511014   | | | | | | | | | > Registering assembly 'SqlTransform.Tests'.
+   2018-06-02 05h29.07.2667258   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 4 types(s) registered.
+   2018-06-02 05h29.07.2667258   | | | | | | | | < 
+   2018-06-02 05h29.07.2667258   | | | | | | | | > Explicitely registering 0 type(s).
+   2018-06-02 05h29.07.2667258   | | | | | | | | < 
+   2018-06-02 05h29.07.2667258 i | | | | | | | < 
+   2018-06-02 05h29.07.2667258 i | | | | | | | > Resolving StObj dependency graph.
+   2018-06-02 05h29.07.2667258 i | | | | | | | | > Collecting all StObj information.
+   2018-06-02 05h29.07.2667258 i | | | | | | | | | > Collecting Ambient Contracts, Type structure and Poco.
+   2018-06-02 05h29.07.2667258 i | | | | | | | | | | > Creating Poco Types and PocoFactory.
+   2018-06-02 05h29.07.2979707 i | | | | | | | | | | < 
+   2018-06-02 05h29.07.3669834   | | | | | | | | | | > Ambient Contract discovering: 1 context(s).
+   2018-06-02 05h29.07.3669834   | | | | | | | | | | | > Ambient Contract for context '': 9 mappings for 7 concrete paths.
+   2018-06-02 05h29.07.3669834   | | | | | | | | | | | < 
+   2018-06-02 05h29.07.3669834   | | | | | | | | | | < 
+   2018-06-02 05h29.07.3669834 i | | | | | | | | | < 
+   2018-06-02 05h29.07.3826105 i | | | | | | | | | > Creating Structure Objects.
+   2018-06-02 05h29.07.3826105 i | | | | | | | | | | > Working on Context [].
+   2018-06-02 05h29.07.3982341 i | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | |    | 7 items created for 7 types.
+   2018-06-02 05h29.07.3982341 i | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | 7 items created.
+   2018-06-02 05h29.07.3982341 i | | | | | | | | | > Handling dependencies.
+   2018-06-02 05h29.07.3982341 i | | | | | | | | | | > Working on Context [].
+   2018-06-02 05h29.07.3982341   | | | | | | | | | | | > Preparing '[]CK.SqlServer.Setup.SqlDefaultDatabase'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Group
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CKLevel0.Package'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Container
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CKLevel2.Package'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Container
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CKLevel2.IntermediateTransformation.Package1'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Container
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CKLevel2.IntermediateTransformation.Package2'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Container
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CKLevel2.IntermediateTransformation.Package3'.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Container
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | > Preparing '[]CK._g.poco.Factory'.
+   2018-06-02 05h29.07.4138554 W | | | | | | | | | | | | Since ItemKind is not specified on this base class ('[]CK._g.poco.Factory'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container.
+   2018-06-02 05h29.07.4138554   | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | |    | ItemKind is Item
+   2018-06-02 05h29.07.4138554 i | | | | | | | | | | < 
+   2018-06-02 05h29.07.4138554 i | | | | | | | | | | > Working on Context [].
+   2018-06-02 05h29.07.4359848 i | | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520 i | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520 i | | | | | | | | | > Initializing object graph.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | > Constructing '[]CK._g.poco.Factory'.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | > Constructing '[]CK.SqlServer.Setup.SqlDefaultDatabase'.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | > Constructing '[]CKLevel0.Package'.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | > Constructing '[]CKLevel2.IntermediateTransformation.Package1'.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | > Constructing '[]CKLevel2.Package'.
+   2018-06-02 05h29.07.4672520   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756   | | | | | | | | | | > Constructing '[]CKLevel2.IntermediateTransformation.Package2'.
+   2018-06-02 05h29.07.4828756   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756   | | | | | | | | | | > Constructing '[]CKLevel2.IntermediateTransformation.Package3'.
+   2018-06-02 05h29.07.4828756   | | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | | > Setting Ambient Contracts.
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | | | > Working on Context [].
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | < 
+   2018-06-02 05h29.07.4828756 i | | | | | | > Running Aspects.
+   2018-06-02 05h29.07.4828756 i | | | | | | | > Aspect: CK.Setup.SetupableAspect.
+   2018-06-02 05h29.07.4828756 i | | | | | | | | > Creating Setup Items from Structured Objects.
+   2018-06-02 05h29.07.4828756 i | | | | | | | | | > Building setupable items from 7 Structure Objects (calling IStObjSetupConfigurator.ConfigureDependentItem and IStObjSetupItemFactory.CreateDependentItem for each of them).
+   2018-06-02 05h29.07.4984992 i | | | | | | | | | | SqlPackage 'CKLevel0.Package' uses its own full name as its SetupName.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | | SqlPackage 'CKLevel2.IntermediateTransformation.Package1' uses its own full name as its SetupName.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | | SqlPackage 'CKLevel2.Package' uses its own full name as its SetupName.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | | SqlPackage 'CKLevel2.IntermediateTransformation.Package2' uses its own full name as its SetupName.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | | SqlPackage 'CKLevel2.IntermediateTransformation.Package3' uses its own full name as its SetupName.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | < 
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | > Binding dependencies between Setupable items.
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | < 
+   2018-06-02 05h29.07.5297477 i | | | | | | | | | > Dynamic initialization of Setup items.
+   2018-06-02 05h29.07.5483468 i | | | | | | | | | | > Executing 9 deferred actions.
+   2018-06-02 05h29.07.5483468 i | | | | | | | | | | | > Starting intialization round n°0.
+   2018-06-02 05h29.07.5483468 i | | | | | | | | | | | | > Handling: 'sSimpleY4TemplateTest' in 'SimplY4TemplateTest' SqlProcedure attribute of '[]db^CKLevel0.Package'
+   2018-06-02 05h29.07.5483468   | | | | | | | | | | | | | > Loading '[]db^CK.sSimpleY4TemplateTest' of '[]db^CKLevel0.Package'.
+   2018-06-02 05h29.07.5583968 i | | | | | | | | | | | | | | > Evaluating template 'sSimpleY4TemplateTest.y4'.
+   2018-06-02 05h29.07.6490408 i | | | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8072087   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Procedure from file 'sSimpleY4TemplateTest.y4'.
+   2018-06-02 05h29.07.8072087 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8072087 i | | | | | | | | | | | | > Handling: 'sSimpleTransformTest' in 'SimpleTransormTest' SqlProcedure attribute of '[]db^CKLevel0.Package'
+   2018-06-02 05h29.07.8072087   | | | | | | | | | | | | | > Loading '[]db^CK.sSimpleTransformTest' of '[]db^CKLevel0.Package'.
+   2018-06-02 05h29.07.8072087   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Procedure from file 'sSimpleTransformTest.sql'.
+   2018-06-02 05h29.07.8072087 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8072087 i | | | | | | | | | | | | > Handling: '[]db^ITrans.vBase' in SqlObjectItem attribute of '[]db^CKLevel2.IntermediateTransformation.Package1'
+   2018-06-02 05h29.07.8072087   | | | | | | | | | | | | | > Loading '[]db^ITrans.vBase' of '[]db^CKLevel2.IntermediateTransformation.Package1'.
+   2018-06-02 05h29.07.8575437   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded View from file 'vBase.sql'.
+   2018-06-02 05h29.07.8575437 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8575437 i | | | | | | | | | | | | > Handling: 'sSimpleReplaceTest' in 'SimpleReplaceTest' SqlProcedure attribute of '[]db^CKLevel2.Package'
+   2018-06-02 05h29.07.8575437   | | | | | | | | | | | | | > Loading '[]db^CK.sSimpleReplaceTest' of '[]db^CKLevel2.Package'.
+   2018-06-02 05h29.07.8676025   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Procedure from file 'sSimpleReplaceTest.sql'.
+   2018-06-02 05h29.07.8676025 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8676025 i | | | | | | | | | | | | > Handling: 'sSimpleTransformTest' in 'SimpleTransformTest' SqlProcedure attribute of '[]db^CKLevel2.Package'
+   2018-06-02 05h29.07.8676025   | | | | | | | | | | | | | > Loading '[]db^CKLevel2.Package([]db^CK.sSimpleTransformTest)' of '[]db^CKLevel2.Package'.
+   2018-06-02 05h29.07.8897092   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Transformer from file 'sSimpleTransformTest.tql'.
+   2018-06-02 05h29.07.8897092 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8897092 i | | | | | | | | | | | | > Handling: '[]db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase)' in SqlObjectItem attribute of '[]db^CKLevel2.IntermediateTransformation.Package2'
+   2018-06-02 05h29.07.8897092   | | | | | | | | | | | | | > Loading '[]db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase)' of '[]db^CKLevel2.IntermediateTransformation.Package2'.
+   2018-06-02 05h29.07.8897092   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Transformer from file 'Package2(vBase).tql'.
+   2018-06-02 05h29.07.8897092 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8897092 i | | | | | | | | | | | | > Handling: '[]db^ITrans.vDependent' in SqlObjectItem attribute of '[]db^CKLevel2.IntermediateTransformation.Package2'
+   2018-06-02 05h29.07.8897092   | | | | | | | | | | | | | > Loading '[]db^ITrans.vDependent' of '[]db^CKLevel2.IntermediateTransformation.Package2'.
+   2018-06-02 05h29.07.8997520   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded View from file 'vDependent.sql'.
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | | | | > Handling: '[]db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase)' in SqlObjectItem attribute of '[]db^CKLevel2.IntermediateTransformation.Package3'
+   2018-06-02 05h29.07.8997520   | | | | | | | | | | | | | > Loading '[]db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase)' of '[]db^CKLevel2.IntermediateTransformation.Package3'.
+   2018-06-02 05h29.07.8997520   | | | | | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | | | | | |    | Loaded Transformer from file 'Package3(vBase).tql'.
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | | | < 
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | | < 
+   2018-06-02 05h29.07.8997520 i | | | | | | | | | < 
+   2018-06-02 05h29.07.8997520 i | | | | | | | | < 
+   2018-06-02 05h29.07.8997520   | | | | | | | | > Installing CKCore kernel.
+   2018-06-02 05h29.07.9178647   | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | |    | Already installed in version 15.
+   2018-06-02 05h29.07.9334963 i | | | | | | | | > Reading original versions.
+   2018-06-02 05h29.07.9334963   | | | | | | | | | > Installing SqlVersionedItemRepository store.
+   2018-06-02 05h29.07.9334963   | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | Already installed in version 1.
+   2018-06-02 05h29.07.9334963 i | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | |    | Got 10 versions.
+   2018-06-02 05h29.07.9334963 i | | | | | | | | > Setupable Core Engine initialization.
+   2018-06-02 05h29.07.9491172 i | | | | | | | | | Starting a new setup.
+   2018-06-02 05h29.07.9491172 i | | | | | | | | < 
+   2018-06-02 05h29.07.9491172 i | | | | | | | | > Register step.
+   2018-06-02 05h29.07.9803791 i | | | | | | | | | > Instanciating drivers for 36 items.
+   2018-06-02 05h29.07.9960027 i | | | | | | | | | < 
+   2018-06-02 05h29.07.9960027 i | | | | | | | | | > Calling PreInit on 36 drivers.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'CKLevel0.Package' in 'CKLevel0:CKLevel0.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'Model.CKLevel0.Package' in 'CKLevel0:CKLevel0.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'CKLevel2.IntermediateTransformation.Package1' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'Model.CKLevel2.IntermediateTransformation.Package1' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'CKLevel2.Package' in 'CKLevel2:CKLevel2.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'Model.CKLevel2.Package' in 'CKLevel2:CKLevel2.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'CKLevel2.IntermediateTransformation.Package2' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'Model.CKLevel2.IntermediateTransformation.Package2' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'CKLevel2.IntermediateTransformation.Package3' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | | 0 sql scripts in resource found for 'Model.CKLevel2.IntermediateTransformation.Package3' in 'CKLevel2:CKLevel2.IntermediateTransformation.Res.*.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0116271 i | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | |    | 36 Setup items registered.
+   2018-06-02 05h29.08.0116271 i | | | | | | | | > Init step.
+   2018-06-02 05h29.08.0181361   | | | | | | | | | > Raising Init setup event.
+   2018-06-02 05h29.08.0181361   | | | | | | | | | < 
+   2018-06-02 05h29.08.0181361 i | | | | | | | | | > Initializing []CK._g.poco.Factory
+   2018-06-02 05h29.08.0181361 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0181361 i | | | | | | | | | > Initializing []db^SqlDatabase.Connection
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | if not exists(select 1 from sys.schemas where name = 'CK') begin exec( 'create schema [CK]' ); end
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | GO
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | if not exists(select 1 from sys.schemas where name = 'ITrans') begin exec( 'create schema [ITrans]' ); end
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | GO
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | -- Ensure that snapshot_isolation and read_committed_snapshot are on for this db.
+                                 | | | | | | | | | |   declare @dbName sysname = DB_NAME();
+                                 | | | | | | | | | |   declare @dbNameQ sysname = QUOTENAME(@dbName);
+                                 | | | | | | | | | |   declare @isSingleUser bit = 0;
+                                 | | | | | | | | | |   declare @isRCSEnabled int;
+                                 | | | | | | | | | |   select @isRCSEnabled = is_read_committed_snapshot_on from sys.databases where name = @dbName;
+                                 | | | | | | | | | |   if @isRCSEnabled = 0
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |       exec( 'alter database '+@dbNameQ+' set single_user with rollback immediate;' );
+                                 | | | | | | | | | |       set @isSingleUser = 1;
+                                 | | | | | | | | | |       exec( 'alter database '+@dbNameQ+' set read_committed_snapshot on;' );
+                                 | | | | | | | | | |   end;
+                                 | | | | | | | | | |    
+                                 | | | | | | | | | |   declare @isSIEnabled int;
+                                 | | | | | | | | | |   select @isSIEnabled = snapshot_isolation_state from sys.databases where name = @dbName;
+                                 | | | | | | | | | |   if @isSIEnabled = 0
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |       if @isSingleUser = 0 exec ('alter database ' + @dbNameQ + ' set single_user with rollback immediate;');
+                                 | | | | | | | | | |       exec( 'alter database '+@dbNameQ+' set allow_snapshot_isolation on;' );
+                                 | | | | | | | | | |   end;
+                                 | | | | | | | | | |    
+                                 | | | | | | | | | |   if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
+   2018-06-02 05h29.08.0181361   | | | | | | | | | | GO
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.SqlDatabase.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel0.Package.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package1.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.Package.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel0.Package
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package1
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.Package
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package2.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package2
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package3.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.CKLevel2.IntermediateTransformation.Package3
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^Model.SqlDatabase
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^SqlDatabase.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel0.Package.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package1.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.Package.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CK.sSimpleReplaceTest
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CK.sSimpleTransformTest
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CK.sSimpleY4TemplateTest
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^ITrans.vBase
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel0.Package
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package1
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.Package([]db^CK.sSimpleTransformTest)
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CK.sSimpleTransformTest#transform
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package2.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.Package
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase)
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^ITrans.vDependent
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package2
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package3.Head
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase)
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^CKLevel2.IntermediateTransformation.Package3
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^ITrans.vBase#transform
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Initializing []db^SqlDatabase
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | > Install step.
+   2018-06-02 05h29.08.0650313   | | | | | | | | | > Raising Install setup event.
+   2018-06-02 05h29.08.0650313   | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []CK._g.poco.Factory (unversioned).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^SqlDatabase.Connection (unversioned).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.SqlDatabase.Head (unversioned).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel0.Package.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package1.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.Package.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel0.Package (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package1 (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.Package (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package2.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package2 (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package3.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.CKLevel2.IntermediateTransformation.Package3 (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^Model.SqlDatabase (unversioned).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^SqlDatabase.Head (unversioned).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^CKLevel0.Package.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package1.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^CKLevel2.Package.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | < 
+   2018-06-02 05h29.08.0650313 i | | | | | | | | | > Installing []db^CK.sSimpleReplaceTest (unversioned).
+   2018-06-02 05h29.08.0806469   | | | | | | | | | | if OBJECT_ID('CK.sSimpleReplaceTest') is not null drop Procedure CK.sSimpleReplaceTest;
+   2018-06-02 05h29.08.0806469   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | -- SetupConfig: {}
+                                 | | | | | | | | | |   create procedure CK.sSimpleReplaceTest
+                                 | | | | | | | | | |   (
+                                 | | | | | | | | | |       @TextParam nvarchar(128) = N'The Sql Default.' /*input*/output,
+                                 | | | | | | | | | |   	@Added int = 0
+                                 | | | | | | | | | |   )
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |   	set @TextParam = N'Return: ' + @TextParam + N' ' + cast(@Added as nvarchar);
+                                 | | | | | | | | | |   	return 0;
+                                 | | | | | | | | | |   end
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | > Installing []db^CK.sSimpleTransformTest (unversioned).
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | if OBJECT_ID('CK.sSimpleTransformTest') is not null drop Procedure CK.sSimpleTransformTest;
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | -- This will be transformed by []db^CKLevel2.Package([]db^CK.sSimpleTransformTest)
+                                 | | | | | | | | | |   -- SetupConfig: {}
+                                 | | | | | | | | | |   create procedure CK.sSimpleTransformTest
+                                 | | | | | | | | | |   (
+                                 | | | | | | | | | |       @TextParam nvarchar(20) output
+                                 | | | | | | | | | |   )
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |   	set @TextParam = N'No!';
+                                 | | | | | | | | | |   	return 0;
+                                 | | | | | | | | | |   end
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | > Installing []db^CK.sSimpleY4TemplateTest (unversioned).
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | if OBJECT_ID('CK.sSimpleY4TemplateTest') is not null drop Procedure CK.sSimpleY4TemplateTest;
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | -- SetupConfig: {}
+                                 | | | | | | | | | |   create procedure CK.sSimpleY4TemplateTest
+                                 | | | | | | | | | |   (
+                                 | | | | | | | | | |       @TemplatedText nvarchar(100) output
+                                 | | | | | | | | | |   )
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |   	set @TemplatedText = N'HashCode = 16157963';
+                                 | | | | | | | | | |   	return 0;
+                                 | | | | | | | | | |   end
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1184079 i | | | | | | | | | > Installing []db^ITrans.vBase (unversioned).
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | if OBJECT_ID('ITrans.vBase') is not null drop View ITrans.vBase;
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | -- This will be transformed by []db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase), []db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase)
+                                 | | | | | | | | | |   -- SetupConfig: {}
+                                 | | | | | | | | | |   create view ITrans.vBase
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |       select KeyValue = object_id from sys.tables;
+   2018-06-02 05h29.08.1184079   | | | | | | | | | | GO
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | > Installing []db^CKLevel0.Package (= 0.0.0 =).
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package1 (= 0.0.0 =).
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | < 
+   2018-06-02 05h29.08.1340373 i | | | | | | | | | > Installing []db^CKLevel2.Package([]db^CK.sSimpleTransformTest) (unversioned).
+   2018-06-02 05h29.08.1809111   | | | | | | | | | | Successfully applied 'add parameter @Added int=0;'.
+   2018-06-02 05h29.08.2186672   | | | | | | | | | | Successfully applied 'replace single {N'No!'} with "N'Yes! ' + cast(@Added as varchar)";'.
+   2018-06-02 05h29.08.2186672   | | | | | | | | | | > Parsing transformation result.
+   2018-06-02 05h29.08.2186672   | | | | | | | | | | < 
+   2018-06-02 05h29.08.2343118   | | | | | | | | | | -- SetupConfig: {}
+                                 | | | | | | | | | |   alter procedure CK.sSimpleTransformTest
+                                 | | | | | | | | | |   (
+                                 | | | | | | | | | |       @TextParam nvarchar(20) output
+                                 | | | | | | | | | |   , @Added int = 0)
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |   begin
+                                 | | | | | | | | | |   	set @TextParam = N'Yes! ' + cast(@Added as varchar);
+                                 | | | | | | | | | |   	return 0;
+                                 | | | | | | | | | |   end
+                                 | | | | | | | | | |   
+                                 | | | | | | | | | |   -- This has been transformed by []db^CKLevel2.Package([]db^CK.sSimpleTransformTest)
+   2018-06-02 05h29.08.2343118   | | | | | | | | | | GO
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | > Installing []db^CK.sSimpleTransformTest#transform (unversioned).
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package2.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | > Installing []db^CKLevel2.Package (= 0.0.0 =).
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2343118 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase) (unversioned).
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | Successfully applied 'add column name;'.
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | -- SetupConfig: {}
+                                 | | | | | | | | | |   alter view ITrans.vBase
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |       select KeyValue = object_id , name from sys.tables;
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | GO
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | > Installing []db^ITrans.vDependent (unversioned).
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | if OBJECT_ID('ITrans.vDependent') is not null drop View ITrans.vDependent;
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | GO
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | -- SetupConfig: { "Requires": "CKLevel2.IntermediateTransformation.Package2(ITrans.vBase)" }
+                                 | | | | | | | | | |   create view ITrans.vDependent
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |       select I = KeyValue, N = [name]
+                                 | | | | | | | | | |           from ITrans.vBase;
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | GO
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package2 (= 0.0.0 =).
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package3.Head (= 0.0.0 =).
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2499210 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase) (unversioned).
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | Successfully applied 'add column Type=type_desc;'.
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | -- SetupConfig: {}
+                                 | | | | | | | | | |   alter view ITrans.vBase
+                                 | | | | | | | | | |   as
+                                 | | | | | | | | | |       select KeyValue = object_id , name, Type = type_desc from sys.tables;
+                                 | | | | | | | | | |   
+                                 | | | | | | | | | |   -- This has been transformed by []db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase), []db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase)
+   2018-06-02 05h29.08.2499210   | | | | | | | | | | GO
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Installing []db^CKLevel2.IntermediateTransformation.Package3 (= 0.0.0 =).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Installing []db^ITrans.vBase#transform (unversioned).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Installing []db^SqlDatabase (unversioned).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | > Settle step.
+   2018-06-02 05h29.08.2655656   | | | | | | | | | > Raising Settle setup event.
+   2018-06-02 05h29.08.2655656   | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []CK._g.poco.Factory.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^SqlDatabase.Connection.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.SqlDatabase.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel0.Package.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package1.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.Package.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel0.Package.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package1.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.Package.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package2.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package2.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package3.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.CKLevel2.IntermediateTransformation.Package3.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^Model.SqlDatabase.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^SqlDatabase.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel0.Package.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package1.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.Package.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CK.sSimpleReplaceTest.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CK.sSimpleTransformTest.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CK.sSimpleY4TemplateTest.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^ITrans.vBase.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel0.Package.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package1.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.Package([]db^CK.sSimpleTransformTest).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CK.sSimpleTransformTest#transform.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package2.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.Package.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package2([]db^ITrans.vBase).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^ITrans.vDependent.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package2.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package3.Head.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package3([]db^ITrans.vBase).
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^CKLevel2.IntermediateTransformation.Package3.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^ITrans.vBase#transform.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | > Settling []db^SqlDatabase.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656   | | | | | | | | | > Raising Success setup event.
+   2018-06-02 05h29.08.2655656   | | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | | > Disposing 36 drivers.
+   2018-06-02 05h29.08.2655656 i | | | | | | | | < 
+   2018-06-02 05h29.08.2655656   | | | | | | | | > Raising Disposed setup event.
+   2018-06-02 05h29.08.2655656   | | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | > Aspect: CK.SqlServer.Setup.SqlSetupAspect.
+   2018-06-02 05h29.08.2655656 i | | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | | > Executing initial 0 deferred actions.
+   2018-06-02 05h29.08.2655656 i | | | | | | | <  | 1 conclusion:
+                                 | | | | | | |    | Executed 0 actions.
+   2018-06-02 05h29.08.2655656 i | | | | | | < 
+   2018-06-02 05h29.08.2655656 i | | | | | | > Generating AppContext assembly (first run).
+   2018-06-02 05h29.08.2655656 i | | | | | | | > Generating StObj dynamic assembly.
+   2018-06-02 05h29.08.2967967 i | | | | | | | | > Generating source code.
+   2018-06-02 05h29.08.3501826 i | | | | | | | | | > Generating Method Package.SimplY4TemplateTest( ISqlCallContext ctx ) => String.
+   2018-06-02 05h29.08.3501826   | | | | | | | | | | > Low level SqlCommand create method for: 'procedure CK.sSimpleY4TemplateTest(@TemplatedText nvarchar(100) output)'.
+   2018-06-02 05h29.08.3658088   | | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | > Generating Method Package.SimpleReplaceTest( ISqlCallContext ctx, String textParam ) => String.
+   2018-06-02 05h29.08.3970564   | | | | | | | | | | > Low level SqlCommand create method for: 'procedure CK.sSimpleReplaceTest(@TextParam nvarchar(128)=N'The Sql Default.' /*input*/output, @Added int=0)'.
+   2018-06-02 05h29.08.3970564   | | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | | Parameter '@Added int=0' will use its default sql value '0'.
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | > Generating Method Package.SimpleTransormTest( ISqlCallContext ctx ) => String.
+   2018-06-02 05h29.08.3970564   | | | | | | | | | | > Low level SqlCommand create method for: 'procedure CK.sSimpleTransformTest(@TextParam nvarchar(20) output, @Added int=0)'.
+   2018-06-02 05h29.08.3970564   | | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | | Parameter '@Added int=0' will use its default sql value '0'.
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | > Generating Method Package.SimpleReplaceTest( ISqlCallContext ctx, String textParam, Int32 added ) => String.
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | < 
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | > Generating Method Package.SimpleTransformTest( ISqlCallContext ctx, String textParam, Int32 added ) => String.
+   2018-06-02 05h29.08.3970564 W | | | | | | | | | | Sql parameter '@TextParam' is an output parameter. Setting its value is useless. Should it be marked /*input*/output?.
+   2018-06-02 05h29.08.3970564 i | | | | | | | | | < 
+   2018-06-02 05h29.08.4126804 i | | | | | | | | < 
+   2018-06-02 05h29.08.4126804 i | | | | | | | | > Compiling source code.
+   2018-06-02 05h29.13.0757658 i | | | | | | | | | Saved source file: C:\Users\olivi\AppData\Local\Temp\CKSetup2018-06-02 05h29.04.0898896\Transform.Tests.Generated.dll.0.cs
+   2018-06-02 05h29.13.0837836 i | | | | | | | | | Saved source file: C:\Users\olivi\AppData\Local\Temp\CKSetup2018-06-02 05h29.04.0898896\Transform.Tests.Generated.dll.1.cs
+   2018-06-02 05h29.13.0837836 i | | | | | | | | | > Code Generation information.
+   2018-06-02 05h29.13.0837836 W | | | | | | | | | | > 1 assembly load conflict(s).
+   2018-06-02 05h29.13.0837836 W | | | | | | | | | | | Sucess: 'System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' => 'System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' (no requesting assembly)
+   2018-06-02 05h29.13.0837836 W | | | | | | | | | | < 
+   2018-06-02 05h29.13.0837836 i | | | | | | | | | | Source code generation and compilation succeeded.
+   2018-06-02 05h29.13.0938031 i | | | | | | | | | <  | 1 conclusion:
+                                 | | | | | | | | |    | Succeeded.
+   2018-06-02 05h29.13.0938031 i | | | | | | | | < 
+   2018-06-02 05h29.13.0938031 i | | | | | | | < 
+   2018-06-02 05h29.13.0938031 i | | | | | | | > Copying generated files to folder: 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461\'.
+   2018-06-02 05h29.13.0938031 i | | | | | | | | Transform.Tests.Generated.dll.0.cs
+   2018-06-02 05h29.13.1094316 i | | | | | | | | Transform.Tests.Generated.dll.1.cs
+   2018-06-02 05h29.13.1094316 i | | | | | | | | Transform.Tests.Generated.dll
+   2018-06-02 05h29.13.1250588 i | | | | | | | < 
+   2018-06-02 05h29.13.1250588 i | | | | | | | > Copying generated files to folder: 'C:\Dev\CK-Database-Projects\CK-Database\Tests\SqlTransform\SqlTransform.Tests\bin\Debug\net461'.
+   2018-06-02 05h29.13.1250588 i | | | | | | | | Transform.Tests.Generated.dll.0.cs
+   2018-06-02 05h29.13.1250588 i | | | | | | | | Transform.Tests.Generated.dll.1.cs
+   2018-06-02 05h29.13.1406975 i | | | | | | | | Transform.Tests.Generated.dll
+   2018-06-02 05h29.13.1406975 i | | | | | | | < 
+   2018-06-02 05h29.13.1406975 i | | | | | | < 
+   2018-06-02 05h29.13.1406975 i | | | | | | > Terminating Aspects.
+   2018-06-02 05h29.13.1406975 i | | | | | | | > Aspect: CK.SqlServer.Setup.SqlSetupAspect.
+   2018-06-02 05h29.13.1406975 i | | | | | | | < 
+   2018-06-02 05h29.13.1406975 i | | | | | | | > Aspect: CK.Setup.SetupableAspect.
+   2018-06-02 05h29.13.1406975 i | | | | | | | < 
+   2018-06-02 05h29.13.1406975 i | | | | | | | > Executing initial 0 deferred actions.
+   2018-06-02 05h29.13.1406975 i | | | | | | | <  | 1 conclusion:
+                                 | | | | | | |    | Executed 0 actions.
+   2018-06-02 05h29.13.1406975 i | | | | | | < 
+   2018-06-02 05h29.13.1563059 W | | | | | | > 2 assembly load conflicts:
+   2018-06-02 05h29.13.1563059 W | | | | | | | Sucess: 'System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' => 'System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' (no requesting assembly)
+   2018-06-02 05h29.13.1563059 W | | | | | | | Sucess: 'System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' => 'System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' (no requesting assembly)
+   2018-06-02 05h29.13.1563059 W | | | | | | < 
+   2018-06-02 05h29.13.4571343 i | | | | | < 
+   2018-06-02 05h29.13.4571343   | | | | < 
+   2018-06-02 05h29.13.4571343 i | | | < 
+   2018-06-02 05h29.13.4571343   | | | > Updating signature files.
+   2018-06-02 05h29.13.4571343   | | | < 
+   2018-06-02 05h29.13.4571343 i | | | > Deleting temporary Working Directory.
+   2018-06-02 05h29.13.5417839 i | | | < 
+   2018-06-02 05h29.13.5417839 i | | <  | 1 conclusion:
+                                 | |    | Succeed
+   2018-06-02 05h29.13.5417839 i | | > Closing Store.
+   2018-06-02 05h29.13.5417839 i | | < 
+   2018-06-02 05h29.13.5417839 i | < 
+   2018-06-02 05h29.13.5417839 i | > Loading StObj map from Transform.Tests.Generated.
+   2018-06-02 05h29.13.5730154 i | | > Loading dynamic 'Transform.Tests.Generated, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'.
+   2018-06-02 05h29.13.5951479 i | | < 
+   2018-06-02 05h29.13.5951479 i | < 
+   2018-06-02 05h29.13.5951479 i < 
+2~~~~                            ~~ Monitor: 4017e605-9ce5-40b4-9f96-bcaf5964e6be
+   2018-06-02 05h29.13.6732783 i Done.
+3~~~~                            ~~ Monitor: e8b6a8b9-d0f6-4ed0-b763-4e42203e81e9
+   2018-06-02 05h29.13.7110491 i Done.
+4~~~~                            ~~ Monitor: c7114896-033b-4611-a3b0-50d1a9384244
+   2018-06-02 05h29.13.7266727 i Done.
+5~~~~                            ~~ Monitor: 6025c3d4-bd9a-43ec-b3eb-1cadfb191b4b
+   2018-06-02 05h29.13.7735443 i Done.

@@ -39,7 +39,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Step n°1 - Types that participates to setup can be filtered.
-        /// This empty implementation of <see cref="IStObjStructuralConfigurator.TypeFilter"/> calls <see cref="Next"/> if it
+        /// This empty implementation of <see cref="IStObjTypeFilter.TypeFilter"/> calls <see cref="Next"/> if it
         /// is not null otherwise it returns true to keep all types.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>

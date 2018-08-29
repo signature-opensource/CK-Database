@@ -1,0 +1,701 @@
+0~~~~                            ~~ Monitor: 62ea9782-d105-40dd-b5b9-2c7588dd09de
+   2018-06-08 07h42.19.5896789 i Topic: CK.Monitoring.DispatcherSink
+   2018-06-08 07h42.19.6386497   > Initializing TextFile handler (MaxCountPerFile = 20000).
+   2018-06-08 07h42.19.6536459   < 
+1~~~~                            ~~ Monitor: fb0defeb-0c31-4701-ae4a-dcda46309a63
+   2018-06-08 07h42.20.1573542 i Folder 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\TestStores' has been cleaned up.
+   2018-06-08 07h42.20.2892777 i Switching console log ON.
+   2018-06-08 07h42.25.7724220 i Using default connection string: Server=.;Database=master;Integrated Security=SSPI
+   2018-06-08 07h42.26.5634025 i > Running DBSetup on Database:CKTEST_SqlActorPackage, Collation:Latin1_General_100_BIN2, CompatibilityLevel:130.
+   2018-06-08 07h42.26.5844056 i | > Ensuring database 'Database:CKTEST_SqlActorPackage, Collation:Latin1_General_100_BIN2, CompatibilityLevel:130'.
+   2018-06-08 07h42.26.7143348 i | <  | 1 conclusion:
+                                 |    | Database already exists, collation and compatiblity level match.
+   2018-06-08 07h42.26.7223128 i | > Running StObjSetup.
+   2018-06-08 07h42.26.7522975 i | | No 'CKSetup/DefaultBinPaths' configuration. Using current BinFolder.
+   2018-06-08 07h42.26.8172583 i | | > Running Setup on 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore' for the first time.
+   2018-06-08 07h42.26.8172583 i | | | No 'CKSetup/AutoRegisterLocalComponentPaths' components specified.
+   2018-06-08 07h42.26.8202562 i | | | > LocalHelper initializing Tests/LocalTestHelper/LocalTestStore.
+   2018-06-08 07h42.26.9371884   | | | | Opened store with 34 components.
+   2018-06-08 07h42.26.9371884   | | | | Local store opened on : 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-08 07h42.26.9381880 i | | | | > Removing components.
+   2018-06-08 07h42.26.9421913 i | | | | <  | 1 conclusion:
+                                 | | | |    | No component has been removed.
+   2018-06-08 07h42.26.9461838 i | | | | > Closing Store.
+   2018-06-08 07h42.26.9471861 i | | | | < 
+   2018-06-08 07h42.26.9601777 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9611755 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9611755 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9621738 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9621738 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9631734 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9631734 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9641730 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9641730 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9661722 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9661722 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9681718 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9691710 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9711693 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9721689 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9741689 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9751748 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9781669 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9801754 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9861632 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9861632 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.26.9911639 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.26.9941582 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.26.9971543 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.27.0041506 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.27.0061498 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.27.0061498 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.27.0071485 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.27.0091494 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.0'.
+   2018-06-08 07h42.27.0111468 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.27.0111468 d | | | | > DotNetPublish 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.1'.
+   2018-06-08 07h42.27.0131456 d | | | | <  | 1 conclusion:
+                                 | | | |    | Skipped.
+   2018-06-08 07h42.27.0161435 d | | | | > Discovering files.
+   2018-06-08 07h42.27.0161435 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\netstandard2.0'.
+   2018-06-08 07h42.27.3311500 i | | | | | < 
+   2018-06-08 07h42.27.3311500 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\net461'.
+   2018-06-08 07h42.27.3526293 i | | | | | < 
+   2018-06-08 07h42.27.3526293 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.27.4392545 i | | | | | < 
+   2018-06-08 07h42.27.4392545 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.27.5187438 i | | | | | < 
+   2018-06-08 07h42.27.5187438 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\net461'.
+   2018-06-08 07h42.27.8859854 i | | | | | < 
+   2018-06-08 07h42.27.8859854 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.27.9767907 i | | | | | < 
+   2018-06-08 07h42.27.9767907 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.28.0745962 i | | | | | < 
+   2018-06-08 07h42.28.0745962 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\net461'.
+   2018-06-08 07h42.28.4711987 i | | | | | < 
+   2018-06-08 07h42.28.4722005 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\netstandard2.0'.
+   2018-06-08 07h42.28.4811933 i | | | | | < 
+   2018-06-08 07h42.28.4811933 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\net461'.
+   2018-06-08 07h42.28.5062345 i | | | | | < 
+   2018-06-08 07h42.28.5062345 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.28.6116968 i | | | | | < 
+   2018-06-08 07h42.28.6116968 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.28.7128836 i | | | | | < 
+   2018-06-08 07h42.28.7128836 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\net461'.
+   2018-06-08 07h42.29.1210229 i | | | | | < 
+   2018-06-08 07h42.29.1210229 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.29.2357765 i | | | | | < 
+   2018-06-08 07h42.29.2357765 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.29.3355741 i | | | | | < 
+   2018-06-08 07h42.29.3355741 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\net461'.
+   2018-06-08 07h42.29.7609150 i | | | | | < 
+   2018-06-08 07h42.29.7609150 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\netstandard2.0'.
+   2018-06-08 07h42.29.7754248 i | | | | | < 
+   2018-06-08 07h42.29.7754248 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\net461'.
+   2018-06-08 07h42.29.8036272 i | | | | | < 
+   2018-06-08 07h42.29.8036272 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.30.0917620 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.1427325 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.1947043 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.1957017 i | | | | | < 
+   2018-06-08 07h42.30.1957017 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.30.3742652 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.4212381 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.4732091 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.30.4752074 i | | | | | < 
+   2018-06-08 07h42.30.4752074 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\net461'.
+   2018-06-08 07h42.30.8926126 i | | | | | < 
+   2018-06-08 07h42.30.8926126 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.31.1455755 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.1881645 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.2341392 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.2361362 i | | | | | < 
+   2018-06-08 07h42.31.2361362 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.31.4526009 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.5115471 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.5645181 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.31.5665151 i | | | | | < 
+   2018-06-08 07h42.31.5665151 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\net461'.
+   2018-06-08 07h42.31.9870325 i | | | | | < 
+   2018-06-08 07h42.31.9870325 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\netstandard2.0'.
+   2018-06-08 07h42.32.0092548 i | | | | | < 
+   2018-06-08 07h42.32.0092548 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\net461'.
+   2018-06-08 07h42.32.0472140 i | | | | | < 
+   2018-06-08 07h42.32.0472140 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.32.2824675 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.3324392 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.3736922 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.3756932 i | | | | | < 
+   2018-06-08 07h42.32.3756932 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.32.5725363 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.6165109 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.6669847 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.32.6689839 i | | | | | < 
+   2018-06-08 07h42.32.6689839 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\net461'.
+   2018-06-08 07h42.33.1194981 i | | | | | < 
+   2018-06-08 07h42.33.1194981 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\netstandard2.0'.
+   2018-06-08 07h42.33.1494373 i | | | | | < 
+   2018-06-08 07h42.33.1494373 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\net461'.
+   2018-06-08 07h42.33.1969538 i | | | | | < 
+   2018-06-08 07h42.33.1969538 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.0\publish'.
+   2018-06-08 07h42.33.4440298 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.5019943 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.5499682 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.5519652 i | | | | | < 
+   2018-06-08 07h42.33.5519652 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.1\publish'.
+   2018-06-08 07h42.33.7737304 W | | | | | | BadImageFormatException while analysing 'runtimes\win-arm64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.8197055 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x64\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.8696755 W | | | | | | BadImageFormatException while analysing 'runtimes\win-x86\native\sni.dll'. This file will not be considered as a .Net assembly but will be stored as-is.
+   2018-06-08 07h42.33.8726738 i | | | | | < 
+   2018-06-08 07h42.33.8726738 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\net461'.
+   2018-06-08 07h42.34.3199157 i | | | | | < 
+   2018-06-08 07h42.34.3199157 d | | | | < 
+   2018-06-08 07h42.34.3249128   | | | | Opened store with 34 components.
+   2018-06-08 07h42.34.3259115   | | | | Local store opened on : 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-08 07h42.34.3459012   | | | | > Creating client remote store on 'file:///C:/Dev/CK/LocalFeed/Local/CKSetupStore'.
+   2018-06-08 07h42.34.4008888   | | | | | Opened store with 239 components.
+   2018-06-08 07h42.34.4008888   | | | | | Local store opened on : 'C:\Dev\CK\LocalFeed\Local\CKSetupStore'.
+   2018-06-08 07h42.34.4018879   | | | | < 
+   2018-06-08 07h42.34.4058680 i | | | | > Importing 34 local folders.
+   2018-06-08 07h42.34.4168600 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\netstandard2.0\.
+   2018-06-08 07h42.34.4258572 i | | | | | | > Found 'CK.StObj.Model/0.0.0-0/NetStandard20/' to register.
+   2018-06-08 07h42.34.4578367 i | | | | | | < 
+   2018-06-08 07h42.34.4588359 i | | | | | < 
+   2018-06-08 07h42.34.4588359 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\netstandard2.0\.
+   2018-06-08 07h42.34.4588359 i | | | | | | > Found 'CK.Setupable.Model/0.0.0-0/NetStandard20/' to register.
+   2018-06-08 07h42.34.4598359 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4638338 i | | | | | | < 
+   2018-06-08 07h42.34.4638338 i | | | | | < 
+   2018-06-08 07h42.34.4638338 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Model\bin\Debug\net461\.
+   2018-06-08 07h42.34.4638338 i | | | | | | > Found 'CK.StObj.Model/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.4688318 i | | | | | | < 
+   2018-06-08 07h42.34.4688318 i | | | | | < 
+   2018-06-08 07h42.34.4688318 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\netstandard2.0\.
+   2018-06-08 07h42.34.4688318 i | | | | | | > Found 'CK.SqlServer.Setup.Model/0.0.0-0/NetStandard20/' to register.
+   2018-06-08 07h42.34.4708301 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4708301 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4778277 i | | | | | | < 
+   2018-06-08 07h42.34.4778277 i | | | | | < 
+   2018-06-08 07h42.34.4778277 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Model\bin\Debug\net461\.
+   2018-06-08 07h42.34.4778277 i | | | | | | > Found 'CK.Setupable.Model/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.4778277 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4788278 i | | | | | | < 
+   2018-06-08 07h42.34.4788278 i | | | | | < 
+   2018-06-08 07h42.34.4788278 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\netstandard2.0\.
+   2018-06-08 07h42.34.4788278 i | | | | | | > Found 'SqlActorPackage/0.0.0-0/NetStandard20/' to register.
+   2018-06-08 07h42.34.4788278 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4798251 i | | | | | | | Removing 3 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4798251 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4818261 i | | | | | | < 
+   2018-06-08 07h42.34.4818261 i | | | | | < 
+   2018-06-08 07h42.34.4818261 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Model\bin\Debug\net461\.
+   2018-06-08 07h42.34.4818261 i | | | | | | > Found 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.4818261 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4818261 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4828226 i | | | | | | < 
+   2018-06-08 07h42.34.4828226 i | | | | | < 
+   2018-06-08 07h42.34.4828226 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\netstandard2.0\.
+   2018-06-08 07h42.34.4828226 i | | | | | | > Found 'SqlZonePackage/0.0.0-0/NetStandard20/' to register.
+   2018-06-08 07h42.34.4828226 i | | | | | | | Removing 3 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4828226 i | | | | | | | Removing 3 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4828226 i | | | | | | | Removing 3 files thanks to already registered 'CK.StObj.Model/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4828226 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/0.0.0-0/NetStandard20/'.
+   2018-06-08 07h42.34.4888215 i | | | | | | < 
+   2018-06-08 07h42.34.4888215 i | | | | | < 
+   2018-06-08 07h42.34.4888215 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage\bin\Debug\net461\.
+   2018-06-08 07h42.34.4898189 i | | | | | | > Found 'SqlActorPackage/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.4898189 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4908202 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4908202 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4938168 i | | | | | | < 
+   2018-06-08 07h42.34.4938168 i | | | | | < 
+   2018-06-08 07h42.34.4938168 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage\bin\Debug\net461\.
+   2018-06-08 07h42.34.4948160 i | | | | | | > Found 'SqlZonePackage/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.4948160 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.4998144 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.5008135 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.5008135 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.5028123 i | | | | | | < 
+   2018-06-08 07h42.34.5028123 i | | | | | < 
+   2018-06-08 07h42.34.5038119 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5048115 W | | | | | | No component added (found already registered Components: 'CK.StObj.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5048115 i | | | | | < 
+   2018-06-08 07h42.34.5048115 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5058106 W | | | | | | No component added (found already registered Components: 'CK.StObj.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5058106 i | | | | | < 
+   2018-06-08 07h42.34.5058106 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5068156 W | | | | | | No component added (found already registered Components: 'CK.StObj.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5068156 i | | | | | < 
+   2018-06-08 07h42.34.5068156 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5068156 W | | | | | | No component added (found already registered Components: 'CK.StObj.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5068156 i | | | | | < 
+   2018-06-08 07h42.34.5078102 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5078102 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5078102 i | | | | | < 
+   2018-06-08 07h42.34.5078102 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5078102 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5078102 i | | | | | < 
+   2018-06-08 07h42.34.5078102 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5078102 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5078102 i | | | | | < 
+   2018-06-08 07h42.34.5078102 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5078102 W | | | | | | No component added (found already registered Components: 'CK.Setupable.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5078102 i | | | | | < 
+   2018-06-08 07h42.34.5078102 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'SqlActorPackage.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.1\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'SqlZonePackage.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'CK.SqlServer.Setup.Engine/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5088081 i | | | | | < 
+   2018-06-08 07h42.34.5088081 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5088081 W | | | | | | No component added (found already registered Components: 'SqlActorPackage.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5098077 i | | | | | < 
+   2018-06-08 07h42.34.5098077 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\netcoreapp2.0\publish\.
+   2018-06-08 07h42.34.5098077 W | | | | | | No component added (found already registered Components: 'SqlZonePackage.Runtime/6.0.1-C0043-local')
+   2018-06-08 07h42.34.5098077 i | | | | | < 
+   2018-06-08 07h42.34.5098077 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Runtime\bin\Debug\net461\.
+   2018-06-08 07h42.34.5098077 i | | | | | | > Found 'CK.StObj.Runtime/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.5098077 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7426742 i | | | | | | < 
+   2018-06-08 07h42.34.7496705 i | | | | | < 
+   2018-06-08 07h42.34.7496705 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.StObj.Engine\bin\Debug\net461\.
+   2018-06-08 07h42.34.7496705 i | | | | | | > Found 'CK.StObj.Engine/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7506701 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7506701 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7556667 i | | | | | | < 
+   2018-06-08 07h42.34.7556667 i | | | | | < 
+   2018-06-08 07h42.34.7556667 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Runtime\bin\Debug\net461\.
+   2018-06-08 07h42.34.7556667 i | | | | | | > Found 'CK.Setupable.Runtime/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7566672 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7566672 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7576668 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7646626 i | | | | | | < 
+   2018-06-08 07h42.34.7646626 i | | | | | < 
+   2018-06-08 07h42.34.7646626 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.Setupable.Engine\bin\Debug\net461\.
+   2018-06-08 07h42.34.7666609 i | | | | | | > Found 'CK.Setupable.Engine/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7676601 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7676601 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7686597 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7686597 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7716571 i | | | | | | < 
+   2018-06-08 07h42.34.7736567 i | | | | | < 
+   2018-06-08 07h42.34.7736567 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Runtime\bin\Debug\net461\.
+   2018-06-08 07h42.34.7736567 i | | | | | | > Found 'CK.SqlServer.Setup.Runtime/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7746554 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7746554 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7746554 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7746554 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7746554 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7816522 i | | | | | | < 
+   2018-06-08 07h42.34.7816522 i | | | | | < 
+   2018-06-08 07h42.34.7816522 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\CK.SqlServer.Setup.Engine\bin\Debug\net461\.
+   2018-06-08 07h42.34.7826518 i | | | | | | > Found 'CK.SqlServer.Setup.Engine/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7836514 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7846505 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7846505 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7846505 i | | | | | | | Removing 4 files thanks to already registered 'CK.SqlServer.Setup.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7846505 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7846505 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7926468 i | | | | | | < 
+   2018-06-08 07h42.34.7926468 i | | | | | < 
+   2018-06-08 07h42.34.7926468 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlActorPackage.Runtime\bin\Debug\net461\.
+   2018-06-08 07h42.34.7926468 i | | | | | | > Found 'SqlActorPackage.Runtime/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.7926468 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7926468 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7926468 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7926468 i | | | | | | | Removing 4 files thanks to already registered 'CK.SqlServer.Setup.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7936455 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7936455 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.7936455 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | < 
+   2018-06-08 07h42.34.8016405 i | | | | | < 
+   2018-06-08 07h42.34.8016405 i | | | | | > Adding C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\BasicModels\SqlZonePackage.Runtime\bin\Debug\net461\.
+   2018-06-08 07h42.34.8016405 i | | | | | | > Found 'SqlZonePackage.Runtime/0.0.0-0/Net461/' to register.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 2 files thanks to already registered 'CK.Setupable.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 2 files thanks to already registered 'CK.SqlServer.Setup.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 4 files thanks to already registered 'CK.SqlServer.Setup.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 6 files thanks to already registered 'CK.StObj.Model/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 109 files thanks to already registered 'CK.StObj.Runtime/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 3 files thanks to already registered 'SqlActorPackage/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8016405 i | | | | | | | Removing 2 files thanks to already registered 'SqlZonePackage/0.0.0-0/Net461/'.
+   2018-06-08 07h42.34.8076376 i | | | | | | < 
+   2018-06-08 07h42.34.8076376 i | | | | | < 
+   2018-06-08 07h42.34.8286269   | | | | | > Importing file 'CK.CodeGen.Abstractions.dll (23040), sV: 0.2.1-C0045-local, sha1: 322a6821a2d89d37195363de82e27e2f96f3e5a2'.
+   2018-06-08 07h42.34.8306248   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8306248   | | | | | > Importing file 'CK.CodeGen.dll (43008), sV: 0.2.1-C0045-local, sha1: 3d50f25d25027a9d6efcc7f3ffcbee304bc9960a'.
+   2018-06-08 07h42.34.8316235   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8316235   | | | | | > Importing file 'CK.CodeGen.Roslyn.dll (13824), sV: 0.2.1-C0045-local, sha1: c8ebd1607f9880bf612893b60adc71117024dc24'.
+   2018-06-08 07h42.34.8316235   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8316235   | | | | | > Importing file 'CK.Reflection.dll (33280), sV: 7.0.1-C0029-local, sha1: 215b12f921d3a49951d1a1c792735fdefa0761f8'.
+   2018-06-08 07h42.34.8316235   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8316235   | | | | | > Importing file 'CK.Setup.Dependency.dll (57856), sV: 7.0.1-C0043-local, sha1: 02ae66c72e15642fefdcc61671f77df052b0b084'.
+   2018-06-08 07h42.34.8326226   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8326226   | | | | | > Importing file 'CK.StObj.Runtime.dll (25088), sV: 0.0.0-0, sha1: d0db93d233cf270057a94a2a448e33f9af20c485'.
+   2018-06-08 07h42.34.8885906   | | | | | < 
+   2018-06-08 07h42.34.8895907   | | | | | > Importing file 'CK.StObj.Runtime.pdb (4036), fV: 0.0.0.0 aV: , sha1: b4d1099a76432c766e815f14240a4f62cebe3f5d'.
+   2018-06-08 07h42.34.8945873   | | | | | < 
+   2018-06-08 07h42.34.8945873   | | | | | > Importing file 'CK.WeakAssemblyNameResolver.dll (8704), sV: 0.5.1-C0027-local, sha1: ac923d9735a55ef3be6d3f17004bff699025d4ef'.
+   2018-06-08 07h42.34.8945873   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8945873   | | | | | > Importing file 'Microsoft.CodeAnalysis.CSharp.dll (4681136), fV: 2.8.2.62916 aV: 2.8.0.0, sha1: b4ae8047a567dbf21460b9c8f06a313e4a94edd1'.
+   2018-06-08 07h42.34.8955869   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8965869   | | | | | > Importing file 'Microsoft.CodeAnalysis.dll (2414512), fV: 2.8.2.62916 aV: 2.8.0.0, sha1: e19fa684b4d4801a9f14dd19d4f5607c71703bce'.
+   2018-06-08 07h42.34.8975861   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.8975861   | | | | | > Importing file 'Microsoft.Win32.Primitives.dll (21216), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 7b249c6390dfc90ef33f9a697174e363080091ef'.
+   2018-06-08 07h42.34.9055815   | | | | | < 
+   2018-06-08 07h42.34.9065807   | | | | | > Importing file 'netstandard.dll (98616), fV: 4.6.26011.1 aV: 2.0.0.0, sha1: 68e1af02cddd57b5581708984c2b4a35074982a3'.
+   2018-06-08 07h42.34.9215719   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.9245707   | | | | | > Importing file 'System.AppContext.dll (21176), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 93702135db0646b893babe030bd8dc15549ff0c2'.
+   2018-06-08 07h42.34.9315674   | | | | | < 
+   2018-06-08 07h42.34.9315674   | | | | | > Importing file 'System.Collections.Concurrent.dll (21224), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 311f52b31611e6dc5fd4c0159bfa452c22980ca7'.
+   2018-06-08 07h42.34.9405616   | | | | | < 
+   2018-06-08 07h42.34.9405616   | | | | | > Importing file 'System.Collections.dll (21696), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 4d923b100142afa2e0a8b7acdb3a6de6feb91148'.
+   2018-06-08 07h42.34.9465578   | | | | | < 
+   2018-06-08 07h42.34.9465578   | | | | | > Importing file 'System.Collections.Immutable.dll (244432), fV: 4.6.24816.1 aV: 1.2.1.0, sha1: a9049b07b9f5c9f4c3da4d4568781ba58564b896'.
+   2018-06-08 07h42.34.9485565   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.34.9485565   | | | | | > Importing file 'System.Collections.NonGeneric.dll (21224), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 526c688e71a7d7410007ad5aa6ea8b83cace76c5'.
+   2018-06-08 07h42.34.9545532   | | | | | < 
+   2018-06-08 07h42.34.9545532   | | | | | > Importing file 'System.Collections.Specialized.dll (21224), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 8bbb7badaaa912c1f17775e9acdcab389704c772'.
+   2018-06-08 07h42.34.9605495   | | | | | < 
+   2018-06-08 07h42.34.9605495   | | | | | > Importing file 'System.ComponentModel.dll (21192), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 2e32d50ec33ec6635681485b754f4e58d434a5ee'.
+   2018-06-08 07h42.34.9675457   | | | | | < 
+   2018-06-08 07h42.34.9675457   | | | | | > Importing file 'System.ComponentModel.EventBasedAsync.dll (21768), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 5f3da777af01dbc159bd8d9d97d5dc105918afc5'.
+   2018-06-08 07h42.34.9745420   | | | | | < 
+   2018-06-08 07h42.34.9745420   | | | | | > Importing file 'System.ComponentModel.Primitives.dll (21752), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 20aeaed12dfb8d71e39687350eb12bc0de372af0'.
+   2018-06-08 07h42.34.9825370   | | | | | < 
+   2018-06-08 07h42.34.9825370   | | | | | > Importing file 'System.ComponentModel.TypeConverter.dll (22784), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: bfe2384a92b385665689ad5a72f23abc8c022d82'.
+   2018-06-08 07h42.34.9885332   | | | | | < 
+   2018-06-08 07h42.34.9885332   | | | | | > Importing file 'System.Console.dll (21160), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 9d5686cbf45e90df5e11d87e7b90173a1a64b1a0'.
+   2018-06-08 07h42.34.9935308   | | | | | < 
+   2018-06-08 07h42.34.9935308   | | | | | > Importing file 'System.Data.Common.dll (154448), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 7add96baa123db819f2f3d5aa62d6f872ce8fe14'.
+   2018-06-08 07h42.35.0125204   | | | | | < 
+   2018-06-08 07h42.35.0125204   | | | | | > Importing file 'System.Diagnostics.Contracts.dll (21736), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 5042ee630a6c7c2986e8323a14d052c1d83b6f61'.
+   2018-06-08 07h42.35.0185175   | | | | | < 
+   2018-06-08 07h42.35.0185175   | | | | | > Importing file 'System.Diagnostics.Debug.dll (21208), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: eb8c010a35b461402c1c33133f1b61c78be8425a'.
+   2018-06-08 07h42.35.0235133   | | | | | < 
+   2018-06-08 07h42.35.0235133   | | | | | > Importing file 'System.Diagnostics.FileVersionInfo.dll (21248), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 12419c25d1c2eb706a4e4e649ee353ceda7446a9'.
+   2018-06-08 07h42.35.0295100   | | | | | < 
+   2018-06-08 07h42.35.0295100   | | | | | > Importing file 'System.Diagnostics.Process.dll (21728), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 2ef7d0a222c3a3e564b3c72d5b71a5be40a7adea'.
+   2018-06-08 07h42.35.0365062   | | | | | < 
+   2018-06-08 07h42.35.0365062   | | | | | > Importing file 'System.Diagnostics.StackTrace.dll (23936), fV: 4.6.26011.1 aV: 4.1.0.0, sha1: ef6b3ccff90beddab5ce6f60b4cc23f75edfd009'.
+   2018-06-08 07h42.35.0415051   | | | | | < 
+   2018-06-08 07h42.35.0415051   | | | | | > Importing file 'System.Diagnostics.TextWriterTraceListener.dll (21280), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: c3848473e42e2f9b4d0a00180ea9ade654432587'.
+   2018-06-08 07h42.35.0455008   | | | | | < 
+   2018-06-08 07h42.35.0465053   | | | | | > Importing file 'System.Diagnostics.Tools.dll (21208), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 51e466218025126c5e524afd2086f4ab0bf3660a'.
+   2018-06-08 07h42.35.0504992   | | | | | < 
+   2018-06-08 07h42.35.0504992   | | | | | > Importing file 'System.Diagnostics.TraceSource.dll (21744), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 96314ec1a59e4bb53c5b609bf79ad4c998a7a988'.
+   2018-06-08 07h42.35.0554950   | | | | | < 
+   2018-06-08 07h42.35.0554950   | | | | | > Importing file 'System.Diagnostics.Tracing.dll (31608), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 87ed79d195d8d93ae1155af08857f751a7eca245'.
+   2018-06-08 07h42.35.0604934   | | | | | < 
+   2018-06-08 07h42.35.0604934   | | | | | > Importing file 'System.Drawing.Primitives.dll (21208), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: d707745e72d2f39374f2d28af52aaab7888b93ab'.
+   2018-06-08 07h42.35.0644909   | | | | | < 
+   2018-06-08 07h42.35.0644909   | | | | | > Importing file 'System.Dynamic.Runtime.dll (22224), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: a994c87352486d433a06943c01329dd721ab343f'.
+   2018-06-08 07h42.35.0674897   | | | | | < 
+   2018-06-08 07h42.35.0674897   | | | | | > Importing file 'System.Globalization.Calendars.dll (21744), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 0564ff7f7e6084bd6d02d8e6a4127d1c878b3fa6'.
+   2018-06-08 07h42.35.0704876   | | | | | < 
+   2018-06-08 07h42.35.0704876   | | | | | > Importing file 'System.Globalization.dll (21192), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 846711d4161a3950facdef97037898a71f4efda1'.
+   2018-06-08 07h42.35.0734859   | | | | | < 
+   2018-06-08 07h42.35.0734859   | | | | | > Importing file 'System.Globalization.Extensions.dll (25992), fV: 4.6.26011.1 aV: 4.1.0.0, sha1: 2cb98f9622f57a0a9e037a378519aa6a271302f6'.
+   2018-06-08 07h42.35.0774843   | | | | | < 
+   2018-06-08 07h42.35.0774843   | | | | | > Importing file 'System.IO.Compression.dll (110944), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 609f31b98831327677e89e08bff7d7322ba0f4a4'.
+   2018-06-08 07h42.35.0894754   | | | | | < 
+   2018-06-08 07h42.35.0894754   | | | | | > Importing file 'System.IO.Compression.ZipFile.dll (21224), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 92bf07ccf32eb9fdf06f446a256e0271c4028bf0'.
+   2018-06-08 07h42.35.0944739   | | | | | < 
+   2018-06-08 07h42.35.0944739   | | | | | > Importing file 'System.IO.dll (21144), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: a6999c04b243b034f8ee7ad0d79f3ce24df9a9d0'.
+   2018-06-08 07h42.35.0994705   | | | | | < 
+   2018-06-08 07h42.35.0994705   | | | | | > Importing file 'System.IO.FileSystem.dll (21192), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: bfa0e27be1d56ba48918a9b7ca7090af7779a10e'.
+   2018-06-08 07h42.35.1034680   | | | | | < 
+   2018-06-08 07h42.35.1034680   | | | | | > Importing file 'System.IO.FileSystem.DriveInfo.dll (21232), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 16eb49afca84c9e6160b4e5b36f1ec5c98470c86'.
+   2018-06-08 07h42.35.1124626   | | | | | < 
+   2018-06-08 07h42.35.1124626   | | | | | > Importing file 'System.IO.FileSystem.Primitives.dll (21232), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: fca2f72c039937357099ca6e167330e540f8335d'.
+   2018-06-08 07h42.35.1174610   | | | | | < 
+   2018-06-08 07h42.35.1174610   | | | | | > Importing file 'System.IO.FileSystem.Watcher.dll (21224), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 68c240d1a43de1678ef13107b9300c544e9d5e4e'.
+   2018-06-08 07h42.35.1224567   | | | | | < 
+   2018-06-08 07h42.35.1224567   | | | | | > Importing file 'System.IO.IsolatedStorage.dll (21208), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 48f227c62b2001c441bcbc5b570911f096ddf421'.
+   2018-06-08 07h42.35.1284539   | | | | | < 
+   2018-06-08 07h42.35.1284539   | | | | | > Importing file 'System.IO.MemoryMappedFiles.dll (21216), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: d9df77b4993418337894ff04c6b813224b9f8543'.
+   2018-06-08 07h42.35.1334514   | | | | | < 
+   2018-06-08 07h42.35.1344501   | | | | | > Importing file 'System.IO.Pipes.dll (21168), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: a00954217ca326c54a863d451820263a6d7ee1af'.
+   2018-06-08 07h42.35.1414459   | | | | | < 
+   2018-06-08 07h42.35.1414459   | | | | | > Importing file 'System.IO.UnmanagedMemoryStream.dll (21232), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 474944856db781a34796bfcce18ecd4580275ad1'.
+   2018-06-08 07h42.35.1444469   | | | | | < 
+   2018-06-08 07h42.35.1454443   | | | | | > Importing file 'System.Linq.dll (21152), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 4d93c7d7e6315ca2195ed73716996ade8e17fbb2'.
+   2018-06-08 07h42.35.1494431   | | | | | < 
+   2018-06-08 07h42.35.1504418   | | | | | > Importing file 'System.Linq.Expressions.dll (22224), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 5627e53d15e56868dc9082edcae5a653b96b9af1'.
+   2018-06-08 07h42.35.1554398   | | | | | < 
+   2018-06-08 07h42.35.1554398   | | | | | > Importing file 'System.Linq.Parallel.dll (21192), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 4d4ae0d2664025327f28400d917cc59afd69f33a'.
+   2018-06-08 07h42.35.1584373   | | | | | < 
+   2018-06-08 07h42.35.1584373   | | | | | > Importing file 'System.Linq.Queryable.dll (21192), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: a181f5cc93e9273d9169a9954a74d73bc1852980'.
+   2018-06-08 07h42.35.1624352   | | | | | < 
+   2018-06-08 07h42.35.1624352   | | | | | > Importing file 'System.Net.Http.dll (198472), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 1c2cefafba48ba7aaab746f660debd34f2f4b14c'.
+   2018-06-08 07h42.35.1804239   | | | | | < 
+   2018-06-08 07h42.35.1804239   | | | | | > Importing file 'System.Net.NameResolution.dll (21208), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 2cb934305d3648ff29fdbc7d92485003f8458848'.
+   2018-06-08 07h42.35.1834227   | | | | | < 
+   2018-06-08 07h42.35.1834227   | | | | | > Importing file 'System.Net.NetworkInformation.dll (22248), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: ad55af22e5479a5addf01d698138e5149270e3cf'.
+   2018-06-08 07h42.35.1874197   | | | | | < 
+   2018-06-08 07h42.35.1874197   | | | | | > Importing file 'System.Net.Ping.dll (21168), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 1ba9ecc598e170d779ceb290163ac88e6993935f'.
+   2018-06-08 07h42.35.1904185   | | | | | < 
+   2018-06-08 07h42.35.1904185   | | | | | > Importing file 'System.Net.Primitives.dll (22216), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: b219dd45550762b54dab46533d489c4755f55e0e'.
+   2018-06-08 07h42.35.1994131   | | | | | < 
+   2018-06-08 07h42.35.1994131   | | | | | > Importing file 'System.Net.Requests.dll (21184), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: b56c3d2e270b1c793a2ee17cac9c98b178258e94'.
+   2018-06-08 07h42.35.2044106   | | | | | < 
+   2018-06-08 07h42.35.2044106   | | | | | > Importing file 'System.Net.Security.dll (21696), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 5e4158533532a27e03d0ccc9a0af5e89fffd8637'.
+   2018-06-08 07h42.35.2104069   | | | | | < 
+   2018-06-08 07h42.35.2104069   | | | | | > Importing file 'System.Net.Sockets.dll (30544), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 1420ef91f6e0f6954f373f1ac4079064398ab455'.
+   2018-06-08 07h42.35.2154049   | | | | | < 
+   2018-06-08 07h42.35.2154049   | | | | | > Importing file 'System.Net.WebHeaderCollection.dll (21232), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 6523838ef4aab39d0d3c0df11c28ada449edd592'.
+   2018-06-08 07h42.35.2184032   | | | | | < 
+   2018-06-08 07h42.35.2184032   | | | | | > Importing file 'System.Net.WebSockets.Client.dll (21224), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 49392f58be6f5c97c5de59bfc44f9cfcbe1e5dd7'.
+   2018-06-08 07h42.35.2214015   | | | | | < 
+   2018-06-08 07h42.35.2214015   | | | | | > Importing file 'System.Net.WebSockets.dll (21192), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: e0fad5ef75676b2ed7cf155af6602b867fced041'.
+   2018-06-08 07h42.35.2243999   | | | | | < 
+   2018-06-08 07h42.35.2243999   | | | | | > Importing file 'System.ObjectModel.dll (21696), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 8a2fb74cf11719708774fc378d8b5bfcc541c986'.
+   2018-06-08 07h42.35.2283974   | | | | | < 
+   2018-06-08 07h42.35.2283974   | | | | | > Importing file 'System.Reflection.dll (22200), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 3ca31de7f0f0784559e5a73ebd0efb42c34d18fc'.
+   2018-06-08 07h42.35.2323953   | | | | | < 
+   2018-06-08 07h42.35.2323953   | | | | | > Importing file 'System.Reflection.Extensions.dll (21224), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: f3bd9b4108acd42abfb99a3a4760bffcb84f6c28'.
+   2018-06-08 07h42.35.2353936   | | | | | < 
+   2018-06-08 07h42.35.2353936   | | | | | > Importing file 'System.Reflection.Metadata.dll (465104), fV: 4.6.24816.1 aV: 1.4.1.0, sha1: 74443707eda9ebbb98a68a1d03a29d5305b25f11'.
+   2018-06-08 07h42.35.2363932   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.2363932   | | | | | > Importing file 'System.Reflection.Primitives.dll (21736), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 33d1ebd7212d747c8723cfb9e4292c99a641b964'.
+   2018-06-08 07h42.35.2393911   | | | | | < 
+   2018-06-08 07h42.35.2393911   | | | | | > Importing file 'System.Resources.Reader.dll (21200), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 498f0fbbd2712f4f637bdb7370b2302fcc4966f3'.
+   2018-06-08 07h42.35.2433877   | | | | | < 
+   2018-06-08 07h42.35.2433877   | | | | | > Importing file 'System.Resources.ResourceManager.dll (21232), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: bf83a7e98418bde907deae8c0c0f3fb0f6c9db1a'.
+   2018-06-08 07h42.35.2473919   | | | | | < 
+   2018-06-08 07h42.35.2473919   | | | | | > Importing file 'System.Resources.Writer.dll (21200), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: b1756dc750ed5cfd5d0bfc70cb899fd590867a0c'.
+   2018-06-08 07h42.35.2503840   | | | | | < 
+   2018-06-08 07h42.35.2503840   | | | | | > Importing file 'System.Runtime.CompilerServices.VisualC.dll (21784), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: 7a6276348d85eaf00ae6958117797045929078cb'.
+   2018-06-08 07h42.35.2543828   | | | | | < 
+   2018-06-08 07h42.35.2553807   | | | | | > Importing file 'System.Runtime.dll (29360), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: fd622ade5cae26353a22b6fa50a83669b72b6c41'.
+   2018-06-08 07h42.35.2603782   | | | | | < 
+   2018-06-08 07h42.35.2603782   | | | | | > Importing file 'System.Runtime.Extensions.dll (21720), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 7d71b46bb9a28289384aa1edf5cb03d64b3bcff0'.
+   2018-06-08 07h42.35.2643757   | | | | | < 
+   2018-06-08 07h42.35.2643757   | | | | | > Importing file 'System.Runtime.Handles.dll (21200), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 584b8683943a8e0ae98b10f452c94f6109d1c4ea'.
+   2018-06-08 07h42.35.2673745   | | | | | < 
+   2018-06-08 07h42.35.2673745   | | | | | > Importing file 'System.Runtime.InteropServices.dll (24296), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: 2e6a3047bd3bcee01f55d139a3c03e6d4d2db14a'.
+   2018-06-08 07h42.35.2703732   | | | | | < 
+   2018-06-08 07h42.35.2713720   | | | | | > Importing file 'System.Runtime.InteropServices.RuntimeInformation.dll (28624), fV: 4.6.26011.1 aV: 4.0.2.0, sha1: 15349e541122743a5d355946e48380ac1811b52f'.
+   2018-06-08 07h42.35.2743716   | | | | | < 
+   2018-06-08 07h42.35.2743716   | | | | | > Importing file 'System.Runtime.Numerics.dll (21200), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: b81ff87b407578efbf184bdc10d0f101610379db'.
+   2018-06-08 07h42.35.2783687   | | | | | < 
+   2018-06-08 07h42.35.2783687   | | | | | > Importing file 'System.Runtime.Serialization.Formatters.dll (21264), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: b6b8986fc1b5140817de262ae4102499e37daffd'.
+   2018-06-08 07h42.35.2823662   | | | | | < 
+   2018-06-08 07h42.35.2823662   | | | | | > Importing file 'System.Runtime.Serialization.Json.dll (21240), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: ee1ae416570911282abdd3745674e58f9d469c9e'.
+   2018-06-08 07h42.35.2853654   | | | | | < 
+   2018-06-08 07h42.35.2853654   | | | | | > Importing file 'System.Runtime.Serialization.Primitives.dll (27048), fV: 4.6.26011.1 aV: 4.2.0.0, sha1: 87c352153804ff5bd4f8aef8851546f3cf22461e'.
+   2018-06-08 07h42.35.2903616   | | | | | < 
+   2018-06-08 07h42.35.2903616   | | | | | > Importing file 'System.Runtime.Serialization.Xml.dll (24816), fV: 4.6.26011.1 aV: 4.1.3.0, sha1: f434af8ce30eaf5511e28c0230211f0d8ed4a154'.
+   2018-06-08 07h42.35.2963574   | | | | | < 
+   2018-06-08 07h42.35.2963574   | | | | | > Importing file 'System.Security.Claims.dll (21200), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 97b62a3dbe2465b4c995e082ad6ff183f6267f59'.
+   2018-06-08 07h42.35.3013571   | | | | | < 
+   2018-06-08 07h42.35.3013571   | | | | | > Importing file 'System.Security.Cryptography.Algorithms.dll (47016), fV: 4.6.26011.1 aV: 4.3.0.0, sha1: 95699d187bf150d319cc64f90064301cac57f338'.
+   2018-06-08 07h42.35.3063533   | | | | | < 
+   2018-06-08 07h42.35.3063533   | | | | | > Importing file 'System.Security.Cryptography.Csp.dll (21240), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: a67fdaceb10e828805a9e24fe0c59e1d73d19a7c'.
+   2018-06-08 07h42.35.3113491   | | | | | < 
+   2018-06-08 07h42.35.3113491   | | | | | > Importing file 'System.Security.Cryptography.Encoding.dll (21256), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: ed23e654968b3704a82f613b06be5829e0caad70'.
+   2018-06-08 07h42.35.3193467   | | | | | < 
+   2018-06-08 07h42.35.3193467   | | | | | > Importing file 'System.Security.Cryptography.Primitives.dll (21784), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: a69238054bee26063d32b85b797bc4e0c49f79d4'.
+   2018-06-08 07h42.35.3243429   | | | | | < 
+   2018-06-08 07h42.35.3243429   | | | | | > Importing file 'System.Security.Cryptography.X509Certificates.dll (22832), fV: 4.6.25714.1 aV: 4.1.2.0, sha1: b0a8868d459fe0af34d16c263cfe0202c414dc53'.
+   2018-06-08 07h42.35.3323370   | | | | | < 
+   2018-06-08 07h42.35.3323370   | | | | | > Importing file 'System.Security.Principal.dll (21208), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 82ba1313448b431893c14d866f46d47b620514a9'.
+   2018-06-08 07h42.35.3363350   | | | | | < 
+   2018-06-08 07h42.35.3363350   | | | | | > Importing file 'System.Security.SecureString.dll (22392), fV: 4.6.26011.1 aV: 4.1.0.0, sha1: ff6e6bcd83a11d40bf53dabd0480a67aecfdcf50'.
+   2018-06-08 07h42.35.3393342   | | | | | < 
+   2018-06-08 07h42.35.3393342   | | | | | > Importing file 'System.Text.Encoding.CodePages.dll (766872), fV: 4.6.24705.1 aV: 4.0.2.0, sha1: 48a7a46827ed0f797b36baec8f57fb98de541524'.
+   2018-06-08 07h42.35.3403333   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.3403333   | | | | | > Importing file 'System.Text.Encoding.dll (21696), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 3946dff0b68f0ca01689bd44c348559adf548258'.
+   2018-06-08 07h42.35.3433321   | | | | | < 
+   2018-06-08 07h42.35.3433321   | | | | | > Importing file 'System.Text.Encoding.Extensions.dll (21232), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: 7fe773332d0461a252e52be720a7794fcaac7bfb'.
+   2018-06-08 07h42.35.3473341   | | | | | < 
+   2018-06-08 07h42.35.3473341   | | | | | > Importing file 'System.Text.RegularExpressions.dll (21232), fV: 4.6.25714.1 aV: 4.1.1.0, sha1: c2e4b19cb9a0b48e899512cd121ffe6657d41072'.
+   2018-06-08 07h42.35.3513271   | | | | | < 
+   2018-06-08 07h42.35.3513271   | | | | | > Importing file 'System.Threading.dll (22192), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: ddda49572d112944ec9ab62b31959aa93a386618'.
+   2018-06-08 07h42.35.3563233   | | | | | < 
+   2018-06-08 07h42.35.3563233   | | | | | > Importing file 'System.Threading.Overlapped.dll (37752), fV: 4.6.26011.1 aV: 4.1.0.0, sha1: bf2c1287f0ec04223cd17fe20ab2ecfff18579e3'.
+   2018-06-08 07h42.35.3603230   | | | | | < 
+   2018-06-08 07h42.35.3603230   | | | | | > Importing file 'System.Threading.Tasks.dll (22224), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: f720109a38846e358bde7c47d9c946a79d2b6b1c'.
+   2018-06-08 07h42.35.3653192   | | | | | < 
+   2018-06-08 07h42.35.3653192   | | | | | > Importing file 'System.Threading.Tasks.Parallel.dll (21232), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 05e65ee95f647f38c717c73a0399870912dd374a'.
+   2018-06-08 07h42.35.3683171   | | | | | < 
+   2018-06-08 07h42.35.3683171   | | | | | > Importing file 'System.Threading.Thread.dll (21200), fV: 4.6.25714.1 aV: 4.0.2.0, sha1: c53132ec95a7211c1bb6dcd5ad21ccb150a7b923'.
+   2018-06-08 07h42.35.3723159   | | | | | < 
+   2018-06-08 07h42.35.3723159   | | | | | > Importing file 'System.Threading.ThreadPool.dll (21216), fV: 4.6.25714.1 aV: 4.0.12.0, sha1: f874903cea9f08f1a0887949b47722e6ba81b789'.
+   2018-06-08 07h42.35.3773121   | | | | | < 
+   2018-06-08 07h42.35.3773121   | | | | | > Importing file 'System.Threading.Timer.dll (21200), fV: 4.6.25714.1 aV: 4.0.1.0, sha1: 5ea3f290ecde1bab983ceee2417a688b7ed9b7f5'.
+   2018-06-08 07h42.35.3843071   | | | | | < 
+   2018-06-08 07h42.35.3843071   | | | | | > Importing file 'System.ValueTuple.dll (79176), fV: 4.6.26011.1 aV: 4.0.2.0, sha1: 0b7a9ec0dff6d958c9c64b5f592993372d31c5e9'.
+   2018-06-08 07h42.35.3913034   | | | | | < 
+   2018-06-08 07h42.35.3913034   | | | | | > Importing file 'System.Xml.ReaderWriter.dll (21712), fV: 4.6.25714.1 aV: 4.1.1.0, sha1: ef317cacc230a58a3b2fcc6cc079cc763afcc7c5'.
+   2018-06-08 07h42.35.3983010   | | | | | < 
+   2018-06-08 07h42.35.3983010   | | | | | > Importing file 'System.Xml.XDocument.dll (21696), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: dfad52a9990b2fafce7098cebb174927e8e0ba00'.
+   2018-06-08 07h42.35.4052950   | | | | | < 
+   2018-06-08 07h42.35.4052950   | | | | | > Importing file 'System.Xml.XmlDocument.dll (21712), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: 09d02b85a094e925ac3c5d8b1aca096b730c160f'.
+   2018-06-08 07h42.35.4102952   | | | | | < 
+   2018-06-08 07h42.35.4102952   | | | | | > Importing file 'System.Xml.XmlSerializer.dll (21712), fV: 4.6.25714.1 aV: 4.0.11.0, sha1: bbbb4c2c3911ae1f5ba7faf1d632ed0f14d9b6ac'.
+   2018-06-08 07h42.35.4152914   | | | | | < 
+   2018-06-08 07h42.35.4152914   | | | | | > Importing file 'System.Xml.XPath.dll (21176), fV: 4.6.25714.1 aV: 4.0.3.0, sha1: ed25e94d4e88293345a0f28a5b975159c393b050'.
+   2018-06-08 07h42.35.4202863   | | | | | < 
+   2018-06-08 07h42.35.4202863   | | | | | > Importing file 'System.Xml.XPath.XDocument.dll (22904), fV: 4.6.26011.1 aV: 4.1.0.0, sha1: 90e196dcd76168f770abe30098399bc5866adf1b'.
+   2018-06-08 07h42.35.4252843   | | | | | < 
+   2018-06-08 07h42.35.4252843   | | | | | > Importing file 'CK.StObj.Engine.dll (164864), sV: 0.0.0-0, sha1: fdd7e9f29a88157377c9c9e38fdacbedc07813c1'.
+   2018-06-08 07h42.35.4462740   | | | | | < 
+   2018-06-08 07h42.35.4462740   | | | | | > Importing file 'CK.StObj.Engine.pdb (55620), fV: 0.0.0.0 aV: , sha1: 3d5061b1e468e461dd25b06aa7aedeed8fddf363'.
+   2018-06-08 07h42.35.4562655   | | | | | < 
+   2018-06-08 07h42.35.4572664   | | | | | > Importing file 'CK.Setupable.Runtime.dll (103936), sV: 0.0.0-0, sha1: 1c8b85b9a96fa70d9c269e9f8cbfbc778de4b43a'.
+   2018-06-08 07h42.35.4752542   | | | | | < 
+   2018-06-08 07h42.35.4752542   | | | | | > Importing file 'CK.Setupable.Runtime.pdb (41196), fV: 0.0.0.0 aV: , sha1: a68e43a37ee1f5bce476ea8bab41b7636f22ad8b'.
+   2018-06-08 07h42.35.4822518   | | | | | < 
+   2018-06-08 07h42.35.4822518   | | | | | > Importing file 'CK.Setupable.Engine.dll (49664), sV: 0.0.0-0, sha1: be1bd5a4752e37a8e7fc3e389de5518edb45f54b'.
+   2018-06-08 07h42.35.4942443   | | | | | < 
+   2018-06-08 07h42.35.4942443   | | | | | > Importing file 'CK.Setupable.Engine.pdb (15476), fV: 0.0.0.0 aV: , sha1: ef4a4453ef8bb6dedc735c063bc91666d49ddc28'.
+   2018-06-08 07h42.35.5012415   | | | | | < 
+   2018-06-08 07h42.35.5012415   | | | | | > Importing file 'CK.SqlServer.Parser.Model.dll (10240), sV: 6.0.1-C0043-local, sha1: acb80ebbfea9a47f5fc9262311823874a953a9e2'.
+   2018-06-08 07h42.35.5022411   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.5022411   | | | | | > Importing file 'CK.SqlServer.Setup.Runtime.dll (109056), sV: 0.0.0-0, sha1: 373fbba31f5120817546b4ec6a0f88f7514743a8'.
+   2018-06-08 07h42.35.5252300   | | | | | < 
+   2018-06-08 07h42.35.5252300   | | | | | > Importing file 'CK.SqlServer.Setup.Runtime.pdb (34804), fV: 0.0.0.0 aV: , sha1: 79c28d075f40ff1d4e58c50315e95c9852e79ae3'.
+   2018-06-08 07h42.35.5342214   | | | | | < 
+   2018-06-08 07h42.35.5342214   | | | | | > Importing file 'Yodii.Script.dll (112640), sV: 0.6.1-C0029-local, sha1: 25112b9cf84b61ea27607c7485a84d982240f3f7'.
+   2018-06-08 07h42.35.5352237   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.5352237   | | | | | > Importing file 'CK.SqlServer.Parser.dll (322560), sV: 8.0.1-C0043-local, sha1: 2436f68ab74358dd655b0695a0b4cde93458c3fa'.
+   2018-06-08 07h42.35.5352237   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.5352237   | | | | | > Importing file 'CK.SqlServer.Setup.Engine.dll (77824), sV: 0.0.0-0, sha1: afa74635ae94bf4ccc596a46696a3efcb928524f'.
+   2018-06-08 07h42.35.5542111   | | | | | < 
+   2018-06-08 07h42.35.5542111   | | | | | > Importing file 'CK.SqlServer.Setup.Engine.pdb (9580), fV: 0.0.0.0 aV: , sha1: d00f66aeb23a7c85f0b891a4acbbde2572ec64c3'.
+   2018-06-08 07h42.35.5572095   | | | | | < 
+   2018-06-08 07h42.35.5572095   | | | | | > Importing file 'CK.SqlServer.Transform.dll (73216), sV: 8.0.1-C0043-local, sha1: afe6451375fb1f568f035c32590798bf897a6f72'.
+   2018-06-08 07h42.35.5572095   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.5572095   | | | | | > Importing file 'CK.SqlServer.Parser.dll (322560), sV: 8.0.1-C0043-local, sha1: 2436f68ab74358dd655b0695a0b4cde93458c3fa'.
+   2018-06-08 07h42.35.5582082   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.5582082   | | | | | > Importing file 'SqlActorPackage.Runtime.dll (10752), sV: 0.0.0-0, sha1: b7cf6ba8c01afb70974fd29282e0b5fb3f512ea7'.
+   2018-06-08 07h42.35.6615070   | | | | | < 
+   2018-06-08 07h42.35.6615070   | | | | | > Importing file 'SqlActorPackage.Runtime.pdb (2092), fV: 0.0.0.0 aV: , sha1: 26eaf130396d4b33478d6b0c1102afbfcaf6f6be'.
+   2018-06-08 07h42.35.6645045   | | | | | < 
+   2018-06-08 07h42.35.6655032   | | | | | > Importing file 'CK.SqlServer.Parser.dll (322560), sV: 8.0.1-C0043-local, sha1: 2436f68ab74358dd655b0695a0b4cde93458c3fa'.
+   2018-06-08 07h42.35.6655032   | | | | | <  | 1 conclusion:
+                                 | | | | |    | Already stored.
+   2018-06-08 07h42.35.6655032   | | | | | > Importing file 'SqlZonePackage.Runtime.dll (8192), sV: 0.0.0-0, sha1: 728fd7e037c943b16440ca14c814008e45c6cebb'.
+   2018-06-08 07h42.35.7609588   | | | | | < 
+   2018-06-08 07h42.35.7609588   | | | | | > Importing file 'SqlZonePackage.Runtime.pdb (1600), fV: 0.0.0.0 aV: , sha1: 6d954761cc949a03f1cf456aa20bd8fcc0db4c53'.
+   2018-06-08 07h42.35.7639571   | | | | | < 
+   2018-06-08 07h42.35.8489080 i | | | | < 
+   2018-06-08 07h42.35.8489080 i | | | | > Closing Store.
+   2018-06-08 07h42.35.8489080 i | | | | < 
+   2018-06-08 07h42.35.8489080 i | | | | > Closing Store.
+   2018-06-08 07h42.35.8489080 i | | | | < 
+   2018-06-08 07h42.35.8499076 i | | | < 
+   2018-06-08 07h42.35.8499076 i | | < 
+   2018-06-08 07h42.35.8499076 i | | Using store 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-08 07h42.35.8499076 i | | Using remote 'file:///C:/Dev/CK/LocalFeed/Local/CKSetupStore'.
+   2018-06-08 07h42.35.8669012   | | Opened store with 52 components.
+   2018-06-08 07h42.35.8678976   | | Local store opened on : 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\LocalTestHelper\LocalTestStore'.
+   2018-06-08 07h42.35.8678976   | | > Creating client remote store on 'file:///C:/Dev/CK/LocalFeed/Local/CKSetupStore'.
+   2018-06-08 07h42.35.9248643   | | | Opened store with 239 components.
+   2018-06-08 07h42.35.9248643   | | | Local store opened on : 'C:\Dev\CK\LocalFeed\Local\CKSetupStore'.
+   2018-06-08 07h42.35.9248643   | | < 
+   2018-06-08 07h42.35.9268631 i | | > Running Setup.
+   2018-06-08 07h42.35.9398565   | | | > Initializing SetupContext (ignoring signatures).
+   2018-06-08 07h42.35.9608440 i | | | | <Root>
+                                 | | | |     <CKSetup>
+                                 | | | |       <WorkingDirectory>C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\CKSetup-WorkingDir</WorkingDirectory>
+                                 | | | |       <PreferredTargetRuntimes></PreferredTargetRuntimes>
+                                 | | | |       <BinPaths>
+                                 | | | |         <BinPath>C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461</BinPath>
+                                 | | | |       </BinPaths>
+                                 | | | |       <Dependencies />
+                                 | | | |       <EngineAssemblyQualifiedName>CK.Setup.StObjEngine, CK.StObj.Engine</EngineAssemblyQualifiedName>
+                                 | | | |     </CKSetup>
+                                 | | | |     <Configuration>
+                                 | | | |       <AppContextAssemblyGeneratedDirectoryTarget>C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461</AppContextAssemblyGeneratedDirectoryTarget>
+                                 | | | |       <GenerateSourceFiles>true</GenerateSourceFiles>
+                                 | | | |       <GeneratedAssemblyName>SqlActorPackage.Tests.Generated</GeneratedAssemblyName>
+                                 | | | |       <Assemblies />
+                                 | | | |       <Types />
+                                 | | | |       <Aspect Type="CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model" Version="1" />
+                                 | | | |       <Aspect Type="CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model">
+                                 | | | |         <Databases />
+                                 | | | |         <DefaultDatabaseConnectionString>Data Source=.;Initial Catalog=CKTEST_SqlActorPackage;Integrated Security=True</DefaultDatabaseConnectionString>
+                                 | | | |         <GlobalResolution>true</GlobalResolution>
+                                 | | | |       </Aspect>
+                                 | | | |     </Configuration>
+                                 | | | |   </Root>
+   2018-06-08 07h42.35.9608440 i | | | | Configuration BasePath is empty: using current directory 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461'.
+   2018-06-08 07h42.35.9678398 i | | | | > Reading binary folders.
+   2018-06-08 07h42.35.9738369 i | | | | | > Reading files from 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461'.
+   2018-06-08 07h42.36.4105786 i | | | | | < 
+   2018-06-08 07h42.36.4115800 i | | | | <  | 1 conclusion:
+                                 | | | |    | 1 folders read.
+   2018-06-08 07h42.36.5714858 i | | | | Created setup folder in Working Directory: C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\CKSetup-WorkingDir\2018-06-08 07h42.36.5694871\.
+   2018-06-08 07h42.36.5734855   | | | < 
+   2018-06-08 07h42.36.5824818 i | | | > Resolving runtime support for 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461\'.
+   2018-06-08 07h42.36.5864793 i | | | | > Creating runtime dependencies resolver for C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\bin\Debug\net461\.
+   2018-06-08 07h42.36.5964717 i | | | | | Found Models: CK.Setupable.Model/0.0.0-0/Net461/, CK.SqlServer.Setup.Model/0.0.0-0/Net461/, CK.StObj.Model/0.0.0-0/Net461/, SqlActorPackage/0.0.0-0/Net461/
+   2018-06-08 07h42.36.6894194 i | | | | < 
+   2018-06-08 07h42.36.6904176 i | | | < 
+   2018-06-08 07h42.36.6904176 F | | | La référence d'objet n'est pas définie à une instance d'un objet.
+                                 | | |    ┌──────────────────────────■ Exception: NullReferenceException ■──────────────────────────
+                                 | | |    | Message:    La référence d'objet n'est pas définie à une instance d'un objet.
+                                 | | |    | Stack:         à CKSetup.ComponentRef.get_EntryPathPrefix()
+                                 | | |    |                à CKSetup.ComponentRef.ToString()
+                                 | | |    |                à CKSetup.ComponentDB.<>c.<GetRuntimeDependenciesResolver>b__30_6(BinFileAssemblyInfo x)
+                                 | | |    |                à System.Linq.Enumerable.WhereSelectArrayIterator`2.MoveNext()
+                                 | | |    |                à System.String.Join(String separator, IEnumerable`1 values)
+                                 | | |    |                à CK.Text.StringAndStringBuilderExtension.Concatenate(IEnumerable`1 this, String separator)
+                                 | | |    |                à CKSetup.ComponentDB.GetRuntimeDependenciesResolver(IActivityMonitor m, IEnumerable`1 targets, IEnumerable`1 explicitDependencies, IEnumerable`1 preferredTargetRuntimes)
+                                 | | |    |                à CKSetup.LocalStore.ExtractRuntimeDependencies(String workingDirectory, IEnumerable`1 targets, IComponentImporter missingImporter, IEnumerable`1 explicitDependencies, IEnumerable`1 preferredTargetRuntimes)
+                                 | | |    |                à CKSetup.Facade.<DoRun>g__ActualRun|5_0(<>c__DisplayClass5_0& )
+                                 | | |    └─────────────────────────────────────────────────────────────────────────
+   2018-06-08 07h42.36.7174072   | | | Leaving Working Directory 'C:\Dev\CK\CK-Database-Projects\CK-Database\Tests\SqlActorPackage.Tests\CKSetup-WorkingDir\2018-06-08 07h42.36.5694871\' as-is.
+   2018-06-08 07h42.36.7184050 i | | <  | 1 conclusion:
+                                 | |    | Failed
+   2018-06-08 07h42.36.7184050 i | | > Closing Store.
+   2018-06-08 07h42.36.7184050 i | | < 
+   2018-06-08 07h42.36.7184050 i | | > Closing Store.
+   2018-06-08 07h42.36.7184050 i | | < 
+   2018-06-08 07h42.36.7184050 i | < 
+   2018-06-08 07h42.36.7184050 i < 
