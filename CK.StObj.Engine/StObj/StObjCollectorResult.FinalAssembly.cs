@@ -15,7 +15,10 @@ namespace CK.Setup
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="finalFilePath">Full path of the final dynamic assembly. Must end with '.dll'.</param>
         /// <param name="saveSource">Whether generated source files must be saved alongside the final dll.</param>
-        /// <param name="informationalVersion">Informational version. <see cref="AssemblyInformationalVersionAttribute"/> is used when not null or empty.</param>
+        /// <param name="informationalVersion">
+        /// Informational version.
+        /// <see cref="AssemblyInformationalVersionAttribute"/> is used when not null or empty.
+        /// </param>
         /// <param name="skipCompilation">
         /// When true, compilation is skipped (but actual code generation step is always called).
         /// </param>

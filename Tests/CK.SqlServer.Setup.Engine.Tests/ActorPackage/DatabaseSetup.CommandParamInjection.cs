@@ -12,7 +12,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             using( TestHelper.Monitor.OpenTrace("CheckBasicPackageForCommandWrappers" ) )
             {
-                var package = map.Default.Obtain<Package>();
+                var package = map.StObjs.Obtain<Package>();
                 SimpleProcedureNaked( c, package );
                 SimpleProcedureWithConnection( c, package );
                 SimpleProcedureWithTransaction( c, package );

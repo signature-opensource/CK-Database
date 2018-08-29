@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\TypeInfo\StObjTypeInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +8,14 @@ using System.Diagnostics;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Specialized <see cref="AmbientTypeInfo"/> for <see cref="IAmbientContract"/> classes.
+    /// </summary>
     internal class StObjTypeInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
     {
+        Type[] _ambientInterfaces;
+        Type[] _thisAmbientInterfaces;
+
         class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
             public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
@@ -65,7 +64,7 @@ namespace CK.Setup
                                 result.ItemKind = (DependentItemKind)a.ItemKind;
                                 result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
-                            Type tAbove = t.GetTypeInfo().BaseType;
+                            Type tAbove = t.BaseType;
                             while( tAbove != typeof( object ) )
                             {
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
@@ -79,7 +78,7 @@ namespace CK.Setup
                                         if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
                                     }
                                 }
-                                tAbove = tAbove.GetTypeInfo().BaseType;
+                                tAbove = tAbove.BaseType;
                             }
                             // Ambient, Contracts & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
@@ -119,7 +118,7 @@ namespace CK.Setup
                     IList<InjectContractInfo> acCollector;
                     AmbientPropertyOrInjectContractInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
 
-                    CreateAllAmbientPropertyList( monitor, type.GetTypeInfo().BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
 
                     apListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
                     acListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
@@ -127,19 +126,20 @@ namespace CK.Setup
             }
         }
 
-        internal static readonly StObjTypeInfo Empty = new StObjTypeInfo();
-
-        internal StObjTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t )
-            : base( parent, t )
+        internal StObjTypeInfo( IActivityMonitor monitor, StObjTypeInfo parent, Type t, IServiceProvider provider, bool isExcluded )
+            : base( monitor, parent, t, provider, isExcluded )
         {
-            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.GetTypeInfo().BaseType );
+            Debug.Assert( parent == Generalization );
+            if( IsExcluded ) return;
+
+            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Ambient Contract ones).
             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
             if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
             // StObj properties are then read from StObjPropertyAttribute on class
-            foreach( StObjPropertyAttribute p in t.GetTypeInfo().GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
+            foreach( StObjPropertyAttribute p in t.GetCustomAttributes( typeof( StObjPropertyAttribute ), Generalization == null ) )
             {
                 if( String.IsNullOrWhiteSpace( p.PropertyName ) )
                 {
@@ -210,7 +210,6 @@ namespace CK.Setup
                 if( ItemKind == DependentItemKind.Unknown ) ItemKind = infoFromParent.ItemKind;
                 if( TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) TrackAmbientProperties = infoFromParent.TrackAmbientProperties;
             }
-            if( Container != null ) ContainerContext = FindContextFromMapAttributes( Container );
             // Requires, Children, Groups and RequiredBy are directly handled by MutableItem (they are wrapped in MutableReference 
             // so that IStObjStructuralConfigurator objects can alter them).
             #endregion
@@ -220,41 +219,33 @@ namespace CK.Setup
             // From Construct to StObjConstruct...
             if( StObjConstruct == null )
             {
-                StObjConstruct = t.GetMethod("Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+                StObjConstruct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
                 if( StObjConstruct != null )
                 {
                     monitor.Warn( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
                 }
             }
-            if ( StObjConstruct != null )
+            if( StObjConstruct != null )
             {
                 if( StObjConstruct.IsVirtual )
                 {
-                    monitor.Error( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual.");
+                    monitor.Error( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual." );
                 }
                 else
                 {
                     ConstructParameters = StObjConstruct.GetParameters();
-                    ConstructParameterTypedContext = ConstructParameters.Length > 0 ? new string[ConstructParameters.Length] : Util.Array.Empty<string>();
                     ContainerConstructParameterIndex = -1;
                     for( int i = 0; i < ConstructParameters.Length; ++i )
                     {
                         var p = ConstructParameters[i];
 
-                        // Finds the Context.
-                        string parameterContext;
-                        ContextAttribute ctx = p.GetCustomAttribute<ContextAttribute>();
-                        if( ctx != null ) parameterContext = ctx.Context;
-                        else parameterContext = FindContextFromMapAttributes( p.ParameterType );
-                        ConstructParameterTypedContext[i] = parameterContext;
-
                         // Is it marked with ContainerAttribute?
                         bool isContainerParameter = p.GetCustomAttribute<ContainerAttribute>() != null;
-                        if(isContainerParameter)
+                        if( isContainerParameter )
                         {
                             if( ContainerConstructParameterIndex >= 0 )
                             {
-                                monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute.");
+                                monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute." );
                             }
                             else
                             {
@@ -263,13 +254,8 @@ namespace CK.Setup
                                 {
                                     monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
                                 }
-                                else if( ContainerContext != null && ContainerContext != parameterContext )
-                                {
-                                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' targets the Container in '{parameterContext}' but an attribute on the class declares the Container context as '{ContainerContext}'.");
-                                }
                                 ContainerConstructParameterIndex = i;
                                 Container = p.ParameterType;
-                                ContainerContext = parameterContext;
                             }
                         }
                     }
@@ -277,35 +263,27 @@ namespace CK.Setup
             }
             #endregion
 
-            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IContextualStObjMap)
-            var initialize = t.GetMethod(StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
-            if (initialize != null)
+            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IStObjMap )
+            var initialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( initialize != null )
             {
-                if (initialize.IsVirtual)
+                if( initialize.IsVirtual )
                 {
-                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual.");
+                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual." );
                 }
                 else
                 {
                     var parameters = initialize.GetParameters();
-                    if (parameters.Length != 2
-                        || parameters[0].ParameterType != typeof(IActivityMonitor)
-                        || parameters[1].ParameterType != typeof(IContextualStObjMap))
+                    if( parameters.Length != 2
+                        || parameters[0].ParameterType != typeof( IActivityMonitor )
+                        || parameters[1].ParameterType != typeof( IStObjMap ) )
                     {
-                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IContextualStObjMap).");
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IStObjMap)." );
                     }
                 }
             }
             #endregion
 
-            }
-
-        /// <summary>
-        /// Used only for Empty Item Pattern implementations.
-        /// </summary>
-        private StObjTypeInfo()
-            : base() 
-        {
         }
 
         public new StObjTypeInfo Generalization => (StObjTypeInfo)base.Generalization;
@@ -318,10 +296,11 @@ namespace CK.Setup
 
         public Type Container { get; private set; }
 
+        /// <summary>
+        /// Gets the specialization depth from root object type (Object's depth being 0).
+        /// </summary>
         public int SpecializationDepth { get; private set; }
         
-        public readonly string ContainerContext;
-
         public DependentItemKind ItemKind { get; private set; }
 
         public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
@@ -340,17 +319,54 @@ namespace CK.Setup
 
         public readonly int ContainerConstructParameterIndex;
 
-        public readonly string[] ConstructParameterTypedContext;
-
-        public string FindContextFromMapAttributes( Type t )
+        Type[] EnsureAllAmbientInterfaces()
         {
-            // Attribute ContextMap( Type, string ) is not implemented.
-            return null;
+            return _ambientInterfaces
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => t != typeof( IAmbientContract )
+                                                                          && typeof( IAmbientContract ).IsAssignableFrom( t ) ).ToArray());
         }
 
-        protected internal override TC CreateContextTypeInfo<T, TC>( IActivityMonitor monitor, IServiceProvider services, TC generalization, IContextualTypeMap context )
+        internal Type[] EnsureThisAmbientInterfaces()
         {
-            return (TC)(object)(new MutableItem( monitor, this, (MutableItem)((object)generalization), context, services ));
+            return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = Generalization != null
+                                                        ? EnsureAllAmbientInterfaces().Except( Generalization.EnsureAllAmbientInterfaces() ).ToArray()
+                                                        : EnsureAllAmbientInterfaces());
+        }
+
+
+        internal bool CreateMutableItemsPath(
+            IActivityMonitor monitor,
+            IServiceProvider services,
+            StObjObjectEngineMap engineMap,
+            MutableItem generalization,
+            IDynamicAssembly tempAssembly,
+            List<(MutableItem, ImplementableTypeInfo)> lastConcretes,
+            List<Type> abstractTails )
+        {
+            Debug.Assert( tempAssembly != null );
+            var item = new MutableItem( this, generalization, engineMap );
+            bool concreteBelow = false;
+            foreach( StObjTypeInfo c in Specializations )
+            {
+                Debug.Assert( !c.IsExcluded );
+                concreteBelow |= c.CreateMutableItemsPath( monitor, services, engineMap, item, tempAssembly, lastConcretes, abstractTails );
+            }
+            if( !concreteBelow )
+            {
+                ImplementableTypeInfo autoImplementor = null;
+                if( Type.IsAbstract
+                    && (autoImplementor = CreateAbstractTypeImplementation( monitor, tempAssembly)) == null )
+                {
+                    abstractTails.Add( Type );
+                    Generalization?.RemoveSpecialization( this );
+                }
+                else
+                {
+                    lastConcretes.Add( (item, autoImplementor) );
+                    concreteBelow = true;
+                }
+            }
+            return concreteBelow;
         }
 
     }

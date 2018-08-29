@@ -30,7 +30,7 @@ namespace CK.Setup
             public ListAmbientProperty( MutableItem item )
             {
                 _item = item;
-                _count = _item.AmbientTypeInfo.AmbientProperties.Count;
+                _count = _item.Type.AmbientProperties.Count;
             }
 
             public int IndexOf( object item )
@@ -90,7 +90,7 @@ namespace CK.Setup
             public ListInjectContract( MutableItem item )
             {
                 _item = item;
-                _count = _item.AmbientTypeInfo.AmbientContracts.Count;
+                _count = _item.Type.AmbientContracts.Count;
             }
 
             public int IndexOf( object item )
@@ -149,22 +149,25 @@ namespace CK.Setup
         /// This is where the TrackedAmbientPropertyInfo is added to the target and where covariance is handled. 
         /// (This is also where, each time I look at this code, I ask myself "wtf...???" :-).)
         /// </summary>
-        internal void ResolvePreConstructAndPostBuildProperties( IActivityMonitor monitor, StObjCollectorResult result, StObjCollectorContextualResult contextResult, IStObjValueResolver valueResolver )
+        internal void ResolvePreConstructAndPostBuildProperties(
+            IActivityMonitor monitor,
+            BuildValueCollector valueCollector,
+            IStObjValueResolver valueResolver )
         {
             Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
             if( _leafData.DirectPropertiesToSet != null )
             {
                 foreach( var k in _leafData.DirectPropertiesToSet )
                 {
-                    if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, result.BuildValueCollector ); 
+                    if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
             }
             foreach( var c in _leafData.AllAmbientContracts )
             {
-                MutableItem m = c.ResolveToStObj( monitor, result, contextResult );
+                MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )
                 {
-                    AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, result.BuildValueCollector );
+                    AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, valueCollector );
                 }
             }
 
@@ -172,7 +175,7 @@ namespace CK.Setup
             // correspond to the ones of this object (without the cached ones that may appear at the end of the list).
             foreach( var a in _ambientPropertiesEx )
             {
-                EnsureCachedAmbientProperty( monitor, result, a.Type, a.Name, a );
+                EnsureCachedAmbientProperty( monitor, a.Type, a.Name, a );
                 if( a.Value == System.Type.Missing )
                 {
                     if( valueResolver != null ) valueResolver.ResolveExternalPropertyValue( monitor, a );
@@ -196,12 +199,12 @@ namespace CK.Setup
 
                         MutableItem source = this;
                         AmbientPropertyInfo sourceProp = a.AmbientPropertyInfo;
-                        Debug.Assert( sourceProp.Index < source.AmbientTypeInfo.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
+                        Debug.Assert( sourceProp.Index < source.Type.AmbientProperties.Count, "This is the way to test if the property is defined at the source level or not." );
 
                         // Walks up the chain to locate the most abstract compatible slice.
                         {
                             MutableItem genResolved = resolved.Generalization;
-                            while( genResolved != null && sourceProp.PropertyType.GetTypeInfo().IsAssignableFrom( genResolved.ObjectType ) )
+                            while( genResolved != null && sourceProp.PropertyType.IsAssignableFrom( genResolved.ObjectType ) )
                             {
                                 resolved = genResolved;
                                 genResolved = genResolved.Generalization;
@@ -222,7 +225,7 @@ namespace CK.Setup
                         {
                             bool sourcePropChanged = false;
                             // If source does not define anymore sourceProp. Does it define the property with another type?
-                            while( source != null && sourceProp.Index >= source.AmbientTypeInfo.AmbientProperties.Count )
+                            while( source != null && sourceProp.Index >= source.Type.AmbientProperties.Count )
                             {
                                 sourcePropChanged = true;
                                 if( (sourceProp = sourceProp.Generalization) == null )
@@ -256,23 +259,23 @@ namespace CK.Setup
                         }
                         if( highestSetSource != null )
                         {
-                            highestSetSource.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, highestSetResolved, result.BuildValueCollector );
+                            highestSetSource.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, highestSetResolved, valueCollector );
                         }
                         else
                         {
-                            AddPostBuildProperty( a.AmbientPropertyInfo.SettablePropertyInfo, resolved, result.BuildValueCollector );
+                            AddPostBuildProperty( a.AmbientPropertyInfo.SettablePropertyInfo, resolved, valueCollector );
                         }
                         #endregion 
                     }
                     else
                     {
-                        RootGeneralization.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, value, result.BuildValueCollector ); 
+                        RootGeneralization.AddPreConstructProperty( a.AmbientPropertyInfo.SettablePropertyInfo, value, valueCollector ); 
                     }
                 }
             }
         }
 
-        MutableAmbientProperty EnsureCachedAmbientProperty( IActivityMonitor monitor, StObjCollectorResult result, Type propertyType, string name, MutableAmbientProperty alreadySolved = null )
+        MutableAmbientProperty EnsureCachedAmbientProperty( IActivityMonitor monitor, Type propertyType, string name, MutableAmbientProperty alreadySolved = null )
         {
             Debug.Assert( Specialization == null );
             Debug.Assert( _prepareState == PrepareState.PreparedDone || _prepareState == PrepareState.CachingAmbientProperty );
@@ -306,7 +309,7 @@ namespace CK.Setup
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) a = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
                     while( (a == null || a.Value == System.Type.Missing) && currentLevel != null );
@@ -333,7 +336,7 @@ namespace CK.Setup
                         MutableItem currentLevel = _leafData.RootGeneralization;
                         do
                         {
-                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, propertyType, name );
                             currentLevel = currentLevel.Specialization;
                         }
                         while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null );
@@ -343,7 +346,7 @@ namespace CK.Setup
                         MutableItem currentLevel = this;
                         do
                         {
-                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
+                            if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, propertyType, name );
                             currentLevel = currentLevel.Generalization;
                         }
                         while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null );
@@ -353,15 +356,15 @@ namespace CK.Setup
                 // If we are in "FromContainerAndThenGeneralization" mode, before accepting the value or resolving it, we apply container's inheritance up to 
                 // this level if it is not the most specialized one.
                 // If not ("None" or "FromGeneralizationAndThenContainer") we have nothing to do.
-                if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization && a.MaxSpecializationDepthSet < AmbientTypeInfo.SpecializationDepth )
+                if( a.AmbientPropertyInfo.ResolutionSource == PropertyResolutionSource.FromContainerAndThenGeneralization && a.MaxSpecializationDepthSet < Type.SpecializationDepth )
                 {
                     MutableItem currentLevel = this;
                     do
                     {
-                        if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, result, propertyType, name );
+                        if( currentLevel.IsOwnContainer ) foundFromOther = currentLevel._dContainer._leafData.LeafSpecialization.EnsureCachedAmbientProperty( monitor, propertyType, name );
                         currentLevel = currentLevel.Generalization;
                     }
-                    while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null && currentLevel.AmbientTypeInfo.SpecializationDepth > a.MaxSpecializationDepthSet );
+                    while( (foundFromOther == null || foundFromOther.Value == System.Type.Missing) && currentLevel != null && currentLevel.Type.SpecializationDepth > a.MaxSpecializationDepthSet );
                 }
                 if( foundFromOther != null && foundFromOther.Value != System.Type.Missing )
                 {
@@ -370,7 +373,7 @@ namespace CK.Setup
                 else
                 {
                     // No value found from containers or generalization: we may have to solve it.
-                    a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( monitor, result, null ) );
+                    a.SetValue( a.UseValue ? a.Value : a.ResolveToStObj( monitor, EngineMap ) );
                 }
                 return a;
             }

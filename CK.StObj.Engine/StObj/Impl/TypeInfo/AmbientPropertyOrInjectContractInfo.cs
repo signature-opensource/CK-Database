@@ -26,15 +26,7 @@ namespace CK.Setup
         {
             _isOptionalDefined = isOptionalDefined;
             _isOptional = isOptional;
-            ContextAttribute c = p.GetCustomAttribute<ContextAttribute>(false);
-            if( c != null ) Context = c.Context;
         }
-
-        /// <summary>
-        /// This is settable in order for base class property's context to be used if it is not explicitly defined
-        /// by the specialized property.
-        /// </summary>
-        public string Context { get; private set; }
 
         public bool IsOptional => _isOptional; 
 
@@ -50,11 +42,6 @@ namespace CK.Setup
                     monitor.Error( $"{Kind}: Property '{DeclaringType.FullName}.{Name}' states that it is optional but base property '{gen.DeclaringType.FullName}.{Name}' is required." );
                 }
                 _isOptional = false;
-            }
-            // Context inheritance (if not defined).
-            if( Context == null )
-            {
-                Context = gen.Context;
             }
         }
 

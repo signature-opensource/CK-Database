@@ -147,7 +147,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static string CallGuidRefTest( SqlManager c, IStObjMap map, Guid? inOnly, ref Guid? inAndOut, bool manualImplementation = false )
         {
-            var actorHome = map.Default.Obtain<SqlActorPackage.Basic.ActorHome>();
+            var actorHome = map.StObjs.Obtain<SqlActorPackage.Basic.ActorHome>();
             string text;
             SqlCommand cmd = null;
             if( manualImplementation )
@@ -171,7 +171,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static bool CallExistsUser( SqlManager c, IStObjMap map, string name )
         {
-            var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
+            var userHome = map.StObjs.Obtain<SqlActorPackage.Basic.UserHome>();
             bool exists;
             SqlCommand cmd = null;
             userHome.CmdExists( ref cmd, name, out exists );
@@ -184,7 +184,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static bool CallExistsUser2( SqlManager c, IStObjMap map, int userPart1, int userPart2 )
         {
-            var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
+            var userHome = map.StObjs.Obtain<SqlActorPackage.Basic.UserHome>();
             bool exists = true;
             SqlCommand cmd = null;
             //CmdExists2( ref cmd, userPart1, userPart2, out exists );
@@ -236,7 +236,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static int CallCreateUser( SqlManager c, IStObjMap map, string name )
         {
-            var userHome = map.Default.Obtain<SqlActorPackage.Basic.UserHome>();
+            var userHome = map.StObjs.Obtain<SqlActorPackage.Basic.UserHome>();
             int userId;
             using( SqlCommand cmd = userHome.CmdCreate( name, out userId ) )
             {
@@ -250,7 +250,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static int CallCreateGroupBasic( SqlManager c, IStObjMap map, string groupName )
         {
-            var groupHome = map.Default.Obtain<SqlActorPackage.Basic.GroupHome>();
+            var groupHome = map.StObjs.Obtain<SqlActorPackage.Basic.GroupHome>();
             int groupId;
             using( var ctx = new SqlStandardCallContext() )
             {
@@ -264,7 +264,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             SqlCommand cmd = null;
 
-            var groupHome = map.Default.Obtain<SqlZonePackage.Zone.GroupHome>();
+            var groupHome = map.StObjs.Obtain<SqlZonePackage.Zone.GroupHome>();
 
             int groupId;
             groupHome.CmdDemoCreate( ref cmd, 1, groupName );
@@ -289,7 +289,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
         static int CallCreateGroupZone( SqlManager c, IStObjMap map, int securityZoneId, string groupName )
         {
-            var groupHome = map.Default.Obtain<SqlZonePackage.Zone.GroupHome>();
+            var groupHome = map.StObjs.Obtain<SqlZonePackage.Zone.GroupHome>();
             int groupId;
             using( SqlCommand cmd = groupHome.CmdCreate( securityZoneId, groupName.ToString(), out groupId ) )
             {

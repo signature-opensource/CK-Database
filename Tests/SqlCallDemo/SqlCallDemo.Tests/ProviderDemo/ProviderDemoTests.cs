@@ -86,7 +86,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
         [Test]
         public void using_a_provider()
         {
-            var demoPackage = TestHelper.StObjMap.Default.Obtain<ProviderDemoPackage>();
+            var demoPackage = TestHelper.StObjMap.StObjs.Obtain<ProviderDemoPackage>();
 
             var s1 = new ActorDependentOnlyService( _contextOdd, demoPackage );
             Assert.That( s1.DoSomething(), Is.True );

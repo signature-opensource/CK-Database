@@ -27,9 +27,9 @@ namespace CK.Setup
         // To disambiguate types.
         internal List<MutableReference> AsList => this;
 
-        public IStObjMutableReference AddNew( string context, Type t, StObjRequirementBehavior behavior )
+        public IStObjMutableReference AddNew( Type t, StObjRequirementBehavior behavior )
         {
-            var m = new MutableReference( _owner, _kind ) { Type = t, Context = context, StObjRequirementBehavior = behavior };
+            var m = new MutableReference( _owner, _kind ) { Type = t, StObjRequirementBehavior = behavior };
             Add( m );
             return m;
         }

@@ -23,7 +23,7 @@ namespace CK.Core
         /// <param name="this">This context.</param>
         /// <typeparam name="T">Type (that must be an Ambient Contract).</typeparam>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
-        public static T Obtain<T>( this IContextualStObjMap @this )
+        public static T Obtain<T>( this IStObjObjectMap @this )
         {
             return (T)@this.Obtain( typeof( T ) );
         }

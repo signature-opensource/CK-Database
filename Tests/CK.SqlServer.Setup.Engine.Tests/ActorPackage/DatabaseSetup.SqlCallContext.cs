@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             using( TestHelper.Monitor.OpenTrace( "CheckSqlCallContext" ) )
             {
-                var package = map.Default.Obtain<Package>();
+                var package = map.StObjs.Obtain<Package>();
                 CallWithAuthContext( package );
                 CallWithAuthContextWithoutOutSignature( package );
             }

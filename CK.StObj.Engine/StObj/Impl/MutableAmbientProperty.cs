@@ -86,7 +86,7 @@ namespace CK.Setup
             return true;
         }
 
-        internal bool SetConfiguration( int setterSpecializationDepth, IActivityMonitor monitor, string context, Type type, StObjRequirementBehavior behavior )
+        internal bool SetConfiguration( int setterSpecializationDepth, IActivityMonitor monitor, Type type, StObjRequirementBehavior behavior )
         {
             Debug.Assert( _maxSpecializationDepthSet != Int32.MaxValue );
             if( setterSpecializationDepth < _maxSpecializationDepthSet )
@@ -96,7 +96,6 @@ namespace CK.Setup
             }
             _maxSpecializationDepthSet = setterSpecializationDepth;
             Value = System.Type.Missing;
-            Context = context;
             Type = type;
             StObjRequirementBehavior = behavior;
             UseValue = false;

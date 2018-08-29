@@ -88,13 +88,15 @@ namespace CK.Setup
             public readonly string Directory;
             public readonly HashSet<string> Assemblies;
             public readonly HashSet<string> Types;
+            public readonly HashSet<string> ExcludedTypes;
             public readonly bool SameAsRoot;
 
-            public NormalizedFolder( string d, HashSet<string> a, HashSet<string> t, bool sameAsRoot )
+            public NormalizedFolder( string d, ISetupFolder f, bool sameAsRoot )
             {
                 Directory = d;
-                Assemblies = a;
-                Types = t;
+                Assemblies = f.Assemblies;
+                Types = f.Types;
+                ExcludedTypes = f.ExcludedTypes;
                 SameAsRoot = sameAsRoot;
             }
         }
@@ -271,7 +273,7 @@ namespace CK.Setup
                 {
                     var normalized = new List<NormalizedFolder>();
                     string baseDir = FileUtil.NormalizePathSeparator( AppContext.BaseDirectory, true );
-                    var root = new NormalizedFolder( baseDir, _config.Assemblies, _config.Types, false );
+                    var root = new NormalizedFolder( baseDir, _config, false );
                     normalized.Add( root );
                     foreach( var f in _config.SetupFolders )
                     {
@@ -305,10 +307,19 @@ namespace CK.Setup
                                             _monitor.Error( $"SetupFolder '{n}' contains at least one explicit class that is not in global configuration: {aliens.Concatenate()}" );
                                             ok = false;
                                         }
+                                        // Reverse for excluded types.
+                                        aliens = root.ExcludedTypes.Except( f.ExcludedTypes );
+                                        if( aliens.Any() )
+                                        {
+                                            _monitor.Error( $"SetupFolder '{n}' MUST exlude all types that are excluded at the global configuration level: {aliens.Concatenate()}" );
+                                            ok = false;
+                                        }
                                         if( ok )
                                         {
-                                            bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count && f.Types.Count == root.Types.Count;
-                                            normalized.Add( new NormalizedFolder( n, f.Assemblies, f.Types, sameAsRoot ) );
+                                            bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
+                                                              && f.Types.Count == root.Types.Count
+                                                              && root.ExcludedTypes.Count == f.ExcludedTypes.Count;
+                                            normalized.Add( new NormalizedFolder( n, f, sameAsRoot ) );
                                         }
                                     }
                                 }
@@ -328,6 +339,44 @@ namespace CK.Setup
             return null;
         }
 
+        class TypeFilterFromConfiguration : IStObjTypeFilter
+        {
+            readonly StObjConfigurationLayer _firstLayer;
+            readonly HashSet<string> _excludedTypes;
+
+            public TypeFilterFromConfiguration( NormalizedFolder f, StObjConfigurationLayer firstLayer )
+            {
+                _excludedTypes = f.Types;
+                _firstLayer = firstLayer;
+            }
+
+            bool IStObjTypeFilter.TypeFilter( IActivityMonitor monitor, Type t )
+            {
+                if( _excludedTypes.Contains( t.Name ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type Name." );
+                    return false;
+                }
+                if( _excludedTypes.Contains( t.FullName ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type FullName." );
+                    return false;
+                }
+                if( _excludedTypes.Contains( t.AssemblyQualifiedName ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its Type AssemblyQualifiedName." );
+                    return false;
+                }
+                if( SimpleTypeFinder.WeakenAssemblyQualifiedName( t.AssemblyQualifiedName, out var weaken )
+                    && _excludedTypes.Contains( weaken ) )
+                {
+                    monitor.Info( $"Type {t.AssemblyQualifiedName} is filtered out by its weak type name ({weaken})." );
+                    return false;
+                }
+                return _firstLayer.TypeFilter( monitor, t );
+            }
+        }
+
         StObjCollectorResult SafeBuildStObj( NormalizedFolder f, Func<string,object> secondaryRunAccessor )
         {
             bool hasError = false;
@@ -336,12 +385,14 @@ namespace CK.Setup
             {
                 StObjCollectorResult result;
                 var configurator = _startContext.Configurator.FirstLayer;
+                var typeFilter = new TypeFilterFromConfiguration( f, configurator );
                 StObjCollector stObjC = new StObjCollector(
                     _monitor,
+                    _startContext.ServiceContainer,
                     _config.TraceDependencySorterInput,
                     _config.TraceDependencySorterOutput,
                     _runtimeBuilder,
-                    configurator, configurator, configurator,
+                    typeFilter, configurator, configurator,
                     secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
                 if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
@@ -359,7 +410,7 @@ namespace CK.Setup
                 {
                     using( _monitor.OpenInfo( "Resolving StObj dependency graph." ) )
                     {
-                        result = stObjC.GetResult( _startContext.ServiceContainer );
+                        result = stObjC.GetResult();
                         Debug.Assert( !result.HasFatalError || hasError, "result.HasFatalError ==> An error has been logged." );
                     }
                     if( !result.HasFatalError ) return result;

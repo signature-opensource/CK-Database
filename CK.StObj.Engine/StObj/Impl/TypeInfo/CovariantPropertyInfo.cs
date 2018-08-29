@@ -32,32 +32,29 @@ namespace CK.Setup
             _index = index;
         }
 
-        public string Name { get { return _p.Name; } }
-        public Type PropertyType { get { return _p.PropertyType; } }
-        public Type DeclaringType { get { return _p.DeclaringType; } }
-        public PropertyInfo PropertyInfo { get { return _p; } }
+        public string Name => _p.Name; 
+        public Type PropertyType => _p.PropertyType;
+        public Type DeclaringType => _p.DeclaringType;
+        public PropertyInfo PropertyInfo => _p;
 
         /// <summary>
         /// Gets the index of this <see cref="AmbientPropertyInfo"/> inside the <see cref="StObjTypeInfo"/> collection into which it appears.
         /// </summary>
-        public int Index { get { return _index; } }
+        public int Index => _index;
 
         /// <summary>
         /// This is settable in order for final AmbientPropertyInfo at a given specialization level to 
         /// record the level of the first ancestor that defined it (regardless of the property type that - because
         /// of covariance support - can change from level to level).
         /// </summary>
-        public int DefinerSpecializationDepth { get { return _definerSpecializationDepth; } }
+        public int DefinerSpecializationDepth => _definerSpecializationDepth;
 
         /// <summary>
         /// Gets the property to use to set the value (it corresponds to the top definer).
         /// </summary>
-        public PropertyInfo SettablePropertyInfo { get { return _settablePropertyInfo; } }
+        public PropertyInfo SettablePropertyInfo => _settablePropertyInfo;
 
-        public virtual string Kind
-        {
-            get { return KindName; }
-        }
+        public virtual string Kind => KindName; 
 
         void SetTopDefinerSettablePropertyInfo( IActivityMonitor monitor )
         {

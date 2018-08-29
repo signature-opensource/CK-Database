@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
+using CK.Text;
 
 namespace CK.Setup
 {
@@ -12,9 +13,9 @@ namespace CK.Setup
     /// Discovers available structure objects and instanciates them. 
     /// Once Types are registered, the <see cref="GetResult"/> method initializes the full object graph.
     /// </summary>
-    public class StObjCollector
+    public partial class StObjCollector
     {
-        readonly AmbientContractCollector<StObjContextualMapper, StObjTypeInfo, MutableItem> _cc;
+        readonly AmbientTypeCollector _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
@@ -27,23 +28,27 @@ namespace CK.Setup
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="monitor">Logger to use. Can not be null.</param>
+        /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
-        /// <param name="runtimeBuilder">Runtime builder to use. A <see cref="BasicStObjBuilder"/> can be used.</param>
-        /// <param name="dispatcher">Used to dispatch Types between contexts or hide them. See <see cref="IAmbientContractDispatcher"/>.</param>
+        /// <param name="runtimeBuilder">Optional runtime builder to use.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
-        /// <param name="valueResolver">Used to explicitely resolve or alter StObjConstruct parameters and object ambient properties. See <see cref="IStObjValueResolver"/>.</param>
+        /// <param name="valueResolver">
+        /// Used to explicitely resolve or alter StObjConstruct parameters and object ambient properties.
+        /// See <see cref="IStObjValueResolver"/>.
+        /// </param>
         public StObjCollector(
             IActivityMonitor monitor,
+            IServiceProvider serviceProvider,
             bool traceDepencySorterInput = false,
             bool traceDepencySorterOutput = false,
             IStObjRuntimeBuilder runtimeBuilder = null,
-            IAmbientContractDispatcher dispatcher = null,
+            IStObjTypeFilter typeFilter = null,
             IStObjStructuralConfigurator configurator = null,
             IStObjValueResolver valueResolver = null,
-            Func<string,object> secondaryRunAccessor = null )
+            Func<string, object> secondaryRunAccessor = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             _runtimeBuilder = runtimeBuilder ?? StObjContextRoot.DefaultStObjRuntimeBuilder;
             _monitor = monitor;
             if( secondaryRunAccessor != null ) _tempAssembly = new DynamicAssembly( secondaryRunAccessor );
@@ -52,7 +57,9 @@ namespace CK.Setup
                 _primaryRunCache = new Dictionary<string, object>();
                 _tempAssembly = new DynamicAssembly( _primaryRunCache );
             }
-            _cc = new AmbientContractCollector<StObjContextualMapper, StObjTypeInfo, MutableItem>( _monitor, l => new StObjMapper(), ( l, p, t ) => new StObjTypeInfo( l, p, t ), _tempAssembly, dispatcher );
+            Func<IActivityMonitor,Type,bool> tFilter = null;
+            if( typeFilter != null ) tFilter = typeFilter.TypeFilter;
+            _cc = new AmbientTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
@@ -115,7 +122,7 @@ namespace CK.Setup
         public void RegisterType( Type t )
         {
             if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            _monitor.Debug( $"Explicitely registering '{t.AssemblyQualifiedName}'." );
+            _monitor.Info( $"Explicitely registering '{t.AssemblyQualifiedName}'." );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
                 try
@@ -153,7 +160,7 @@ namespace CK.Setup
         {
             if( types == null ) throw new ArgumentNullException();
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
-            using( _monitor.OpenTrace( $"Explicitely registering {count} type(s)." ) )
+            using( _monitor.OpenTrace( $"Explicitly registering {count} type(s)." ) )
             {
                 try
                 {
@@ -183,70 +190,85 @@ namespace CK.Setup
         /// Builds and returns a <see cref="StObjCollectorResult"/> if no error occurred during type registration.
         /// If <see cref="RegisteringFatalOrErrorCount"/> is not equal to 0, this throws a <see cref="CKException"/>.
         /// </summary>
-        /// <param name="services">Available services.</param>
         /// <returns>The result.</returns>
-        public StObjCollectorResult GetResult( IServiceProvider services )
+        public StObjCollectorResult GetResult()
         {
-            if( services == null ) throw new ArgumentNullException( nameof( services ) );
             if( _registerFatalOrErrorCount > 0 )
             {
                 throw new CKException( $"There are {_registerFatalOrErrorCount} registration errors." );
             }
-            using( _monitor.OpenInfo( "Collecting all StObj information." ) )
+            var (typeResult, orderedItems) = CreateTypeAndContractResults();
+            if( orderedItems != null )
             {
-                AmbientContractCollectorResult<StObjContextualMapper,StObjTypeInfo,MutableItem> contracts;
-                using( _monitor.OpenInfo( "Collecting Ambient Contracts, Type structure and Poco." ) )
+                if( !RegisterServices( typeResult ) ) orderedItems = null;
+            }
+            return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
+        }
+
+        (AmbientTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndContractResults()
+        {
+            bool error = false;
+            using( _monitor.OnError( () => error = true ) )
+            {
+                AmbientTypeCollectorResult typeResult;
+                using( _monitor.OpenInfo( "Initializing object graph." ) )
                 {
-                    contracts = _cc.GetResult( services );
-                    contracts.LogErrorAndWarnings( _monitor );
-                }
-                var stObjMapper = new StObjMapper();
-                var result = new StObjCollectorResult( stObjMapper, contracts, _tempAssembly, _primaryRunCache );
-                if( result.HasFatalError ) return result;
-                using( _monitor.OpenInfo( "Creating Structure Objects." ) )
-                {
-                    int objectCount = 0;
-                    foreach( StObjCollectorContextualResult r in result.Contexts )
+                    using( _monitor.OpenInfo( "Collecting Ambient Contracts, Services, Type structure and Poco." ) )
                     {
-                        using( _monitor.OnError( () => r.SetFatal() ) )
-                        using( _monitor.OpenInfo( $"Working on Context [{r.Context}]." ) )
+                        typeResult = _cc.GetResult();
+                        typeResult.LogErrorAndWarnings( _monitor );
+                    }
+                    if( error || typeResult.HasFatalError ) return (typeResult, null);
+                    using( _monitor.OpenInfo( "Creating final objects and configuring items." ) )
+                    {
+                        int nbItems = ConfigureMutableItems( typeResult.AmbientContracts );
+                        _monitor.CloseGroup( $"{nbItems} items configured." );
+                    }
+                }
+                if( error ) return (typeResult, null); 
+
+                StObjObjectEngineMap engineMap = typeResult.AmbientContracts.EngineMap;
+                IDependencySorterResult sortResult = null;
+                BuildValueCollector valueCollector = new BuildValueCollector();
+                using( _monitor.OpenInfo( "Topological graph ordering." ) )
+                {
+                    bool noCycleDetected = true;
+                    using( _monitor.OpenInfo( "Preparing dependent items." ) )
+                    {
+                        // Transfers construct parameters type as requirements for the object, binds dependent
+                        // types to their respective MutableItem, resolve generalization and container
+                        // inheritance, and intializes StObjProperties.
+                        foreach( MutableItem item in engineMap.AllSpecializations )
                         {
-                            int nbItems = CreateMutableItems( r );
-                            _monitor.CloseGroup( $"{nbItems} items created for {r.AmbientContractResult.ConcreteClasses.Count} types." );
-                            objectCount += nbItems;
+                            noCycleDetected &= item.PrepareDependentItem( _monitor, valueCollector );
                         }
                     }
-                    if( result.HasFatalError ) return result;
-                    _monitor.CloseGroup( $"{objectCount} items created." );
-                }
-
-                IDependencySorterResult sortResult = null;
-                using( _monitor.OpenInfo( "Handling dependencies." ) )
-                {
-                    bool noCycleDetected;
-                    if( !PrepareDependentItems( result, out noCycleDetected ) )
+                    if( error ) return (typeResult, null);
+                    using( _monitor.OpenInfo( "Resolving PreConstruct and PostBuild properties." ) )
                     {
-                        _monitor.CloseGroup( "Prepare failed." );
-                        Debug.Assert( result.HasFatalError );
-                        return result;
+                        /// This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
+                        /// except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
+                        /// the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
+                        /// a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
+                        /// During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
+                        /// or to PostBuild collector in order to always set a correctly constructed object to a property.
+                        foreach( MutableItem item in engineMap.AllSpecializations )
+                        {
+                            item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
+                        }
                     }
-                    if( !ResolvePreConstructAndPostBuildProperties( result ) )
-                    {
-                        _monitor.CloseGroup( "Resolving Ambient Properties failed." );
-                        Debug.Assert( result.HasFatalError );
-                        return result;
-                    }
+                    if( error ) return (typeResult, null);
                     sortResult = DependencySorter.OrderItems(
-                                                    _monitor,
-                                                    result.AllMutableItems,
-                                                    null,
-                                                    new DependencySorterOptions()
-                                                    {
-                                                        SkipDependencyToContainer = true,
-                                                        HookInput = DependencySorterHookInput,
-                                                        HookOutput = DependencySorterHookOutput,
-                                                        ReverseName = RevertOrderingNames
-                                                    } );
+                                                   _monitor,
+                                                   engineMap.RawMappings.Select( kv => kv.Value ),
+                                                   null,
+                                                   new DependencySorterOptions()
+                                                   {
+                                                       SkipDependencyToContainer = true,
+                                                       HookInput = DependencySorterHookInput,
+                                                       HookOutput = DependencySorterHookOutput,
+                                                       ReverseName = RevertOrderingNames
+                                                   } );
                     Debug.Assert( sortResult.HasRequiredMissing == false,
                         "A missing requirement can not exist at this stage since we only inject existing Mutable items: missing unresolved dependencies are handled by PrepareDependentItems that logs Errors when needed." );
                     Debug.Assert( noCycleDetected || (sortResult.CycleDetected != null), "Cycle detected during item preparation => Cycle detected by the DependencySorter." );
@@ -254,82 +276,85 @@ namespace CK.Setup
                     {
                         sortResult.LogError( _monitor );
                         _monitor.CloseGroup( "Ordering failed." );
-                        result.SetFatal();
-                        return result;
+                        if( error ) return (typeResult, null);
                     }
                 }
-                Debug.Assert( sortResult != null );
 
-                // The structure objects have been ordered by their dependencies (and optionally
-                // by the IStObjStructuralConfigurator). 
-                // Their instance has been set during the first step (CreateMutableItems).
-                // We can now call the StObjConstruct methods and returns an ordered list of IStObj.
-                //
-                using( _monitor.OnError( () => result.SetFatal() ) )
-                using( _monitor.OpenInfo( "Initializing object graph." ) )
+                Debug.Assert( sortResult != null );
+                List<MutableItem> ordered = new List<MutableItem>();
+                using( _monitor.OpenInfo( "Finalizing graph." ) )
                 {
-                    int idxSpecialization = 0;
-                    List<MutableItem> ordered = new List<MutableItem>();
-                    foreach( ISortedItem sorted in sortResult.SortedItems )
+                    using( _monitor.OpenInfo( "Calling StObjConstruct." ) )
                     {
-                        var m = (MutableItem)sorted.Item;
-                        // Calls StObjConstruct on Head for Groups.
-                        if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
+                        foreach( ISortedItem sorted in sortResult.SortedItems )
                         {
-                            m.SetSorterData( ordered.Count, ref idxSpecialization, sorted.Requires, sorted.Children, sorted.Groups );
-                            using( _monitor.OpenTrace( $"Constructing '{m.ToString()}'." ) )
+                            var m = (MutableItem)sorted.Item;
+                            // Calls StObjConstruct on Head for Groups.
+                            if( m.ItemKind == DependentItemKindSpec.Item || sorted.IsGroupHead )
                             {
-                                try
+                                m.SetSorterData( ordered.Count, sorted.Rank, sorted.Requires, sorted.Children, sorted.Groups );
+                                using( _monitor.OpenTrace( $"Constructing '{m.ToString()}'." ) )
                                 {
-                                    m.CallConstruct( _monitor, result.BuildValueCollector, _valueResolver );
+                                    try
+                                    {
+                                        m.CallConstruct( _monitor, valueCollector, _valueResolver );
+                                    }
+                                    catch( Exception ex )
+                                    {
+                                        _monitor.Error( ex );
+                                    }
                                 }
-                                catch( Exception ex )
-                                {
-                                    _monitor.Error( ex );
-                                }
+                                ordered.Add( m );
                             }
-                            ordered.Add( m );
-                        }
-                        else
-                        {
-                            Debug.Assert( m.ItemKind != DependentItemKindSpec.Item && !sorted.IsGroupHead );
-                            // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
-                            // But... is it a good thing for a package object to know its content detail?
+                            else
+                            {
+                                Debug.Assert( m.ItemKind != DependentItemKindSpec.Item && !sorted.IsGroupHead );
+                                // We may call here a ConstructContent( IReadOnlyList<IStObj> packageContent ).
+                                // But... is it a good thing for a package object to know its content detail?
+                            }
                         }
                     }
-                    using( _monitor.OpenInfo( "Setting Ambient Contracts." ) )
+                    if( error ) return (typeResult, null);
+                    using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
                     {
-                        SetPostBuildProperties( result );
+                        /// Finalize construction by injecting Ambient Contracts objects
+                        /// and PostBuild Ambient Properties on specializations.
+                        foreach( MutableItem item in engineMap.AllSpecializations )
+                        {
+                            item.SetPostBuildProperties( _monitor );
+                        }
                     }
-                    if( !result.HasFatalError ) result.SetSuccess( ordered );
-                    return result;
+                    if( error ) return (typeResult, null);
                 }
+
+                Debug.Assert( !error );
+                return (typeResult, ordered);
             }
         }
 
         /// <summary>
-        /// Creates one or more StObjMutableItem for each ambient Type, each of them bound 
-        /// to an instance created through its default constructor.
+        /// Creates the associated final object and applies configurations from top to bottom
+        /// (see <see cref="MutableItem.ConfigureTopDown(IActivityMonitor, MutableItem)"/>).
         /// This is the very first step.
         /// </summary>
-        int CreateMutableItems( StObjCollectorContextualResult r )
+        int ConfigureMutableItems( AmbientContractCollectorResult typeResult )
         {
-            IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses = r.AmbientContractResult.ConcreteClasses;
+            var concreteClasses = typeResult.ConcreteClasses;
             int nbItems = 0;
             for( int i = concreteClasses.Count-1; i >= 0; --i )
             {
-                IReadOnlyList<MutableItem> pathTypes = concreteClasses[i];
+                var pathTypes = (IReadOnlyList<MutableItem>)concreteClasses[i];
                 Debug.Assert( pathTypes.Count > 0, "At least the final concrete class exists." );
                 nbItems += pathTypes.Count;
 
-                MutableItem specialization = r._specializations[i] = pathTypes[pathTypes.Count - 1];
+                MutableItem specialization = pathTypes[pathTypes.Count - 1];
 
                 object theObject = specialization.CreateStructuredObject( _monitor, _runtimeBuilder );
                 // If we failed to create an instance, we ensure that an error is logged and
                 // continue the process.
                 if( theObject == null )
                 {
-                    _monitor.Error( $"Unable to create an instance of '{pathTypes[pathTypes.Count - 1].AmbientTypeInfo.Type.FullName}'." );
+                    _monitor.Error( $"Unable to create an instance of '{pathTypes[pathTypes.Count - 1].Type.Type.FullName}'." );
                     continue;
                 }
                 // Finalize configuration by soliciting IStObjStructuralConfigurator.
@@ -351,71 +376,6 @@ namespace CK.Setup
             }
             return nbItems;
         }
-
-        /// <summary>
-        /// Transfers construct parameters type as requirements for the object, binds dependent types to their respective MutableItem,
-        /// resolve generalization and container inheritance, and intializes StObjProperties.
-        /// </summary>
-        bool PrepareDependentItems( StObjCollectorResult collector, out bool noCycleDetected )
-        {
-            noCycleDetected = true;
-            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
-            {
-                using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
-                {
-                    foreach( MutableItem item in contextResult._specializations )
-                    {
-                        noCycleDetected &= item.PrepareDependentItem( _monitor, collector, contextResult );
-                    }
-                }
-            }
-            return !collector.HasFatalError;
-        }
-
-        /// <summary>
-        /// This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
-        /// except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
-        /// the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
-        /// a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
-        /// During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
-        /// or to PostBuild collector in order to always set a correctly constructed object to a property.
-        /// </summary>
-        bool ResolvePreConstructAndPostBuildProperties( StObjCollectorResult collector )
-        {
-            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
-            {
-                using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
-                {
-                    foreach( MutableItem item in contextResult._specializations )
-                    {
-                        item.ResolvePreConstructAndPostBuildProperties( _monitor, collector, contextResult, _valueResolver );
-                    }
-                }
-            }
-            return !collector.HasFatalError;
-        }
-
-        /// <summary>
-        /// Finalize construction by injecting Ambient Contracts objects and PostBuild Ambient Properties on specializations.
-        /// </summary>
-        bool SetPostBuildProperties( StObjCollectorResult collector )
-        {
-            foreach( StObjCollectorContextualResult contextResult in collector.Contexts )
-            {
-                using( _monitor.OnError( () => contextResult.SetFatal() ) )
-                using( _monitor.OpenInfo( $"Working on Context [{contextResult.Context}]." ) )
-                {
-                    foreach( MutableItem item in contextResult._specializations )
-                    {
-                        item.SetPostBuildProperties( _monitor, collector, contextResult );
-                    }
-                }
-            }
-            return !collector.HasFatalError;
-        }
-
     }
 
 }

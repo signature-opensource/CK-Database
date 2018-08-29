@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
         {
             using( TestHelper.Monitor.OpenTrace( "CheckCommandWrapper" ) )
             {
-                var package = map.Default.Obtain<Package>();
+                var package = map.StObjs.Obtain<Package>();
                 SimplestScalar( c, package );
                 SimplestScalarWithHome( package );
                 SimplestScalarWithBaseOfTheHome( package );

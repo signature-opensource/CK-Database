@@ -40,17 +40,20 @@ namespace CK.Core
         readonly Dictionary<Type, PocoType> _all;
         readonly List<List<Type>> _result;
         readonly string _namespace;
+        readonly Func<IActivityMonitor, Type, bool> _typeFilter;
         int _uniqueNumber;
 
         /// <summary>
         /// Initializes a new <see cref="PocoRegisterer"/>.
         /// </summary>
         /// <param name="namespace">Namespace into which dynamic types will be created.</param>
-        public PocoRegisterer( string @namespace = "CK._g.poco" )
+        /// <param name="typeFilter">Optional type filter.</param>
+        public PocoRegisterer( string @namespace = "CK._g.poco", Func<IActivityMonitor, Type, bool> typeFilter = null )
         {
             _namespace = @namespace ?? "CK._g.poco";
             _all = new Dictionary<Type, PocoType>();
             _result = new List<List<Type>>();
+            _typeFilter = typeFilter ?? ((m,type) => true);
         }
 
         /// <summary>
@@ -59,45 +62,59 @@ namespace CK.Core
         /// <param name="monitor">Monitor that will be used to signal errors.</param>
         /// <param name="t">Poco type to register (must extend IPoco interface).</param>
         /// <returns>True on success, false on error.</returns>
-        public bool Register( IActivityMonitor monitor, Type t ) => DoRegister( monitor, t ) != null;
+        public bool Register( IActivityMonitor monitor, Type t )
+        {
+            if( t == null) throw new ArgumentNullException( nameof( t ) );
+            if( !t.IsInterface || !typeof( IPoco ).IsAssignableFrom( t ) ) throw new ArgumentException( "Must be a IPoco interface.", nameof( t ) );
+            return DoRegister( monitor, t ) != null;
+        }
 
         PocoType DoRegister( IActivityMonitor monitor, Type t )
         {
-            Debug.Assert( typeof( IPoco ).IsAssignableFrom( t ) );
-            PocoType p;
-            if( !_all.TryGetValue( t, out p ) )
+            Debug.Assert( t.IsInterface && typeof( IPoco ).IsAssignableFrom( t ) );
+            if( !_all.TryGetValue( t, out var p ) )
             {
-                PocoType theOnlyRoot = null;
-                foreach( Type b in t.GetInterfaces() )
-                {
-                    if( b != typeof(IPoco) )
-                    {
-                        // Base interface must be a IPoco.
-                        if( !typeof( IPoco ).IsAssignableFrom( b ) )
-                        {
-                            monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
-                            return null;
-                        }
-                        // Attempts to register the base.
-                        var baseType = DoRegister( monitor, b );
-                        if( baseType == null ) return null;
-                        // Detect multiple root Poco.
-                        if( theOnlyRoot != null )
-                        {
-                            if( theOnlyRoot != baseType.Root )
-                            {
-                                monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends both '{theOnlyRoot.Type.Name}' and '{baseType.Root.Type.Name}' (via '{baseType.Type.Name}')." );
-                                return null;
-                            }
-                        }
-                        else theOnlyRoot = baseType.Root;
-                    }
-                }
-                p = new PocoType( t, theOnlyRoot );
+                p = CreatePocoType( monitor, t );
                 _all.Add( t, p );
-                if( theOnlyRoot == null ) _result.Add( p.RootCollector );
+                if( p != null && p.Root == p ) _result.Add( p.RootCollector );
             }
             return p;
+        }
+
+        PocoType CreatePocoType( IActivityMonitor monitor, Type t )
+        {
+            if( !_typeFilter( monitor, t ) )
+            {
+                monitor.Info( $"Poco interface '{t.AssemblyQualifiedName}' is excluded." );
+                return null;
+            }
+            PocoType theOnlyRoot = null;
+            foreach( Type b in t.GetInterfaces() )
+            {
+                if( b != typeof( IPoco ) )
+                {
+                    // Base interface must be a IPoco.
+                    if( !typeof( IPoco ).IsAssignableFrom( b ) )
+                    {
+                        monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
+                        return null;
+                    }
+                    // Attempts to register the base.
+                    var baseType = DoRegister( monitor, b );
+                    if( baseType == null ) return null;
+                    // Detect multiple root Poco.
+                    if( theOnlyRoot != null )
+                    {
+                        if( theOnlyRoot != baseType.Root )
+                        {
+                            monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends both '{theOnlyRoot.Type.Name}' and '{baseType.Root.Type.Name}' (via '{baseType.Type.Name}')." );
+                            return null;
+                        }
+                    }
+                    else theOnlyRoot = baseType.Root;
+                }
+            }
+            return new PocoType( t, theOnlyRoot );
         }
 
         class Result : IPocoSupportResult
@@ -156,6 +173,12 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Finalize registrations by creating emiting a <see cref="IPocoSupportResult"/>.
+        /// </summary>
+        /// <param name="moduleB">The module builder into which dynamic code is generated.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <returns>Null on error.</returns>
         public IPocoSupportResult Finalize( ModuleBuilder moduleB, IActivityMonitor monitor )
         {
             _uniqueNumber = 0;

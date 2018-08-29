@@ -15,7 +15,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_simple_log()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.SimpleLog( ctx, "First async test call ever." ).ConfigureAwait( false );
@@ -27,7 +27,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_with_bit_parameter()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.Log( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
@@ -47,7 +47,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_with_the_default_value_for_bit_parameter()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.LogWithDefaultBitValue( ctx, "Third async test call ever." ).ConfigureAwait( false );
@@ -59,7 +59,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void async_call_with_cancellation_token_works()
         {
-            var p = TestHelper.StObjMap.Default.Obtain<PurelyInputLogPackage>();
+            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 {

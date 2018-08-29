@@ -1,0 +1,199 @@
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
+using CK.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CK.Setup
+{
+    class ServiceSupportCodeGenerator
+    {
+        static readonly string _sourceServiceSupport = @"
+        public class StObjServiceParameterInfo : IStObjServiceParameterInfo
+        {
+            public StObjServiceParameterInfo( Type t, int p, string n, IReadOnlyList<Type> v, bool isEnum )
+            {
+                ParameterType = t;
+                Position = p;
+                Name = n;
+                Value = v;
+                IsEnumeration = isEnum;
+            }
+
+            public Type ParameterType { get; }
+
+            public int Position { get; }
+
+            public string Name { get; }
+
+            public bool IsEnumeration { get; }
+
+            public IReadOnlyList<Type> Value { get; }
+        }
+
+        public class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
+        {
+            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a )
+            {
+                ClassType = t;
+                Assignments = a;
+            }
+
+            public Type ClassType { get; }
+
+            public IReadOnlyList<IStObjServiceParameterInfo> Assignments { get; }
+        }
+";
+        readonly ITypeScope _rootType;
+        readonly IFunctionScope _rootCtor;
+        readonly ITypeScope _infoType;
+        readonly Dictionary<IStObjServiceClassFactoryInfo, string> _names;
+
+        public ServiceSupportCodeGenerator( ITypeScope rootType, IFunctionScope rootCtor )
+        {
+            _rootType = rootType;
+            _infoType = rootType.Namespace.CreateType( "public static class SFInfo" );
+            _rootCtor = rootCtor;
+            _names = new Dictionary<IStObjServiceClassFactoryInfo, string>();
+        }
+
+        public void CreateServiceSupportCode( StObjObjectEngineMap liftedMap )
+        {
+            _infoType.Namespace.Append( _sourceServiceSupport );
+
+            _rootType.Append( @"
+Dictionary<Type, Type> _simpleServiceMappings;
+Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
+
+public IStObjServiceMap Services => this;
+IReadOnlyDictionary<Type, Type> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
+IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
+                     .NewLine();
+
+            // Service mappings (Simple).
+            _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, Type>();" ).NewLine();
+            foreach( var map in liftedMap.ServiceSimpleMappings )
+            {
+                _rootCtor.Append( $"_simpleServiceMappings.Add( " )
+                       .AppendTypeOf( map.Key )
+                       .Append( ", " )
+                       .AppendTypeOf( map.Value.FinalType )
+                       .Append( " );" )
+                       .NewLine();
+            }
+            // Service mappings (Not so Simple :)).
+            _rootCtor.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>();" ).NewLine();
+            foreach( var map in liftedMap.ServiceManualMappings )
+            {
+                _rootCtor.Append( $"_manualServiceMappings.Add( " )
+                       .AppendTypeOf( map.Key )
+                       .Append( ", " ).Append( GetServiceClassFactoryName( map.Value ) )
+                       .Append( " );" ).NewLine();
+            }
+
+            foreach( var serviceFactory in liftedMap.ServiceManualList )
+            {
+                CreateServiceClassFactory( serviceFactory );
+            }
+        }
+
+        string GetServiceClassFactoryName( IStObjServiceFinalManualMapping f ) => $"SFInfo.S{f.Number}.Default";
+
+        void CreateServiceClassFactory( IStObjServiceFinalManualMapping c )
+        {
+            var t = _infoType.CreateType( $"public class S{c.Number} : StObjServiceClassFactoryInfo, IStObjServiceClassFactory" );
+
+            t.CreateFunction( ctor =>
+            {
+                ctor.Append( "public S" ).Append( c.Number ).Append( "()" ).NewLine()
+                    .Append( ": base( " ).AppendTypeOf( c.ClassType ).Append( ", " ).NewLine();
+                GenerateStObjServiceFactortInfoAssignments( ctor, c.Assignments );
+                ctor.Append( ")" );
+            } );
+
+            t.CreateFunction( func =>
+            {
+                func.Append( "public object CreateInstance( IServiceProvider p ) {" );
+                func.Append( "return new " ).AppendCSharpName( c.ClassType ).Append( "(" );
+                var ctor = c.GetSingleConstructor();
+                var parameters = ctor.GetParameters();
+                for( int i = 0; i < parameters.Length; ++i )
+                {
+                    var p = parameters[i];
+                    if( i > 0 ) func.Append( ", " );
+                    var mapped = c.Assignments.Where( a => a.Position == p.Position ).FirstOrDefault();
+                    if( mapped == null )
+                    {
+                        func.Append( "p.GetService( " ).AppendTypeOf( p.ParameterType ).Append( ")" );
+                    }
+                    else
+                    {
+                        if( mapped.Value == null )
+                        {
+                            func.Append( "null" );
+                        }
+                        else if( mapped.IsEnumeration )
+                        {
+                            func.Append( "new " ).AppendCSharpName( p.ParameterType ).Append( "[]{" );
+                            for( int idxType = 0; idxType < mapped.Value.Count; ++idxType )
+                            {
+                                if( idxType > 0 ) func.Append( ", " );
+                                func.Append( "p.GetService( " ).AppendTypeOf( mapped.Value[idxType] ).Append( ")" );
+                            }
+                            func.Append( "}" );
+                        }
+                        else
+                        {
+                            func.Append( "p.GetService( " ).AppendTypeOf( mapped.Value[0] ).Append( ")" );
+                        }
+                    }
+                }
+                func.Append( ");" ).NewLine();
+            } );
+            t.Append( "public static readonly IStObjServiceClassFactory Default = new S" ).Append( c.Number ).Append( "();" ).NewLine();
+        }
+
+        void GenerateStObjServiceFactortInfoAssignments( ICodeWriter b, IReadOnlyList<IStObjServiceParameterInfo> assignments )
+        {
+            if( assignments.Count == 0 )
+            {
+                b.Append( "Array.Empty<StObjServiceParameterInfo>()" );
+            }
+            else
+            {
+                b.Append( "new[]{" ).NewLine();
+                bool atLeastOne = false;
+                foreach( var a in assignments )
+                {
+                    if( atLeastOne ) b.Append( ", " );
+                    atLeastOne = true;
+                    b.Append( "new StObjServiceParameterInfo( " )
+                     .AppendTypeOf( a.ParameterType ).Append( ", " )
+                     .Append( a.Position ).Append( ", " )
+                     .AppendSourceString( a.Name ).Append( ", " );
+                    if( a.Value == null )
+                    {
+                        b.Append( "null" );
+                    }
+                    else
+                    {
+                        b.Append( "new Type[]{ " );
+                        for( int idxType = 0; idxType < a.Value.Count; ++idxType )
+                        {
+                            if( idxType > 0 ) b.Append( ", " );
+                            b.AppendTypeOf( a.Value[idxType] );
+                        }
+                        b.Append( "}" );
+                    }
+                    b.Append( ", " )
+                     .Append( a.IsEnumeration )
+                     .Append( ")" ).NewLine();
+                }
+                b.Append( '}' );
+            }
+        }
+
+    }
+}
