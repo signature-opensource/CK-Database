@@ -332,8 +332,10 @@ namespace CK.Core
                     {
                         thisPathIsResolved = false;
                     }
+#if DEBUG
                     // If this leaf worked, it must be the very first one: subsequent ones must fail.
                     Debug.Assert( !thisPathIsResolved || ++resolvedPathCount == 1 );
+#endif
                     success |= thisPathIsResolved;
                 }
                 if( !success )
