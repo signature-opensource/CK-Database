@@ -4,12 +4,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <Description>Helpers to use CK-DB architecture in AspNet Core application.</Description>
+    <Description>CK-DB dependency injection for Microsoft IServiceCollection and CK.Core.ISimpleServiceContainer.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
-    <PackageReference Include="CK.AspNet" Version="$(CKAspNetVersion)" />
+    <ProjectReference Include="..\CK.StObj.DependencyInjection\CK.StObj.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>

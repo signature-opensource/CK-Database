@@ -290,9 +290,6 @@ class GStObj : IStObj
                     .Append( @"
             public IStObjObjectMap StObjs => this;
 
-            [Obsolete(""There is no more 'Context'. 'Default' must be replaced by the 'StObjs' property."")]
-            public IStObjObjectMap Default => this;
-
             Type IStObjTypeMap.ToLeafType( Type t ) => GToLeaf( t )?.ObjectType;
             bool IStObjTypeMap.IsMapped( Type t ) => _map.ContainsKey( t );
             IEnumerable<Type> IStObjTypeMap.Types => _map.Keys;

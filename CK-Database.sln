@@ -91,11 +91,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.DBSetup", "CK.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalTestHelper", "Tests\LocalTestHelper\LocalTestHelper.csproj", "{0FF79953-075C-40FB-9A19-EA30F0573DCA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.AspNet", "CK.DB.AspNet\CK.DB.AspNet.csproj", "{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.StObj.DependencyInjection", "CK.StObj.DependencyInjection\CK.StObj.DependencyInjection.csproj", "{D253B3F2-6CB2-41F9-A49A-E61A7CA7124B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.StObjSetup", "CK.Testing.StObjSetup\CK.Testing.StObjSetup.csproj", "{96E6682B-03C7-411A-9B5C-42FD2CDEAD3A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Testing.SetupableSetup", "CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj", "{D837F80F-4C8B-47EC-9F0E-105B820EE16C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.DependencyInjection", "CK.DB.DependencyInjection\CK.DB.DependencyInjection.csproj", "{42EA114F-32E9-44B5-A91C-B52D290FCBC0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -527,6 +529,18 @@ Global
 		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|x86.ActiveCfg = Release|Any CPU
 		{D837F80F-4C8B-47EC-9F0E-105B820EE16C}.Release|x86.Build.0 = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Debug|x86.Build.0 = Debug|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|x86.ActiveCfg = Release|Any CPU
+		{42EA114F-32E9-44B5-A91C-B52D290FCBC0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

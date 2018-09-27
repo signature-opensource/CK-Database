@@ -57,9 +57,6 @@ namespace CK.Core
         /// </summary>
         IStObjObjectMap IStObjMap.StObjs => this;
 
-        [Obsolete( "There is no more 'Context'. 'Default' must be replaced by the 'StObjs' property." )]
-        IStObjObjectMap IStObjMap.Default => this;
-
         /// <summary>
         /// Gets the map name. Never null.
         /// </summary>
