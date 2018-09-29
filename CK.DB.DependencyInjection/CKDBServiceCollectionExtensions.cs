@@ -102,6 +102,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return CKDatabasify( services.AddStObjMap( assemblyName ), defaultConnectionString );
         }
 
+
+        /// <summary>
+        /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
+        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// </summary>
+        /// <param name="services">This services.</param>
+        /// <param name="map">StObj map to register.</param>
+        /// <param name="defaultConnectionString">
+        /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
+        /// </param>
+        /// <returns>This services collection.</returns>
+        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IStObjMap map, string defaultConnectionString = null )
+        {
+            return CKDatabasify( services.AddStObjMap( map ), defaultConnectionString );
+        }
+
         static IServiceCollection CKDatabasify( IServiceCollection services, string defaultConnectionString )
         {
             if( !String.IsNullOrEmpty( defaultConnectionString ) )
