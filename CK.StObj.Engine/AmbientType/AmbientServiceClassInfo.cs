@@ -150,9 +150,9 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the supported service interfaces.
-        /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded and is on a concrete path)
-        /// and may be empty if there is no service interface (the implementation itself is marked
-        /// with <see cref="IAmbientService"/>).
+        /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded
+        /// and is on a concrete path) and may be empty if there is no service interface (the
+        /// implementation itself is marked with any <see cref="IAmbientService"/> marker).
         /// </summary>
         public IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces { get; private set; }
 
@@ -423,15 +423,9 @@ namespace CK.Core
         (bool, AmbientServiceClassInfo, AmbientServiceInterfaceInfo, bool) CreateCtorParameter( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
         {
             // We only consider IAmbientService interface or type parameters.
-            if( !typeof( IAmbientService ).IsAssignableFrom( p.ParameterType ) )
+            if( !collector.IsAmbientService( p.ParameterType ) )
             {
                 return (true, null, null, false);
-            }
-            // Edge case: using IAmbientService is an error.
-            if( typeof( IAmbientService ) == p.ParameterType )
-            {
-                m.Error( $"Invalid use of {nameof( IAmbientService )} constructor parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                return (false, null, null, false);
             }
             bool isEnumerable = false;
             var tParam = p.ParameterType;

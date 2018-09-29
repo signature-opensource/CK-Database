@@ -13,6 +13,7 @@ namespace CK.Core
         readonly Dictionary<Type, AmbientServiceClassInfo> _serviceCollector;
         readonly List<AmbientServiceClassInfo> _serviceRoots;
         readonly Dictionary<Type, AmbientServiceInterfaceInfo> _serviceInterfaces;
+        readonly AmbientServiceTypeDetector _ambientServiceDetector;
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
@@ -28,15 +29,17 @@ namespace CK.Core
             return serviceInfo;
         }
 
+        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.IsAmbientService( t );
+
         internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
         {
-            Debug.Assert( typeof( IAmbientService ).IsAssignableFrom( t ) && t.IsClass );
+            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsClass );
             _serviceCollector.TryGetValue( t, out var info );
             return info;
         }
         internal AmbientServiceInterfaceInfo FindServiceInterfaceInfo( Type t )
         {
-            Debug.Assert( typeof( IAmbientService ).IsAssignableFrom( t ) && t.IsInterface );
+            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
             _serviceInterfaces.TryGetValue( t, out var info );
             return info;
         }
@@ -46,7 +49,7 @@ namespace CK.Core
         /// </summary>
         internal AmbientServiceInterfaceInfo RegisterServiceInterface( Type t )
         {
-            Debug.Assert( typeof( IAmbientService ).IsAssignableFrom( t ) && t != typeof( IAmbientService ) && t.IsInterface );
+            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
             {
                 if( _typeFilter( _monitor, t ) )
@@ -65,8 +68,7 @@ namespace CK.Core
         {
             foreach( var iT in interfaces )
             {
-                if( iT != typeof( IAmbientService )
-                    && typeof(IAmbientService).IsAssignableFrom( iT ) )
+                if( _ambientServiceDetector.IsAmbientService( iT ) )
                 {
                     var r = RegisterServiceInterface( iT );
                     if( r != null ) yield return r;
@@ -332,8 +334,10 @@ namespace CK.Core
                     {
                         thisPathIsResolved = false;
                     }
+#if DEBUG
                     // If this leaf worked, it must be the very first one: subsequent ones must fail.
                     Debug.Assert( !thisPathIsResolved || ++resolvedPathCount == 1 );
+#endif
                     success |= thisPathIsResolved;
                 }
                 if( !success )

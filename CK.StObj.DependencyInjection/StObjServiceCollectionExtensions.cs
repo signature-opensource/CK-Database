@@ -1,26 +1,24 @@
 using CK.Core;
 using System;
-using CK.SqlServer.Setup;
 using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Adds extension methods on <see cref="IServiceCollection"/>.
-    /// Since the extension methods here do not conflict with more generic methods, the namespace is
-    /// CK.AspNet to avoid cluttering the namespace names.
     /// </summary>
-    public static class DBServiceCollectionExtensions
+    public static class StObjServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers all the StObj mappings from an assembly and also registers the <see cref="IStObjMap"/>.
+        /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
+        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
         /// <code>
         /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
         /// {
-        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        ///     services.AddStObjMap( stobjAssembly );
         /// }
         /// </code>
         /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
@@ -29,48 +27,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="stobjAssembly">The assembly.</param>
-        /// <param name="defaultConnectionString">
-        /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
-        /// </param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, Assembly stobjAssembly )
         {
             if( stobjAssembly == null ) throw new ArgumentNullException( nameof( stobjAssembly ) );
-
             var map = StObjContextRoot.Load( stobjAssembly );
             if( map == null )
                 throw new ArgumentException( $"The assembly {stobjAssembly.FullName} was not found or is not a valid StObj map assembly" );
-
-            if( !String.IsNullOrEmpty( defaultConnectionString ) )
-            {
-                var db = map.StObjs.Obtain<SqlDefaultDatabase>();
-                db.ConnectionString = defaultConnectionString;
-            }
             return AddStObjMap( services, map );
         }
 
-        [Obsolete( "There is no more 'Context'. Use 'AddStObjMap' instead." )]
-        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, Assembly stobjAssembly, string defaultConnectionString = null )
-        {
-            return AddStObjMap( services, stobjAssembly, defaultConnectionString );
-        }
-
-        [Obsolete( "There is no more 'Context'. Use 'AddStObjMap' instead." )]
-        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, string assemblyName, string defaultConnectionString = null )
-        {
-            return AddStObjMap( services, assemblyName, defaultConnectionString );
-        }
-
         /// <summary>
-        /// Registers all the StObj mappings from the default context of an assembly and also
-        /// registers the <see cref="IStObjMap"/>.
+        /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
+        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
         /// <code>
         /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
         /// {
-        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        ///     services.AddStObjMap( "CK.StObj.AutoAssembly" );
         /// }
         /// </code>
         /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
@@ -79,33 +55,30 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="assemblyName">The assembly name.</param>
-        /// <param name="defaultConnectionString">
-        /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
-        /// </param>
         /// <remarks>
         /// On NetCore runtime, Assembly.LoadFrom is used to resolves the assembly from its full path.
         /// </remarks>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddStObjMap( this IServiceCollection services, string assemblyName, string defaultConnectionString = null )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, string assemblyName )
         {
 #if NET461
-            return services.AddDefaultStObjMap( new AssemblyName( assemblyName ), defaultConnectionString );
+            return AddStObjMap( services, new AssemblyName( assemblyName ) );
 #else
             string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, assemblyName + ".dll" );
-            return services.AddStObjMap( Assembly.LoadFrom( path ), defaultConnectionString );
+            return AddStObjMap( services, Assembly.LoadFrom( path ) );
 #endif
         }
 
         /// <summary>
-        /// Registers all the StObj mappings from the default context of an assembly and also
-        /// registers the <see cref="IStObjMap"/>.
+        /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
+        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
         /// <code>
         /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
         /// {
-        ///     services.AddDefaultStObjMap( "CK.StObj.AutoAssembly" );
+        ///     services.AddStObjMap( assemblyName );
         /// }
         /// </code>
         /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
@@ -114,24 +87,23 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="assemblyName">The assembly name.</param>
-        /// <param name="defaultConnectionString">
-        /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
-        /// </param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddDefaultStObjMap( this IServiceCollection services, AssemblyName assemblyName, string defaultConnectionString = null )
+        public static IServiceCollection AddStObjMap( this IServiceCollection services, AssemblyName assemblyName )
         {
-            return services.AddStObjMap( Assembly.Load( assemblyName ), defaultConnectionString );
+            return services.AddStObjMap( Assembly.Load( assemblyName ) );
         }
 
         /// <summary>
-        /// Registers all the StObj mappings from a StObj maping and also registers the <see cref="IStObjMap"/>.
+        /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
+        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
         /// </summary>
         /// <param name="services">This services.</param>
-        /// <param name="map">StObj objects to register.</param>
+        /// <param name="map">StObj map to register.</param>
         /// <returns>This services collection.</returns>
         public static IServiceCollection AddStObjMap( this IServiceCollection services, IStObjMap map )
         {
             if( map == null ) throw new ArgumentNullException( nameof( map ) );
+            services.AddSingleton( map );
             foreach( var kv in map.StObjs.Mappings )
             {
                 services.AddSingleton( kv.Key, kv.Value );
@@ -146,7 +118,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 services.AddScoped( kv.Key, p => kv.Value.CreateInstance( p ) );
             }
-            services.AddSingleton( map );
             return services;
         }
 

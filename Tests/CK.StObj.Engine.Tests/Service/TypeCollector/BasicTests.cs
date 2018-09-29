@@ -10,9 +10,14 @@ using System.Threading.Tasks;
 
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
+
     [TestFixture]
     public class BasicTests : TestsBase
     {
+        // Test with an alternate IAmbientService that is not the
+        // "official" CK.Core.IAmbientService from CK.StObj.Model.
+        interface IAmbientService { }
+
         interface IServiceRegistered : IAmbientService
         {
         }

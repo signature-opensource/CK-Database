@@ -20,9 +20,6 @@ namespace CK.Core
         /// </summary>
         IStObjObjectMap StObjs { get; }
 
-        [Obsolete("There is no more 'Context'. 'Default' must be replaced by the 'StObjs' property.")]
-        IStObjObjectMap Default { get; }
-
         /// <summary>
         /// Gets the Services map.
         /// </summary>

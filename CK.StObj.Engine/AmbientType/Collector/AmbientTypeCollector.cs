@@ -51,6 +51,7 @@ namespace CK.Core
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
+            _ambientServiceDetector = new AmbientServiceTypeDetector();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
             _mapName = mapName ?? String.Empty;
         }
@@ -144,7 +145,7 @@ namespace CK.Core
                 result = CreateStObjTypeInfo( t, acParent );
                 Debug.Assert( result != null );
             }
-            if( sParent != null || typeof( IAmbientService ).IsAssignableFrom( t ) )
+            if( sParent != null || _ambientServiceDetector.IsAmbientService( t ) )
             {
                 if( result != null )
                 {
