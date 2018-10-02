@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class BasicServiceTests : TestsBase
     {
-        interface IServiceRegistered : IAmbientService
+        interface IServiceRegistered : IScopedAmbientService
         {
         }
 

@@ -10,7 +10,7 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IAmbientService"/> marker interfaces.
+    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IScopedAmbientService"/> marker interfaces.
     /// </summary>
     public partial class AmbientTypeCollector
     {
@@ -145,21 +145,26 @@ namespace CK.Core
                 result = CreateStObjTypeInfo( t, acParent );
                 Debug.Assert( result != null );
             }
-            if( sParent != null || _ambientServiceDetector.IsAmbientService( t ) )
+            ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( t );
+            if( lt == ServiceLifetime.BothError )
+            {
+                _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( ISingletonAmbientService )}." );
+            }
+            else if( sParent != null || lt != ServiceLifetime.None )
             {
                 if( result != null )
                 {
-                    _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )}, {nameof( IAmbientService )} or {nameof(ISingletonAmbientService)} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
                 }
                 else
                 {
-                    serviceInfo = RegisterServiceClass( t, sParent );
+                    serviceInfo = RegisterServiceClass( t, sParent, lt );
                     Debug.Assert( serviceInfo != null );
                 }
             }
+            // Marks the type as a registered one.
             if( result == null && serviceInfo == null )
             {
-                // Marks the type as a registered one.
                 _collector.Add( t, null );
             }
             return true;

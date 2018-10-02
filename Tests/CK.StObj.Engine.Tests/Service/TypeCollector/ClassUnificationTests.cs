@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     [TestFixture]
     public class ClassUnificationTests : TestsBase
     {
-        class A : IAmbientService { }
+        class A : IScopedAmbientService { }
         class AS1 : A { }
         class AS2 : A { }
         class UnifiedA : A { public UnifiedA( AS1 a1, AS2 a2 ) { } }
@@ -42,7 +42,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             r.AmbientServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( UnifiedAWithoutS2 ) );
         }
 
-        class _A : IAmbientService { }
+        class _A : IScopedAmbientService { }
         class _AS1 : _A { }
         class _AS2 : _A { }
         class _AS3 : _A { }
@@ -63,11 +63,11 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             r.AmbientServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( _UnifiedA2 ) );
         }
 
-        class e_A : IAmbientService { }
+        class e_A : IScopedAmbientService { }
         class e_AS1 : e_A { }
         class e_AS2 : e_A { }
         class e_AS3 : e_A { }
-        class ExternalUnifier : IAmbientService { public ExternalUnifier( e_AS1 a1, e_AS2 a2 ) { } }
+        class ExternalUnifier : IScopedAmbientService { public ExternalUnifier( e_AS1 a1, e_AS2 a2 ) { } }
         class e_UnifiedA2 : e_A { public e_UnifiedA2( ExternalUnifier u, e_AS3 a3 ) { } }
 
         [Test]
@@ -86,7 +86,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
 
-        class u_A : IAmbientService { }
+        class u_A : IScopedAmbientService { }
         class u_AS1 : u_A { }
         class u_AS2Base : u_A { }
         class u_AS2 : u_AS2Base { }
@@ -129,7 +129,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             var r = CheckFailure( collector );
         }
 
-        class s_A : IAmbientService { }
+        class s_A : IScopedAmbientService { }
         class s_AS1 : s_A { }
         class s_AS2Base : s_A { }
         class s_AS2aBase : s_AS2Base { }

@@ -144,7 +144,7 @@ namespace CK.Core
                             {
                                 values[i] = null;
                             }
-                            else if( mapped.IsEnumeration )
+                            else if( mapped.IsEnumerated )
                             {
                                 values[i] = mapped.Value.Select( v => provider.GetService( v ) ).ToArray();
                             }

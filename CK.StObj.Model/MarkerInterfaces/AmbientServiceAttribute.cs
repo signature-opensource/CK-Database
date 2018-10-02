@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Optional attribute for <see cref="IAmbientService"/> implementation.
+    /// Optional attribute for <see cref="IScopedAmbientService"/> implementation.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
     public class AmbientServiceAttribute : Attribute

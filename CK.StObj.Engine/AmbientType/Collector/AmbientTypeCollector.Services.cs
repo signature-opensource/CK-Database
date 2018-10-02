@@ -17,9 +17,9 @@ namespace CK.Core
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
-        AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent )
+        AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent, ServiceLifetime lt )
         {
-            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ) );
+            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt );
             if( !serviceInfo.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -29,17 +29,18 @@ namespace CK.Core
             return serviceInfo;
         }
 
-        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.IsAmbientService( t );
+        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.GetAmbientServiceLifetime( t ) != ServiceLifetime.None;
 
         internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsClass );
+            Debug.Assert( IsAmbientService( t ) && t.IsClass );
             _serviceCollector.TryGetValue( t, out var info );
             return info;
         }
+
         internal AmbientServiceInterfaceInfo FindServiceInterfaceInfo( Type t )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
+            Debug.Assert( IsAmbientService( t ) && t.IsInterface );
             _serviceInterfaces.TryGetValue( t, out var info );
             return info;
         }
@@ -47,14 +48,18 @@ namespace CK.Core
         /// <summary>
         /// Returns null if and only if the interface type is excluded.
         /// </summary>
-        internal AmbientServiceInterfaceInfo RegisterServiceInterface( Type t )
+        AmbientServiceInterfaceInfo RegisterServiceInterface( Type t, ServiceLifetime lt )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
+            Debug.Assert( t.IsInterface
+                            && lt == _ambientServiceDetector.GetAmbientServiceLifetime( t )
+                            && (lt == ServiceLifetime.Scope
+                                || lt == ServiceLifetime.Singleton
+                                || lt == ServiceLifetime.Ambient) );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
             {
                 if( _typeFilter( _monitor, t ) )
                 {
-                    info = new AmbientServiceInterfaceInfo( t, RegisterServiceInterfaces( t.GetInterfaces() ) );
+                    info = new AmbientServiceInterfaceInfo( t, lt, RegisterServiceInterfaces( t.GetInterfaces() ) );
                     ++_serviceInterfaceCount;
                     if( info.Interfaces.Count == 0 ) ++_serviceRootInterfaceCount;
                 }
@@ -68,9 +73,14 @@ namespace CK.Core
         {
             foreach( var iT in interfaces )
             {
-                if( _ambientServiceDetector.IsAmbientService( iT ) )
+                ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( iT );
+                if( lt == ServiceLifetime.BothError )
                 {
-                    var r = RegisterServiceInterface( iT );
+                    _monitor.Error( $"Interface '{iT.FullName}' is marked with both {nameof(IScopedAmbientService)} and {nameof(ISingletonAmbientService)}." );
+                }
+                else if( lt != ServiceLifetime.None )
+                {
+                    var r = RegisterServiceInterface( iT, lt );
                     if( r != null ) yield return r;
                 }
             }

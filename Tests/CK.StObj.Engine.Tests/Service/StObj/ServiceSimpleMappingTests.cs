@@ -13,7 +13,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class ServiceSimpleMappingTests : TestsBase
     {
-        public interface ISBase : IAmbientService
+        public interface ISBase : IScopedAmbientService
         {
         }
 
@@ -49,7 +49,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                 r.AmbientTypeResult.AmbientServices.RootClasses.Should().HaveCount( 2 );
             }
             // Same tests as above but excluding ISBase type: success since
-            // ISBase is no more considered a IAmbientService.
+            // ISBase is no more considered a IScopedAmbientService.
             {
                 var collector = CreateStObjCollector( t => t != typeof( ISBase ) );
                 collector.RegisterType( typeof( ServiceS1Impl ) );
@@ -101,7 +101,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( ISBase )].Should().BeSameAs( typeof( ServiceUnifiedImpl ) );
         }
 
-        interface IMultiImplService : IAmbientService
+        interface IMultiImplService : IScopedAmbientService
         {
         }
 

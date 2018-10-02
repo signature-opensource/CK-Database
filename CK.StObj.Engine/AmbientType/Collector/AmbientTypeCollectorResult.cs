@@ -43,7 +43,7 @@ namespace CK.Core
         public AmbientContractCollectorResult AmbientContracts { get; }
 
         /// <summary>
-        /// Gets the reults for <see cref="IAmbientService"/> objects.
+        /// Gets the reults for <see cref="IScopedAmbientService"/> objects.
         /// </summary>
         public AmbientServiceCollectorResult AmbientServices { get; }
 

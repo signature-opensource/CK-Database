@@ -105,7 +105,8 @@ namespace CK.Core
             AmbientServiceClassInfo parent,
             Type t,
             AmbientTypeCollector collector,
-            bool isExcluded )
+            bool isExcluded,
+            ServiceLifetime lifetime )
             : base( m, parent, t, serviceProvider, isExcluded )
         {
             Debug.Assert( Generalization == parent );
@@ -126,6 +127,11 @@ namespace CK.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Gets this Service class life time.
+        /// </summary>
+        public ServiceLifetime Lifetime { get; }
 
         /// <summary>
         /// Gets the generalization of this <see cref="Type"/>, it is be null if no base class exists.
@@ -152,7 +158,7 @@ namespace CK.Core
         /// Gets the supported service interfaces.
         /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded
         /// and is on a concrete path) and may be empty if there is no service interface (the
-        /// implementation itself is marked with any <see cref="IAmbientService"/> marker).
+        /// implementation itself is marked with any <see cref="IScopedAmbientService"/> marker).
         /// </summary>
         public IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces { get; private set; }
 
@@ -179,7 +185,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the constructor parameters that we need to consider.
-        /// Parameters that are not <see cref="IAmbientService"/> do not appear here.
+        /// Parameters that are not <see cref="IScopedAmbientService"/> do not appear here.
         /// </summary>
         public IReadOnlyList<CtorParameter> ConstructorParameters { get; private set; }
 
@@ -271,10 +277,8 @@ namespace CK.Core
 
         /// <summary>
         /// Sets one of the leaves of this class to be the most specialized one from this
-        /// instance potentially up to the leaf (and handles
-        /// container binding at the same time).
-        /// At least one assignment (the one of this instance)
-        /// is necessarily done.
+        /// instance potentially up to the leaf (and handles container binding at the same time).
+        /// At least one assignment (the one of this instance) is necessarily done.
         /// Trailing path may have already been resolved to this or to another specialization:
         /// classes that are already assigned are skipped.
         /// This must obviously be called bottom-up the inheritance chain.
@@ -400,16 +404,16 @@ namespace CK.Core
                 var mParameters = new List<CtorParameter>();
                 foreach( var p in parameters )
                 {
-                    var (ok, sClass, sInterface, isEnumerable) = CreateCtorParameter( m, collector, p );
-                    success &= ok;
-                    if( sClass != null || sInterface != null )
+                    var param = CreateCtorParameter( m, collector, p );
+                    success &= param.Success;
+                    if( param.Class != null || param.Interface != null )
                     {
-                        mParameters.Add( new CtorParameter( p, sClass, sInterface, isEnumerable ) );
+                        mParameters.Add( new CtorParameter( p, param.Class, param.Interface, param.IsEnumerable ) );
                     }
                     // Temporary: Enumeration is not implemented yet.
-                    if( success && isEnumerable )
+                    if( success && param.IsEnumerable )
                     {
-                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is IAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
+                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is marked with IScopedAmbientService or ISingletonAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
                         success = false;
                     }
                 }
@@ -420,12 +424,28 @@ namespace CK.Core
             return success;
         }
 
-        (bool, AmbientServiceClassInfo, AmbientServiceInterfaceInfo, bool) CreateCtorParameter( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
+        readonly struct CtorParameterData
         {
-            // We only consider IAmbientService interface or type parameters.
+            public readonly bool Success;
+            public readonly AmbientServiceClassInfo Class;
+            public readonly AmbientServiceInterfaceInfo Interface;
+            public readonly bool IsEnumerable;
+
+            public CtorParameterData( bool success, AmbientServiceClassInfo c, AmbientServiceInterfaceInfo i, bool isEnumerable )
+            {
+                Success = success;
+                Class = c;
+                Interface = i;
+                IsEnumerable = isEnumerable;
+            }
+        }
+
+        CtorParameterData CreateCtorParameter( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
+        {
+            // We only consider I(Scoped/Singleton)AmbientService marked type parameters.
             if( !collector.IsAmbientService( p.ParameterType ) )
             {
-                return (true, null, null, false);
+                return new CtorParameterData(true, null, null, false);
             }
             bool isEnumerable = false;
             var tParam = p.ParameterType;
@@ -447,7 +467,7 @@ namespace CK.Core
                 if( sClass == null )
                 {
                     m.Error( $"Unable to resolve '{tParam.FullName}' service type for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable);
                 }
                 if( !sClass.IsIncluded )
                 {
@@ -458,7 +478,7 @@ namespace CK.Core
                     if( !p.HasDefaultValue )
                     {
                         m.Error( prefix + "can not be resolved." );
-                        return (false, null, null, isEnumerable);
+                        return new CtorParameterData( false, null, null, isEnumerable);
                     }
                     m.Info( prefix + "will use its default value." );
                     sClass = null;
@@ -467,17 +487,17 @@ namespace CK.Core
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be this class or one of its specializations." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable);
                 }
                 else if( sClass.IsAssignableFrom( this ) )
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be one of its base class." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable);
                 }
-                return (true, sClass, null, isEnumerable);
+                return new CtorParameterData( true, sClass, null, isEnumerable);
             }
-            return (true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable);
+            return new CtorParameterData( true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable);
         }
 
     }

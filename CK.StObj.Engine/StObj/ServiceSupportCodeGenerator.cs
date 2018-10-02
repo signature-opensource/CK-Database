@@ -19,7 +19,7 @@ namespace CK.Setup
                 Position = p;
                 Name = n;
                 Value = v;
-                IsEnumeration = isEnum;
+                IsEnumerated = isEnum;
             }
 
             public Type ParameterType { get; }
@@ -28,7 +28,7 @@ namespace CK.Setup
 
             public string Name { get; }
 
-            public bool IsEnumeration { get; }
+            public bool IsEnumerated { get; }
 
             public IReadOnlyList<Type> Value { get; }
         }
@@ -134,7 +134,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                         {
                             func.Append( "null" );
                         }
-                        else if( mapped.IsEnumeration )
+                        else if( mapped.IsEnumerated )
                         {
                             func.Append( "new " ).AppendCSharpName( p.ParameterType ).Append( "[]{" );
                             for( int idxType = 0; idxType < mapped.Value.Count; ++idxType )
@@ -188,7 +188,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                         b.Append( "}" );
                     }
                     b.Append( ", " )
-                     .Append( a.IsEnumeration )
+                     .Append( a.IsEnumerated )
                      .Append( ")" ).NewLine();
                 }
                 b.Append( '}' );

@@ -71,14 +71,23 @@ namespace CK.Setup
                 if( success )
                 {
                     _isHeadCandidate = !Family.Interfaces.Except( Class.Interfaces ).Any();
-                    _isHead = _isHeadCandidate && Family.Classes.Where( c => c != this )
-                                                   .All( c => Class.ComputedCtorParametersClassClosure.Contains( c.Class ) );
+                    _isHead = _isHeadCandidate
+                              && Family.Classes.Where( c => c != this )
+                                               .All( c => Class.ComputedCtorParametersClassClosure.Contains( c.Class ) );
                 }
                 return success;
             }
 
+            /// <summary>
+            /// A head candidate is a class that implements all its <see cref="Family"/>'s
+            /// <see cref="InterfaceFamily.Interfaces"/>.
+            /// </summary>
             public bool IsHeadCandidate => _isHeadCandidate;
 
+            /// <summary>
+            /// To be a head, this class must be a head candidate and its constructor parameter closure must
+            /// cover all other <see cref="Family"/>'s <see cref="InterfaceFamily.Classes"/>.
+            /// </summary>
             public bool IsHead => _isHead;
 
             public override string ToString() => Class.ToString();
@@ -213,7 +222,7 @@ namespace CK.Setup
             {
                 Debug.Assert( _interfaces.Intersect( f._interfaces ).Any() == false );
                 _interfaces.UnionWith( f._interfaces );
-                _classes.Union( f._classes );
+                _classes.AddRange( f._classes );
             }
 
             public string BaseInterfacesToString()
@@ -248,7 +257,7 @@ namespace CK.Setup
 
             string IStObjServiceParameterInfo.Name => Parameter.Parameter.ParameterInfo.Name;
 
-            public bool IsEnumeration => throw new NotImplementedException();
+            public bool IsEnumerated => Parameter.Parameter.IsEnumerated;
 
             public IReadOnlyList<Type> Value { get; }
         }
@@ -261,12 +270,6 @@ namespace CK.Setup
             public AmbientServiceClassInfo Class { get; }
 
             public IReadOnlyList<ParameterAssignment> Assignments { get; }
-
-            static internal readonly BuildClassInfo NullValue = new BuildClassInfo();
-
-            private BuildClassInfo()
-            {
-            }
 
             public BuildClassInfo( AmbientServiceClassInfo c, IReadOnlyList<ParameterAssignment> a )
             {
@@ -310,7 +313,7 @@ namespace CK.Setup
                     {
                         if( atLeastOne ) b.Append( ',' );
                         atLeastOne = true;
-                        if( a.IsEnumeration )
+                        if( a.IsEnumerated )
                         {
                             b.Append( '[' );
                             b.AppendStrings( a.Value.Select( t => t.Name ) );
@@ -339,6 +342,10 @@ namespace CK.Setup
                 _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
             }
 
+            /// <summary>
+            /// Not used yet. Planned to support services enumerable and required manual mapping.
+            /// </summary>
+            /// <param name="c"></param>
             public void Register( BuildClassInfo c )
             {
                 if( _infos.TryGetValue( c.Class, out var exists ) )
@@ -374,6 +381,7 @@ namespace CK.Setup
 
             void RegisterMapping( Type t, AmbientServiceClassInfo final )
             {
+                Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
                 IStObjServiceFinalManualMapping manual = null;
                 if( _infos.TryGetValue( final, out var build )
                     && (manual = build.GetFinalMapping( _engineMap )) != null )

@@ -7,7 +7,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Service type descriptor exists only if the type is not excluded (excluding a
-    /// service type is like removing the <see cref="IAmbientService"/> interface marker from
+    /// service type is like removing the <see cref="IScopedAmbientService"/> interface marker from
     /// its interfaces) and has at least one implementation that <see cref="AmbientServiceClassInfo.IsIncluded"/>.
     /// </summary>
     public class AmbientServiceInterfaceInfo
@@ -16,6 +16,11 @@ namespace CK.Core
         /// The interface type.
         /// </summary>
         public Type Type { get; }
+
+        /// <summary>
+        /// Gets this Service interface life time.
+        /// </summary>
+        public ServiceLifetime Lifetime { get; }
 
         /// <summary>
         /// The interface type.
@@ -41,9 +46,10 @@ namespace CK.Core
         public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
 
 
-        internal AmbientServiceInterfaceInfo( Type t, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
+        internal AmbientServiceInterfaceInfo( Type t, ServiceLifetime lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
         {
             Type = t;
+            Lifetime = lt;
             AmbientServiceInterfaceInfo[] bases = Array.Empty<AmbientServiceInterfaceInfo>();
             int depth = 0;
             foreach( var iT in baseInterfaces )
