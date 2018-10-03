@@ -7,7 +7,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Service type descriptor exists only if the type is not excluded (excluding a
-    /// service type is like removing the <see cref="IScopedAmbientService"/> interface marker from
+    /// service type is like removing the <see cref="IAmbientService"/> interface marker from
     /// its interfaces) and has at least one implementation that <see cref="AmbientServiceClassInfo.IsIncluded"/>.
     /// </summary>
     public class AmbientServiceInterfaceInfo
@@ -19,8 +19,12 @@ namespace CK.Core
 
         /// <summary>
         /// Gets this Service interface life time.
+        /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
+        /// vs. <see cref="IScopedAmbientService"/> interface marker.
+        /// This can never be <see cref="ServiceLifetime.BothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// in such cases, the AmbientServiceInterfaceInfo is not instanciated.
         /// </summary>
-        public ServiceLifetime Lifetime { get; }
+        public ServiceLifetime DeclaredLifetime { get; }
 
         /// <summary>
         /// The interface type.
@@ -32,6 +36,14 @@ namespace CK.Core
         /// one other interface.
         /// </summary>
         public bool IsSpecialized { get; private set; }
+
+        /// <summary>
+        /// Gets the final resolved class that implements this interface.
+        /// This is set at the end of the process during interface resolution and
+        /// is used to handle actual lifetime checks without requiring another
+        /// dictionary index.
+        /// </summary>
+        public AmbientServiceClassInfo FinalResolved { get; internal set; }
 
         /// <summary>
         /// Gets the base service interfaces that are specialized by this one.
@@ -48,8 +60,9 @@ namespace CK.Core
 
         internal AmbientServiceInterfaceInfo( Type t, ServiceLifetime lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
         {
+            Debug.Assert( lt == ServiceLifetime.Ambient || lt == ServiceLifetime.Singleton || lt == ServiceLifetime.Scope );
             Type = t;
-            Lifetime = lt;
+            DeclaredLifetime = lt;
             AmbientServiceInterfaceInfo[] bases = Array.Empty<AmbientServiceInterfaceInfo>();
             int depth = 0;
             foreach( var iT in baseInterfaces )

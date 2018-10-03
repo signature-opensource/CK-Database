@@ -11,7 +11,7 @@ namespace CK.Setup
     class ServiceSupportCodeGenerator
     {
         static readonly string _sourceServiceSupport = @"
-        public class StObjServiceParameterInfo : IStObjServiceParameterInfo
+        public sealed class StObjServiceParameterInfo : IStObjServiceParameterInfo
         {
             public StObjServiceParameterInfo( Type t, int p, string n, IReadOnlyList<Type> v, bool isEnum )
             {
@@ -33,17 +33,33 @@ namespace CK.Setup
             public IReadOnlyList<Type> Value { get; }
         }
 
-        public class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
+        public sealed class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
         {
-            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a )
+            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a, bool s )
             {
                 ClassType = t;
                 Assignments = a;
+                IsScoped = s;
             }
 
             public Type ClassType { get; }
 
+            public bool IsScoped { get; }
+
             public IReadOnlyList<IStObjServiceParameterInfo> Assignments { get; }
+        }
+
+        public sealed class StObjServiceClassDescriptor : IStObjServiceClassDescriptor
+        {
+            public StObjServiceClassDescriptor( Type t, bool s )
+            {
+                ClassType = t;
+                IsScoped = s;
+            }
+
+            public Type ClassType { get; }
+
+            public bool IsScoped { get; }
         }
 ";
         readonly ITypeScope _rootType;
@@ -64,27 +80,31 @@ namespace CK.Setup
             _infoType.Namespace.Append( _sourceServiceSupport );
 
             _rootType.Append( @"
-Dictionary<Type, Type> _simpleServiceMappings;
+Dictionary<Type, IStObjServiceClassDescriptor> _simpleServiceMappings;
 Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
 
 public IStObjServiceMap Services => this;
-IReadOnlyDictionary<Type, Type> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
+IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
 IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
                      .NewLine();
 
             // Service mappings (Simple).
-            _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, Type>();" ).NewLine();
+            _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, IStObjServiceClassDescriptor>({liftedMap.ServiceSimpleMappings.Count});" ).NewLine();
             foreach( var map in liftedMap.ServiceSimpleMappings )
             {
                 _rootCtor.Append( $"_simpleServiceMappings.Add( " )
                        .AppendTypeOf( map.Key )
                        .Append( ", " )
-                       .AppendTypeOf( map.Value.FinalType )
+                       .Append( "new StObjServiceClassDescriptor(" )
+                            .AppendTypeOf( map.Value.FinalType )
+                            .Append( ", " )
+                            .Append( map.Value.MustBeScopedLifetime.Value )
+                            .Append( ")" )
                        .Append( " );" )
                        .NewLine();
             }
             // Service mappings (Not so Simple :)).
-            _rootCtor.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>();" ).NewLine();
+            _rootCtor.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>( {liftedMap.ServiceManualMappings.Count} );" ).NewLine();
             foreach( var map in liftedMap.ServiceManualMappings )
             {
                 _rootCtor.Append( $"_manualServiceMappings.Add( " )
@@ -110,7 +130,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                 ctor.Append( "public S" ).Append( c.Number ).Append( "()" ).NewLine()
                     .Append( ": base( " ).AppendTypeOf( c.ClassType ).Append( ", " ).NewLine();
                 GenerateStObjServiceFactortInfoAssignments( ctor, c.Assignments );
-                ctor.Append( ")" );
+                ctor.Append( ", " ).Append( c.IsScoped ).Append( ")" );
             } );
 
             t.CreateFunction( func =>

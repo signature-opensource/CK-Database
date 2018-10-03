@@ -108,15 +108,29 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 services.AddSingleton( kv.Key, kv.Value );
             }
-            // Serice direct type mapping.
+            // Service direct type mapping.
             foreach( var kv in map.Services.SimpleMappings )
             {
-                services.AddScoped( kv.Key, kv.Value );
+                if( kv.Value.IsScoped )
+                {
+                    services.AddScoped( kv.Key, kv.Value.ClassType );
+                }
+                else
+                {
+                    services.AddSingleton( kv.Key, kv.Value.ClassType );
+                }
             }
             // Manual type: Use the automatically generated code.
             foreach( var kv in map.Services.ManualMappings )
             {
-                services.AddScoped( kv.Key, p => kv.Value.CreateInstance( p ) );
+                if( kv.Value.IsScoped )
+                {
+                    services.AddScoped( kv.Key, p => kv.Value.CreateInstance( p ) );
+                }
+                else
+                {
+                    services.AddSingleton( kv.Key, p => kv.Value.CreateInstance( p ) );
+                }
             }
             return services;
         }

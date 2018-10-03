@@ -10,7 +10,7 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IScopedAmbientService"/> marker interfaces.
+    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IAmbientService"/> marker interfaces.
     /// </summary>
     public partial class AmbientTypeCollector
     {

@@ -157,8 +157,13 @@ namespace CK.Setup
                                 // Here comes the "dispatcher" handling and finalRegisterer must
                                 // register all BuildClassInfo required by special handling of
                                 // handled parameters (IReadOnlyCollection<IService>...).
-                                m.CloseGroup( $"Resolved to '{heads[0]}'." );
-                                Resolved = heads[0].Class;
+                                var r = heads[0].Class;
+                                Resolved = r;
+                                foreach( var i in _interfaces )
+                                {
+                                    i.FinalResolved = r;
+                                }
+                                m.CloseGroup( $"Resolved to '{r}'." );
                             }
                         }
                     }
@@ -277,15 +282,26 @@ namespace CK.Setup
                 Assignments = a;
             }
 
-            Type IStObjServiceClassFactoryInfo.ClassType => Class.Type;
+            bool IStObjServiceClassDescriptor.IsScoped
+            {
+                get
+                {
+                    Debug.Assert( _finalMappingDone, "Must be called only once GetFinalMapping has been called at least once." );
+                    return Class.MustBeScopedLifetime.Value;
+                }
+            }
+
+
+            Type IStObjServiceClassDescriptor.ClassType => Class.Type;
 
             IReadOnlyList<IStObjServiceParameterInfo> IStObjServiceClassFactoryInfo.Assignments => Assignments;
 
-            public IStObjServiceFinalManualMapping GetFinalMapping( StObjObjectEngineMap engineMap )
+            public IStObjServiceFinalManualMapping GetFinalMapping( IActivityMonitor m, StObjObjectEngineMap engineMap, ref bool success )
             {
                 if( !_finalMappingDone )
                 {
                     _finalMappingDone = true;
+                    Class.GetFinalMustBeScopedLifetime( m, ref success );
                     if( Assignments.Any() )
                     {
                         _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
@@ -355,36 +371,38 @@ namespace CK.Setup
                 else _infos.Add( c.Class, c );
             }
 
-            public void FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
+            public bool FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
             {
+                bool success = true;
                 foreach( var c in typeResult.RootClasses )
                 {
-                    RegisterClassMapping( c );
+                    RegisterClassMapping( c, ref success );
                 }
                 foreach( var f in families )
                 {
                     foreach( var i in f.Interfaces )
                     {
-                        RegisterMapping( i.Type, f.Resolved );
+                        RegisterMapping( i.Type, f.Resolved, ref success );
                     }
                 }
+                return success;
             }
 
-            void RegisterClassMapping( AmbientServiceClassInfo c )
+            void RegisterClassMapping( AmbientServiceClassInfo c, ref bool success )
             {
-                RegisterMapping( c.Type, c.MostSpecialized );
+                RegisterMapping( c.Type, c.MostSpecialized, ref success );
                 foreach( var s in c.Specializations )
                 {
-                    RegisterClassMapping( s );
+                    RegisterClassMapping( s, ref success );
                 }
             }
 
-            void RegisterMapping( Type t, AmbientServiceClassInfo final )
+            void RegisterMapping( Type t, AmbientServiceClassInfo final, ref bool success )
             {
                 Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
                 IStObjServiceFinalManualMapping manual = null;
                 if( _infos.TryGetValue( final, out var build )
-                    && (manual = build.GetFinalMapping( _engineMap )) != null )
+                    && (manual = build.GetFinalMapping( _monitor, _engineMap, ref success )) != null )
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
                     _engineMap.ServiceManualMappings.Add( t, manual );

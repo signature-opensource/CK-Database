@@ -56,25 +56,9 @@ namespace CK.StObj.Engine.Tests
         public static SimpleServiceContainer CreateAndConfigureSimpleContainer( IStObjMap map )
         {
             var container = new SimpleServiceContainer();
-            // Singletons: the StObjMap has alreay created the instances.
-            foreach( var kv in map.StObjs.Mappings )
-            {
-                container.Add( kv.Key, kv.Value );
-            }
-            // Scoped (created on demand and cached).
-            // 1 - Direct type mapping: use the SimpleObjectActivator helper.
-            foreach( var kv in map.Services.SimpleMappings )
-            {
-                container.Add( kv.Key, () => SimpleObjectActivator.Create( Monitor, kv.Value, container ) );
-            }
-            // 2 - Manual type: Use the automatically generated code.
-            foreach( var kv in map.Services.ManualMappings )
-            {
-                container.Add( kv.Key, () => kv.Value.CreateInstance( container ) );
-            }
+            container.AddStObjMap( map );
             return container;
         }
-
 
         /// <summary>
         /// Loads an assembly that must be in probe paths in .Net framework and in

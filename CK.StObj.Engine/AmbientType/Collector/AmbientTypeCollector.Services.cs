@@ -31,6 +31,8 @@ namespace CK.Core
 
         internal bool IsAmbientService( Type t ) => _ambientServiceDetector.GetAmbientServiceLifetime( t ) != ServiceLifetime.None;
 
+        public ServiceLifetime GetAmbientServiceLifetime( Type t ) => _ambientServiceDetector.GetAmbientServiceLifetime( t );
+
         internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
         {
             Debug.Assert( IsAmbientService( t ) && t.IsClass );
