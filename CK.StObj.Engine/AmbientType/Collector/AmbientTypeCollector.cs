@@ -51,8 +51,9 @@ namespace CK.Core
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
-            _ambientServiceDetector = new AmbientServiceTypeDetector();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
+            _ambientServiceDetector = new AmbientServiceTypeDetector();
+            _ambientServiceDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -146,15 +147,31 @@ namespace CK.Core
                 Debug.Assert( result != null );
             }
             ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( t );
-            if( lt == ServiceLifetime.BothError )
+            if( lt == ServiceLifetime.AmbientBothError )
             {
                 _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( ISingletonAmbientService )}." );
             }
-            else if( sParent != null || lt != ServiceLifetime.None )
+            else if( result != null && lt == ServiceLifetime.IsScoped )
+            {
+                _monitor.Error( $"Type {t.FullName} is registered as a Scoped service and is marked with {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+            }
+            else if( sParent != null || (lt & ServiceLifetime.IsAmbientService) != 0 )
             {
                 if( result != null )
                 {
-                    _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )}, {nameof( IAmbientService )} or {nameof(ISingletonAmbientService)} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    if( lt == ServiceLifetime.AmbientScope )
+                    {
+                        _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
+                    else if( lt == ServiceLifetime.AmbientSingleton )
+                    {
+                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( ISingletonAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
+                    else
+                    {
+                        Debug.Assert( lt == ServiceLifetime.IsAmbientService );
+                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
                 }
                 else
                 {
@@ -182,7 +199,7 @@ namespace CK.Core
             return result;
         }
 
-        protected void RegisterAssembly(Type t)
+        protected void RegisterAssembly( Type t )
         {
             var a = t.Assembly;
             if( !a.IsDynamic ) _assemblies.Add( a );

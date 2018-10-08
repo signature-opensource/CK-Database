@@ -13,7 +13,7 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines how a property value will be searched if not set explicitely set.
+    /// Defines how a property value will be searched if not set explicitly set.
     /// </summary>
     public enum PropertyResolutionSource
     {

@@ -7,6 +7,7 @@ namespace CK.Core
     /// <summary>
     /// Defines the 2 life times and invalid combination of both.
     /// </summary>
+    [Flags]
     public enum ServiceLifetime
     {
         /// <summary>
@@ -15,23 +16,33 @@ namespace CK.Core
         None,
 
         /// <summary>
-        /// This is an ambient service. 
+        /// Ambient service flag. 
         /// </summary>
-        Ambient = 1,
+        IsAmbientService = 1,
 
         /// <summary>
-        /// Service is a singleton. 
+        /// Singleton flag.
         /// </summary>
-        Singleton = Ambient | 2,
+        IsSingleton = 2,
 
         /// <summary>
-        /// Service is a scoped one.
+        /// Scoped flag.
         /// </summary>
-        Scope = Ambient | 4,
+        IsScoped = 4,
+
+        /// <summary>
+        /// Ambient service is a singleton. 
+        /// </summary>
+        AmbientSingleton = IsAmbientService | IsSingleton,
+
+        /// <summary>
+        /// Ambient service is a scoped one.
+        /// </summary>
+        AmbientScope = IsAmbientService | IsScoped,
 
         /// <summary>
         /// Singleton and Scope is an error.
         /// </summary>
-        BothError = Singleton | Scope
+        AmbientBothError = AmbientSingleton | AmbientScope
     }
 }

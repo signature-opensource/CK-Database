@@ -74,13 +74,13 @@ namespace CK.Setup
         IStObjResult ConfiguredContainer { get; }
 
         /// <summary>
-        /// Gets the container of this object. If no container has been explicitely associated for the object, this is the
+        /// Gets the container of this object. If no container has been explicitly associated for the object, this is the
         /// container of its <see cref="Generalization"/> (if it exists). May be null.
         /// </summary>
         IStObjResult Container { get; }
 
         /// <summary>
-        /// Gets a list of required objects. This list combines the requirements of this items (explicitely required types, 
+        /// Gets a list of required objects. This list combines the requirements of this items (explicitly required types, 
         /// construct parameters, etc.) and any RequiredBy from other objects.
         /// </summary>
         IReadOnlyList<IStObjResult> Requires { get; }

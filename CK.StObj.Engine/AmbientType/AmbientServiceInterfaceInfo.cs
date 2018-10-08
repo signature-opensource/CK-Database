@@ -60,7 +60,7 @@ namespace CK.Core
 
         internal AmbientServiceInterfaceInfo( Type t, ServiceLifetime lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
         {
-            Debug.Assert( lt == ServiceLifetime.Ambient || lt == ServiceLifetime.Singleton || lt == ServiceLifetime.Scope );
+            Debug.Assert( lt == ServiceLifetime.IsAmbientService || lt == ServiceLifetime.AmbientSingleton || lt == ServiceLifetime.AmbientScope );
             Type = t;
             DeclaredLifetime = lt;
             AmbientServiceInterfaceInfo[] bases = Array.Empty<AmbientServiceInterfaceInfo>();

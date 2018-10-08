@@ -410,6 +410,7 @@ namespace CK.Setup
                 else
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
+                    final.GetFinalMustBeScopedLifetime( _monitor, ref success );
                     _engineMap.ServiceSimpleMappings.Add( t, final );
                 }
             }
@@ -434,9 +435,8 @@ namespace CK.Setup
                 if( families.Count == 0 )
                 {
                     _monitor.Warn( "No Service interface found. Nothing can be mapped at the Service Interface level." );
-                    return true;
                 }
-                _monitor.Trace( $"{families.Count} Service families found." );
+                else _monitor.Trace( $"{families.Count} Service families found." );
                 bool success = true;
                 var manuals = new FinalRegisterer( _monitor, engineMap ); 
                 foreach( var f in families )
@@ -445,7 +445,7 @@ namespace CK.Setup
                 }
                 if( success )
                 {
-                    manuals.FinalRegistration( typeResult.AmbientServices, families );
+                    success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
                 }
                 return success;
             }

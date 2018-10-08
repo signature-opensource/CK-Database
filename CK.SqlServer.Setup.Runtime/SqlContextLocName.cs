@@ -103,7 +103,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets or sets the schema. This can be null (unknown) or empty (there is explicitely no schema).
+        /// Gets or sets the schema. This can be null (unknown) or empty (there is explicitly no schema).
         /// </summary>
         public string Schema
         {

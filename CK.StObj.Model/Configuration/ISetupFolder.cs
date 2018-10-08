@@ -21,10 +21,15 @@ namespace CK.Core
         HashSet<string> Assemblies { get; }
 
         /// <summary>
-        /// Gets a set of assembly qualified type names that must be explicitely registered 
+        /// Gets a set of assembly qualified type names that must be explicitly registered 
         /// regardless of <see cref="Assemblies"/>.
         /// </summary>
         HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be singletons. 
+        /// </summary>
+        HashSet<string> ExternalSingletonTypes { get; }
 
         /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  

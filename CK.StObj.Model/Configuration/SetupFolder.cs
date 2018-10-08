@@ -18,6 +18,7 @@ namespace CK.Core
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
             ExcludedTypes = new HashSet<string>();
+            ExternalSingletonTypes = new HashSet<string>();
         }
 
         /// <summary>
@@ -28,6 +29,7 @@ namespace CK.Core
             Directory = e.Element( StObjEngineConfiguration.XmlNames.Directory )?.Value;
             Assemblies = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly ) );
             Types = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type ) );
+            ExternalSingletonTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExternalSingletonTypes, StObjEngineConfiguration.XmlNames.Type ) );
             ExcludedTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type ) );
         }
 
@@ -41,6 +43,7 @@ namespace CK.Core
                                     new XElement( StObjEngineConfiguration.XmlNames.Directory, Directory ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly, Assemblies ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type, Types ),
+                                    StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExternalSingletonTypes, StObjEngineConfiguration.XmlNames.Type, ExternalSingletonTypes ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type, ExcludedTypes ) );
         }
 
@@ -57,10 +60,15 @@ namespace CK.Core
         public HashSet<string> Assemblies { get; }
 
         /// <summary>
-        /// Gets a set of assembly qualified type names that must be explicitely registered 
+        /// Gets a set of assembly qualified type names that must be explicitly registered 
         /// regardless of <see cref="Assemblies"/>.
         /// </summary>
         public HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be singletons. 
+        /// </summary>
+        public HashSet<string> ExternalSingletonTypes { get; }
 
         /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  

@@ -83,11 +83,12 @@ namespace CK.Setup
             _ckSetupConfig = config.Element( "CKSetup" );
         }
 
-        struct NormalizedFolder
+        class NormalizedFolder
         {
             public readonly string Directory;
             public readonly HashSet<string> Assemblies;
             public readonly HashSet<string> Types;
+            public readonly HashSet<string> ExternalSingletonTypes;
             public readonly HashSet<string> ExcludedTypes;
             public readonly bool SameAsRoot;
 
@@ -96,6 +97,7 @@ namespace CK.Setup
                 Directory = d;
                 Assemblies = f.Assemblies;
                 Types = f.Types;
+                ExternalSingletonTypes = f.ExternalSingletonTypes;
                 ExcludedTypes = f.ExcludedTypes;
                 SameAsRoot = sameAsRoot;
             }
@@ -399,8 +401,12 @@ namespace CK.Setup
                 if( _config.TraceDependencySorterOutput ) stObjC.DependencySorterHookOutput += i => i.Trace( _monitor );
                 stObjC.DependencySorterHookInput += _startContext.StObjDependencySorterHookInput;
                 stObjC.DependencySorterHookOutput += _startContext.StObjDependencySorterHookOutput;
-                using( _monitor.OpenInfo( "Registering StObj types." ) )
+                using( _monitor.OpenInfo( "Registering types." ) )
                 {
+                    if( f.ExternalSingletonTypes.Count != 0 )
+                    {
+                        stObjC.DefineAsExternalSingletons( f.ExternalSingletonTypes );
+                    }
                     stObjC.RegisterAssemblyTypes( f.Assemblies );
                     stObjC.RegisterTypes( f.Types );
                     foreach( var t in _startContext.ExplicitRegisteredTypes ) stObjC.RegisterType( t );

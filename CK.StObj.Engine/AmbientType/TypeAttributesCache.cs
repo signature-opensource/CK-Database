@@ -31,7 +31,7 @@ namespace CK.Core
         readonly bool _includeBaseClasses;
 
         /// <summary>
-        /// Initializes a new <see cref="TypeAttributesCache"/> that considers only members explicitely 
+        /// Initializes a new <see cref="TypeAttributesCache"/> that considers only members explicitly 
         /// declared by the <paramref name="type"/>.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
