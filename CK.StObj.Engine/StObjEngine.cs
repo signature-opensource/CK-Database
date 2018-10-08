@@ -290,7 +290,7 @@ namespace CK.Setup
                                 {
                                     var clash = normalized.FirstOrDefault( norm => n.StartsWith( norm.Directory, StringComparison.OrdinalIgnoreCase )
                                                                                    || norm.Directory.StartsWith( n, StringComparison.OrdinalIgnoreCase ) );
-                                    if( clash.Directory != null )
+                                    if( clash != null )
                                     {
                                         _monitor.Error( $"Directory '{n}' can not be the same, below or above other SetupFolder '{clash.Directory}'." );
                                     }
@@ -318,9 +318,19 @@ namespace CK.Setup
                                         }
                                         if( ok )
                                         {
+                                            // For ExternalSingletonTypes, we allow them to be different
+                                            // for the root and any SetupFolders.
+                                            // This is because ExternalSingletonTypes only impacts the
+                                            // way auto DI configuration is generated: for some SetupFolder
+                                            // a service may be a singleton whereas for another one the
+                                            // same service type may be implemented as a Scoped one.
+                                            // If this appears to be an issue and we should force the lifetimes
+                                            // to be the same, this will be changed but for the moment, this
+                                            // configuration is "free" to diverge between SetupFolders.
                                             bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
                                                               && f.Types.Count == root.Types.Count
-                                                              && root.ExcludedTypes.Count == f.ExcludedTypes.Count;
+                                                              && root.ExcludedTypes.Count == f.ExcludedTypes.Count
+                                                              && root.ExternalSingletonTypes.SetEquals( f.ExternalSingletonTypes );
                                             normalized.Add( new NormalizedFolder( n, f, sameAsRoot ) );
                                         }
                                     }
