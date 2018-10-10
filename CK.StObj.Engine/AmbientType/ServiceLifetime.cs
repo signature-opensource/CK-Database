@@ -5,13 +5,15 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Defines the 2 life times and invalid combination of both.
+    /// Defines the 2 possible services life times, invalid combination of both
+    /// and <see cref="IAmbientService"/> support.
     /// </summary>
     [Flags]
     public enum ServiceLifetime
     {
         /// <summary>
-        /// Not a service we handle.
+        /// Not a service we handle or external service for which
+        /// no lifetime is known.
         /// </summary>
         None,
 
@@ -22,11 +24,13 @@ namespace CK.Core
 
         /// <summary>
         /// Singleton flag.
+        /// External services are flagged with this only.
         /// </summary>
         IsSingleton = 2,
 
         /// <summary>
         /// Scoped flag.
+        /// External services are flagged with this only.
         /// </summary>
         IsScoped = 4,
 

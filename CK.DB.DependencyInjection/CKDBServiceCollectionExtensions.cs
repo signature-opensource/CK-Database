@@ -106,6 +106,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
         /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// Registers as a Scoped service <see cref="ISqlCallContext"/> mapped to <see cref="SqlStandardCallContext"/>
+        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="map">StObj map to register.</param>

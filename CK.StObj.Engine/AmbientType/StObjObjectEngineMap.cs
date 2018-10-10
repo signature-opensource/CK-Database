@@ -12,6 +12,11 @@ namespace CK.Core
 
     /// <summary>
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
+    /// The internal participants have write access to it. I'm not proud of this (there are definitly cleaner
+    /// ways to organize this) but it work...
+    /// The map is instanciated by AmbientTypeCollector.GetAmbientContractResult and then
+    /// then internally exposed by the AmbientContractCollectorResult so that AmbientTypeCollector.GetAmbientServiceResult(AmbientContractCollectorResult)
+    /// can use (and fill) it.
     /// </summary>
     partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
     {

@@ -39,7 +39,7 @@ namespace CK.Core
             // 1 - Direct type mapping: use the local Create helper.
             foreach( var kv in map.Services.SimpleMappings )
             {
-                if( !singletonOnly.HasValue || singletonOnly.Value != kv.Value.IsScoped)
+                if( !singletonOnly.HasValue || singletonOnly.Value != kv.Value.IsScoped )
                 {
                     container.Add( kv.Key, () => Create( kv.Value.ClassType, container ) );
                 }

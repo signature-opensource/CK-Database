@@ -13,7 +13,7 @@ namespace CK.Core
         readonly Dictionary<Type, AmbientServiceClassInfo> _serviceCollector;
         readonly List<AmbientServiceClassInfo> _serviceRoots;
         readonly Dictionary<Type, AmbientServiceInterfaceInfo> _serviceInterfaces;
-        readonly AmbientServiceTypeDetector _ambientServiceDetector;
+        readonly ServiceLifetimeDetector _ambientServiceDetector;
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
@@ -108,6 +108,7 @@ namespace CK.Core
         AmbientServiceCollectorResult GetAmbientServiceResult( AmbientContractCollectorResult contracts )
         {
             bool success = true;
+            contracts.EngineMap.OnAmbientServiceStart( _ambientServiceDetector.ExternallyDefinedSingletons );
             foreach( var a in contracts.EngineMap.Types )
             {
                 success &= _ambientServiceDetector.DefineAsExternalSingleton( _monitor, a );

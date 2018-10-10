@@ -1,18 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace CK.Core
 {
-    class AmbientServiceTypeDetector
+    class ServiceLifetimeDetector : IServiceLifetimeResult
     {
         readonly Dictionary<Type, ServiceLifetime> _cache;
+        readonly List<Type> _externallyDefinedSingletons;
 
-        public AmbientServiceTypeDetector()
+        public ServiceLifetimeDetector()
         {
             _cache = new Dictionary<Type, ServiceLifetime>();
+            _externallyDefinedSingletons = new List<Type>();
         }
+
+        public bool IsExternalSingleton( Type t ) => _cache.TryGetValue( t, out var i ) && i == ServiceLifetime.IsSingleton;
+
+        public IReadOnlyCollection<Type> ExternallyDefinedSingletons => _externallyDefinedSingletons;
 
         /// <summary>
         /// Defines a type as being a pure <see cref="ServiceLifetime.IsSingleton"/>.
@@ -42,19 +49,22 @@ namespace CK.Core
         {
             if( _cache.TryGetValue( t, out var lt ) )
             {
-                if( lt != lifetime )
+                if( lt == lifetime ) return true;
+                if( lt == ServiceLifetime.None )
                 {
-                    if( lt == ServiceLifetime.None )
-                    {
-                        _cache[t] = lifetime;
-                        return true;
-                    }
+                    _cache[t] = lifetime;
+                }
+                else
+                {
                     m.Error( $"Type '{t.Name}' is already registered with '{lt}' lifetime. It can not be defined as external {lifetime}." );
                     return false;
                 }
-                return true;
             }
-            _cache.Add( t, lifetime );
+            else _cache.Add( t, lifetime );
+            if( lifetime == ServiceLifetime.IsSingleton )
+            {
+                _externallyDefinedSingletons.Add( t );
+            }
             return true;
         }
 

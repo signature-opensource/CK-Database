@@ -18,7 +18,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         {
         }
 
-        [AmbientService( typeof( PackageA ) )]
+        //[AmbientService( typeof( PackageA ) )]
         class ServiceWith2Ctors : IScopedAmbientService
         {
             public ServiceWith2Ctors()
@@ -31,7 +31,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
 
-        [AmbientService( typeof( PackageA ) )]
+        //[AmbientService( typeof( PackageA ) )]
         class ServiceWithOneCtor : IScopedAmbientService
         {
             public ServiceWithOneCtor( int a )
@@ -39,7 +39,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        [AmbientService( typeof( PackageA ) )]
+        //[AmbientService( typeof( PackageA ) )]
         class ServiceWithNonPublicCtor : IScopedAmbientService
         {
             internal ServiceWithNonPublicCtor( int a )
@@ -47,7 +47,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        [AmbientService( typeof( PackageA ) )]
+        //[AmbientService( typeof( PackageA ) )]
         class ServiceWithDefaultCtor : IScopedAmbientService
         {
         }

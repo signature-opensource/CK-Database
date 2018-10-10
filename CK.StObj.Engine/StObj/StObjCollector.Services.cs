@@ -296,12 +296,16 @@ namespace CK.Setup
 
             IReadOnlyList<IStObjServiceParameterInfo> IStObjServiceClassFactoryInfo.Assignments => Assignments;
 
-            public IStObjServiceFinalManualMapping GetFinalMapping( IActivityMonitor m, StObjObjectEngineMap engineMap, ref bool success )
+            public IStObjServiceFinalManualMapping GetFinalMapping(
+                IActivityMonitor m,
+                StObjObjectEngineMap engineMap,
+                IServiceLifetimeResult serviceLifetimeResult,
+                ref bool success )
             {
                 if( !_finalMappingDone )
                 {
                     _finalMappingDone = true;
-                    Class.GetFinalMustBeScopedLifetime( m, ref success );
+                    Class.GetFinalMustBeScopedLifetime( m, serviceLifetimeResult, ref success );
                     if( Assignments.Any() )
                     {
                         _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
@@ -349,13 +353,18 @@ namespace CK.Setup
         {
             readonly IActivityMonitor _monitor;
             readonly StObjObjectEngineMap _engineMap;
+            readonly IServiceLifetimeResult _serviceLifetime;
             readonly Dictionary<AmbientServiceClassInfo, BuildClassInfo> _infos;
 
-            public FinalRegisterer( IActivityMonitor monitor, StObjObjectEngineMap engineMap )
+            public FinalRegisterer(
+                IActivityMonitor monitor,
+                StObjObjectEngineMap engineMap,
+                IServiceLifetimeResult lifetimeResult )
             {
                 _monitor = monitor;
                 _engineMap = engineMap;
                 _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
+                _serviceLifetime = lifetimeResult;
             }
 
             /// <summary>
@@ -397,12 +406,15 @@ namespace CK.Setup
                 }
             }
 
-            void RegisterMapping( Type t, AmbientServiceClassInfo final, ref bool success )
+            void RegisterMapping(
+                Type t,
+                AmbientServiceClassInfo final,
+                ref bool success )
             {
                 Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
                 IStObjServiceFinalManualMapping manual = null;
                 if( _infos.TryGetValue( final, out var build )
-                    && (manual = build.GetFinalMapping( _monitor, _engineMap, ref success )) != null )
+                    && (manual = build.GetFinalMapping( _monitor, _engineMap, _serviceLifetime, ref success )) != null )
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
                     _engineMap.ServiceManualMappings.Add( t, manual );
@@ -410,7 +422,7 @@ namespace CK.Setup
                 else
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
-                    final.GetFinalMustBeScopedLifetime( _monitor, ref success );
+                    final.GetFinalMustBeScopedLifetime( _monitor, _serviceLifetime, ref success );
                     _engineMap.ServiceSimpleMappings.Add( t, final );
                 }
             }
@@ -426,28 +438,36 @@ namespace CK.Setup
             var engineMap = typeResult.AmbientContracts.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
             {
-                // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
-                var allClasses = typeResult.AmbientServices.RootClasses
-                                    .Concat( typeResult.AmbientServices.SubGraphRootClasses )
-                                    .Select( c => c.MostSpecialized );
-                Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
-                IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
-                if( families.Count == 0 )
+                try
                 {
-                    _monitor.Warn( "No Service interface found. Nothing can be mapped at the Service Interface level." );
+                    // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
+                    var allClasses = typeResult.AmbientServices.RootClasses
+                                        .Concat( typeResult.AmbientServices.SubGraphRootClasses )
+                                        .Select( c => c.MostSpecialized );
+                    Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
+                    IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
+                    if( families.Count == 0 )
+                    {
+                        _monitor.Warn( "No IAmbient Service interface found. Nothing can be mapped at the Service Interface level." );
+                    }
+                    else _monitor.Trace( $"{families.Count} Service families found." );
+                    bool success = true;
+                    var manuals = new FinalRegisterer( _monitor, engineMap, typeResult.ServiceLifetime );
+                    foreach( var f in families )
+                    {
+                        success &= f.Resolve( _monitor, manuals );
+                    }
+                    if( success )
+                    {
+                        success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
+                    }
+                    return success;
                 }
-                else _monitor.Trace( $"{families.Count} Service families found." );
-                bool success = true;
-                var manuals = new FinalRegisterer( _monitor, engineMap ); 
-                foreach( var f in families )
+                catch( Exception ex )
                 {
-                    success &= f.Resolve( _monitor, manuals );
+                    _monitor.Fatal( ex );
+                    return false;
                 }
-                if( success )
-                {
-                    success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
-                }
-                return success;
             }
         }
 

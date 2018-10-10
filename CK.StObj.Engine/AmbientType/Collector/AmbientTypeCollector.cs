@@ -52,8 +52,9 @@ namespace CK.Core
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
-            _ambientServiceDetector = new AmbientServiceTypeDetector();
+            _ambientServiceDetector = new ServiceLifetimeDetector();
             _ambientServiceDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
+            _ambientServiceDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -207,25 +208,37 @@ namespace CK.Core
 
         /// <summary>
         /// Obtains the result of the collection.
+        /// This is the root of type analysis: the whole system relies on it.
         /// </summary>
         /// <returns>The result object.</returns>
         public AmbientTypeCollectorResult GetResult()
         {
-            IPocoSupportResult pocoSupport;
-            using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
+            using( _monitor.OpenInfo( "Static Type analysis." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
-                if( pocoSupport != null )
+                IPocoSupportResult pocoSupport;
+                using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
                 {
-                    _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
-                    _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
-                    RegisterClass( pocoSupport.FinalFactory );
+                    pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
+                    if( pocoSupport != null )
+                    {
+                        _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                        _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
+                        RegisterClass( pocoSupport.FinalFactory );
+                    }
                 }
+                AmbientContractCollectorResult contracts;
+                using( _monitor.OpenInfo( "Ambient contracts handling." ) )
+                {
+                    contracts = GetAmbientContractResult();
+                    Debug.Assert( contracts != null );
+                }
+                AmbientServiceCollectorResult services;
+                using( _monitor.OpenInfo( "Ambient services handling." ) )
+                {
+                    services = GetAmbientServiceResult( contracts );
+                }
+                return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _ambientServiceDetector );
             }
-            AmbientContractCollectorResult contracts = GetAmbientContractResult();
-            Debug.Assert( contracts != null );
-            AmbientServiceCollectorResult services = GetAmbientServiceResult( contracts );
-            return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services );
         }
 
 

@@ -14,17 +14,18 @@ namespace CK.Core
     /// </summary>
     public class AmbientTypeCollectorResult
     {
-
         internal AmbientTypeCollectorResult(
             ISet<Assembly> assemblies,
             IPocoSupportResult pocoSupport,
             AmbientContractCollectorResult c,
-            AmbientServiceCollectorResult s )
+            AmbientServiceCollectorResult s,
+            IServiceLifetimeResult serviceLifetime )
         {
             PocoSupport = pocoSupport;
             Assemblies = assemblies;
             AmbientContracts = c;
             AmbientServices = s;
+            ServiceLifetime = serviceLifetime;
         }
 
         /// <summary>
@@ -46,6 +47,11 @@ namespace CK.Core
         /// Gets the reults for <see cref="IScopedAmbientService"/> objects.
         /// </summary>
         public AmbientServiceCollectorResult AmbientServices { get; }
+
+        /// <summary>
+        /// Gets the services lifetime analysis result.
+        /// </summary>
+        public IServiceLifetimeResult ServiceLifetime { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.
