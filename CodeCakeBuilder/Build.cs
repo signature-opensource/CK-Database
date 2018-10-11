@@ -135,6 +135,7 @@ namespace CodeCake
                 .Does( () =>
                  {
                      Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
+                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
                      Cake.CleanDirectories( releasesDir );
                      Cake.CleanDirectory( "Tests/LocalTestHelper/LocalTestStore" );
                      Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
