@@ -450,19 +450,56 @@ namespace CK.Core
                 }
                 if( !(initializationError |= !EnsureCtorBinding( m, collector ) ) )
                 {
-                    foreach( var p in ConstructorParameters )
+                    var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
+                    foreach( var cS in ConstructorParameters.Select( p => p.ServiceClass )
+                                                           .Where( p => p != null )
+                                                           .Concat( replacedTargets ) )
                     {
-                        if( p.ServiceClass != null )
-                        {
-                            var c = p.ServiceClass;
-                            do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
-                            var cParams = p.ServiceClass.GetCtorParametersClassClosure( m, collector, ref initializationError );
-                            _ctorParmetersClosure.UnionWith( cParams );
-                        }
+                        AmbientServiceClassInfo c = cS;
+                        do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
+                        var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initializationError );
+                        _ctorParmetersClosure.UnionWith( cParams );
                     }
                 }
             }
             return _ctorParmetersClosure;
+        }
+
+        IEnumerable<AmbientServiceClassInfo> GetReplacedTargetsFromReplaceServiceAttribute( IActivityMonitor m, AmbientTypeCollector collector )
+        {
+            foreach( var p in Type.GetCustomAttributesData()
+                                  .Where( a => a.AttributeType.Name == nameof( ReplaceAmbientServiceAttribute ) )
+                                  .SelectMany( a => a.ConstructorArguments ) )
+            {
+                Type replaced;
+                if( p.Value is string s )
+                {
+                    replaced = SimpleTypeFinder.WeakResolver( s, false );
+                    if( replaced == null )
+                    {
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
+                        continue;
+                    }
+                }
+                else
+                {
+                    replaced = p.Value as Type;
+                    if( replaced == null )
+                    {
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the parameter '{p.Value}' is not a Type. It is ignored." );
+                        continue;
+                    }
+                }
+                var target = collector.FindServiceClassInfo( replaced );
+                if( target == null )
+                {
+                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type.Name}': the Type to replace is not an Abienst Service class implementation. It is ignored." );
+                }
+                else
+                {
+                    yield return target;
+                }
+            }
         }
 
         internal bool EnsureCtorBinding( IActivityMonitor m, AmbientTypeCollector collector )

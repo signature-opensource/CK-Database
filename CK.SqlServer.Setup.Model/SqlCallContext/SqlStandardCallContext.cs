@@ -12,7 +12,7 @@ using CK.Core;
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Standard implementation of a disposable <see cref="ISqlCallContext"/> that supports 
+    /// Standard implementation, open to extensions, of a disposable <see cref="ISqlCallContext"/> that supports 
     /// query execution by explicitly implementing <see cref="ISqlCommandExecutor"/>).
     /// This is the simplest way to implement calls to the database: by specializing this type, application specific
     /// properties (like the ActorId) can also be used to automatically set method parameter values when used 
