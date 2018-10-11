@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="map">StObj map to register.</param>

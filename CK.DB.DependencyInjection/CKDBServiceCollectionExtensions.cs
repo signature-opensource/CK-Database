@@ -14,9 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
-        /// Registers as a Scoped service <see cref="ISqlCallContext"/> mapped to <see cref="SqlStandardCallContext"/>
-        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
+        /// Optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -43,9 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
-        /// Registers as a Scoped service <see cref="ISqlCallContext"/> mapped to <see cref="SqlStandardCallContext"/>
-        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
+        /// Optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -75,9 +73,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
-        /// Registers as a Scoped service <see cref="ISqlCallContext"/> mapped to <see cref="SqlStandardCallContext"/>
-        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
+        /// Optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
         /// and wrap the call this way:
@@ -105,9 +102,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the <see cref="IStObjMap.StObjs"/> and the <see cref="IStObjMap"/> itself as Singletons
-        /// and <see cref="IStObjMap.Services"/> as Scoped services from a <see cref="IStObjMap"/>.
-        /// Registers as a Scoped service <see cref="ISqlCallContext"/> mapped to <see cref="SqlStandardCallContext"/>
-        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
+        /// and <see cref="IStObjMap.Services"/> as Scoped or Singleton services.
+        /// Optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="map">StObj map to register.</param>
@@ -127,7 +123,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 var map = (IStObjMap)services.First( d => d.ServiceType == typeof( IStObjMap ) ).ImplementationInstance;
                 map.StObjs.Obtain<SqlDefaultDatabase>().ConnectionString = defaultConnectionString;
             }
-            services.AddScoped<ISqlCallContext, SqlStandardCallContext>();
             return services;
         }
 
