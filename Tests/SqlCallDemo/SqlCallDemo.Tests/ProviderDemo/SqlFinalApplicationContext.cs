@@ -11,7 +11,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
     /// <summary>
     /// The application context here mixes all the required call contexts it needs to be able to call all the apis the application needs.
     /// </summary>
-    public class SqlFinalApplicationContext : SqlStandardCallContextRefCounter, IDisposableAllCallContext
+    public class SqlFinalApplicationContext : SqlStandardCallContext, IDisposableAllCallContext
     {
         public SqlFinalApplicationContext( int actorId, int xlcid, int zoneId )
         {
