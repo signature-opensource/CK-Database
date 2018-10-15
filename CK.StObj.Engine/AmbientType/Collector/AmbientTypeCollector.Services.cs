@@ -13,13 +13,13 @@ namespace CK.Core
         readonly Dictionary<Type, AmbientServiceClassInfo> _serviceCollector;
         readonly List<AmbientServiceClassInfo> _serviceRoots;
         readonly Dictionary<Type, AmbientServiceInterfaceInfo> _serviceInterfaces;
-        readonly AmbientServiceTypeDetector _ambientServiceDetector;
+        readonly ServiceLifetimeDetector _ambientServiceDetector;
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
-        AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent )
+        AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent, ServiceLifetime lt )
         {
-            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ) );
+            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt );
             if( !serviceInfo.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -29,17 +29,37 @@ namespace CK.Core
             return serviceInfo;
         }
 
-        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.IsAmbientService( t );
+        /// <summary>
+        /// Defines a type as being a pure <see cref="ServiceLifetime.IsSingleton"/>.
+        /// Can be called multiple times as long as no different registration already exists.
+        /// </summary>
+        /// <param name="t">The type to register.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool DefineAsExternalSingleton( Type t ) => _ambientServiceDetector.DefineAsExternalSingleton( _monitor, t );
+
+        /// <summary>
+        /// Defines a type as being a pure <see cref="ServiceLifetime.IsScoped"/>.
+        /// Can be called multiple times as long as no different registration already exists.
+        /// </summary>
+        /// <param name="t">The type to register.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool DefineAsExternalScoped( Type t ) => _ambientServiceDetector.DefineAsExternalScoped( _monitor, t );
+
+
+        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.GetAmbientServiceLifetime( t ) != ServiceLifetime.None;
+
+        internal ServiceLifetime GetAmbientServiceLifetime( Type t ) => _ambientServiceDetector.GetAmbientServiceLifetime( t );
 
         internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsClass );
+            Debug.Assert( IsAmbientService( t ) && t.IsClass );
             _serviceCollector.TryGetValue( t, out var info );
             return info;
         }
+
         internal AmbientServiceInterfaceInfo FindServiceInterfaceInfo( Type t )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
+            Debug.Assert( IsAmbientService( t ) && t.IsInterface );
             _serviceInterfaces.TryGetValue( t, out var info );
             return info;
         }
@@ -47,14 +67,18 @@ namespace CK.Core
         /// <summary>
         /// Returns null if and only if the interface type is excluded.
         /// </summary>
-        internal AmbientServiceInterfaceInfo RegisterServiceInterface( Type t )
+        AmbientServiceInterfaceInfo RegisterServiceInterface( Type t, ServiceLifetime lt )
         {
-            Debug.Assert( _ambientServiceDetector.IsAmbientService( t ) && t.IsInterface );
+            Debug.Assert( t.IsInterface
+                            && lt == _ambientServiceDetector.GetAmbientServiceLifetime( t )
+                            && (lt == ServiceLifetime.IsAmbientService
+                                || lt == ServiceLifetime.AmbientSingleton
+                                || lt == ServiceLifetime.AmbientScope) );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
             {
                 if( _typeFilter( _monitor, t ) )
                 {
-                    info = new AmbientServiceInterfaceInfo( t, RegisterServiceInterfaces( t.GetInterfaces() ) );
+                    info = new AmbientServiceInterfaceInfo( t, lt, RegisterServiceInterfaces( t.GetInterfaces() ) );
                     ++_serviceInterfaceCount;
                     if( info.Interfaces.Count == 0 ) ++_serviceRootInterfaceCount;
                 }
@@ -68,9 +92,14 @@ namespace CK.Core
         {
             foreach( var iT in interfaces )
             {
-                if( _ambientServiceDetector.IsAmbientService( iT ) )
+                ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( iT );
+                if( lt == ServiceLifetime.AmbientBothError )
                 {
-                    var r = RegisterServiceInterface( iT );
+                    _monitor.Error( $"Interface '{iT.FullName}' is marked with both {nameof(IScopedAmbientService)} and {nameof(ISingletonAmbientService)}." );
+                }
+                else if( (lt&ServiceLifetime.IsAmbientService) != 0 )
+                {
+                    var r = RegisterServiceInterface( iT, lt );
                     if( r != null ) yield return r;
                 }
             }
@@ -78,8 +107,14 @@ namespace CK.Core
 
         AmbientServiceCollectorResult GetAmbientServiceResult( AmbientContractCollectorResult contracts )
         {
+            bool success = true;
+            contracts.EngineMap.OnAmbientServiceStart( _ambientServiceDetector.ExternallyDefinedSingletons );
+            foreach( var a in contracts.EngineMap.Types )
+            {
+                success &= _ambientServiceDetector.DefineAsExternalSingleton( _monitor, a );
+            }
             List<Type> abstractTails = null;
-            bool success = InitializeRootServices( contracts.EngineMap, out var classAmbiguities, ref abstractTails );
+            success &= InitializeRootServices( contracts.EngineMap, out var classAmbiguities, ref abstractTails );
             List<AmbientServiceClassInfo> subGraphs = new List<AmbientServiceClassInfo>();
             if( success && classAmbiguities == null )
             {

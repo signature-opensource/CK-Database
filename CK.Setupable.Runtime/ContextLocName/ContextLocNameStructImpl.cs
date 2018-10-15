@@ -16,7 +16,7 @@ namespace CK.Core
     /// Encapsulates <see cref="Context"/>, <see cref="Location"/> and <see cref="Name"/> synchronized with the <see cref="FullName"/>.
     /// This is defined as a struct in order to be included in classes without new object allocation: it should not be exposed as-is
     /// (and the fact that it does not implement <see cref="IContextLocNaming"/> is done on purpose).
-    /// Note that one of the constructor should be called explicitely.
+    /// Note that one of the constructor should be called explicitly.
     /// </summary>
     public struct ContextLocNameStructImpl
     {

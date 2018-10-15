@@ -71,14 +71,23 @@ namespace CK.Setup
                 if( success )
                 {
                     _isHeadCandidate = !Family.Interfaces.Except( Class.Interfaces ).Any();
-                    _isHead = _isHeadCandidate && Family.Classes.Where( c => c != this )
-                                                   .All( c => Class.ComputedCtorParametersClassClosure.Contains( c.Class ) );
+                    _isHead = _isHeadCandidate
+                              && Family.Classes.Where( c => c != this )
+                                               .All( c => Class.ComputedCtorParametersClassClosure.Contains( c.Class ) );
                 }
                 return success;
             }
 
+            /// <summary>
+            /// A head candidate is a class that implements all its <see cref="Family"/>'s
+            /// <see cref="InterfaceFamily.Interfaces"/>.
+            /// </summary>
             public bool IsHeadCandidate => _isHeadCandidate;
 
+            /// <summary>
+            /// To be a head, this class must be a head candidate and its constructor parameter closure must
+            /// cover all other <see cref="Family"/>'s <see cref="InterfaceFamily.Classes"/>.
+            /// </summary>
             public bool IsHead => _isHead;
 
             public override string ToString() => Class.ToString();
@@ -148,8 +157,13 @@ namespace CK.Setup
                                 // Here comes the "dispatcher" handling and finalRegisterer must
                                 // register all BuildClassInfo required by special handling of
                                 // handled parameters (IReadOnlyCollection<IService>...).
-                                m.CloseGroup( $"Resolved to '{heads[0]}'." );
-                                Resolved = heads[0].Class;
+                                var r = heads[0].Class;
+                                Resolved = r;
+                                foreach( var i in _interfaces )
+                                {
+                                    i.FinalResolved = r;
+                                }
+                                m.CloseGroup( $"Resolved to '{r}'." );
                             }
                         }
                     }
@@ -213,7 +227,7 @@ namespace CK.Setup
             {
                 Debug.Assert( _interfaces.Intersect( f._interfaces ).Any() == false );
                 _interfaces.UnionWith( f._interfaces );
-                _classes.Union( f._classes );
+                _classes.AddRange( f._classes );
             }
 
             public string BaseInterfacesToString()
@@ -248,7 +262,7 @@ namespace CK.Setup
 
             string IStObjServiceParameterInfo.Name => Parameter.Parameter.ParameterInfo.Name;
 
-            public bool IsEnumeration => throw new NotImplementedException();
+            public bool IsEnumerated => Parameter.Parameter.IsEnumerated;
 
             public IReadOnlyList<Type> Value { get; }
         }
@@ -262,27 +276,36 @@ namespace CK.Setup
 
             public IReadOnlyList<ParameterAssignment> Assignments { get; }
 
-            static internal readonly BuildClassInfo NullValue = new BuildClassInfo();
-
-            private BuildClassInfo()
-            {
-            }
-
             public BuildClassInfo( AmbientServiceClassInfo c, IReadOnlyList<ParameterAssignment> a )
             {
                 Class = c;
                 Assignments = a;
             }
 
-            Type IStObjServiceClassFactoryInfo.ClassType => Class.Type;
+            bool IStObjServiceClassDescriptor.IsScoped
+            {
+                get
+                {
+                    Debug.Assert( _finalMappingDone, "Must be called only once GetFinalMapping has been called at least once." );
+                    return Class.MustBeScopedLifetime.Value;
+                }
+            }
+
+
+            Type IStObjServiceClassDescriptor.ClassType => Class.Type;
 
             IReadOnlyList<IStObjServiceParameterInfo> IStObjServiceClassFactoryInfo.Assignments => Assignments;
 
-            public IStObjServiceFinalManualMapping GetFinalMapping( StObjObjectEngineMap engineMap )
+            public IStObjServiceFinalManualMapping GetFinalMapping(
+                IActivityMonitor m,
+                StObjObjectEngineMap engineMap,
+                IServiceLifetimeResult serviceLifetimeResult,
+                ref bool success )
             {
                 if( !_finalMappingDone )
                 {
                     _finalMappingDone = true;
+                    Class.GetFinalMustBeScopedLifetime( m, serviceLifetimeResult, ref success );
                     if( Assignments.Any() )
                     {
                         _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
@@ -310,7 +333,7 @@ namespace CK.Setup
                     {
                         if( atLeastOne ) b.Append( ',' );
                         atLeastOne = true;
-                        if( a.IsEnumeration )
+                        if( a.IsEnumerated )
                         {
                             b.Append( '[' );
                             b.AppendStrings( a.Value.Select( t => t.Name ) );
@@ -330,15 +353,24 @@ namespace CK.Setup
         {
             readonly IActivityMonitor _monitor;
             readonly StObjObjectEngineMap _engineMap;
+            readonly IServiceLifetimeResult _serviceLifetime;
             readonly Dictionary<AmbientServiceClassInfo, BuildClassInfo> _infos;
 
-            public FinalRegisterer( IActivityMonitor monitor, StObjObjectEngineMap engineMap )
+            public FinalRegisterer(
+                IActivityMonitor monitor,
+                StObjObjectEngineMap engineMap,
+                IServiceLifetimeResult lifetimeResult )
             {
                 _monitor = monitor;
                 _engineMap = engineMap;
                 _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
+                _serviceLifetime = lifetimeResult;
             }
 
+            /// <summary>
+            /// Not used yet. Planned to support services enumerable and required manual mapping.
+            /// </summary>
+            /// <param name="c"></param>
             public void Register( BuildClassInfo c )
             {
                 if( _infos.TryGetValue( c.Class, out var exists ) )
@@ -348,35 +380,41 @@ namespace CK.Setup
                 else _infos.Add( c.Class, c );
             }
 
-            public void FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
+            public bool FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
             {
+                bool success = true;
                 foreach( var c in typeResult.RootClasses )
                 {
-                    RegisterClassMapping( c );
+                    RegisterClassMapping( c, ref success );
                 }
                 foreach( var f in families )
                 {
                     foreach( var i in f.Interfaces )
                     {
-                        RegisterMapping( i.Type, f.Resolved );
+                        RegisterMapping( i.Type, f.Resolved, ref success );
                     }
                 }
+                return success;
             }
 
-            void RegisterClassMapping( AmbientServiceClassInfo c )
+            void RegisterClassMapping( AmbientServiceClassInfo c, ref bool success )
             {
-                RegisterMapping( c.Type, c.MostSpecialized );
+                RegisterMapping( c.Type, c.MostSpecialized, ref success );
                 foreach( var s in c.Specializations )
                 {
-                    RegisterClassMapping( s );
+                    RegisterClassMapping( s, ref success );
                 }
             }
 
-            void RegisterMapping( Type t, AmbientServiceClassInfo final )
+            void RegisterMapping(
+                Type t,
+                AmbientServiceClassInfo final,
+                ref bool success )
             {
+                Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
                 IStObjServiceFinalManualMapping manual = null;
                 if( _infos.TryGetValue( final, out var build )
-                    && (manual = build.GetFinalMapping( _engineMap )) != null )
+                    && (manual = build.GetFinalMapping( _monitor, _engineMap, _serviceLifetime, ref success )) != null )
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
                     _engineMap.ServiceManualMappings.Add( t, manual );
@@ -384,6 +422,7 @@ namespace CK.Setup
                 else
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
+                    final.GetFinalMustBeScopedLifetime( _monitor, _serviceLifetime, ref success );
                     _engineMap.ServiceSimpleMappings.Add( t, final );
                 }
             }
@@ -399,29 +438,36 @@ namespace CK.Setup
             var engineMap = typeResult.AmbientContracts.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
             {
-                // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
-                var allClasses = typeResult.AmbientServices.RootClasses
-                                    .Concat( typeResult.AmbientServices.SubGraphRootClasses )
-                                    .Select( c => c.MostSpecialized );
-                Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
-                IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
-                if( families.Count == 0 )
+                try
                 {
-                    _monitor.Warn( "No Service interface found. Nothing can be mapped at the Service Interface level." );
-                    return true;
+                    // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
+                    var allClasses = typeResult.AmbientServices.RootClasses
+                                        .Concat( typeResult.AmbientServices.SubGraphRootClasses )
+                                        .Select( c => c.MostSpecialized );
+                    Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
+                    IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
+                    if( families.Count == 0 )
+                    {
+                        _monitor.Warn( "No IAmbient Service interface found. Nothing can be mapped at the Service Interface level." );
+                    }
+                    else _monitor.Trace( $"{families.Count} Service families found." );
+                    bool success = true;
+                    var manuals = new FinalRegisterer( _monitor, engineMap, typeResult.ServiceLifetime );
+                    foreach( var f in families )
+                    {
+                        success &= f.Resolve( _monitor, manuals );
+                    }
+                    if( success )
+                    {
+                        success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
+                    }
+                    return success;
                 }
-                _monitor.Trace( $"{families.Count} Service families found." );
-                bool success = true;
-                var manuals = new FinalRegisterer( _monitor, engineMap ); 
-                foreach( var f in families )
+                catch( Exception ex )
                 {
-                    success &= f.Resolve( _monitor, manuals );
+                    _monitor.Fatal( ex );
+                    return false;
                 }
-                if( success )
-                {
-                    manuals.FinalRegistration( typeResult.AmbientServices, families );
-                }
-                return success;
             }
         }
 

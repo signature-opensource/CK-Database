@@ -9,10 +9,10 @@ namespace CK.Core
     public interface IStObjServiceMap
     {
         /// <summary>
-        /// Gets all the <see cref="IAmbientService"/> types to Service class mappings
+        /// Gets all the <see cref="IAmbientService"/> types to the final service class type
         /// that can be directly resolved by any DI container.
         /// </summary>
-        IReadOnlyDictionary<Type, Type> SimpleMappings { get; }
+        IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> SimpleMappings { get; }
 
         /// <summary>
         /// Gets all the <see cref="IAmbientService"/> types to Service class mappings
@@ -22,5 +22,13 @@ namespace CK.Core
         /// helper method.
         /// </summary>
         IReadOnlyDictionary<Type, IStObjServiceClassFactory> ManualMappings { get; }
+
+        /// <summary>
+        /// Gets the set of types that have been explicitly defined as singletons
+        /// or inferred to be singletons.
+        /// Note that this can contain open generic like <see cref="IPocoFactory{T}"/> (ie.
+        /// the typeof(IPocoFactory&lt;&gt;) type) that is registered by default.
+        /// </summary>
+        IReadOnlyCollection<Type> ExternallyDefinedSingletons { get; }
     }
 }

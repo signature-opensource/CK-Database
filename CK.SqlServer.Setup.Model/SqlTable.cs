@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Initializes a new <see cref="SqlTable"/> with a null <see cref="TableName"/>.
         /// </summary>
-        public SqlTable()
+        protected SqlTable()
         {
         }
 

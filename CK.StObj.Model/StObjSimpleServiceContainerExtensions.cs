@@ -17,25 +17,40 @@ namespace CK.Core
         /// </summary>
         /// <param name="container">This container.</param>
         /// <param name="map">The StObjMap to register. Must not be null.</param>
+        /// <param name="singletonOnly">
+        /// Lifetime Scoped and Singleton filtering. When null, both kind are added.
+        /// When true, only singletons are added.
+        /// When false, only scoped services are added: this must be called on a container
+        /// that already knows the singletons (typically in its <see cref="SimpleServiceContainer.BaseProvider"/>).
+        /// </param>
         /// <returns>The container to enable fluent syntax.</returns>
-        public static ISimpleServiceContainer AddStObjMap( this ISimpleServiceContainer container, IStObjMap map )
+        public static ISimpleServiceContainer AddStObjMap( this ISimpleServiceContainer container, IStObjMap map, bool? singletonOnly = null )
         {
             if( map == null ) throw new ArgumentNullException( nameof( map ) );
-            // Singletons: the StObjMap has alreay created the instances.
-            foreach( var kv in map.StObjs.Mappings )
+            // StObjs are Singletons: the StObjMap has alreay created the instances.
+            if( singletonOnly != false )
             {
-                container.Add( kv.Key, kv.Value );
+                foreach( var kv in map.StObjs.Mappings )
+                {
+                    container.Add( kv.Key, kv.Value );
+                }
             }
-            // Scoped (created on demand and cached).
+            // Services: instances are created on demand and cached.
             // 1 - Direct type mapping: use the local Create helper.
             foreach( var kv in map.Services.SimpleMappings )
             {
-                container.Add( kv.Key, () => Create( kv.Value, container ) );
+                if( !singletonOnly.HasValue || singletonOnly.Value != kv.Value.IsScoped )
+                {
+                    container.Add( kv.Key, () => Create( kv.Value.ClassType, container ) );
+                }
             }
             // 2 - Manual type: Use the automatically generated code.
             foreach( var kv in map.Services.ManualMappings )
             {
-                container.Add( kv.Key, () => kv.Value.CreateInstance( container ) );
+                if( !singletonOnly.HasValue || singletonOnly.Value != kv.Value.IsScoped )
+                {
+                    container.Add( kv.Key, () => kv.Value.CreateInstance( container ) );
+                }
             }
             return container;
         }

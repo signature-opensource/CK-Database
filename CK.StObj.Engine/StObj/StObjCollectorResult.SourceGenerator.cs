@@ -299,7 +299,6 @@ class GStObj : IStObj
             IEnumerable<object> IStObjObjectMap.Implementations => _implStObjs.Select( s => s.Instance );
             IEnumerable<StObjImplementation> IStObjObjectMap.StObjs => _implStObjs.Select( s => s.AsStObjImplementation );
             IEnumerable<KeyValuePair<Type, object>> IStObjObjectMap.Mappings => _map.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
-
             GStObj GToLeaf( Type t ) => _map.TryGetValue( t, out var s ) ? s.Leaf : null;
             " );
 

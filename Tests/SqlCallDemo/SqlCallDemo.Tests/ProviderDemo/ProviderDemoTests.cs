@@ -4,6 +4,7 @@ using SqlCallDemo.ProviderDemo;
 using CK.Core;
 using static CK.Testing.DBSetupTestHelper;
 using FluentAssertions;
+using System;
 
 namespace SqlCallDemo.Tests.ProviderDemo
 {
@@ -11,8 +12,8 @@ namespace SqlCallDemo.Tests.ProviderDemo
     [TestFixture]
     public class ProviderDemoTests
     {
-        SqlProviderContext _contextOdd = new SqlProviderContext( 1, 3 , 5 );
-        SqlProviderContextCleaner _contextEven = new SqlProviderContextCleaner( 2, 4, 6 );
+        Func<IDisposableAllCallContext> _contextOdd = () => new SqlFinalApplicationContext( 1, 3 , 5 );
+        Func<IDisposableAllCallContext> _contextEven = () => new SqlFinalApplicationContext( 2, 4, 6 );
 
 
         /// <summary>
@@ -21,10 +22,10 @@ namespace SqlCallDemo.Tests.ProviderDemo
         /// </summary>
         class ActorDependentOnlyService
         {
-            readonly ISqlCallContextProvider<IDisposableActorCallContext> _provider;
+            readonly Func<IDisposableActorCallContext> _provider;
             readonly ProviderDemoPackage _p;
 
-            public ActorDependentOnlyService( ISqlCallContextProvider<IDisposableActorCallContext> c, ProviderDemoPackage p )
+            public ActorDependentOnlyService( Func<IDisposableActorCallContext> c, ProviderDemoPackage p )
             {
                 _provider = c;
                 _p = p;
@@ -36,7 +37,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
             /// <returns>True if ActorId is 1, false for 2.</returns>
             public bool DoSomething()
             {
-                using( var ctx = _provider.Acquire() )
+                using( var ctx = _provider() )
                 {
                     return CallActorOnly( _p.ActorOnly( ctx ) );
                 }
@@ -56,10 +57,10 @@ namespace SqlCallDemo.Tests.ProviderDemo
         /// </summary>
         class ActorAndCultureDependentService
         {
-            readonly ISqlCallContextProvider<IDisposableActorCultureCallContext> _provider;
+            readonly Func<IDisposableActorCultureCallContext> _provider;
             readonly ProviderDemoPackage _p;
 
-            public ActorAndCultureDependentService( ISqlCallContextProvider<IDisposableActorCultureCallContext> c, ProviderDemoPackage p )
+            public ActorAndCultureDependentService( Func<IDisposableActorCultureCallContext> c, ProviderDemoPackage p )
             {
                 _provider = c;
                 _p = p;
@@ -67,7 +68,7 @@ namespace SqlCallDemo.Tests.ProviderDemo
 
             public bool DoSomething()
             {
-                using( var ctx = _provider.Acquire() )
+                using( var ctx = _provider() )
                 {
                     bool isOne = CallActorOnly( _p.ActorOnly( ctx ) );
                     Assert.That( CallCultureOnly( _p.CultureOnly( ctx ) ), Is.EqualTo( isOne ) );

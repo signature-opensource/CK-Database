@@ -54,7 +54,7 @@ namespace CK.Setup
                     if( t.Value == System.Type.Missing )
                     {
                         // Parameter reference have already been resolved as dependencies for graph construction since 
-                        // no Value has been explicitely set for the parameter.
+                        // no Value has been explicitly set for the parameter.
                         resolved = t.CachedResolvedStObj;
                         if( resolved != null )
                         {

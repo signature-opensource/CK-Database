@@ -57,19 +57,19 @@ namespace CK.Setup
         public bool Accessed { get; set; }
 
         /// <summary>
-        /// Gets whether this has been explicitely deleted. <see cref="SetNewVersion"/> has
+        /// Gets whether this has been explicitly deleted. <see cref="SetNewVersion"/> has
         /// been called with a null version.
         /// </summary>
         public bool Deleted { get; private set; }
 
         /// <summary>
-        /// Gets the new version. Null if no version has been explicitely set or <see cref="SetNewVersion"/> has
+        /// Gets the new version. Null if no version has been explicitly set or <see cref="SetNewVersion"/> has
         /// been called with a null version..
         /// </summary>
         public Version NewVersion { get; private set; }
 
         /// <summary>
-        /// Gets the new item type. Null if no version has been explicitely set.
+        /// Gets the new item type. Null if no version has been explicitly set.
         /// </summary>
         public string NewType { get; private set; }
 

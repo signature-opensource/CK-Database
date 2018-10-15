@@ -40,7 +40,7 @@ namespace CK.Setup
         /// This allow name binding to another container or package, even one that is not a Structure Object: it should be rarely used and most often let to null.
         /// </summary>
         /// <remarks>
-        /// This is not inherited: it must be explicitely set for each object.
+        /// This is not inherited: it must be explicitly set for each object.
         /// </remarks>
         string ContainerFullName { get; set; }
 

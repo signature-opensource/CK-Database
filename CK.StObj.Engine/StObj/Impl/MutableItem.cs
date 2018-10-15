@@ -459,7 +459,7 @@ namespace CK.Setup
                         // Check configuration.
                         if( _itemKind == DependentItemKind.Unknown )
                         {
-                            monitor.Warn( $"Since ItemKind is not specified on this base class ('{ToString()}'), it defaults to SimpleItem. It should be explicitely set to either SimpleItem, Group or Container." );
+                            monitor.Warn( $"Since ItemKind is not specified on this base class ('{ToString()}'), it defaults to SimpleItem. It should be explicitly set to either SimpleItem, Group or Container." );
                             _itemKind = DependentItemKind.Item;
                         }
                         if( _trackAmbientPropertiesMode == TrackAmbientPropertiesMode.Unknown ) _trackAmbientPropertiesMode = TrackAmbientPropertiesMode.None;

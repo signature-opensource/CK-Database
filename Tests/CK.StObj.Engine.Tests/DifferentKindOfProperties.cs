@@ -62,7 +62,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        // A null property type triggers an error: it must be explicitely typeof(object).
+        // A null property type triggers an error: it must be explicitly typeof(object).
         [StObjProperty( PropertyName = "AProperty", PropertyType = null )]
         class MissingStObjPropertyType : IAmbientContract
         {

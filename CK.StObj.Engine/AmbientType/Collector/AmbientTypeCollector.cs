@@ -51,8 +51,10 @@ namespace CK.Core
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
-            _ambientServiceDetector = new AmbientServiceTypeDetector();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
+            _ambientServiceDetector = new ServiceLifetimeDetector();
+            _ambientServiceDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
+            _ambientServiceDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -145,21 +147,42 @@ namespace CK.Core
                 result = CreateStObjTypeInfo( t, acParent );
                 Debug.Assert( result != null );
             }
-            if( sParent != null || _ambientServiceDetector.IsAmbientService( t ) )
+            ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( t );
+            if( lt == ServiceLifetime.AmbientBothError )
+            {
+                _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( ISingletonAmbientService )}." );
+            }
+            else if( result != null && lt == ServiceLifetime.IsScoped )
+            {
+                _monitor.Error( $"Type {t.FullName} is registered as a Scoped service and is marked with {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+            }
+            else if( sParent != null || (lt & ServiceLifetime.IsAmbientService) != 0 )
             {
                 if( result != null )
                 {
-                    _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    if( lt == ServiceLifetime.AmbientScope )
+                    {
+                        _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
+                    else if( lt == ServiceLifetime.AmbientSingleton )
+                    {
+                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( ISingletonAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
+                    else
+                    {
+                        Debug.Assert( lt == ServiceLifetime.IsAmbientService );
+                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
+                    }
                 }
                 else
                 {
-                    serviceInfo = RegisterServiceClass( t, sParent );
+                    serviceInfo = RegisterServiceClass( t, sParent, lt );
                     Debug.Assert( serviceInfo != null );
                 }
             }
+            // Marks the type as a registered one.
             if( result == null && serviceInfo == null )
             {
-                // Marks the type as a registered one.
                 _collector.Add( t, null );
             }
             return true;
@@ -177,7 +200,7 @@ namespace CK.Core
             return result;
         }
 
-        protected void RegisterAssembly(Type t)
+        protected void RegisterAssembly( Type t )
         {
             var a = t.Assembly;
             if( !a.IsDynamic ) _assemblies.Add( a );
@@ -185,25 +208,37 @@ namespace CK.Core
 
         /// <summary>
         /// Obtains the result of the collection.
+        /// This is the root of type analysis: the whole system relies on it.
         /// </summary>
         /// <returns>The result object.</returns>
         public AmbientTypeCollectorResult GetResult()
         {
-            IPocoSupportResult pocoSupport;
-            using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
+            using( _monitor.OpenInfo( "Static Type analysis." ) )
             {
-                pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
-                if( pocoSupport != null )
+                IPocoSupportResult pocoSupport;
+                using( _monitor.OpenInfo( "Creating Poco Types and PocoFactory." ) )
                 {
-                    _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
-                    _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
-                    RegisterClass( pocoSupport.FinalFactory );
+                    pocoSupport = _pocoRegisterer.Finalize( _tempAssembly.StubModuleBuilder, _monitor );
+                    if( pocoSupport != null )
+                    {
+                        _tempAssembly.Memory.Add( typeof( IPocoSupportResult ), pocoSupport );
+                        _tempAssembly.SourceModules.Add( PocoSourceGenerator.CreateModule( pocoSupport ) );
+                        RegisterClass( pocoSupport.FinalFactory );
+                    }
                 }
+                AmbientContractCollectorResult contracts;
+                using( _monitor.OpenInfo( "Ambient contracts handling." ) )
+                {
+                    contracts = GetAmbientContractResult();
+                    Debug.Assert( contracts != null );
+                }
+                AmbientServiceCollectorResult services;
+                using( _monitor.OpenInfo( "Ambient services handling." ) )
+                {
+                    services = GetAmbientServiceResult( contracts );
+                }
+                return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _ambientServiceDetector );
             }
-            AmbientContractCollectorResult contracts = GetAmbientContractResult();
-            Debug.Assert( contracts != null );
-            AmbientServiceCollectorResult services = GetAmbientServiceResult( contracts );
-            return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services );
         }
 
 

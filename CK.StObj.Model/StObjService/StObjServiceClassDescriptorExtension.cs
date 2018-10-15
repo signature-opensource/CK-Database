@@ -7,9 +7,9 @@ using System.Text;
 namespace CK.Core
 {
     /// <summary>
-    /// Extends <see cref="IStObjServiceClassFactoryInfo"/>.
+    /// Extends <see cref="IStObjServiceClassDescriptor"/>.
     /// </summary>
-    public static class StObjServiceClassFactoryInfoExtension
+    public static class StObjServiceClassDescriptorExtension
     {
         /// <summary>
         /// Gets the single constructor information of the type.
