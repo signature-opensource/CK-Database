@@ -426,7 +426,10 @@ namespace CK.Core
                     if( !MustBeScopedLifetime.HasValue )
                     {
                         MustBeScopedLifetime = false;
-                        m.Warn( $"Nothing prevents the class '{Type.Name}' to be a Singleton." );
+                        if( DeclaredLifetime != ServiceLifetime.AmbientSingleton )
+                        {
+                            m.Warn( $"Nothing prevents the class '{Type.Name}' to be a Singleton." );
+                        }
                     }
                 }
             }

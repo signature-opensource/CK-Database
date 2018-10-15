@@ -39,7 +39,7 @@
     <CKReflectionVersion>8.0.1-C0011-develop</CKReflectionVersion>
     <CKCodeGenVersion>0.4.1--0007-local</CKCodeGenVersion>
     <YodiiScriptVersion>0.7.1-C0011-develop</YodiiScriptVersion>
-    <CKSetupVersion>8.0.1--0009-local</CKSetupVersion>
+    <CKSetupVersion>8.0.1--0011-local</CKSetupVersion>
     <CKTestingVersion>0.6.1--0007-local</CKTestingVersion>
     <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
