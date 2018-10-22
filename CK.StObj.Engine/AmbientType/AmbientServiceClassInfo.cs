@@ -249,7 +249,7 @@ namespace CK.Core
         /// This mimics the <see cref="StObjTypeInfo.CreateMutableItemsPath"/> method
         /// to reproduce the exact same Type handling between Services and StObj (ignoring agstract tails
         /// for instance).
-        /// This is simpler since there is no split in type info (no MutableItem layer).
+        /// This is simpler here since there is no split in type info (no MutableItem layer).
         /// </summary>
         internal bool InitializePath(
                         IActivityMonitor monitor,
