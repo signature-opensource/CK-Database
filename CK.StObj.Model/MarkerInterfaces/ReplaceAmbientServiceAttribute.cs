@@ -41,7 +41,7 @@ namespace CK.Core
         /// Initializes a new <see cref="ReplaceAmbientServiceAttribute"/> that specifies the assembly
         /// qualified name of the replaced service type.
         /// </summary>
-        /// <param name="replaced">The type of the service that this service replaces. Must not be null or white space.</param>
+        /// <param name="replacedAssemblyQualifiedName">The type of the service that this service replaces. Must not be null or white space.</param>
         public ReplaceAmbientServiceAttribute( string replacedAssemblyQualifiedName )
         {
             if( String.IsNullOrWhiteSpace( replacedAssemblyQualifiedName ) ) throw new ArgumentNullException( nameof( replacedAssemblyQualifiedName ) );
