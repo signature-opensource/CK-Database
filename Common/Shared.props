@@ -34,13 +34,13 @@
     <CKActivityMonitorVersion>10.1.2--0031-local</CKActivityMonitorVersion>
     <CKSetupDependencyVersion>7.1.2--0028-local</CKSetupDependencyVersion>
     <CKAspNetVersion>2.1.2</CKAspNetVersion>
-    <CKSqlServerParserVersion>10.0.1--0026-local</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>10.0.1--0027-local</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>7.0.1--0029-local</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.1--0027-local</CKReflectionVersion>
     <CKCodeGenVersion>0.4.1--0030-local</CKCodeGenVersion>
     <YodiiScriptVersion>0.7.1--0027-local</YodiiScriptVersion>
-    <CKSetupVersion>8.0.1--0043-local</CKSetupVersion>
-    <CKTestingVersion>0.6.1--0030-local</CKTestingVersion>
+    <CKSetupVersion>8.0.1--0045-local</CKSetupVersion>
+    <CKTestingVersion>0.6.1--0032-local</CKTestingVersion>
     <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -81,11 +81,10 @@
   <!--<SourceLink>: is enabled only for Cake build. -->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-</PropertyGroup>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
     <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
-</ItemGroup>
+  </ItemGroup>
   <!--</SourceLink>-->
 </Project>
