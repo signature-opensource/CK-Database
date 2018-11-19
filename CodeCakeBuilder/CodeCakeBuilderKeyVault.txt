@@ -1,0 +1,5 @@
+-- Version: 1
+-- Keys below can be removed if needed.
+CKSETUP_CAKE_TARGET_STORE_APIKEY_AND_URL
+AZURE_FEED_SIGNATURE_OPENSOURCE_PAT
+ > 2smkEbqUv8vx0H+wg9bT4OHJqpUIvJhT+FsdQCqlbcQjnFgGzJasTdNVaN8V/SO8ykdPzfQ2puZbWCHVM18+UTdBQ2vyxYUgCit0EX30Cq1Xqvafmcn9I1WmDvxaN9D0SzeD7HjjIyQ1ulQt7ogr1vlt7r/ZfTWodSJyuJ/egoVFEEp/bPUYw8K6LVWqW3NlRcxA2OmRl19N7Sa91t3B0LfvVRKqds8MjNj+U2UcG+Vu2nIRlhqOnhfe1y0bHnZimqg6L/IeuwqsjElJmSbqAA==
