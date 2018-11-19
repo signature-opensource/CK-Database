@@ -30,17 +30,17 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>10.1.2--0031-local</CKCoreVersion>
-    <CKActivityMonitorVersion>10.1.2--0031-local</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>7.1.2--0028-local</CKSetupDependencyVersion>
+    <CKCoreVersion>10.1.2--0033-local</CKCoreVersion>
+    <CKActivityMonitorVersion>10.1.2--0034-local</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>7.1.2--0029-local</CKSetupDependencyVersion>
     <CKAspNetVersion>2.1.2</CKAspNetVersion>
-    <CKSqlServerParserVersion>10.0.1--0027-local</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>7.0.1--0029-local</CKSqlServerParserModelVersion>
+    <CKSqlServerParserVersion>10.0.1--0028-local</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>7.0.1--0030-local</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.1--0027-local</CKReflectionVersion>
-    <CKCodeGenVersion>0.4.1--0030-local</CKCodeGenVersion>
+    <CKCodeGenVersion>0.4.1--0031-local</CKCodeGenVersion>
     <YodiiScriptVersion>0.7.1--0027-local</YodiiScriptVersion>
-    <CKSetupVersion>8.0.1--0045-local</CKSetupVersion>
-    <CKTestingVersion>0.6.1--0032-local</CKTestingVersion>
+    <CKSetupVersion>8.0.1--0047-local</CKSetupVersion>
+    <CKTestingVersion>0.6.1--0033-local</CKTestingVersion>
     <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
