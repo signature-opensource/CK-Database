@@ -1,18 +1,17 @@
 <Project>
-
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>10.1.2--0033-local</CKCoreVersion>
-    <CKActivityMonitorVersion>10.1.2--0034-local</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>7.1.2--0029-local</CKSetupDependencyVersion>
+    <CKCoreVersion>10.1.2--0037-local</CKCoreVersion>
+    <CKActivityMonitorVersion>10.1.2--0038-local</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>7.1.2--0032-local</CKSetupDependencyVersion>
     <CKAspNetVersion>2.1.2</CKAspNetVersion>
-    <CKSqlServerParserVersion>10.0.1--0028-local</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>7.0.1--0030-local</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>8.0.1--0027-local</CKReflectionVersion>
-    <CKCodeGenVersion>0.4.1--0031-local</CKCodeGenVersion>
-    <YodiiScriptVersion>0.7.1--0027-local</YodiiScriptVersion>
-    <CKSetupVersion>8.0.1--0047-local</CKSetupVersion>
-    <CKTestingVersion>0.6.1--0033-local</CKTestingVersion>
+    <CKSqlServerParserVersion>10.0.1--0030-local</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>7.0.1--0033-local</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>8.0.1--0028-local</CKReflectionVersion>
+    <CKCodeGenVersion>0.4.1--0034-local</CKCodeGenVersion>
+    <YodiiScriptVersion>0.7.1--0028-local</YodiiScriptVersion>
+    <CKSetupVersion>8.0.1--0051-local</CKSetupVersion>
+    <CKTestingVersion>0.6.1--0036-local</CKTestingVersion>
     <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -21,7 +20,6 @@
     <EmbeddedResource Remove="CKSetup-WorkingDir\**" />
     <None Remove="CKSetup-WorkingDir\**" />
   </ItemGroup>
-
   <!-- When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion). -->
   <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
     <Version>0.0.0-0</Version>
@@ -29,7 +27,6 @@
     <FileVersion>0.0.0.0</FileVersion>
     <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
   </PropertyGroup>
-
   <!--<SourceLink>: is enabled only for Cake build. -->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -40,7 +37,6 @@
     <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
   </ItemGroup>
   <!--</SourceLink>-->
-
   <!--<BasicDefinitions>: It is useful to knwow whether we are in the Tests/ folder and/or if the current project is a Test.-->
   <PropertyGroup>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
@@ -49,7 +45,6 @@
     <SolutionDir Condition=" $(SolutionDir) != '' ">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
   </PropertyGroup>
   <!--</BasicDefinitions>-->
-
   <!--<StandardProperties>-->
   <PropertyGroup>
     <RepositoryUrl>https://gitlab.com/signature-code/CK-Database.git</RepositoryUrl>
@@ -63,7 +58,6 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
   <!--</StandardProperties>-->
-
   <!--<ReproducibleBuilds>: See http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html.-->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <Deterministic>true</Deterministic>
@@ -72,7 +66,6 @@
     <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
   </PropertyGroup>
   <!--</ReproducibleBuilds>-->
-
   <!--<ZeroVersion>: When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion).-->
   <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
     <Version>0.0.0-0</Version>
@@ -81,7 +74,6 @@
     <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
   </PropertyGroup>
   <!--</ZeroVersion>-->
-
   <!--<GenerateDocumentation>: Default is in Release or during Cake builds (except for projects below Tests/). Each project can override GenerateDocumentationFile property.-->
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
