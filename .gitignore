@@ -268,3 +268,8 @@ Tests/SqlActorPackage.Tests/CKSetupWorkingDirectory/
 CKSetupWorkingDirectory/
 CKSetup-WorkingDir/
 Logs/
+
+Tests/**/TestResult*.xml
+CodeCakeBuilder/UnitTestsDone.*.txt
+Tests/**/Logs/
+Tests/**/CKSetup-WorkingDir/
