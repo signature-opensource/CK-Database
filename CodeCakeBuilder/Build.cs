@@ -50,13 +50,6 @@ namespace CodeCake
                 GetNetStandard20BinFolder( "CK.Setupable.Model", configuration ),
                 GetNetStandard20BinFolder( "CK.SqlServer.Setup.Model", configuration ),
 
-                GetNetCoreApp20BinFolder( "CK.StObj.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.StObj.Engine", configuration ) ,
-                GetNetCoreApp20BinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.Setupable.Engine", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
-
                 GetNetCoreApp21BinFolder( "CK.StObj.Runtime", configuration ),
                 GetNetCoreApp21BinFolder( "CK.StObj.Engine", configuration ),
                 GetNetCoreApp21BinFolder( "CK.Setupable.Engine", configuration ),
