@@ -23,6 +23,7 @@ namespace CK.Setup
         /// Called by the engine when the version is not found for the item
         /// before using the <see cref="IVersionedItem.PreviousNames"/>.
         /// This is a "first chance" optional hook.
+        /// This enables any possible mapping and fallback to take place.
         /// </summary>
         /// <param name="item">Item for which a version should be found.</param>
         /// <param name="originalVersions">

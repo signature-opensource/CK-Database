@@ -16,6 +16,9 @@ namespace CK.Setup
 {
     public partial class StObjCollectorResult
     {
+        /// <summary>
+        /// Captures code generation result.
+        /// </summary>
         public struct CodeGenerateResult
         {
             /// <summary>

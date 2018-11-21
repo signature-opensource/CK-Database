@@ -5,7 +5,7 @@ using System;
 namespace CK.Testing.StObjSetup
 {
     /// <summary>
-    /// This core helper exposes only <see cref="GenerateSourceFiles"/> and
+    /// This core helper exposes only <see cref="StObjGenerateSourceFiles"/> and
     /// 
     /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>.
     /// </summary>

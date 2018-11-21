@@ -50,7 +50,7 @@ namespace CK.Core
 
             /// <summary>
             /// Gets the (unwrapped) Type of this parameter.
-            /// When <see cref="IsEnumeration"/> is true, this is the type of the enumerated object:
+            /// When <see cref="IsEnumerated"/> is true, this is the type of the enumerated object:
             /// for IReadOnlyList&lt;X&gt;, this is typeof(X).
             /// </summary>
             Type ParameterType { get; }
@@ -92,6 +92,10 @@ namespace CK.Core
                 }
             }
 
+            /// <summary>
+            /// Overridden to return a readable string.
+            /// </summary>
+            /// <returns>A readable string.</returns>
             public override string ToString()
             {
                 var typeName = ParameterInfo.Member.DeclaringType.Name;
@@ -139,14 +143,14 @@ namespace CK.Core
         /// Gets this Service class life time.
         /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
         /// vs. <see cref="IScopedAmbientService"/> interface marker.
-        /// This can never be <see cref="ServiceLifetime.BothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// This can never be <see cref="ServiceLifetime.AmbientBothError"/> nor <see cref="ServiceLifetime.None"/> since
         /// in such cases, the AmbientServiceClassInfo is not instanciated.
         /// </summary>
         public ServiceLifetime DeclaredLifetime { get; }
 
         /// <summary>
-        /// Gets whether this class must be <see cref="ServiceLifetime.Scope"/> because of its dependencies.
-        /// If its <see cref="DeclaredLifetime"/> is <see cref="ServiceLifetime.Singleton"/> an error is detected
+        /// Gets whether this class must be <see cref="ServiceLifetime.IsScoped"/> because of its dependencies.
+        /// If its <see cref="DeclaredLifetime"/> is <see cref="ServiceLifetime.IsSingleton"/> an error is detected
         /// either at the very beginning of the process based on the static parameter type information or at the
         /// end of the process when class and interface mappings are about to be resolved.
         /// </summary>

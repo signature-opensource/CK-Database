@@ -70,7 +70,7 @@ namespace CK.Core
 
         /// <summary>
         /// Checks whether the type has a IScopedAmbientService, ISingletonAmbientService
-        /// interface (or <see cref="ServiceLifetime.BothError"/>) or IAmbientService or
+        /// interface (or <see cref="ServiceLifetime.AmbientBothError"/>) or IAmbientService or
         /// has been registered as a <see cref="ServiceLifetime.IsScoped"/>
         /// or <see cref="ServiceLifetime.IsSingleton"/>.
         /// Only the interface name matters (namespace is ignored) and the interface

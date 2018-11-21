@@ -139,7 +139,7 @@ namespace CK.Setup
         /// if not found. 
         /// Item's <see cref="IVersionedItem.PreviousNames"/> are used if provided to handle renaming.
         /// </summary>
-        /// <param name="i">The versionned item.</param>
+        /// <param name="item">The versionned item.</param>
         /// <returns>The versionned name that contains the name and the version of the item stored in this repository or null.</returns>
         public VersionedName GetCurrent( IVersionedItem item )
         {
@@ -172,7 +172,7 @@ namespace CK.Setup
         /// Updates the current version.
         /// If the <see cref="IVersionedItem.Version"/> is null, it is the same as calling <see cref="Delete"/>.
         /// </summary>
-        /// <param name="i">The versioned item to update.</param>
+        /// <param name="item">The versioned item to update.</param>
         public void SetCurrent( IVersionedItem item )
         {
             item.CheckVersionItemArgument( nameof( item ) );

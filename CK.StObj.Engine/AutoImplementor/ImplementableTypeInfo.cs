@@ -10,16 +10,23 @@ using System.Reflection.Emit;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Handles abstract Type and <see cref="IAttributeAutoImplemented"/>, <see cref="IAutoImplementorMethod"/>
+    /// and <see cref="IAutoImplementorProperty"/> members.
+    /// </summary>
     public class ImplementableTypeInfo
     {
+        /// <summary>
+        /// Marker type exposed by <see cref="UnimplementedMarker"/>.
+        /// </summary>
         public class NoImplementationMarker : IAutoImplementorMethod, IAutoImplementorProperty
         {
-            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
+            bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
             {
                 throw new NotSupportedException();
             }
 
-            public bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ITypeScope b )
+            bool IAutoImplementorProperty.Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ITypeScope b )
             {
                 throw new NotSupportedException();
             }
@@ -156,6 +163,12 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Generates the code of this Type and returns its full name.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="a">The target dynamic assembly.</param>
+        /// <returns>The full name of the generated type.</returns>
         public string GenerateType( IActivityMonitor monitor, IDynamicAssembly a )
         {
             var cB = a.DefaultGenerationNamespace.CreateType( t => t.Append( "public class " )

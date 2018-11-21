@@ -24,7 +24,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="objectType">The type for which the attribute must be found.</param>
         /// <param name="monitor">Logger that will receive the warning.</param>
-        /// <param name="multipleContainerLogLevel"><see cref="LogLevel"/> when different containers are detected. By default a warning is emitted.</param>
+        /// <param name="multipleContainerLogLevel"><see cref="CK.Core.LogLevel"/> when different containers are detected. By default a warning is emitted.</param>
         /// <returns>
         /// Null if no <see cref="IStObjAttribute"/> is set.
         /// </returns>

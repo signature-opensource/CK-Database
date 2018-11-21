@@ -32,11 +32,13 @@ namespace CK.Setup
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
         /// <param name="runtimeBuilder">Optional runtime builder to use.</param>
+        /// <param name="typeFilter">Optional type filter.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
         /// <param name="valueResolver">
         /// Used to explicitly resolve or alter StObjConstruct parameters and object ambient properties.
         /// See <see cref="IStObjValueResolver"/>.
         /// </param>
+        /// <param name="secondaryRunAccessor">Provides already resolved and stored objects during secondary runs.</param>
         public StObjCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
@@ -277,12 +279,12 @@ namespace CK.Setup
                     if( error ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Resolving PreConstruct and PostBuild properties." ) )
                     {
-                        /// This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
-                        /// except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
-                        /// the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
-                        /// a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
-                        /// During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
-                        /// or to PostBuild collector in order to always set a correctly constructed object to a property.
+                        // This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
+                        // except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
+                        // the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
+                        // a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
+                        // During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
+                        // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
                             item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
@@ -348,8 +350,8 @@ namespace CK.Setup
                     if( error ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
                     {
-                        /// Finalize construction by injecting Ambient Contracts objects
-                        /// and PostBuild Ambient Properties on specializations.
+                        // Finalize construction by injecting Ambient Contracts objects
+                        // and PostBuild Ambient Properties on specializations.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
                             item.SetPostBuildProperties( _monitor );

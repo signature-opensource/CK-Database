@@ -50,13 +50,6 @@ namespace CodeCake
                 GetNetStandard20BinFolder( "CK.Setupable.Model", configuration ),
                 GetNetStandard20BinFolder( "CK.SqlServer.Setup.Model", configuration ),
 
-                GetNetCoreApp20BinFolder( "CK.StObj.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.StObj.Engine", configuration ) ,
-                GetNetCoreApp20BinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.Setupable.Engine", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
-
                 GetNetCoreApp21BinFolder( "CK.StObj.Runtime", configuration ),
                 GetNetCoreApp21BinFolder( "CK.StObj.Engine", configuration ),
                 GetNetCoreApp21BinFolder( "CK.Setupable.Engine", configuration ),
@@ -76,11 +69,6 @@ namespace CodeCake
         static NormalizedPath GetNetStandard20BinFolder( string name, string configuration )
         {
             return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
-        }
-
-        static NormalizedPath GetNetCoreApp20BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0/publish" );
         }
 
         static NormalizedPath GetNetCoreApp21BinFolder( string name, string configuration )
@@ -111,7 +99,7 @@ namespace CodeCake
             var projectsToPublish = projects
                                         .Where( p => !p.Path.Segments.Contains( "Tests" ) );
 
-            // Initialized by Build: the netstandard2.0/netcoreapp2.0 directory must exist
+            // Initialized by Build: the netstandard2.0/netcoreapp2.1 directory must exist
             // since we rely on them to find the target...
             ComponentProjects componentProjects = null;
 
@@ -119,7 +107,7 @@ namespace CodeCake
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
             // This default global info will be replaced by Check-Repository task.
             // It is allocated here to ease debugging and/or manual work on complex build script.
-            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo { Version = gitInfo.SafeNuGetVersion };
+            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo( gitInfo, projectsToPublish );
 
             Task( "Check-Repository" )
                 .Does( () =>
@@ -151,17 +139,6 @@ namespace CodeCake
 
                      foreach( var pub in componentProjects.ComponentProjectPaths
                                             .Where( p => p.LastPart == "publish"
-                                                         && p.Parts[p.Parts.Count - 2] == "netcoreapp2.0" ) )
-                     {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
-                            new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
-                            {
-                                s.Framework = "netcoreapp2.0";
-                                s.Configuration = globalInfo.BuildConfiguration;
-                            } ) );
-                     }
-                     foreach( var pub in componentProjects.ComponentProjectPaths
-                                            .Where( p => p.LastPart == "publish"
                                                          && p.Parts[p.Parts.Count - 2] == "netcoreapp2.1" ) )
                      {
                          Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
@@ -179,7 +156,7 @@ namespace CodeCake
                                      || Cake.ReadInteractiveOption( "RunUnitTests", "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
                 .Does( () =>
                  {
-                     StandardUnitTests( globalInfo.BuildConfiguration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
+                     StandardUnitTests( globalInfo, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
                  } );
 
             Task( "Create-All-NuGet-Packages" )
