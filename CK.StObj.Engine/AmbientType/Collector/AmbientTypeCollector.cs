@@ -31,6 +31,7 @@ namespace CK.Core
         /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
         /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
         /// <param name="mapName">Optional map name. Defaults to the empty string.</param>
+        /// <param name="typeFilter">Optional type filter.</param>
         public AmbientTypeCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
@@ -200,6 +201,11 @@ namespace CK.Core
             return result;
         }
 
+        /// <summary>
+        /// Registers an assembly for which at least one type has been handled.
+        /// This is required for code generation: such assemblies are dependencies.
+        /// </summary>
+        /// <param name="t">The registered type.</param>
         protected void RegisterAssembly( Type t )
         {
             var a = t.Assembly;

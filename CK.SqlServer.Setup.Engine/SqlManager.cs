@@ -97,7 +97,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets or sets whether whenever a creation script is executed, the informational message
         /// 'The module 'X' depends on the missing object 'Y'. The module will still be created; however, it cannot run successfully until the object exists.' 
-        /// must be logged as a <see cref="LogLevel.Error"/>. When false, this is a <see cref="LogLevel.Info"/>.
+        /// must be logged as a <see cref="CK.Core.LogLevel.Error"/>. When false, this is a <see cref="CK.Core.LogLevel.Info"/>.
         /// Defaults to false.
         /// Note that if <see cref="IgnoreMissingDependencyIsError"/> is true, this property has no effect and a missing dependency will remain informational.
         /// </summary>
@@ -468,6 +468,7 @@ namespace CK.SqlServer.Setup
         /// The connection must be opened.
         /// </summary>
         /// <param name="cmd">The command text.</param>
+        /// <param name="timeoutSecond">Timeout in seconds.</param>
         /// <returns>The number of rows.</returns>
         public int ExecuteNonQuery( string cmd, int timeoutSecond = -1 )
         {
@@ -536,13 +537,7 @@ namespace CK.SqlServer.Setup
 
         #endregion
 
-        public static string GetMasterConnectionString( string connectionString )
-        {
-            string current;
-            return GetMasterConnectionString( connectionString, out current );
-        }
-
-        public static string GetMasterConnectionString( string connectionString, out string currentDatabase )
+        static string GetMasterConnectionString( string connectionString, out string currentDatabase )
         {
             SqlConnectionStringBuilder b = new SqlConnectionStringBuilder( connectionString );
             currentDatabase = b.InitialCatalog;

@@ -9,7 +9,7 @@ namespace CK.Core
     /// <summary>
     /// Encapsulate type information for an Ambient Contract or Service class.
     /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
-    /// Attributes must be retrieved thanks to <see cref="Attributes">.
+    /// Attributes must be retrieved thanks to <see cref="Attributes"/>.
     /// This type information are built top-down (from generalization to most specialized type).
     /// </summary>
     public class AmbientTypeInfo

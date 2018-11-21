@@ -21,7 +21,7 @@ namespace CK.Core
         /// Gets this Service interface life time.
         /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
         /// vs. <see cref="IScopedAmbientService"/> interface marker.
-        /// This can never be <see cref="ServiceLifetime.BothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// This can never be <see cref="ServiceLifetime.AmbientBothError"/> nor <see cref="ServiceLifetime.None"/> since
         /// in such cases, the AmbientServiceInterfaceInfo is not instanciated.
         /// </summary>
         public ServiceLifetime DeclaredLifetime { get; }

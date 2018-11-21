@@ -30,7 +30,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers a value. Uses standard equal check (<see cref="List{T}.IndexOf"/> is called) to 
+        /// Registers a value. Uses standard equal check (<see cref="List{T}.IndexOf(T, int)"/> is called) to 
         /// store same object value only once.
         /// The null reference is added at the start (its index is 0).
         /// </summary>

@@ -10,6 +10,9 @@ using CK.CodeGen.Abstractions;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Code source generator for <see cref="IPoco"/>.
+    /// </summary>
     public static class PocoSourceGenerator
     {
         class Module : ICodeGeneratorModule
@@ -62,6 +65,11 @@ namespace CK.Core
             }
         }
 
+        /// <summary>
+        /// Creates a source code module that implements a <see cref="IPocoSupportResult"/>.
+        /// </summary>
+        /// <param name="r">The poco description.</param>
+        /// <returns>The source code module.</returns>
         public static ICodeGeneratorModule CreateModule( IPocoSupportResult r )
         {
             if( r == null ) throw new ArgumentNullException( nameof( r ) );
