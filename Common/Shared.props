@@ -1,17 +1,17 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>10.1.2--0046-local</CKCoreVersion>
-    <CKActivityMonitorVersion>10.1.2--0042-local</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>7.1.2--0035-local</CKSetupDependencyVersion>
+    <CKCoreVersion>0.0.0--023hkmc-local</CKCoreVersion>
+    <CKActivityMonitorVersion>0.0.0--023hks0-local</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>0.0.0--023hkvc-local</CKSetupDependencyVersion>
     <CKAspNetVersion>2.1.2</CKAspNetVersion>
-    <CKSqlServerParserVersion>10.0.1--0033-local</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>7.0.1--0036-local</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>8.0.1--0029-local</CKReflectionVersion>
-    <CKCodeGenVersion>0.4.1--0037-local</CKCodeGenVersion>
-    <YodiiScriptVersion>0.7.1--0029-local</YodiiScriptVersion>
-    <CKSetupVersion>8.0.1--0058-local</CKSetupVersion>
-    <CKTestingVersion>0.6.1--0040-local</CKTestingVersion>
+    <CKSqlServerParserVersion>0.0.0--023hmr6-local</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>0.0.0--023hkvb-local</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>0.0.0--023hk3f-local</CKReflectionVersion>
+    <CKCodeGenVersion>0.0.0--023hkvb-local</CKCodeGenVersion>
+    <YodiiScriptVersion>0.0.0--023hk3s-local</YodiiScriptVersion>
+    <CKSetupVersion>0.0.0--023hpkt-local</CKSetupVersion>
+    <CKTestingVersion>0.0.0--023hmmp-local</CKTestingVersion>
     <FluentAssertionsVersion>5.4.1</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -28,9 +28,11 @@
     <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
   </PropertyGroup>
   <!--<SourceLink>: is enabled only for Cake build. -->
+  <PropertyGroup>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
@@ -53,6 +55,8 @@
     <Authors>Signature Code</Authors>
     <Copyright>Copyright Invenietis 2007-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
     <RepositoryType>git</RepositoryType>
+    <!--Removes annoying Pack warning: The package version ... uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients...-->
+    <NoWarn>NU5105</NoWarn>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)SharedKey.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
@@ -61,8 +65,8 @@
   <!--<ReproducibleBuilds>: See http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html.-->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <Deterministic>true</Deterministic>
-    <!-- Finds the CK-World (empty file) that must exist at the root of the development directory. This is path to map to C:\CK-World. -->
-    <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World))</CKWorldPath>
+    <!-- Finds the CK-World.htm that must exist at the root of the development directory. This is path to map to C:\CK-World. -->
+    <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World.htm))</CKWorldPath>
     <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
   </PropertyGroup>
   <!--</ReproducibleBuilds>-->
