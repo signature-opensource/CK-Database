@@ -27,7 +27,7 @@ namespace SqlActorPackage.Runtime
                 NormalizedPath path = AppContext.BaseDirectory;
                 var cfgFile = path.PathsToFirstPart( new NormalizedPath[] { "Tests/BasicModels/SqlActorPackage.Runtime" }, new[] { "BuggyPackageDriver.xml" } )
                                   .FirstOrDefault( p => File.Exists( p ) );
-                if( !cfgFile.IsEmpty )
+                if( !cfgFile.IsEmptyPath )
                 {
                     monitor.Info( $"File BuggyPackageDriver.xml found: {cfgFile}" );
                     ReturnError = true;
