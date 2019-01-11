@@ -29,67 +29,6 @@ using System.Linq;
 
 namespace CodeCake
 {
-
-    class ComponentProjects
-    {
-        public ComponentProjects( string configuration )
-        {
-            ComponentProjectPaths = new[]
-            {
-                GetNet461BinFolder( "CK.StObj.Model", configuration ),
-                GetNet461BinFolder( "CK.StObj.Runtime", configuration ),
-                GetNet461BinFolder( "CK.StObj.Engine", configuration ),
-                GetNet461BinFolder( "CK.Setupable.Model", configuration ),
-                GetNet461BinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNet461BinFolder( "CK.Setupable.Engine", configuration ),
-                GetNet461BinFolder( "CK.SqlServer.Setup.Model", configuration ),
-                GetNet461BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNet461BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
-
-                GetNetStandard20BinFolder( "CK.StObj.Model", configuration ),
-                GetNetStandard20BinFolder( "CK.Setupable.Model", configuration ),
-                GetNetStandard20BinFolder( "CK.SqlServer.Setup.Model", configuration ),
-
-                GetNetCoreApp20BinFolder( "CK.StObj.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.StObj.Engine", configuration ) ,
-                GetNetCoreApp20BinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.Setupable.Engine", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNetCoreApp20BinFolder( "CK.SqlServer.Setup.Engine", configuration ),
-
-                GetNetCoreApp21BinFolder( "CK.StObj.Runtime", configuration ),
-                GetNetCoreApp21BinFolder( "CK.StObj.Engine", configuration ),
-                GetNetCoreApp21BinFolder( "CK.Setupable.Engine", configuration ),
-                GetNetCoreApp21BinFolder( "CK.Setupable.Runtime", configuration ),
-                GetNetCoreApp21BinFolder( "CK.SqlServer.Setup.Runtime", configuration ),
-                GetNetCoreApp21BinFolder( "CK.SqlServer.Setup.Engine", configuration )
-            };
-        }
-
-        public IReadOnlyList<NormalizedPath> ComponentProjectPaths { get; }
-
-        static NormalizedPath GetNet461BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/net461" );
-        }
-
-        static NormalizedPath GetNetStandard20BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netstandard2.0" );
-        }
-
-        static NormalizedPath GetNetCoreApp20BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.0/publish" );
-        }
-
-        static NormalizedPath GetNetCoreApp21BinFolder( string name, string configuration )
-        {
-            return System.IO.Path.GetFullPath( name + "/bin/" + configuration + "/netcoreapp2.1/publish" );
-        }
-    }
-
-
     [AddPath( "%UserProfile%/.nuget/packages/**/tools*" )]
     public partial class Build : CodeCakeHost
     {
@@ -111,15 +50,11 @@ namespace CodeCake
             var projectsToPublish = projects
                                         .Where( p => !p.Path.Segments.Contains( "Tests" ) );
 
-            // Initialized by Build: the netstandard2.0/netcoreapp2.0 directory must exist
-            // since we rely on them to find the target...
-            ComponentProjects componentProjects = null;
-
             // The SimpleRepositoryInfo should be computed once and only once.
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
             // This default global info will be replaced by Check-Repository task.
             // It is allocated here to ease debugging and/or manual work on complex build script.
-            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo { Version = gitInfo.SafeNuGetVersion };
+            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo( gitInfo, projectsToPublish );
 
             Task( "Check-Repository" )
                 .Does( () =>
@@ -135,6 +70,7 @@ namespace CodeCake
                 .Does( () =>
                  {
                      Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
+                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
                      Cake.CleanDirectories( releasesDir );
                      Cake.CleanDirectory( "Tests/LocalTestHelper/LocalTestStore" );
                      Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
@@ -146,30 +82,6 @@ namespace CodeCake
                 .Does( () =>
                  {
                      StandardSolutionBuild( solutionFileName, gitInfo, globalInfo.BuildConfiguration );
-                     componentProjects = new ComponentProjects( globalInfo.BuildConfiguration );
-
-                     foreach( var pub in componentProjects.ComponentProjectPaths
-                                            .Where( p => p.LastPart == "publish"
-                                                         && p.Parts[p.Parts.Count - 2] == "netcoreapp2.0" ) )
-                     {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
-                            new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
-                            {
-                                s.Framework = "netcoreapp2.0";
-                                s.Configuration = globalInfo.BuildConfiguration;
-                            } ) );
-                     }
-                     foreach( var pub in componentProjects.ComponentProjectPaths
-                                            .Where( p => p.LastPart == "publish"
-                                                         && p.Parts[p.Parts.Count - 2] == "netcoreapp2.1" ) )
-                     {
-                         Cake.DotNetCorePublish( pub.RemoveLastPart( 4 ),
-                            new DotNetCorePublishSettings().AddVersionArguments( gitInfo, s =>
-                            {
-                                s.Framework = "netcoreapp2.1";
-                                s.Configuration = globalInfo.BuildConfiguration;
-                            } ) );
-                     }
                  } );
 
             Task( "Unit-Testing" )
@@ -178,7 +90,7 @@ namespace CodeCake
                                      || Cake.ReadInteractiveOption( "RunUnitTests", "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
                 .Does( () =>
                  {
-                     StandardUnitTests( globalInfo.BuildConfiguration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
+                     StandardUnitTests( globalInfo, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
                  } );
 
             Task( "Create-All-NuGet-Packages" )
@@ -194,27 +106,7 @@ namespace CodeCake
                 .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
-                    var components = componentProjects.ComponentProjectPaths.Select( x => x.ToString() );
-
-                    var storeConf = Cake.CKSetupCreateDefaultConfiguration();
-                    if( globalInfo.IsLocalCIRelease )
-                    {
-                        storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
-                    }
-                    if( !storeConf.IsValid )
-                    {
-                        Cake.Information( "CKSetupStoreConfiguration is invalid. Skipped push to remote store." );
-                        return;
-                    }
-                    Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
-                    if( !Cake.CKSetupAddComponentFoldersToStore( storeConf, components ) )
-                    {
-                        Cake.TerminateWithError( "Error while registering components in local temporary store." );
-                    }
-                    if( !Cake.CKSetupPushLocalToRemoteStore( storeConf ) )
-                    {
-                        Cake.TerminateWithError( "Error while pushing components to remote store." );
-                    }
+                    StandardPushCKSetupComponents( globalInfo );
                 } );
 
             Task( "Push-NuGet-Packages" )

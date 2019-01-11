@@ -7,6 +7,9 @@ using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Implements <see cref="ISqlSetupAspect"/>.
+    /// </summary>
     public class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;

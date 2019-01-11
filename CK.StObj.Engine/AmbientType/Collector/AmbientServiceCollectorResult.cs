@@ -6,6 +6,9 @@ using System.Text;
 
 namespace CK.Core
 {
+    /// <summary>
+    /// Encapsulates Service result analysis. 
+    /// </summary>
     public class AmbientServiceCollectorResult
     {
         internal AmbientServiceCollectorResult(

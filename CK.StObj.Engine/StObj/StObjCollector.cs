@@ -32,11 +32,13 @@ namespace CK.Setup
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
         /// <param name="runtimeBuilder">Optional runtime builder to use.</param>
+        /// <param name="typeFilter">Optional type filter.</param>
         /// <param name="configurator">Used to configure items. See <see cref="IStObjStructuralConfigurator"/>.</param>
         /// <param name="valueResolver">
-        /// Used to explicitely resolve or alter StObjConstruct parameters and object ambient properties.
+        /// Used to explicitly resolve or alter StObjConstruct parameters and object ambient properties.
         /// See <see cref="IStObjValueResolver"/>.
         /// </param>
+        /// <param name="secondaryRunAccessor">Provides already resolved and stored objects during secondary runs.</param>
         public StObjCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
@@ -115,14 +117,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitely registers a class or a IPoco interface.
+        /// Explicitly registers a class or a IPoco interface.
         /// </summary>
         /// <param name="t">Type to register.</param>
         /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
         public void RegisterType( Type t )
         {
             if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            _monitor.Info( $"Explicitely registering '{t.AssemblyQualifiedName}'." );
+            _monitor.Info( $"Explicitly registering '{t.AssemblyQualifiedName}'." );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
                 try
@@ -137,7 +139,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitely registers a set of classes or a IPoco interfaces.
+        /// Explicitly registers a set of classes or a IPoco interfaces.
         /// </summary>
         /// <param name="types">Types to register.</param>
         public void RegisterTypes( IReadOnlyCollection<Type> types )
@@ -147,7 +149,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitely registers a set of classes or a IPoco interfaces by their assembly qualified names.
+        /// Explicitly registers a set of classes or a IPoco interfaces by their assembly qualified names.
         /// </summary>
         /// <param name="typeNames">Assembly qualified names of the types to register.</param>
         public void RegisterTypes( IReadOnlyCollection<string> typeNames )
@@ -156,17 +158,48 @@ namespace CK.Setup
             DoRegisterTypes( typeNames.Select( n => SimpleTypeFinder.WeakResolver( n, true ) ), typeNames.Count );
         }
 
+        /// <summary>
+        /// Explicitly registers a set of types that are known to be singleton services.
+        /// </summary>
+        /// <param name="types">Types to register.</param>
+        public void DefineAsExternalSingletons( IReadOnlyCollection<Type> types )
+        {
+            if( types == null ) throw new ArgumentNullException( nameof( types ) );
+            DoDefineAsExternalSingletons( types, types.Count );
+        }
+
+        /// <summary>
+        /// Explicitly registers a set of types by their assembly qualified names that are known to be
+        /// singleton services.
+        /// </summary>
+        /// <param name="typeNames">Assembly qualified names of the singleton types.</param>
+        public void DefineAsExternalSingletons( IReadOnlyCollection<string> typeNames )
+        {
+            if( typeNames == null ) throw new ArgumentNullException( nameof( typeNames ) );
+            DoDefineAsExternalSingletons( typeNames.Select( n => SimpleTypeFinder.WeakResolver( n, true ) ), typeNames.Count );
+        }
+
+        void DoDefineAsExternalSingletons( IEnumerable<Type> types, int count )
+        {
+            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( cc, t ) => cc.DefineAsExternalSingleton( t ) );
+        }
+
         void DoRegisterTypes( IEnumerable<Type> types, int count )
         {
-            if( types == null ) throw new ArgumentNullException();
+            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Contract or Service classes", types, count, ( cc, t ) => cc.RegisterClassOrPoco( t ) );
+        }
+
+        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<AmbientTypeCollector,Type> a )
+        {
+            Debug.Assert( types != null );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
-            using( _monitor.OpenTrace( $"Explicitly registering {count} type(s)." ) )
+            using( _monitor.OpenTrace( $"{registrationType}: handling {count} type(s)." ) )
             {
                 try
                 {
                     foreach( var t in types )
                     {
-                        _cc.RegisterClassOrPoco( t );
+                        a( _cc, t );
                     }
                 }
                 catch( Exception ex )
@@ -246,12 +279,12 @@ namespace CK.Setup
                     if( error ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Resolving PreConstruct and PostBuild properties." ) )
                     {
-                        /// This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
-                        /// except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
-                        /// the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
-                        /// a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
-                        /// During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
-                        /// or to PostBuild collector in order to always set a correctly constructed object to a property.
+                        // This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
+                        // except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
+                        // the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
+                        // a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
+                        // During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
+                        // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
                             item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
@@ -317,8 +350,8 @@ namespace CK.Setup
                     if( error ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
                     {
-                        /// Finalize construction by injecting Ambient Contracts objects
-                        /// and PostBuild Ambient Properties on specializations.
+                        // Finalize construction by injecting Ambient Contracts objects
+                        // and PostBuild Ambient Properties on specializations.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
                             item.SetPostBuildProperties( _monitor );

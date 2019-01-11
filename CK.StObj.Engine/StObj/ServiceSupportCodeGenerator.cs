@@ -11,7 +11,7 @@ namespace CK.Setup
     class ServiceSupportCodeGenerator
     {
         static readonly string _sourceServiceSupport = @"
-        public class StObjServiceParameterInfo : IStObjServiceParameterInfo
+        public sealed class StObjServiceParameterInfo : IStObjServiceParameterInfo
         {
             public StObjServiceParameterInfo( Type t, int p, string n, IReadOnlyList<Type> v, bool isEnum )
             {
@@ -19,7 +19,7 @@ namespace CK.Setup
                 Position = p;
                 Name = n;
                 Value = v;
-                IsEnumeration = isEnum;
+                IsEnumerated = isEnum;
             }
 
             public Type ParameterType { get; }
@@ -28,22 +28,38 @@ namespace CK.Setup
 
             public string Name { get; }
 
-            public bool IsEnumeration { get; }
+            public bool IsEnumerated { get; }
 
             public IReadOnlyList<Type> Value { get; }
         }
 
-        public class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
+        public sealed class StObjServiceClassFactoryInfo : IStObjServiceClassFactoryInfo
         {
-            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a )
+            public StObjServiceClassFactoryInfo( Type t, IReadOnlyList<IStObjServiceParameterInfo> a, bool s )
             {
                 ClassType = t;
                 Assignments = a;
+                IsScoped = s;
             }
 
             public Type ClassType { get; }
 
+            public bool IsScoped { get; }
+
             public IReadOnlyList<IStObjServiceParameterInfo> Assignments { get; }
+        }
+
+        public sealed class StObjServiceClassDescriptor : IStObjServiceClassDescriptor
+        {
+            public StObjServiceClassDescriptor( Type t, bool s )
+            {
+                ClassType = t;
+                IsScoped = s;
+            }
+
+            public Type ClassType { get; }
+
+            public bool IsScoped { get; }
         }
 ";
         readonly ITypeScope _rootType;
@@ -64,27 +80,33 @@ namespace CK.Setup
             _infoType.Namespace.Append( _sourceServiceSupport );
 
             _rootType.Append( @"
-Dictionary<Type, Type> _simpleServiceMappings;
+Dictionary<Type, IStObjServiceClassDescriptor> _simpleServiceMappings;
 Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
+Type[] _externallyDefinedSingletons;
 
 public IStObjServiceMap Services => this;
-IReadOnlyDictionary<Type, Type> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
-IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
+IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
+IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;
+IReadOnlyCollection<Type> IStObjServiceMap.ExternallyDefinedSingletons => _externallyDefinedSingletons;" )
                      .NewLine();
 
             // Service mappings (Simple).
-            _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, Type>();" ).NewLine();
+            _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, IStObjServiceClassDescriptor>({liftedMap.ServiceSimpleMappings.Count});" ).NewLine();
             foreach( var map in liftedMap.ServiceSimpleMappings )
             {
                 _rootCtor.Append( $"_simpleServiceMappings.Add( " )
                        .AppendTypeOf( map.Key )
                        .Append( ", " )
-                       .AppendTypeOf( map.Value.FinalType )
+                       .Append( "new StObjServiceClassDescriptor(" )
+                            .AppendTypeOf( map.Value.FinalType )
+                            .Append( ", " )
+                            .Append( map.Value.MustBeScopedLifetime.Value )
+                            .Append( ")" )
                        .Append( " );" )
                        .NewLine();
             }
             // Service mappings (Not so Simple :)).
-            _rootCtor.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>();" ).NewLine();
+            _rootCtor.Append( $"_manualServiceMappings = new Dictionary<Type, IStObjServiceClassFactory>( {liftedMap.ServiceManualMappings.Count} );" ).NewLine();
             foreach( var map in liftedMap.ServiceManualMappings )
             {
                 _rootCtor.Append( $"_manualServiceMappings.Add( " )
@@ -92,11 +114,23 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                        .Append( ", " ).Append( GetServiceClassFactoryName( map.Value ) )
                        .Append( " );" ).NewLine();
             }
-
             foreach( var serviceFactory in liftedMap.ServiceManualList )
             {
                 CreateServiceClassFactory( serviceFactory );
             }
+            // ExternallyDefinedSingletons.
+            {
+                bool atLeastOne = false;
+                _rootCtor.Append( "_externallyDefinedSingletons = new Type[]{ " );
+                foreach( var s in liftedMap.ExternallyDefinedSingletons )
+                {
+                    if( atLeastOne ) _rootCtor.Append( ", " );
+                    else atLeastOne = true;
+                    _rootCtor.AppendTypeOf( s );
+                }
+                _rootCtor.Append( "};" ).NewLine();
+            }
+
         }
 
         string GetServiceClassFactoryName( IStObjServiceFinalManualMapping f ) => $"SFInfo.S{f.Number}.Default";
@@ -110,7 +144,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                 ctor.Append( "public S" ).Append( c.Number ).Append( "()" ).NewLine()
                     .Append( ": base( " ).AppendTypeOf( c.ClassType ).Append( ", " ).NewLine();
                 GenerateStObjServiceFactortInfoAssignments( ctor, c.Assignments );
-                ctor.Append( ")" );
+                ctor.Append( ", " ).Append( c.IsScoped ).Append( ")" );
             } );
 
             t.CreateFunction( func =>
@@ -134,7 +168,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                         {
                             func.Append( "null" );
                         }
-                        else if( mapped.IsEnumeration )
+                        else if( mapped.IsEnumerated )
                         {
                             func.Append( "new " ).AppendCSharpName( p.ParameterType ).Append( "[]{" );
                             for( int idxType = 0; idxType < mapped.Value.Count; ++idxType )
@@ -188,7 +222,7 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
                         b.Append( "}" );
                     }
                     b.Append( ", " )
-                     .Append( a.IsEnumeration )
+                     .Append( a.IsEnumerated )
                      .Append( ")" ).NewLine();
                 }
                 b.Append( '}' );

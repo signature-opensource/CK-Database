@@ -14,14 +14,17 @@ namespace CK.SqlServer.Setup
 {
     /// <summary>
     /// Sql Server based memory provider for the setup.
-    /// It is used by <see cref="SqlScriptExecutor"/> (created by <see cref="SqlScriptTypeHandler"/>)
-    /// to skip already executed scripts.
+    /// It is used to skip already executed scripts when a previous setup failed.
     /// </summary>
     public class SqlSetupSessionMemoryProvider : ISetupSessionMemoryProvider, ISetupSessionMemory
     {
         readonly ISqlManager _manager;
         bool _initialized;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlSetupSessionMemoryProvider"/>.
+        /// </summary>
+        /// <param name="manager">The sql manager to use.</param>
         public SqlSetupSessionMemoryProvider( ISqlManager manager )
         {
             if( manager == null ) throw new ArgumentNullException( nameof(manager) );

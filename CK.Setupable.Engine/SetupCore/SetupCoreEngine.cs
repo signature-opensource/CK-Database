@@ -97,7 +97,7 @@ namespace CK.Setup
         /// <summary>
         /// Initializes a new setup engine.
         /// </summary>
-        /// <param name="versionRepository">Provides version information about items already installed.</param>
+        /// <param name="versionTracker">Version tracker.</param>
         /// <param name="services">Available services.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="driverFactory">Factory for setup drivers.</param>

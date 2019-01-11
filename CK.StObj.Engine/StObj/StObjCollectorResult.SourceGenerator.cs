@@ -16,6 +16,9 @@ namespace CK.Setup
 {
     public partial class StObjCollectorResult
     {
+        /// <summary>
+        /// Captures code generation result.
+        /// </summary>
         public struct CodeGenerateResult
         {
             /// <summary>
@@ -290,9 +293,6 @@ class GStObj : IStObj
                     .Append( @"
             public IStObjObjectMap StObjs => this;
 
-            [Obsolete(""There is no more 'Context'. 'Default' must be replaced by the 'StObjs' property."")]
-            public IStObjObjectMap Default => this;
-
             Type IStObjTypeMap.ToLeafType( Type t ) => GToLeaf( t )?.ObjectType;
             bool IStObjTypeMap.IsMapped( Type t ) => _map.ContainsKey( t );
             IEnumerable<Type> IStObjTypeMap.Types => _map.Keys;
@@ -302,7 +302,6 @@ class GStObj : IStObj
             IEnumerable<object> IStObjObjectMap.Implementations => _implStObjs.Select( s => s.Instance );
             IEnumerable<StObjImplementation> IStObjObjectMap.StObjs => _implStObjs.Select( s => s.AsStObjImplementation );
             IEnumerable<KeyValuePair<Type, object>> IStObjObjectMap.Mappings => _map.Select( v => new KeyValuePair<Type, object>( v.Key, v.Value.Instance ) );
-
             GStObj GToLeaf( Type t ) => _map.TryGetValue( t, out var s ) ? s.Leaf : null;
             " );
 

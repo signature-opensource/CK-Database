@@ -5,6 +5,7 @@ using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
@@ -18,22 +19,26 @@ namespace SqlActorPackage.Runtime
         readonly bool ErrorBeforeHandlers;
         readonly bool ErrorFromOnStep;
 
-        static NormalizedPath GetThisFile( [CallerFilePath]string p = null ) => p;
-
         public BuggyPackageDriver( BuildInfo info, IActivityMonitor monitor )
             : base( info )
         {
-            var cfgFile = GetThisFile().RemoveLastPart().AppendPart( "BuggyPackageDriver.xml" );
-            if( File.Exists( cfgFile ) )
+            using( monitor.OpenInfo( $"Reading BuggyPackageDriver.xml from AppContext.BaseDirectory = {AppContext.BaseDirectory}" ) )
             {
-                ReturnError = true;
-                XElement c = XDocument.Load( cfgFile ).Root;
-                ErrorStep = c.AttributeEnum( "ErrorStep", SetupCallGroupStep.None );
-                ErrorBeforeHandlers = (bool?)c.Attribute( "ErrorBeforeHandlers" ) ?? false;
-                ErrorFromOnStep = (bool?)c.Attribute( "ErrorFromOnStep" ) ?? false;
-                monitor.Info( $"BuggyPackageDriver: {c.ToString()}." );
+                NormalizedPath path = AppContext.BaseDirectory;
+                var cfgFile = path.PathsToFirstPart( new NormalizedPath[] { "Tests/BasicModels/SqlActorPackage.Runtime" }, new[] { "BuggyPackageDriver.xml" } )
+                                  .FirstOrDefault( p => File.Exists( p ) );
+                if( !cfgFile.IsEmptyPath )
+                {
+                    monitor.Info( $"File BuggyPackageDriver.xml found: {cfgFile}" );
+                    ReturnError = true;
+                    XElement c = XDocument.Load( cfgFile ).Root;
+                    ErrorStep = c.AttributeEnum( "ErrorStep", SetupCallGroupStep.None );
+                    ErrorBeforeHandlers = (bool?)c.Attribute( "ErrorBeforeHandlers" ) ?? false;
+                    ErrorFromOnStep = (bool?)c.Attribute( "ErrorFromOnStep" ) ?? false;
+                    monitor.Info( $"BuggyPackageDriver: {c.ToString()}." );
+                }
+                else monitor.Info( $"File BuggyPackageDriver.xml not found: No Error." );
             }
-            else monitor.Info( $"BuggyPackageDriver: No Error." );
         }
 
         protected override bool ExecutePreInit( IActivityMonitor monitor )

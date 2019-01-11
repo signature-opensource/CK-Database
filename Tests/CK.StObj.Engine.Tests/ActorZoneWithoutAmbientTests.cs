@@ -64,13 +64,17 @@ namespace CK.StObj.Engine.Tests
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
         class ZoneGroup : BasicGroup
         {
-            void StObjConstruct( SecurityZone zone )
+            void StObjConstruct( ISecurityZone zone )
             {
             }
         }
 
+        interface ISecurityZone : IAmbientContract
+        {
+        }
+
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
-        class SecurityZone : IAmbientContract
+        class SecurityZone : ISecurityZone
         {
             void StObjConstruct( BasicGroup group )
             {

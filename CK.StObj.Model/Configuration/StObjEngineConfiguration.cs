@@ -26,6 +26,7 @@ namespace CK.Core
         {
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
+            ExternalSingletonTypes = new HashSet<string>();
             ExcludedTypes = new HashSet<string>();
             Aspects = new List<IStObjEngineAspectConfiguration>();
             SetupFolders = new List<SetupFolder>();
@@ -60,6 +61,11 @@ namespace CK.Core
             /// The Types element name.
             /// </summary>
             static public readonly XName Types = XNamespace.None + "Types";
+
+            /// <summary>
+            /// The ExternalSingletonTypes element name.
+            /// </summary>
+            static public readonly XName ExternalSingletonTypes = XNamespace.None + "ExternalSingletonTypes";
 
             /// <summary>
             /// The ExcludedTypes element name.
@@ -139,6 +145,7 @@ namespace CK.Core
             GenerateSourceFiles = string.Equals( e.Element( XmlNames.GenerateSourceFiles )?.Value, "true", StringComparison.OrdinalIgnoreCase );
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
+            ExternalSingletonTypes = new HashSet<string>( FromXml( e, XmlNames.ExternalSingletonTypes, XmlNames.Type ) );
             ExcludedTypes = new HashSet<string>( FromXml( e, XmlNames.ExcludedTypes, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
             Aspects = new List<IStObjEngineAspectConfiguration>();
@@ -179,6 +186,7 @@ namespace CK.Core
                         : null,
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
+                   ToXml( XmlNames.ExternalSingletonTypes, XmlNames.Type, ExternalSingletonTypes ),
                    ToXml( XmlNames.ExcludedTypes, XmlNames.Type, ExcludedTypes ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, CleanName( a.GetType() ) ) ) ) ),
                    SetupFolders.Select( f => f.ToXml() ) );
@@ -231,10 +239,15 @@ namespace CK.Core
         public HashSet<string> Assemblies { get; }
 
         /// <summary>
-        /// List of assembly qualified type names that must be explicitely registered 
+        /// List of assembly qualified type names that must be explicitly registered 
         /// in <see cref="AppContext.BaseDirectory"/> regardless of <see cref="Assemblies"/>.
         /// </summary>
         public HashSet<string> Types { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be singletons. 
+        /// </summary>
+        public HashSet<string> ExternalSingletonTypes { get; }
 
         /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  

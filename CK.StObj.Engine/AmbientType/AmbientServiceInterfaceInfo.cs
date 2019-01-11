@@ -18,6 +18,15 @@ namespace CK.Core
         public Type Type { get; }
 
         /// <summary>
+        /// Gets this Service interface life time.
+        /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
+        /// vs. <see cref="IScopedAmbientService"/> interface marker.
+        /// This can never be <see cref="ServiceLifetime.AmbientBothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// in such cases, the AmbientServiceInterfaceInfo is not instanciated.
+        /// </summary>
+        public ServiceLifetime DeclaredLifetime { get; }
+
+        /// <summary>
         /// The interface type.
         /// </summary>
         public readonly int SpecializationDepth;
@@ -27,6 +36,14 @@ namespace CK.Core
         /// one other interface.
         /// </summary>
         public bool IsSpecialized { get; private set; }
+
+        /// <summary>
+        /// Gets the final resolved class that implements this interface.
+        /// This is set at the end of the process during interface resolution and
+        /// is used to handle actual lifetime checks without requiring another
+        /// dictionary index.
+        /// </summary>
+        public AmbientServiceClassInfo FinalResolved { get; internal set; }
 
         /// <summary>
         /// Gets the base service interfaces that are specialized by this one.
@@ -41,9 +58,11 @@ namespace CK.Core
         public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
 
 
-        internal AmbientServiceInterfaceInfo( Type t, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
+        internal AmbientServiceInterfaceInfo( Type t, ServiceLifetime lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
         {
+            Debug.Assert( lt == ServiceLifetime.IsAmbientService || lt == ServiceLifetime.AmbientSingleton || lt == ServiceLifetime.AmbientScope );
             Type = t;
+            DeclaredLifetime = lt;
             AmbientServiceInterfaceInfo[] bases = Array.Empty<AmbientServiceInterfaceInfo>();
             int depth = 0;
             foreach( var iT in baseInterfaces )

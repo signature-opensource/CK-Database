@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// Implements <see cref="ISetupableAspect"/>.
+    /// </summary>
     public class SetupableAspect : IStObjEngineAspect, ISetupableAspect
     {
         readonly SetupableAspectConfiguration _config;
@@ -52,6 +55,10 @@ namespace CK.Setup
             }
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SetupableAspect"/>.
+        /// </summary>
+        /// <param name="config">The aspect configuration.</param>
         public SetupableAspect( SetupableAspectConfiguration config )
         {
             _config = config;
@@ -77,10 +84,20 @@ namespace CK.Setup
             return true;
         }
 
+        /// <summary>
+        /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
+        /// registration of setup items.
+        /// </summary>
         public event EventHandler<RegisterSetupEventArgs> RegisterSetupEvent;
 
+        /// <summary>
+        /// Triggered for each steps of <see cref="SetupStep"/>: None (before registration), Init, Install, Settle and Done.
+        /// </summary>
         public event EventHandler<SetupEventArgs> SetupEvent;
 
+        /// <summary>
+        /// Triggered for each <see cref="DriverBase"/> setup phasis.
+        /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 
         bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context )

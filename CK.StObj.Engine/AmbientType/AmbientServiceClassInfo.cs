@@ -10,11 +10,11 @@ namespace CK.Core
 {
     /// <summary>
     /// Represents a service class/implementation.
-    /// 
     /// </summary>
-    public class AmbientServiceClassInfo : AmbientTypeInfo
+    public class AmbientServiceClassInfo : AmbientTypeInfo, IStObjServiceClassDescriptor
     {
         HashSet<AmbientServiceClassInfo> _ctorParmetersClosure;
+        List<ParameterInfo> _requiredParametersToBeSingletons;
         bool? _ctorBinding;
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace CK.Core
 
             /// <summary>
             /// Gets the (unwrapped) Type of this parameter.
-            /// When <see cref="IsEnumeration"/> is true, this is the type of the enumerated object:
+            /// When <see cref="IsEnumerated"/> is true, this is the type of the enumerated object:
             /// for IReadOnlyList&lt;X&gt;, this is typeof(X).
             /// </summary>
             Type ParameterType { get; }
@@ -92,6 +92,10 @@ namespace CK.Core
                 }
             }
 
+            /// <summary>
+            /// Overridden to return a readable string.
+            /// </summary>
+            /// <returns>A readable string.</returns>
             public override string ToString()
             {
                 var typeName = ParameterInfo.Member.DeclaringType.Name;
@@ -105,27 +109,52 @@ namespace CK.Core
             AmbientServiceClassInfo parent,
             Type t,
             AmbientTypeCollector collector,
-            bool isExcluded )
+            bool isExcluded,
+            ServiceLifetime lifetime )
             : base( m, parent, t, serviceProvider, isExcluded )
         {
             Debug.Assert( Generalization == parent );
+            Debug.Assert( lifetime == ServiceLifetime.IsAmbientService
+                          || lifetime == ServiceLifetime.AmbientSingleton
+                          || lifetime == ServiceLifetime.AmbientScope );
+            DeclaredLifetime = lifetime;
+            if( lifetime == ServiceLifetime.AmbientScope ) MustBeScopedLifetime = true;
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
             if( IsExcluded ) return;
 
-            var aC = t.GetCustomAttribute<AmbientServiceAttribute>();
-            if( aC == null )
-            {
-                m.Warn( $"Missing {nameof( AmbientServiceAttribute )} on '{t.FullName}'." );
-            }
-            else
-            {
-                ContainerType = aC.Container;
-                if( ContainerType == null )
-                {
-                    m.Info( $"{nameof( AmbientServiceAttribute )} on '{t.FullName}' indicates no container." );
-                }
-            }
+            // AmbientServiceAttribute is currently not used. This is to associate a service
+            // to a StObj package and may be useful for Service Unification support.
+            //var aC = t.GetCustomAttribute<AmbientServiceAttribute>();
+            //if( aC == null )
+            //{
+            //    m.Warn( $"Missing {nameof( AmbientServiceAttribute )} on '{t.FullName}'." );
+            //}
+            //else
+            //{
+            //    ContainerType = aC.Container;
+            //    if( ContainerType == null )
+            //    {
+            //        m.Info( $"{nameof( AmbientServiceAttribute )} on '{t.FullName}' indicates no container." );
+            //    }
+            //}
         }
+
+        /// <summary>
+        /// Gets this Service class life time.
+        /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
+        /// vs. <see cref="IScopedAmbientService"/> interface marker.
+        /// This can never be <see cref="ServiceLifetime.AmbientBothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// in such cases, the AmbientServiceClassInfo is not instanciated.
+        /// </summary>
+        public ServiceLifetime DeclaredLifetime { get; }
+
+        /// <summary>
+        /// Gets whether this class must be <see cref="ServiceLifetime.IsScoped"/> because of its dependencies.
+        /// If its <see cref="DeclaredLifetime"/> is <see cref="ServiceLifetime.IsSingleton"/> an error is detected
+        /// either at the very beginning of the process based on the static parameter type information or at the
+        /// end of the process when class and interface mappings are about to be resolved.
+        /// </summary>
+        public bool? MustBeScopedLifetime { get; private set; }
 
         /// <summary>
         /// Gets the generalization of this <see cref="Type"/>, it is be null if no base class exists.
@@ -150,9 +179,9 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the supported service interfaces.
-        /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded and is on a concrete path)
-        /// and may be empty if there is no service interface (the implementation itself is marked
-        /// with <see cref="IAmbientService"/>).
+        /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded
+        /// and is on a concrete path) and may be empty if there is no service interface (the
+        /// implementation itself is marked with any <see cref="IScopedAmbientService"/> marker).
         /// </summary>
         public IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces { get; private set; }
 
@@ -224,7 +253,7 @@ namespace CK.Core
         /// This mimics the <see cref="StObjTypeInfo.CreateMutableItemsPath"/> method
         /// to reproduce the exact same Type handling between Services and StObj (ignoring agstract tails
         /// for instance).
-        /// This is simpler since there is no split in type info (no MutableItem layer).
+        /// This is simpler here since there is no split in type info (no MutableItem layer).
         /// </summary>
         internal bool InitializePath(
                         IActivityMonitor monitor,
@@ -271,10 +300,8 @@ namespace CK.Core
 
         /// <summary>
         /// Sets one of the leaves of this class to be the most specialized one from this
-        /// instance potentially up to the leaf (and handles
-        /// container binding at the same time).
-        /// At least one assignment (the one of this instance)
-        /// is necessarily done.
+        /// instance potentially up to the leaf (and handles container binding at the same time).
+        /// At least one assignment (the one of this instance) is necessarily done.
         /// Trailing path may have already been resolved to this or to another specialization:
         /// classes that are already assigned are skipped.
         /// This must obviously be called bottom-up the inheritance chain.
@@ -356,7 +383,67 @@ namespace CK.Core
             }
         }
 
-        internal HashSet<AmbientServiceClassInfo> GetCtorParametersClassClosure( IActivityMonitor m, AmbientTypeCollector collector, ref bool initializationError )
+        Type IStObjServiceClassDescriptor.ClassType => FinalType;
+
+        bool IStObjServiceClassDescriptor.IsScoped => MustBeScopedLifetime.Value;
+
+        internal bool GetFinalMustBeScopedLifetime( IActivityMonitor m, IServiceLifetimeResult serviceLifetimeResult, ref bool success )
+        {
+            if( !MustBeScopedLifetime.HasValue )
+            {
+                Debug.Assert( (DeclaredLifetime & ServiceLifetime.IsAmbientService) != 0 );
+                foreach( var p in ConstructorParameters )
+                {
+                    var c = p.ServiceClass?.MostSpecialized ?? p.ServiceInterface?.FinalResolved;
+                    if( c != null )
+                    {
+                        if( c.GetFinalMustBeScopedLifetime( m, serviceLifetimeResult, ref success ) )
+                        {
+                            if( DeclaredLifetime == ServiceLifetime.AmbientSingleton )
+                            {
+                                m.Error( $"Lifetime error: Type '{Type.Name}' is {nameof( ISingletonAmbientService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
+                                success = false;
+                            }
+                            if( !MustBeScopedLifetime.HasValue )
+                            {
+                                m.Info( $"Type '{Type.Name}' must be Scoped since parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
+                            }
+                            MustBeScopedLifetime = true;
+                        }
+                    }
+                }
+                if( !MustBeScopedLifetime.HasValue )
+                {
+                    if( _requiredParametersToBeSingletons != null )
+                    {
+                        Debug.Assert( DeclaredLifetime == ServiceLifetime.IsAmbientService );
+                        foreach( var external in _requiredParametersToBeSingletons )
+                        {
+                            if( !serviceLifetimeResult.IsExternalSingleton( external.ParameterType ) )
+                            {
+                                m.Info( $"Type '{Type.Name}' must be Scoped since parameter '{external.Name}' of type '{external.ParameterType.Name}' in constructor is not Singleton." );
+                                MustBeScopedLifetime = true;
+                                break;
+                            }
+                        }
+                    }
+                    if( !MustBeScopedLifetime.HasValue )
+                    {
+                        MustBeScopedLifetime = false;
+                        if( DeclaredLifetime != ServiceLifetime.AmbientSingleton )
+                        {
+                            m.Warn( $"Nothing prevents the class '{Type.Name}' to be a Singleton." );
+                        }
+                    }
+                }
+            }
+            return MustBeScopedLifetime.Value;
+        }
+
+        internal HashSet<AmbientServiceClassInfo> GetCtorParametersClassClosure(
+            IActivityMonitor m,
+            AmbientTypeCollector collector,
+            ref bool initializationError )
         {
             if( _ctorParmetersClosure == null )
             {
@@ -370,19 +457,56 @@ namespace CK.Core
                 }
                 if( !(initializationError |= !EnsureCtorBinding( m, collector ) ) )
                 {
-                    foreach( var p in ConstructorParameters )
+                    var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
+                    foreach( var cS in ConstructorParameters.Select( p => p.ServiceClass )
+                                                           .Where( p => p != null )
+                                                           .Concat( replacedTargets ) )
                     {
-                        if( p.ServiceClass != null )
-                        {
-                            var c = p.ServiceClass;
-                            do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
-                            var cParams = p.ServiceClass.GetCtorParametersClassClosure( m, collector, ref initializationError );
-                            _ctorParmetersClosure.UnionWith( cParams );
-                        }
+                        AmbientServiceClassInfo c = cS;
+                        do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
+                        var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initializationError );
+                        _ctorParmetersClosure.UnionWith( cParams );
                     }
                 }
             }
             return _ctorParmetersClosure;
+        }
+
+        IEnumerable<AmbientServiceClassInfo> GetReplacedTargetsFromReplaceServiceAttribute( IActivityMonitor m, AmbientTypeCollector collector )
+        {
+            foreach( var p in Type.GetCustomAttributesData()
+                                  .Where( a => a.AttributeType.Name == nameof( ReplaceAmbientServiceAttribute ) )
+                                  .SelectMany( a => a.ConstructorArguments ) )
+            {
+                Type replaced;
+                if( p.Value is string s )
+                {
+                    replaced = SimpleTypeFinder.WeakResolver( s, false );
+                    if( replaced == null )
+                    {
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
+                        continue;
+                    }
+                }
+                else
+                {
+                    replaced = p.Value as Type;
+                    if( replaced == null )
+                    {
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the parameter '{p.Value}' is not a Type. It is ignored." );
+                        continue;
+                    }
+                }
+                var target = collector.FindServiceClassInfo( replaced );
+                if( target == null )
+                {
+                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type.Name}': the Type to replace is not an Abienst Service class implementation. It is ignored." );
+                }
+                else
+                {
+                    yield return target;
+                }
+            }
         }
 
         internal bool EnsureCtorBinding( IActivityMonitor m, AmbientTypeCollector collector )
@@ -400,16 +524,64 @@ namespace CK.Core
                 var mParameters = new List<CtorParameter>();
                 foreach( var p in parameters )
                 {
-                    var (ok, sClass, sInterface, isEnumerable) = CreateCtorParameter( m, collector, p );
-                    success &= ok;
-                    if( sClass != null || sInterface != null )
+                    var param = CreateCtorParameter( m, collector, p );
+                    success &= param.Success;
+                    if( param.Class != null || param.Interface != null )
                     {
-                        mParameters.Add( new CtorParameter( p, sClass, sInterface, isEnumerable ) );
+                        mParameters.Add( new CtorParameter( p, param.Class, param.Interface, param.IsEnumerable ) );
+                    }
+                    // We check here the Singleton to Scoped dependency error at the Type level.
+                    // This must be done here since CtorParameters are not created for types that are external (those
+                    // are considered as Scoped) or for ambient interfaces that have no implementation classes.
+                    if( param.Lifetime == ServiceLifetime.None
+                        || (param.Lifetime & ServiceLifetime.IsScoped) != 0 )
+                    {
+                        if( DeclaredLifetime == ServiceLifetime.AmbientSingleton )
+                        {
+                            if( param.Lifetime == ServiceLifetime.None )
+                            {
+                                collector.DefineAsExternalSingleton( p.ParameterType );
+                                m.Warn( $"Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
+                            }
+                            else
+                            {
+                                MustBeScopedLifetime = true;
+                                string paramReason;
+                                if( param.Lifetime == ServiceLifetime.AmbientScope )
+                                {
+                                    paramReason = $"is marked with {nameof( IScopedAmbientService )}";
+                                }
+                                else
+                                {
+                                    Debug.Assert( param.Lifetime == ServiceLifetime.IsScoped );
+                                    paramReason = $"is registered as an external scoped service";
+                                }
+                                m.Error( $"Lifetime error: Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
+                                success = false;
+                            }
+                        }
+                        else if( DeclaredLifetime == ServiceLifetime.IsAmbientService )
+                        {
+                            if( (param.Lifetime & ServiceLifetime.IsScoped) != 0 )
+                            {
+                                m.Info( $"{nameof( IAmbientService )} '{p.Member.DeclaringType.Name}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
+                                MustBeScopedLifetime = true;
+                            }
+                            else
+                            {
+                                Debug.Assert( param.Lifetime == ServiceLifetime.None );
+                                if( _requiredParametersToBeSingletons == null )
+                                {
+                                    _requiredParametersToBeSingletons = new List<ParameterInfo>();
+                                    _requiredParametersToBeSingletons.Add( p );
+                                }
+                            }
+                        }
                     }
                     // Temporary: Enumeration is not implemented yet.
-                    if( success && isEnumerable )
+                    if( success && param.IsEnumerable )
                     {
-                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is IAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
+                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is marked with IScopedAmbientService or ISingletonAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
                         success = false;
                     }
                 }
@@ -420,21 +592,31 @@ namespace CK.Core
             return success;
         }
 
-        (bool, AmbientServiceClassInfo, AmbientServiceInterfaceInfo, bool) CreateCtorParameter( IActivityMonitor m, AmbientTypeCollector collector, ParameterInfo p )
+        readonly struct CtorParameterData
         {
-            // We only consider IAmbientService interface or type parameters.
-            if( !typeof( IAmbientService ).IsAssignableFrom( p.ParameterType ) )
+            public readonly bool Success;
+            public readonly AmbientServiceClassInfo Class;
+            public readonly AmbientServiceInterfaceInfo Interface;
+            public readonly bool IsEnumerable;
+            public readonly ServiceLifetime Lifetime;
+
+            public CtorParameterData( bool success, AmbientServiceClassInfo c, AmbientServiceInterfaceInfo i, bool isEnumerable, ServiceLifetime lt )
             {
-                return (true, null, null, false);
+                Success = success;
+                Class = c;
+                Interface = i;
+                IsEnumerable = isEnumerable;
+                Lifetime = lt;
             }
-            // Edge case: using IAmbientService is an error.
-            if( typeof( IAmbientService ) == p.ParameterType )
-            {
-                m.Error( $"Invalid use of {nameof( IAmbientService )} constructor parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                return (false, null, null, false);
-            }
-            bool isEnumerable = false;
+        }
+
+        CtorParameterData CreateCtorParameter(
+            IActivityMonitor m,
+            AmbientTypeCollector collector,
+            ParameterInfo p )
+        {
             var tParam = p.ParameterType;
+            bool isEnumerable = false;
             if( tParam.IsGenericType )
             {
                 var tGen = tParam.GetGenericTypeDefinition();
@@ -445,6 +627,25 @@ namespace CK.Core
                     isEnumerable = true;
                     tParam = tParam.GetGenericArguments()[0];
                 }
+                else 
+                {
+                    var genLifetime = collector.GetAmbientServiceLifetime( tGen );
+                    if( genLifetime != ServiceLifetime.None )
+                    {
+                        return new CtorParameterData( true, null, null, false, genLifetime );
+                    }
+                }
+            }
+            // We only consider I(Scoped/Singleton)AmbientService marked type parameters.
+            var lifetime = collector.GetAmbientServiceLifetime( tParam );
+            if( (lifetime&ServiceLifetime.IsAmbientService) == 0 )
+            {
+                return new CtorParameterData( true, null, null, false, lifetime );
+            }
+            if( lifetime == ServiceLifetime.AmbientBothError )
+            {
+                m.Error( $"Type '{tParam.FullName}' for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor is marked with both {nameof(ISingletonAmbientService)} and {nameof(IScopedAmbientService)}." );
+                return new CtorParameterData( false, null, null, false, lifetime );
             }
 
             if( tParam.IsClass )
@@ -453,7 +654,7 @@ namespace CK.Core
                 if( sClass == null )
                 {
                     m.Error( $"Unable to resolve '{tParam.FullName}' service type for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable, lifetime );
                 }
                 if( !sClass.IsIncluded )
                 {
@@ -464,7 +665,7 @@ namespace CK.Core
                     if( !p.HasDefaultValue )
                     {
                         m.Error( prefix + "can not be resolved." );
-                        return (false, null, null, isEnumerable);
+                        return new CtorParameterData( false, null, null, isEnumerable, lifetime );
                     }
                     m.Info( prefix + "will use its default value." );
                     sClass = null;
@@ -473,17 +674,17 @@ namespace CK.Core
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be this class or one of its specializations." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable, lifetime );
                 }
                 else if( sClass.IsAssignableFrom( this ) )
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be one of its base class." );
-                    return (false, null, null, isEnumerable);
+                    return new CtorParameterData( false, null, null, isEnumerable, lifetime );
                 }
-                return (true, sClass, null, isEnumerable);
+                return new CtorParameterData( true, sClass, null, isEnumerable, lifetime );
             }
-            return (true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable);
+            return new CtorParameterData( true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable, lifetime );
         }
 
     }

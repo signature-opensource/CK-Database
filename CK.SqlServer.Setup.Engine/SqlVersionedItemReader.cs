@@ -9,6 +9,9 @@ using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
+    /// <summary>
+    /// Implements <see cref="IVersionedItemReader"/> on a Sql Server database. 
+    /// </summary>
     public class SqlVersionedItemReader : IVersionedItemReader
     {
         /// <summary>
@@ -18,6 +21,10 @@ namespace CK.SqlServer.Setup
 
         bool _initialized;
 
+        /// <summary>
+        /// Initializes a new <see cref="SqlVersionedItemReader"/>.
+        /// </summary>
+        /// <param name="manager">The sql manager to use.</param>
         public SqlVersionedItemReader( ISqlManager manager )
         {
             if( manager == null ) throw new ArgumentNullException( "manager" );
@@ -26,6 +33,11 @@ namespace CK.SqlServer.Setup
 
         internal readonly ISqlManager Manager;
 
+        /// <summary>
+        /// Initializes the tables and objects required to support item versioning.
+        /// This is public since other participants may way want to setup this sub system.
+        /// </summary>
+        /// <param name="m">The sql manager to use.</param>
         public static void AutoInitialize( ISqlManager m )
         {
             var monitor = m.Monitor;
@@ -56,6 +68,11 @@ namespace CK.SqlServer.Setup
             }
         }
 
+        /// <summary>
+        /// Gets the versions stored in the database.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>The set of original verions.</returns>
         public IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
         {
             var result = new List<VersionedTypedName>();
@@ -81,6 +98,17 @@ namespace CK.SqlServer.Setup
             return result;
         }
 
+        /// <summary>
+        /// Called by the engine when the version is not found for the item before using the <see cref="IVersionedItem.PreviousNames"/>.
+        /// This is a "first chance" optional hook.
+        /// This enables any possible mapping and fallback to take place.
+        /// </summary>
+        /// <param name="item">The item for which no direct version has been found.</param>
+        /// <param name="originalVersions">
+        /// A getter for original versions. This can help the implementation to avoid duplicating its own version
+        /// of <see cref="GetOriginalVersions"/>.
+        /// </param>
+        /// <returns>A <see cref="VersionedName"/> with the mapped name or null if not found.</returns>
         public VersionedName OnVersionNotFound( IVersionedItem item, Func<string, VersionedTypedName> originalVersions )
         {
             // Maps "Model.XXX" to "XXX" versions for default context and database.
@@ -94,6 +122,17 @@ namespace CK.SqlServer.Setup
                     : null;
         }
 
+        /// <summary>
+        /// Called by the engine when a previous version is not found for the item
+        /// This is an optional hook.
+        /// </summary>
+        /// <param name="item">Item for which a version should be found.</param>
+        /// <param name="prevVersion">The not found previous version.</param>
+        /// <param name="originalVersions">
+        /// A getter for original versions. This can help the implementation to avoid duplicating its own version
+        /// of <see cref="GetOriginalVersions"/>.
+        /// </param>
+        /// <returns>A <see cref="VersionedName"/> with the mapped name or null if not found.</returns>
         public VersionedName OnPreviousVersionNotFound( IVersionedItem item, VersionedName prevVersion, Func<string, VersionedTypedName> originalVersions )
         {
             // Maps "Model.XXX" to "XXX" versions for default context and database.

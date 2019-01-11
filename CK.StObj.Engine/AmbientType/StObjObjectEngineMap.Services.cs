@@ -16,8 +16,15 @@ namespace CK.Core
         readonly Dictionary<Type, IStObjServiceFinalManualMapping> _serviceManualMap;
         readonly ServiceManualMapTypeAdapter _exposedManualServiceMap;
         readonly List<IStObjServiceFinalManualMapping> _serviceManualList;
+        IReadOnlyCollection<Type> _externallyDefinedSingletons;
 
-        class ServiceMapTypeAdapter : IReadOnlyDictionary<Type, Type>
+        internal void OnAmbientServiceStart( IReadOnlyCollection<Type> refExternallyDefinedSingletons )
+        {
+            Debug.Assert( refExternallyDefinedSingletons != null );
+            _externallyDefinedSingletons = refExternallyDefinedSingletons;
+        }
+
+        class ServiceMapTypeAdapter : IReadOnlyDictionary<Type, IStObjServiceClassDescriptor>
         {
             readonly Dictionary<Type, AmbientServiceClassInfo> _map;
 
@@ -26,32 +33,32 @@ namespace CK.Core
                 _map = map;
             }
 
-            public Type this[Type key]
+            public IStObjServiceClassDescriptor this[Type key]
             {
                 get
                 {
-                    if( !_map.TryGetValue( key, out var c ) ) return null;
-                    return c.FinalType;
+                    _map.TryGetValue( key, out var c );
+                    return c;
                 }
             }
             public IEnumerable<Type> Keys => _map.Keys;
 
-            public IEnumerable<Type> Values => _map.Values.Select( c => c.FinalType );
+            public IEnumerable<IStObjServiceClassDescriptor> Values => _map.Values;
 
             public int Count => _map.Count;
 
             public bool ContainsKey( Type key ) => _map.ContainsKey( key );
 
-            public IEnumerator<KeyValuePair<Type, Type>> GetEnumerator()
+            public IEnumerator<KeyValuePair<Type, IStObjServiceClassDescriptor>> GetEnumerator()
             {
-                return _map.Select( kv => new KeyValuePair<Type, Type>( kv.Key, kv.Value.FinalType ) ).GetEnumerator();
+                return _map.Select( kv => new KeyValuePair<Type, IStObjServiceClassDescriptor>( kv.Key, kv.Value ) ).GetEnumerator();
             }
 
-            public bool TryGetValue( Type key, out Type value )
+            public bool TryGetValue( Type key, out IStObjServiceClassDescriptor value )
             {
                 value = null;
                 if( !_map.TryGetValue( key, out var c ) ) return false;
-                value = c.FinalType;
+                value = c;
                 return true;
             }
 
@@ -116,6 +123,8 @@ namespace CK.Core
 
             public Type ClassType => _c.ClassType;
 
+            public bool IsScoped => _c.IsScoped;
+
             public IReadOnlyList<IStObjServiceParameterInfo> Assignments => _c.Assignments;
 
             public object CreateInstance( IServiceProvider provider )
@@ -144,7 +153,7 @@ namespace CK.Core
                             {
                                 values[i] = null;
                             }
-                            else if( mapped.IsEnumeration )
+                            else if( mapped.IsEnumerated )
                             {
                                 values[i] = mapped.Value.Select( v => provider.GetService( v ) ).ToArray();
                             }
@@ -170,8 +179,11 @@ namespace CK.Core
 
         IStObjServiceMap IStObjMap.Services => this;
 
-        IReadOnlyDictionary<Type, Type> IStObjServiceMap.SimpleMappings => _exposedServiceMap;
+        IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _exposedServiceMap;
 
         IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _exposedManualServiceMap;
-    }
+
+        public IReadOnlyCollection<Type> ExternallyDefinedSingletons => _externallyDefinedSingletons;
+
+     }
 }
