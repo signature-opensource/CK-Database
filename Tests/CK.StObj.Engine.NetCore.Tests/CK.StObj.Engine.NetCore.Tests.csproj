@@ -9,8 +9,8 @@
     <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="NUnitLite" Version="3.10.1" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnitLite" Version="3.11.0" />
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
   </ItemGroup>
   <ItemGroup>
