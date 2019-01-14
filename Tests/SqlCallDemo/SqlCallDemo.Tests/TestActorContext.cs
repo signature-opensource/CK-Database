@@ -29,6 +29,11 @@ namespace SqlCallDemo
 
         void IDisposable.Dispose() => _exec.Dispose();
 
+        public ISqlConnectionController GetConnectionController( string connectionString ) => _exec.GetConnectionController( connectionString );
+
+        public ISqlConnectionController GetConnectionController( ISqlConnectionStringProvider provider ) => _exec.GetConnectionController( provider );
+
+        public ISqlConnectionController FindController( SqlConnection connection ) => _exec.FindController( connection );
 
     }
 }
