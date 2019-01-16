@@ -5,4 +5,4 @@
 // Unfortunatly, this breaks with -local time based version numbers :(
 // I have currently no (clean) solution for this...
 // [assembly: CK.Setup.RequiredSetupDependency("CKSetup.Runner", minDependencyVersion: "8.0.1--0026-develop" )]
-[assembly: CK.Setup.RequiredSetupDependency("CKSetup.Runner" )]
+[assembly: CK.Setup.RequiredSetupDependency("CKSetup.Runner", minDependencyVersion: null )]
