@@ -11,7 +11,7 @@
     <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnitLite" Version="3.10.1" />
+    <PackageReference Include="NUnitLite" Version="3.11.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\$(OriginProjectName)\**\*.cs" Exclude="..\$(OriginProjectName)\obj\**;..\$(OriginProjectName)\bin\**">
