@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\Common\Shared.props" />
 
@@ -10,5 +10,12 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Testing.SetupableSetup\CK.Testing.SetupableSetup.csproj" />
     <PackageReference Include="CK.Testing.SqlServer" Version="$(CKTestingVersion)" />
+    <!--
+      This is to force this minimal version of Microsoft.Extensions.DependencyModel
+      because current VSTest adapter is bound to an old 1.0 version and when CKSetup runs
+      on a test output bin, it is this old version that is found (and preserved) and it
+      does not handle correctly the deps.json.
+    -->
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 </Project>
