@@ -1,8 +1,4 @@
 using Cake.Common.Diagnostics;
-using Cake.Common.IO;
-using Cake.Common.Solution;
-using Cake.Common.Tools.NuGet;
-using Cake.Common.Tools.NuGet.Push;
 using Cake.Core;
 using System.Collections.Generic;
 using System.IO;
@@ -93,7 +89,7 @@ new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
             var storeConf = Cake.CKSetupCreateDefaultConfiguration();
             if( globalInfo.IsLocalCIRelease )
             {
-                storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
+                storeConf.TargetStoreUrl = Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
             }
             if( !storeConf.IsValid )
             {
@@ -103,10 +99,9 @@ new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
 
             Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
             if( components == null ) components = GetCKSetupComponents();
-
             if( !Cake.CKSetupPublishAndAddComponentFoldersToStore(
                         storeConf,
-                        components.Select( c => c.GetBinPath( globalInfo.BuildConfiguration ) ) ) )
+                        components.Select( c => c.GetBinPath( globalInfo.IsRelease ? "Debug" : "Release" ) ) ) )
             {
                 Cake.TerminateWithError( "Error while registering components in local temporary store." );
             }

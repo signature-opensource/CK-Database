@@ -49,7 +49,7 @@
   <!--</BasicDefinitions>-->
   <!--<StandardProperties>-->
   <PropertyGroup>
-    <RepositoryUrl>https://gitlab.com/signature-code/CK-Database.git</RepositoryUrl>
+    <RepositoryUrl>https://gitlab.com/Signature-Code/CK-Database.git</RepositoryUrl>
     <ProductName>CK</ProductName>
     <Company>Signature Code</Company>
     <Authors>Signature Code</Authors>
