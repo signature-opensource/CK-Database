@@ -4,9 +4,7 @@
     <OutputType>Exe</OutputType>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="CK.Text" Version="8.0.2" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="Cake.Npm" Version="0.16.0" />
   </ItemGroup>
