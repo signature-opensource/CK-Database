@@ -267,9 +267,9 @@ namespace CK.SqlServer.Setup
                         {
                             // Edge case: for culture insensitivity, the best date format
                             // is YYYYMMDD (see https://stackoverflow.com/questions/8517804/correct-way-of-specifying-a-given-date-in-t-sql).
-                            // But... Since the parameter is a DateTime, ADO.Net attempts to parse it and can fail
-                            // depending on the culture.
-                            // We handle this here by transforming the string into an actual DateTime here.
+                            // But... Since the parameter is a DateTime (or DateTime2, etc.), ADO.Net attempts to parse
+                            // it and can fail depending on the current .Net culture.
+                            // We handle this here by transforming the string into an actual DateTime.
                             if( (SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime
                                  || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime2
                                  || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.Date
