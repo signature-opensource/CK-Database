@@ -22,7 +22,7 @@ namespace SqlCallDemo.Tests
                                 + " - @TinyInt = 255 - @Bit = 1"
                                 + " - @Numeric = 123456789012345678" 
                                 + " - @Numeric2010 = 1234567890.0123456789"
-                                + " - @DateTime = Oct 26 2011 12:00AM"
+                                + " - @DateTime = 2011-10-26T00:00:00"
                                 + " - @Float = -4.57586e-006"
                                 + " - @Real = -4.5588e-009"
                                 + " - @Bin = 0A3B"

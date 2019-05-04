@@ -9,7 +9,7 @@ alter procedure CK.sAllDefaultValues
 	@Bit bit = 1,
 	@Numeric numeric = 123456789012345678,
 	@Numeric2010 numeric(20,10) = 1234567890.0123456789,
-	@DateTime datetime = '2011-10-26',
+	@DateTime datetime = '20111026',
 	@Float float = -457.5858e-8,
 	@Real real = -45.588e-10,
 	@Bin varbinary(50) = 0xa3b,
@@ -26,10 +26,10 @@ begin
 	if @Bit is null set @TextResult = @TextResult + ' - @Bit is null'; else set @TextResult = @TextResult + ' - @Bit = ' + cast( @Bit as nvarchar); 
 	if @Numeric is null set @TextResult = @TextResult + ' - @Numeric is null'; else set @TextResult = @TextResult + ' - @Numeric = ' + cast( @Numeric as nvarchar(50)); 
 	if @Numeric2010 is null set @TextResult = @TextResult + ' - @Numeric2010 is null'; else set @TextResult = @TextResult + ' - @Numeric2010 = ' + cast( @Numeric2010 as nvarchar(50)); 
-	if @DateTime is null set @TextResult = @TextResult + ' - @DateTime is null'; else set @TextResult = @TextResult + ' - @DateTime = ' + cast( @DateTime as nvarchar(50)); 
+	if @DateTime is null set @TextResult = @TextResult + ' - @DateTime is null'; else set @TextResult = @TextResult + ' - @DateTime = ' + convert( nvarchar(50), @DateTime, 126 ); 
 	if @Float is null set @TextResult = @TextResult + ' - @Float is null'; else set @TextResult = @TextResult + ' - @Float = ' + cast( @Float as nvarchar(50)); 
 	if @Real is null set @TextResult = @TextResult + ' - @Real is null'; else set @TextResult = @TextResult + ' - @Real = ' + cast( @Real as nvarchar(50)); 
-	if @Bin is null set @TextResult = @TextResult + ' - @Bin is null'; else set @TextResult = @TextResult + ' - @Bin = ' + CONVERT(varchar(max),@Bin,2); 
+	if @Bin is null set @TextResult = @TextResult + ' - @Bin is null'; else set @TextResult = @TextResult + ' - @Bin = ' + convert( varchar(max), @Bin, 2 ); 
 	if @Char is null set @TextResult = @TextResult + ' - @Char is null'; else set @TextResult = @TextResult + ' - @Char = ' + @Char; 
 	return 0;
 end
