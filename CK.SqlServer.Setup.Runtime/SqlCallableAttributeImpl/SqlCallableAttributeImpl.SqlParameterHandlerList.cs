@@ -265,13 +265,32 @@ namespace CK.SqlServer.Setup
                         if( o == DBNull.Value ) b.Append( "DBNull.Value" );
                         else
                         {
+                            // Edge case: for culture insensitivity, the best date format
+                            // is YYYYMMDD (see https://stackoverflow.com/questions/8517804/correct-way-of-specifying-a-given-date-in-t-sql).
+                            // But... Since the parameter is a DateTime, ADO.Net attempts to parse it and can fail
+                            // depending on the culture.
+                            // We handle this here by transforming the string into an actual DateTime here.
+                            if( (SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime
+                                 || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime2
+                                 || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.Date
+                                 || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTimeOffset )
+                                && o is string defValue
+                                && defValue.Length == 8
+                                && defValue.All( c => c >= '0' && c <= '9' ) )
+                            {
+                                int yyyy = Int32.Parse( defValue.Substring( 0, 4 ) );
+                                int mm = Int32.Parse( defValue.Substring( 4, 2 ) );
+                                int dd = Int32.Parse( defValue.Substring( 6 ) );
+                                o = new DateTime( yyyy, mm, dd, 0, 0, 0, DateTimeKind.Utc );
+                                monitor.Info( $"Modified the default Sql value from 'YYYYMMDD' string to actual DateTime: {defValue} -> {o}" );
+                            }
                             try
                             {
                                 b.Append( o );
                             }
                             catch( Exception ex )
                             {
-                                monitor.Error( $"Emit for type  '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported.", ex );
+                                monitor.Error( $"Emit for type '{SqlExprParam.ToStringClean()}' (Parameter '{o.GetType().Name}') is not supported.", ex );
                                 return false;
                             }
                         }
