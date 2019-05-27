@@ -183,7 +183,6 @@ namespace CK.Core
         {
             _uniqueNumber = 0;
             var tB = moduleB.DefineType( _namespace + ".Factory" );
-            tB.AddInterfaceImplementation( typeof( IAutoImplementedType ) );
             Result r = CreateResult( moduleB, monitor, tB );
             if( r == null ) return null;
             ImplementFactories( monitor, tB, r );
@@ -243,7 +242,6 @@ namespace CK.Core
         Type CreatePocoType( ModuleBuilder moduleB, IActivityMonitor monitor, IReadOnlyList<Type> interfaces )
         {
             var tB = moduleB.DefineType( $"{_namespace}.Poco{_uniqueNumber++}" );
-            tB.AddInterfaceImplementation( typeof( IAutoImplementedType ) );
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
             foreach( var i in interfaces )
             {
