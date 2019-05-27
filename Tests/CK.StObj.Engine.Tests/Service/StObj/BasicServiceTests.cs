@@ -173,7 +173,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( AmbientThatDependsOnExternal )].IsScoped.Should().BeTrue();
         }
 
-        interface ISampleAmbientContract : IAmbientContract { }
+        interface ISampleAmbientContract : IAmbientObject { }
 
         class SampleAmbientContract : ISampleAmbientContract { }
 

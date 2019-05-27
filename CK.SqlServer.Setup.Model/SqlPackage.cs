@@ -8,11 +8,10 @@ namespace CK.SqlServer.Setup
 {
     /// <summary>
     /// Base class for package objects. 
-    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
-    /// are de facto ambient contracts.
-    /// This class does not bring no more than the base <see cref="SqlPackageBase"/>.
+    /// Unless marked with <see cref="IAmbientDefiner{T}"/>, direct specializations are de facto ambient objects.
+    /// This class doesn't bring more than the base <see cref="SqlPackageBase"/>.
     /// </summary>
-    public class SqlPackage : SqlPackageBase, IAmbientContractDefiner
+    public class SqlPackage : SqlPackageBase, IAmbientObject, IAmbientDefiner<SqlPackage>
     {
     }
 }

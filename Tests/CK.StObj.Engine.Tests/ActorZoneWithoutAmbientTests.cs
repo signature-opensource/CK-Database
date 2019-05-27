@@ -22,31 +22,31 @@ namespace CK.StObj.Engine.Tests
                     typeof( AuthenticationUser )
                 } )]
 
-        class SqlDatabaseDefault : IAmbientContract
+        class SqlDatabaseDefault : IAmbientObject
         {
         }
 
         #region Basic Package
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class BasicPackage : IAmbientContract
+        class BasicPackage : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicActor : IAmbientContract
-        {
-        }
-
-
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicUser : IAmbientContract
+        class BasicActor : IAmbientObject
         {
         }
 
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicGroup : IAmbientContract
+        class BasicUser : IAmbientObject
+        {
+        }
+
+
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
+        class BasicGroup : IAmbientObject
         {
             void StObjConstruct( BasicActor actor )
             {
@@ -69,7 +69,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        interface ISecurityZone : IAmbientContract
+        interface ISecurityZone : IAmbientObject
         {
         }
 
@@ -86,7 +86,7 @@ namespace CK.StObj.Engine.Tests
         #region Authentication Package
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class AuthenticationPackage : IAmbientContract
+        class AuthenticationPackage : IAmbientObject
         {
         }
 

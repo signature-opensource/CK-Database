@@ -186,7 +186,7 @@ namespace CK.Setup
 
         void DoRegisterTypes( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Contract or Service classes", types, count, ( cc, t ) => cc.RegisterClassOrPoco( t ) );
+            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Objects or Service classes", types, count, ( cc, t ) => cc.RegisterClassOrPoco( t ) );
         }
 
         void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<AmbientTypeCollector,Type> a )

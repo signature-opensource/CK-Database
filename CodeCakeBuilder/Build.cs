@@ -1,30 +1,9 @@
-using Cake.Common.Build;
-using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Cake.Common.Solution;
-using Cake.Common.Text;
-using Cake.Common.Tools.DotNetCore;
-using Cake.Common.Tools.DotNetCore.Build;
-using Cake.Common.Tools.DotNetCore.Pack;
-using Cake.Common.Tools.DotNetCore.Publish;
-using Cake.Common.Tools.DotNetCore.Restore;
-using Cake.Common.Tools.MSBuild;
-using Cake.Common.Tools.NuGet;
-using Cake.Common.Tools.NuGet.Pack;
-using Cake.Common.Tools.NuGet.Push;
-using Cake.Common.Tools.NuGet.Restore;
-using Cake.Common.Tools.NUnit;
 using Cake.Core;
 using Cake.Core.Diagnostics;
-using Cake.Core.IO;
-using CK.Text;
-using Code.Cake;
 using SimpleGitVersion;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace CodeCake
@@ -62,11 +41,14 @@ namespace CodeCake
                 .IsDependentOn( "Check-Repository" )
                 .Does( () =>
                  {
-                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
-                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
-                     Cake.CleanDirectories( globalInfo.ReleasesFolder );
-                     Cake.CleanDirectory( "Tests/LocalTestHelper/LocalTestStore" );
-                     Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
+                     if( globalInfo.GitInfo.IsValid )
+                     {
+                         Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
+                         Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
+                         Cake.CleanDirectories( globalInfo.ReleasesFolder );
+                         Cake.CleanDirectory( "Tests/LocalTestHelper/LocalTestStore" );
+                         Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
+                     }
                  } );
 
             Task( "Build" )
@@ -74,7 +56,7 @@ namespace CodeCake
                 .IsDependentOn( "Clean" )
                 .Does( () =>
                  {
-                    StandardSolutionBuild( globalInfo, solutionFileName );
+                     StandardSolutionBuild( globalInfo, solutionFileName );
                  } );
 
             Task( "Unit-Testing" )

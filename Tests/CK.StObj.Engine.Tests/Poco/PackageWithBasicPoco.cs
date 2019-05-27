@@ -13,7 +13,7 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests.Poco
 {
     [StObj( ItemKind = DependentItemKindSpec.Container )]
-    public class PackageWithBasicPoco : IAmbientContract
+    public class PackageWithBasicPoco : IAmbientObject
     {
         void StObjConstruct( IPocoFactory<IBasicPoco> f )
         {

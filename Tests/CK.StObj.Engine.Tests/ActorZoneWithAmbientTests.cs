@@ -20,13 +20,12 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-
         [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
-        class SqlDatabaseDefault : IAmbientContract
+        class SqlDatabaseDefault : IAmbientObject
         {
         }
 
-        class BaseDatabaseObject : IAmbientContractDefiner
+        class BaseDatabaseObject : IAmbientObject, IAmbientDefiner<BaseDatabaseObject>
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }
@@ -42,10 +41,10 @@ namespace CK.StObj.Engine.Tests
         [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
         class BasicPackage : BaseDatabaseObject
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public BasicUser UserHome { get; protected set; }
             
-            [InjectContract]
+            [InjectSingletonAttribute]
             public BasicGroup GroupHome { get; protected set; }
         }
 
@@ -74,7 +73,7 @@ namespace CK.StObj.Engine.Tests
         // ZonePackage specializes BasicPackage. Its Schema is the same as BasicPackage (CK).
         class ZonePackage : BasicPackage
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } }
         }
 

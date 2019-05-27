@@ -15,13 +15,13 @@ namespace CK.StObj.Engine.Tests
     public class DifferentKindOfProperties
     {
 
-        class ObjA : IAmbientContract
+        class ObjA : IAmbientObject
         {
             [AmbientProperty]
             public ObjB NoProblem { get; set; }
         }
 
-        class ObjB : IAmbientContract
+        class ObjB : IAmbientObject
         {
             [StObjProperty]
             [AmbientProperty]
@@ -64,17 +64,17 @@ namespace CK.StObj.Engine.Tests
 
         // A null property type triggers an error: it must be explicitly typeof(object).
         [StObjProperty( PropertyName = "AProperty", PropertyType = null )]
-        class MissingStObjPropertyType : IAmbientContract
+        class MissingStObjPropertyType : IAmbientObject
         {
         }
 
         [StObjProperty( PropertyName = "  " )]
-        class MissingStObjPropertyName : IAmbientContract
+        class MissingStObjPropertyName : IAmbientObject
         {
         }
 
         [StObjProperty( PropertyName = "Albert", PropertyType = typeof(object) )]
-        class DuplicateStObjProperty : IAmbientContract
+        class DuplicateStObjProperty : IAmbientObject
         {
             [StObjProperty]
             public object Albert { get; set; }
@@ -101,9 +101,9 @@ namespace CK.StObj.Engine.Tests
         }
 
 
-        class InvalidAmbientContractProperty : IAmbientContract
+        class InvalidAmbientContractProperty : IAmbientObject
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public DifferentKindOfProperties NotAnIAmbientContractProperty { get; protected set; }
         }
 
@@ -120,7 +120,7 @@ namespace CK.StObj.Engine.Tests
 
         #region Covariance support
 
-        class CA : IAmbientContract
+        class CA : IAmbientObject
         {
         }
 
@@ -132,21 +132,21 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        class CB : IAmbientContract
+        class CB : IAmbientObject
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public CA A { get; set; }
         }
 
         class CB2 : CB
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public new CA2 A { get { return (CA2)base.A; } }
         }
 
         class CB3 : CB2
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public new CA3 A 
             {
                 get { return (CA3)base.A; }
@@ -172,9 +172,9 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        class CMissingSetterOnTopDefiner : IAmbientContract
+        class CMissingSetterOnTopDefiner : IAmbientObject
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public CA2 A { get { return null; } }
         }
 
@@ -189,9 +189,9 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        class CPrivateSetter : IAmbientContract
+        class CPrivateSetter : IAmbientObject
         {
-            [InjectContract]
+            [InjectSingletonAttribute]
             public CA2 A { get; private set; }
         }
 

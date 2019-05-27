@@ -39,7 +39,7 @@ namespace CK.Core
         public ISet<Assembly> Assemblies { get; }
 
         /// <summary>
-        /// Gets the reults for <see cref="IAmbientContract"/> objects.
+        /// Gets the reults for <see cref="IAmbientObject"/> objects.
         /// </summary>
         public AmbientContractCollectorResult AmbientContracts { get; }
 

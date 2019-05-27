@@ -16,7 +16,7 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Typed <see cref="SqlDatabase"/> for the default <see cref="SqlDatabase"/>.
     /// </summary>
-    public class SqlDefaultDatabase : SqlDatabase, IAmbientContract
+    public class SqlDefaultDatabase : SqlDatabase, IAmbientObject
     {
         /// <summary>
         /// Initializes the default database. Its name is <see cref="SqlDatabase.DefaultDatabaseName"/>

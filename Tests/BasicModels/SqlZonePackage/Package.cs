@@ -11,10 +11,10 @@ namespace SqlZonePackage.Zone
     [SqlActorPackage.TestAutoHeaderSP( "Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2).", "sUserToBeOverridenIndirect" )]
     public abstract class Package : SqlActorPackage.Basic.Package, SqlActorPackage.IAnyService
     {
-        [InjectContract]
+        [InjectSingletonAttribute]
         public new GroupHome GroupHome { get { return (GroupHome)base.GroupHome; } }
 
-        [InjectContract]
+        [InjectSingletonAttribute]
         public SecurityZoneHome SecurityZoneHome { get; protected set; }
 
         string IAnyService.CallService() => "ZonePackage!!";

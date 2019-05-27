@@ -32,7 +32,7 @@ namespace CK.StObj.Engine.Tests
                 }
             }
 
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
             }
 
@@ -54,14 +54,14 @@ namespace CK.StObj.Engine.Tests
                 public abstract int Auto( int i );
             }
 
-            public interface IC : IAmbientContract
+            public interface IC : IAmbientObject
             {
                 A TheA { get; }
             }
 
             public class C : IC
             {
-                [InjectContract]
+                [InjectSingletonAttribute]
                 public A TheA { get; private set; }
             }
 
@@ -114,7 +114,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CConstructCalledAndStObjProperties
         {
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
                 [StObjProperty]
                 public string StObjPower { get; set; }
@@ -139,7 +139,7 @@ namespace CK.StObj.Engine.Tests
                 public B TheB { get; private set; }
             }
 
-            public class B : IAmbientContract
+            public class B : IAmbientObject
             {
                 void StObjConstruct( A a )
                 {
@@ -202,7 +202,7 @@ namespace CK.StObj.Engine.Tests
 
         public class PostBuildSet
         {
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
                 [StObjProperty]
                 public string StObjPower { get; set; }
@@ -216,11 +216,11 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
                 }
 
-                [InjectContract]
+                [InjectSingletonAttribute]
                 public BSpec TheB { get; private set; }
             }
 
@@ -238,7 +238,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );
                     StObjInitializeOnASpecCalled = true;
                 }
@@ -246,12 +246,12 @@ namespace CK.StObj.Engine.Tests
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class B : IAmbientContract
+            public class B : IAmbientObject
             {
-                [InjectContract]
+                [InjectSingletonAttribute]
                 public A TheA { get; private set; }
 
-                [InjectContract]
+                [InjectSingletonAttribute]
                 public A TheInjectedA { get; private set; }
             }
 

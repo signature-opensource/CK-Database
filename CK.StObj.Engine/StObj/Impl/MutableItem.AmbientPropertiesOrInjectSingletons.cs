@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableItem.AmbientPropertiesOrInjectContracts.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,12 +75,12 @@ namespace CK.Setup
         /// they have only in common MutableReferenceOptional), and routing calls to _specialization._allAmbientContracts or _specialization._allAmbientProperties...
         /// I prefer duplicating code here.
         /// </summary>
-        class ListInjectContract : IReadOnlyList<MutableInjectContract>
+        class ListInjectSingleton : IReadOnlyList<MutableInjectSingleton>
         {
             readonly MutableItem _item;
             readonly int _count;
 
-            public ListInjectContract( MutableItem item )
+            public ListInjectSingleton( MutableItem item )
             {
                 _item = item;
                 _count = _item.Type.AmbientContracts.Count;
@@ -96,7 +89,7 @@ namespace CK.Setup
             public int IndexOf( object item )
             {
                 int idx = -1;
-                MutableInjectContract c = item as MutableInjectContract;
+                MutableInjectSingleton c = item as MutableInjectSingleton;
                 if( c != null
                     && c.Owner == _item._leafData.LeafSpecialization
                     && c.AmbientContractInfo.Index < _count )
@@ -106,7 +99,7 @@ namespace CK.Setup
                 return idx;
             }
 
-            public MutableInjectContract this[int index]
+            public MutableInjectSingleton this[int index]
             {
                 get
                 {
@@ -125,7 +118,7 @@ namespace CK.Setup
                 get { return _count; }
             }
 
-            public IEnumerator<MutableInjectContract> GetEnumerator()
+            public IEnumerator<MutableInjectSingleton> GetEnumerator()
             {
                 return _item._leafData.AllAmbientContracts.Take( _count ).GetEnumerator();
             }

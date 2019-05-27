@@ -110,15 +110,15 @@ namespace CK.Core
             Type t,
             AmbientTypeCollector collector,
             bool isExcluded,
-            ServiceLifetime lifetime )
+            AmbientTypeKind lifetime )
             : base( m, parent, t, serviceProvider, isExcluded )
         {
             Debug.Assert( Generalization == parent );
-            Debug.Assert( lifetime == ServiceLifetime.IsAmbientService
-                          || lifetime == ServiceLifetime.AmbientSingleton
-                          || lifetime == ServiceLifetime.AmbientScope );
+            Debug.Assert( lifetime == AmbientTypeKind.IsAmbientService
+                          || lifetime == AmbientTypeKind.AmbientSingleton
+                          || lifetime == AmbientTypeKind.AmbientScope );
             DeclaredLifetime = lifetime;
-            if( lifetime == ServiceLifetime.AmbientScope ) MustBeScopedLifetime = true;
+            if( lifetime == AmbientTypeKind.AmbientScope ) MustBeScopedLifetime = true;
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
             if( IsExcluded ) return;
 
@@ -143,14 +143,14 @@ namespace CK.Core
         /// Gets this Service class life time.
         /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
         /// vs. <see cref="IScopedAmbientService"/> interface marker.
-        /// This can never be <see cref="ServiceLifetime.AmbientBothError"/> nor <see cref="ServiceLifetime.None"/> since
+        /// This can never be <see cref="AmbientTypeKindExtension.IsNoneOrInvalid(AmbientTypeKind)"/> since
         /// in such cases, the AmbientServiceClassInfo is not instanciated.
         /// </summary>
-        public ServiceLifetime DeclaredLifetime { get; }
+        public AmbientTypeKind DeclaredLifetime { get; }
 
         /// <summary>
-        /// Gets whether this class must be <see cref="ServiceLifetime.IsScoped"/> because of its dependencies.
-        /// If its <see cref="DeclaredLifetime"/> is <see cref="ServiceLifetime.IsSingleton"/> an error is detected
+        /// Gets whether this class must be <see cref="AmbientTypeKind.IsScoped"/> because of its dependencies.
+        /// If its <see cref="DeclaredLifetime"/> is <see cref="AmbientTypeKind.IsSingleton"/> an error is detected
         /// either at the very beginning of the process based on the static parameter type information or at the
         /// end of the process when class and interface mappings are about to be resolved.
         /// </summary>
@@ -226,7 +226,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the specialization depth from the first top AmbientServiceClassInfo.
-        /// This is not the same as <see cref="StObjTypeInfo.SpecializationDepth"/> that
+        /// This is not the same as <see cref="AmbientObjectClassInfo.SpecializationDepth"/> that
         /// is relative to <see cref="Object"/> type.
         /// </summary>
         public int SpecializationDepth { get; }
@@ -250,7 +250,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// This mimics the <see cref="StObjTypeInfo.CreateMutableItemsPath"/> method
+        /// This mimics the <see cref="AmbientObjectClassInfo.CreateMutableItemsPath"/> method
         /// to reproduce the exact same Type handling between Services and StObj (ignoring agstract tails
         /// for instance).
         /// This is simpler here since there is no split in type info (no MutableItem layer).
@@ -349,27 +349,6 @@ namespace CK.Core
             return success;
         }
 
-        internal bool InitializeMostSpecialized( IActivityMonitor monitor, AmbientTypeCollector collector, StObjObjectEngineMap engineMap )
-        {
-            Debug.Assert( IsIncluded );
-            bool success = EnsureCtorBinding( monitor, collector );
-            var g = this;
-            do
-            {
-                g.MostSpecialized = this;
-                if( g.ContainerType != null )
-                {
-                    if( (g.ContainerItem = engineMap.ToHighestImpl( g.ContainerType )) == null )
-                    {
-                        monitor.Error( $"Unable to resolve container '{g.ContainerType.FullName}' for service '{g.Type.FullName}' to a StObj." );
-                        success = false;
-                    }
-                }
-            }
-            while( (g = g.Generalization) != null );
-            return success;
-        }
-
         /// <summary>
         /// Gets the parameters closure (including "Inheritance Constructor Parameters rule" and
         /// external intermediate classes).
@@ -391,7 +370,7 @@ namespace CK.Core
         {
             if( !MustBeScopedLifetime.HasValue )
             {
-                Debug.Assert( (DeclaredLifetime & ServiceLifetime.IsAmbientService) != 0 );
+                Debug.Assert( (DeclaredLifetime & AmbientTypeKind.IsAmbientService) != 0 );
                 foreach( var p in ConstructorParameters )
                 {
                     var c = p.ServiceClass?.MostSpecialized ?? p.ServiceInterface?.FinalResolved;
@@ -399,7 +378,7 @@ namespace CK.Core
                     {
                         if( c.GetFinalMustBeScopedLifetime( m, serviceLifetimeResult, ref success ) )
                         {
-                            if( DeclaredLifetime == ServiceLifetime.AmbientSingleton )
+                            if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
                             {
                                 m.Error( $"Lifetime error: Type '{Type.Name}' is {nameof( ISingletonAmbientService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
                                 success = false;
@@ -416,7 +395,7 @@ namespace CK.Core
                 {
                     if( _requiredParametersToBeSingletons != null )
                     {
-                        Debug.Assert( DeclaredLifetime == ServiceLifetime.IsAmbientService );
+                        Debug.Assert( DeclaredLifetime == AmbientTypeKind.IsAmbientService );
                         foreach( var external in _requiredParametersToBeSingletons )
                         {
                             if( !serviceLifetimeResult.IsExternalSingleton( external.ParameterType ) )
@@ -430,7 +409,7 @@ namespace CK.Core
                     if( !MustBeScopedLifetime.HasValue )
                     {
                         MustBeScopedLifetime = false;
-                        if( DeclaredLifetime != ServiceLifetime.AmbientSingleton )
+                        if( DeclaredLifetime != AmbientTypeKind.AmbientSingleton )
                         {
                             m.Warn( $"Nothing prevents the class '{Type.Name}' to be a Singleton." );
                         }
@@ -533,12 +512,12 @@ namespace CK.Core
                     // We check here the Singleton to Scoped dependency error at the Type level.
                     // This must be done here since CtorParameters are not created for types that are external (those
                     // are considered as Scoped) or for ambient interfaces that have no implementation classes.
-                    if( param.Lifetime == ServiceLifetime.None
-                        || (param.Lifetime & ServiceLifetime.IsScoped) != 0 )
+                    if( param.Lifetime == AmbientTypeKind.None
+                        || (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
                     {
-                        if( DeclaredLifetime == ServiceLifetime.AmbientSingleton )
+                        if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
                         {
-                            if( param.Lifetime == ServiceLifetime.None )
+                            if( param.Lifetime == AmbientTypeKind.None )
                             {
                                 collector.DefineAsExternalSingleton( p.ParameterType );
                                 m.Warn( $"Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
@@ -547,29 +526,29 @@ namespace CK.Core
                             {
                                 MustBeScopedLifetime = true;
                                 string paramReason;
-                                if( param.Lifetime == ServiceLifetime.AmbientScope )
+                                if( param.Lifetime == AmbientTypeKind.AmbientScope )
                                 {
                                     paramReason = $"is marked with {nameof( IScopedAmbientService )}";
                                 }
                                 else
                                 {
-                                    Debug.Assert( param.Lifetime == ServiceLifetime.IsScoped );
+                                    Debug.Assert( param.Lifetime == AmbientTypeKind.IsScoped );
                                     paramReason = $"is registered as an external scoped service";
                                 }
                                 m.Error( $"Lifetime error: Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
                                 success = false;
                             }
                         }
-                        else if( DeclaredLifetime == ServiceLifetime.IsAmbientService )
+                        else if( DeclaredLifetime == AmbientTypeKind.IsAmbientService )
                         {
-                            if( (param.Lifetime & ServiceLifetime.IsScoped) != 0 )
+                            if( (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
                             {
                                 m.Info( $"{nameof( IAmbientService )} '{p.Member.DeclaringType.Name}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
                                 MustBeScopedLifetime = true;
                             }
                             else
                             {
-                                Debug.Assert( param.Lifetime == ServiceLifetime.None );
+                                Debug.Assert( param.Lifetime == AmbientTypeKind.None );
                                 if( _requiredParametersToBeSingletons == null )
                                 {
                                     _requiredParametersToBeSingletons = new List<ParameterInfo>();
@@ -598,9 +577,9 @@ namespace CK.Core
             public readonly AmbientServiceClassInfo Class;
             public readonly AmbientServiceInterfaceInfo Interface;
             public readonly bool IsEnumerable;
-            public readonly ServiceLifetime Lifetime;
+            public readonly AmbientTypeKind Lifetime;
 
-            public CtorParameterData( bool success, AmbientServiceClassInfo c, AmbientServiceInterfaceInfo i, bool isEnumerable, ServiceLifetime lt )
+            public CtorParameterData( bool success, AmbientServiceClassInfo c, AmbientServiceInterfaceInfo i, bool isEnumerable, AmbientTypeKind lt )
             {
                 Success = success;
                 Class = c;
@@ -630,7 +609,7 @@ namespace CK.Core
                 else 
                 {
                     var genLifetime = collector.GetAmbientServiceLifetime( tGen );
-                    if( genLifetime != ServiceLifetime.None )
+                    if( genLifetime != AmbientTypeKind.None )
                     {
                         return new CtorParameterData( true, null, null, false, genLifetime );
                     }
@@ -638,13 +617,14 @@ namespace CK.Core
             }
             // We only consider I(Scoped/Singleton)AmbientService marked type parameters.
             var lifetime = collector.GetAmbientServiceLifetime( tParam );
-            if( (lifetime&ServiceLifetime.IsAmbientService) == 0 )
+            if( (lifetime&AmbientTypeKind.IsAmbientService) == 0 )
             {
                 return new CtorParameterData( true, null, null, false, lifetime );
             }
-            if( lifetime == ServiceLifetime.AmbientBothError )
+            var conflictMsg = lifetime.GetAmbientKindCombinationError(); 
+            if( conflictMsg != null )
             {
-                m.Error( $"Type '{tParam.FullName}' for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor is marked with both {nameof(ISingletonAmbientService)} and {nameof(IScopedAmbientService)}." );
+                m.Error( $"Type '{tParam.FullName}' for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor: {conflictMsg}" );
                 return new CtorParameterData( false, null, null, false, lifetime );
             }
 

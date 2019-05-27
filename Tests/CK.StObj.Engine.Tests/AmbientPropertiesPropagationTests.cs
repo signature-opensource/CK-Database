@@ -32,7 +32,7 @@ namespace CK.StObj.Engine.Tests
         {
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnBaseObject" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class BaseObjectAmbient : IAmbientContract
+            public class BaseObjectAmbient : IAmbientObject
             {
                 [AmbientProperty( ResolutionSource = PropertyResolutionSource.FromContainerAndThenGeneralization )]
                 public string OneStringValue { get; set; }
@@ -53,7 +53,7 @@ namespace CK.StObj.Engine.Tests
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnAnotherContainer" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class AnotherContainer : IAmbientContract
+            public class AnotherContainer : IAmbientObject
             {
                 [AmbientProperty]
                 public string OneStringValue { get; set; }
@@ -133,7 +133,7 @@ namespace CK.StObj.Engine.Tests
         class FromGeneralizationAndThenContainer
         {
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class BaseObjectAmbient : IAmbientContract
+            public class BaseObjectAmbient : IAmbientObject
             {
                 [AmbientProperty]
                 public string OneStringValue { get; set; }
@@ -154,20 +154,20 @@ namespace CK.StObj.Engine.Tests
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnAnotherContainer" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class AnotherContainer : IAmbientContract
+            public class AnotherContainer : IAmbientObject
             {
                 [AmbientProperty( IsOptional = true )]
                 public string OneStringValue { get; set; }
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( ContainerForContainerForBaseObject ) )]
-            public class ContainerForBaseObject : IAmbientContract
+            public class ContainerForBaseObject : IAmbientObject
             {
             }
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "On Container of ContainerForBaseObject" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class ContainerForContainerForBaseObject : IAmbientContract
+            public class ContainerForContainerForBaseObject : IAmbientObject
             {
                 [AmbientProperty( IsOptional = true )]
                 public string OneStringValue { get; set; }

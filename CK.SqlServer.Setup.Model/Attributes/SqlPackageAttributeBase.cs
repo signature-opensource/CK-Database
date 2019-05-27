@@ -48,7 +48,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <remarks>
         /// The type must be a specialization of <see cref="SqlDatabase"/>. 
-        /// If it supports <see cref="IAmbientContract"/>, the property is bound to the corresponding ambient contract instance. 
+        /// If it supports <see cref="IAmbientObject"/>, the property is bound to the corresponding ambient contract instance. 
         /// </remarks>
         public Type Database { get; set; }
     }

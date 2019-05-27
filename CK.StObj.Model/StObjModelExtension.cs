@@ -21,7 +21,7 @@ namespace CK.Core
         /// Gets the structured object or null if no mapping exists.
         /// </summary>
         /// <param name="this">This context.</param>
-        /// <typeparam name="T">Type (that must be an Ambient Contract).</typeparam>
+        /// <typeparam name="T">Type (that must be an Ambient Object).</typeparam>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
         public static T Obtain<T>( this IStObjObjectMap @this )
         {

@@ -182,12 +182,12 @@ namespace CK.StObj.Engine.Tests
         #region Buggy & Valid Model
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : IAmbientContract
+        class C1 : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( C1 ), ItemKind = DependentItemKindSpec.Container )]
-        class C2InC1 : IAmbientContract
+        class C2InC1 : IAmbientObject
         {
         }
 
@@ -220,7 +220,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( C2InC1 ), Children = new Type[] { typeof( C1 ) } )]
-        class C3ContainsC1 : IAmbientContract
+        class C3ContainsC1 : IAmbientObject
         {
         }
 

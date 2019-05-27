@@ -9,9 +9,9 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Specialized <see cref="AmbientTypeInfo"/> for <see cref="IAmbientContract"/> classes.
+    /// Specialized <see cref="AmbientTypeInfo"/> for <see cref="IAmbientObject"/> classes.
     /// </summary>
-    internal class StObjTypeInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
+    internal class AmbientObjectClassInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
     {
         Type[] _ambientInterfaces;
         Type[] _thisAmbientInterfaces;
@@ -19,7 +19,7 @@ namespace CK.Setup
         class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
             public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
-            public IReadOnlyList<InjectContractInfo> AmbientContracts { get; private set; }
+            public IReadOnlyList<InjectSingletonInfo> AmbientContracts { get; private set; }
             public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
             public int SpecializationDepth { get; private set; }
             public Type Container { get; private set; }
@@ -48,7 +48,7 @@ namespace CK.Setup
                         if( t == typeof( object ) )
                         {
                             result.AmbientProperties = Util.Array.Empty<AmbientPropertyInfo>();
-                            result.AmbientContracts = Util.Array.Empty<InjectContractInfo>();
+                            result.AmbientContracts = Util.Array.Empty<InjectSingletonInfo>();
                             result.StObjProperties = Util.Array.Empty<StObjPropertyInfo>();
                         }
                         else
@@ -83,7 +83,7 @@ namespace CK.Setup
                             // Ambient, Contracts & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
                             IReadOnlyList<AmbientPropertyInfo> apList;
-                            IReadOnlyList<InjectContractInfo> acList;
+                            IReadOnlyList<InjectSingletonInfo> acList;
                             CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, stObjProperties, out apList, out acList );
                             Debug.Assert( apList != null && acList != null );
                             result.AmbientProperties = apList;
@@ -105,28 +105,28 @@ namespace CK.Setup
                 int specializationLevel,
                 List<StObjPropertyInfo> stObjProperties,
                 out IReadOnlyList<AmbientPropertyInfo> apListResult,
-                out IReadOnlyList<InjectContractInfo> acListResult )
+                out IReadOnlyList<InjectSingletonInfo> acListResult )
             {
                 if( type == typeof( object ) )
                 {
                     apListResult = Util.Array.Empty<AmbientPropertyInfo>();
-                    acListResult = Util.Array.Empty<InjectContractInfo>();
+                    acListResult = Util.Array.Empty<InjectSingletonInfo>();
                 }
                 else
                 {
                     IList<AmbientPropertyInfo> apCollector;
-                    IList<InjectContractInfo> acCollector;
-                    AmbientPropertyOrInjectContractInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
+                    IList<InjectSingletonInfo> acCollector;
+                    AmbientPropertyOrInjectSingletonInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
 
                     CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
 
-                    apListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
-                    acListResult = AmbientPropertyOrInjectContractInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
+                    apListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
+                    acListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
                 }
             }
         }
 
-        internal StObjTypeInfo( IActivityMonitor monitor, StObjTypeInfo parent, Type t, IServiceProvider provider, bool isExcluded )
+        internal AmbientObjectClassInfo( IActivityMonitor monitor, AmbientObjectClassInfo parent, Type t, IServiceProvider provider, bool isExcluded )
             : base( monitor, parent, t, provider, isExcluded )
         {
             Debug.Assert( parent == Generalization );
@@ -135,7 +135,7 @@ namespace CK.Setup
             IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
-            // StObj properties are initialized with inherited (non Ambient Contract ones).
+            // StObj properties are initialized with inherited (non Ambient Object ones).
             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
             if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
             // StObj properties are then read from StObjPropertyAttribute on class
@@ -161,7 +161,7 @@ namespace CK.Setup
             // Ambient properties for the exact Type (can be null). 
             // In the same time, StObjPropertyAttribute that are associated to actual properties are collected into stObjProperties.
             IList<AmbientPropertyInfo> apCollector;
-            IList<InjectContractInfo> acCollector;
+            IList<InjectSingletonInfo> acCollector;
             AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, stObjProperties, out apCollector, out acCollector );
             // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
             // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
@@ -200,7 +200,7 @@ namespace CK.Setup
                 Children = a.Children;
                 Groups = a.Groups;
             }
-            // We inherit only from non Ambient Contract base classes, not from Generalization if it exists.
+            // We inherit only from non Ambient Object base classes, not from Generalization if it exists.
             // This is to let the inheritance of these 3 properties take dynamic configuration (IStObjStructuralConfigurator) 
             // changes into account: inheritance will take place after configuration so that a change on a base class
             // will be inherited if not explicitly defined at the class level.
@@ -286,11 +286,11 @@ namespace CK.Setup
 
         }
 
-        public new StObjTypeInfo Generalization => (StObjTypeInfo)base.Generalization;
+        public new AmbientObjectClassInfo Generalization => (AmbientObjectClassInfo)base.Generalization;
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
-        public IReadOnlyList<InjectContractInfo> AmbientContracts { get; private set; }
+        public IReadOnlyList<InjectSingletonInfo> AmbientContracts { get; private set; }
 
         public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
 
@@ -322,8 +322,8 @@ namespace CK.Setup
         Type[] EnsureAllAmbientInterfaces()
         {
             return _ambientInterfaces
-                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => t != typeof( IAmbientContract )
-                                                                          && typeof( IAmbientContract ).IsAssignableFrom( t ) ).ToArray());
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => t != typeof( IAmbientObject )
+                                                                          && typeof( IAmbientObject ).IsAssignableFrom( t ) ).ToArray());
         }
 
         internal Type[] EnsureThisAmbientInterfaces()
@@ -346,7 +346,7 @@ namespace CK.Setup
             Debug.Assert( tempAssembly != null );
             var item = new MutableItem( this, generalization, engineMap );
             bool concreteBelow = false;
-            foreach( StObjTypeInfo c in Specializations )
+            foreach( AmbientObjectClassInfo c in Specializations )
             {
                 Debug.Assert( !c.IsExcluded );
                 concreteBelow |= c.CreateMutableItemsPath( monitor, services, engineMap, item, tempAssembly, lastConcretes, abstractTails );

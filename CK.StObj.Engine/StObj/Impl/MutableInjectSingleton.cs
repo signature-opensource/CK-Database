@@ -16,13 +16,13 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Describes an Ambient Contract property.
+    /// Describes an Ambient singleton property.
     /// </summary>
-    internal class MutableInjectContract : MutableReferenceOptional, IStObjMutableInjectAmbientContract
+    internal class MutableInjectSingleton : MutableReferenceOptional, IStObjMutableInjectSingleton
     {
-        internal readonly InjectContractInfo AmbientContractInfo;
+        internal readonly InjectSingletonInfo AmbientContractInfo;
 
-        internal MutableInjectContract( MutableItem owner, InjectContractInfo info )
+        internal MutableInjectSingleton( MutableItem owner, InjectSingletonInfo info )
             : base( owner, StObjMutableReferenceKind.AmbientContract )
         {
             AmbientContractInfo = info;
@@ -36,7 +36,7 @@ namespace CK.Setup
 
         internal override Type UnderlyingType => AmbientContractInfo.PropertyType;
 
-        public override string ToString() => $"Ambient Contract '{Name}' of '{Owner}'";
+        public override string ToString() => $"Ambient Singleton '{Name}' of '{Owner}'";
 
     }
 }

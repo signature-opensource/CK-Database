@@ -36,7 +36,7 @@ namespace CK.Core
         internal StObjObjectEngineMap EngineMap { get; }
 
         /// <summary>
-        /// Gets all the paths from <see cref="IAmbientContract"/> base classes to their most
+        /// Gets all the paths from <see cref="IAmbientObject"/> base classes to their most
         /// specialized concrete classes that this context contains.
         /// </summary>
         public IReadOnlyList<IReadOnlyList<IStObjMutableItem>> ConcreteClasses => _concreteClassesPath;

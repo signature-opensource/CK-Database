@@ -30,7 +30,7 @@ namespace CK.StObj.Engine.Tests
             protected abstract int FirstMethod( int i );
         }
 
-        public abstract class A : ABase, IAmbientContract
+        public abstract class A : ABase, IAmbientObject
         {
             [AutoImplementMethod]
             public abstract string SecondMethod( int i );

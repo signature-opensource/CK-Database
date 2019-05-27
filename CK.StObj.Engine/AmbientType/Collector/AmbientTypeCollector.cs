@@ -10,7 +10,7 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientContract"/> and <see cref="IAmbientService"/> marker interfaces.
+    /// Discovers types that support <see cref="IAmbientObject"/> and <see cref="IAmbientService"/> marker interfaces.
     /// </summary>
     public partial class AmbientTypeCollector
     {
@@ -19,8 +19,8 @@ namespace CK.Core
         readonly IServiceProvider _serviceProvider;
         readonly PocoRegisterer _pocoRegisterer;
         readonly HashSet<Assembly> _assemblies;
-        readonly Dictionary<Type, StObjTypeInfo> _collector;
-        readonly List<StObjTypeInfo> _roots;
+        readonly Dictionary<Type, AmbientObjectClassInfo> _collector;
+        readonly List<AmbientObjectClassInfo> _roots;
         readonly string _mapName;
         readonly Func<IActivityMonitor, Type, bool> _typeFilter;
 
@@ -47,13 +47,13 @@ namespace CK.Core
             _tempAssembly = tempAssembly;
             _serviceProvider = serviceProvider;
             _assemblies = new HashSet<Assembly>();
-            _collector = new Dictionary<Type, StObjTypeInfo>();
-            _roots = new List<StObjTypeInfo>();
+            _collector = new Dictionary<Type, AmbientObjectClassInfo>();
+            _roots = new List<AmbientObjectClassInfo>();
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
-            _ambientServiceDetector = new ServiceLifetimeDetector();
+            _ambientServiceDetector = new AmbientTypeKindDetector();
             _ambientServiceDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
             _ambientServiceDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
@@ -120,11 +120,13 @@ namespace CK.Core
             return c != typeof( object ) ? DoRegisterClass( c, out _, out _ ) : false;
         }
 
-        bool DoRegisterClass( Type t, out StObjTypeInfo result, out AmbientServiceClassInfo serviceInfo )
+        bool DoRegisterClass( Type t, out AmbientObjectClassInfo result, out AmbientServiceClassInfo serviceInfo )
         {
             Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
             // Skips already processed types.
+            // The collector contains null AmbientObjectClassInfo value for already processed types
+            // that are skipped or on error.
             serviceInfo = null;
             if( _collector.TryGetValue( t, out result )
                 || _serviceCollector.TryGetValue( t, out serviceInfo ) )
@@ -133,49 +135,25 @@ namespace CK.Core
             }
 
             // Registers parent types whatever they are.
-            StObjTypeInfo acParent = null;
+            AmbientObjectClassInfo acParent = null;
             AmbientServiceClassInfo sParent = null;
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
             Debug.Assert( (acParent == null && sParent == null) || (acParent == null) != (sParent == null) );
 
-            // This is an Ambient contract if:
-            // - its parent is an ambient contract 
-            // - or it is statically an ambient contract (via IAmbientContract support or IAmbientContractDefiner on base class)
-            if( acParent != null
-                || typeof( IAmbientContract ).IsAssignableFrom( t )
-                || typeof( IAmbientContractDefiner ).IsAssignableFrom( t.BaseType ) )
+            AmbientTypeKind lt = _ambientServiceDetector.GetKind( t );
+            var conflictMsg = lt.GetAmbientKindCombinationError();
+            if( conflictMsg != null )
             {
-                result = CreateStObjTypeInfo( t, acParent );
-                Debug.Assert( result != null );
+                _monitor.Error( $"Type {t.FullName}: {conflictMsg}." );
             }
-            ServiceLifetime lt = _ambientServiceDetector.GetAmbientServiceLifetime( t );
-            if( lt == ServiceLifetime.AmbientBothError )
+            else
             {
-                _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( ISingletonAmbientService )}." );
-            }
-            else if( result != null && lt == ServiceLifetime.IsScoped )
-            {
-                _monitor.Error( $"Type {t.FullName} is registered as a Scoped service and is marked with {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
-            }
-            else if( sParent != null || (lt & ServiceLifetime.IsAmbientService) != 0 )
-            {
-                if( result != null )
+                if( acParent != null || (lt == AmbientTypeKind.AmbientObject) )
                 {
-                    if( lt == ServiceLifetime.AmbientScope )
-                    {
-                        _monitor.Error( $"Type {t.FullName} is both marked with {nameof( IScopedAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
-                    }
-                    else if( lt == ServiceLifetime.AmbientSingleton )
-                    {
-                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( ISingletonAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
-                    }
-                    else
-                    {
-                        Debug.Assert( lt == ServiceLifetime.IsAmbientService );
-                        _monitor.Warn( $"Type {t.FullName} is both marked with {nameof( IAmbientService )} and {nameof( IAmbientContract )} (or has been configured to be an AmbiantContract)." );
-                    }
+                    result = CreateStObjTypeInfo( t, acParent );
+                    Debug.Assert( result != null );
                 }
-                else
+                else if( sParent != null || (lt & AmbientTypeKind.IsAmbientService) != 0 )
                 {
                     serviceInfo = RegisterServiceClass( t, sParent, lt );
                     Debug.Assert( serviceInfo != null );
@@ -189,9 +167,9 @@ namespace CK.Core
             return true;
         }
 
-        StObjTypeInfo CreateStObjTypeInfo( Type t, StObjTypeInfo parent )
+        AmbientObjectClassInfo CreateStObjTypeInfo( Type t, AmbientObjectClassInfo parent )
         {
-            StObjTypeInfo result = new StObjTypeInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( _monitor, t ) );
+            AmbientObjectClassInfo result = new AmbientObjectClassInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( _monitor, t ) );
             if( !result.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -247,7 +225,6 @@ namespace CK.Core
             }
         }
 
-
         AmbientContractCollectorResult GetAmbientContractResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
@@ -260,7 +237,7 @@ namespace CK.Core
 
             Debug.Assert( _roots.All( info => info != null && !info.IsExcluded && info.Generalization == null),
                 "_roots contains only not Excluded types." );
-            foreach( StObjTypeInfo newOne in _roots )
+            foreach( AmbientObjectClassInfo newOne in _roots )
             {
                 deepestConcretes.Clear();
                 newOne.CreateMutableItemsPath( _monitor, _serviceProvider, engineMap, null, _tempAssembly, deepestConcretes, abstractTails );

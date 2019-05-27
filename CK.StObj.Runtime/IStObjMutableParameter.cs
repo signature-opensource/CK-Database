@@ -49,7 +49,7 @@ namespace CK.Setup
         /// Sets the value for this parameter.
         /// By setting an explicit value through this method, the <see cref="IStObjMutableReference.Type"/> that describes
         /// a reference to a <see cref="IStObjResult"/> are ignored: this breaks the potential dependency to
-        /// the <see cref="IAmbientContract"/> object that may be referenced.
+        /// the <see cref="IAmbientObject"/> object that may be referenced.
         /// </summary>
         /// <remarks>
         /// The <see cref="IStObjFinalParameter"/> also exposes this method: by using <see cref="IStObjFinalParameter.SetParameterValue"/>

@@ -35,10 +35,10 @@ namespace SqlActorPackage.Basic
         public IUnknownAbstraction UnexistingByConstructParam => _unexistingByConstructParam;
 
 
-        [InjectContract(IsOptional = true)]
+        [InjectSingletonAttribute(IsOptional = true)]
         public IUnknownAbstraction UnexistingByInjectContract { get; protected set; }
 
-        [InjectContract(IsOptional = true )]
+        [InjectSingletonAttribute(IsOptional = true )]
         public ISecurityZoneAbstraction ZoneHome { get; protected set; }
 
         /// <summary>
@@ -52,10 +52,10 @@ namespace SqlActorPackage.Basic
             _allServices = map.StObjs.Implementations.OfType<IAnyService>().ToArray();
         }
 
-        [InjectContract]
+        [InjectSingletonAttribute]
         public UserHome UserHome { get; protected set; }
         
-        [InjectContract]
+        [InjectSingletonAttribute]
         public GroupHome GroupHome { get; protected set; }
 
         [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]

@@ -14,7 +14,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     public class ConstructorTests : TestsBase
     {
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class PackageA : IAmbientContract
+        class PackageA : IAmbientObject
         {
         }
 

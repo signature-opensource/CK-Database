@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SqlActorPackage
 {
-    public interface ISecurityZoneAbstraction : IAmbientContract
+    public interface ISecurityZoneAbstraction : IAmbientObject
     {
         bool IAmHere();
     }
