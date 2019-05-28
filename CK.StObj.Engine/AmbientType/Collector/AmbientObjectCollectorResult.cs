@@ -90,9 +90,7 @@ namespace CK.Core
             }
         }
 
-        internal static void CommonLogAndWarings(
-            IActivityMonitor monitor,
-            IReadOnlyList<Type> abstractTails )
+        internal static void CommonLogAndWarings( IActivityMonitor monitor, IReadOnlyList<Type> abstractTails )
         {
             if( abstractTails.Count > 0 )
             {

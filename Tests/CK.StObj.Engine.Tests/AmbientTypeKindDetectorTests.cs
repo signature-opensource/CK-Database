@@ -26,11 +26,11 @@ namespace CK.StObj.Engine.Tests
         public void basic_type_detection()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( Nop ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( Obj ) ).Should().Be( AmbientTypeKind.AmbientObject );
-            a.GetKind( typeof( Serv ) ).Should().Be( AmbientTypeKind.IsAmbientService );
-            a.GetKind( typeof( Scoped ) ).Should().Be( AmbientTypeKind.AmbientScope );
-            a.GetKind( typeof( Singleton ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
+            a.GetKind( TestHelper.Monitor, typeof( Nop ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( Obj ) ).Should().Be( AmbientTypeKind.AmbientObject );
+            a.GetKind( TestHelper.Monitor, typeof( Serv ) ).Should().Be( AmbientTypeKind.IsAmbientService );
+            a.GetKind( TestHelper.Monitor, typeof( Scoped ) ).Should().Be( AmbientTypeKind.AmbientScope );
+            a.GetKind( TestHelper.Monitor, typeof( Singleton ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
         }
 
         class SpecObj : Obj { }
@@ -42,10 +42,10 @@ namespace CK.StObj.Engine.Tests
         public void specialized_type_detection()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( SpecObj ) ).Should().Be( AmbientTypeKind.AmbientObject );
-            a.GetKind( typeof( SpecServ ) ).Should().Be( AmbientTypeKind.IsAmbientService );
-            a.GetKind( typeof( SpecScoped ) ).Should().Be( AmbientTypeKind.AmbientScope );
-            a.GetKind( typeof( SpecSingleton ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
+            a.GetKind( TestHelper.Monitor, typeof( SpecObj ) ).Should().Be( AmbientTypeKind.AmbientObject );
+            a.GetKind( TestHelper.Monitor, typeof( SpecServ ) ).Should().Be( AmbientTypeKind.IsAmbientService );
+            a.GetKind( TestHelper.Monitor, typeof( SpecScoped ) ).Should().Be( AmbientTypeKind.AmbientScope );
+            a.GetKind( TestHelper.Monitor, typeof( SpecSingleton ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
         }
 
         [AmbientDefiner] class ObjDefiner : IAmbientObject { }
@@ -57,10 +57,10 @@ namespace CK.StObj.Engine.Tests
         public void Definers_are_marked_with_IAmbientDefiner_and_are_not_ambient()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( ObjDefiner ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( ServDefiner ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( ScopedDefiner ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( SingletonDefiner ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ObjDefiner ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ServDefiner ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ScopedDefiner ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( SingletonDefiner ) ).Should().Be( AmbientTypeKind.None );
         }
 
         class SpecObjDefiner : ObjDefiner { }
@@ -72,10 +72,10 @@ namespace CK.StObj.Engine.Tests
         public void specialization_of_Definers_are_ambient()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( SpecObjDefiner ) ).Should().Be( AmbientTypeKind.AmbientObject );
-            a.GetKind( typeof( SpecServDefiner ) ).Should().Be( AmbientTypeKind.IsAmbientService );
-            a.GetKind( typeof( SpecScopedDefiner ) ).Should().Be( AmbientTypeKind.AmbientScope );
-            a.GetKind( typeof( SpecSingletonDefiner ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
+            a.GetKind( TestHelper.Monitor, typeof( SpecObjDefiner ) ).Should().Be( AmbientTypeKind.AmbientObject );
+            a.GetKind( TestHelper.Monitor, typeof( SpecServDefiner ) ).Should().Be( AmbientTypeKind.IsAmbientService );
+            a.GetKind( TestHelper.Monitor, typeof( SpecScopedDefiner ) ).Should().Be( AmbientTypeKind.AmbientScope );
+            a.GetKind( TestHelper.Monitor, typeof( SpecSingletonDefiner ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
         }
 
 
@@ -88,10 +88,10 @@ namespace CK.StObj.Engine.Tests
         public void Definers_can_be_specialized_as_another_layer_of_Definers_and_are_still_not_ambient()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( ObjDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( ServDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( ScopedDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
-            a.GetKind( typeof( SingletonDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ObjDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ServDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( ScopedDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
+            a.GetKind( TestHelper.Monitor, typeof( SingletonDefinerLevel2 ) ).Should().Be( AmbientTypeKind.None );
         }
 
         class SpecObjDefinerLevel2 : ObjDefinerLevel2 { }
@@ -103,10 +103,10 @@ namespace CK.StObj.Engine.Tests
         public void specialization_of_DefinersLevel2_are_ambient()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( SpecObjDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientObject );
-            a.GetKind( typeof( SpecServDefinerLevel2 ) ).Should().Be( AmbientTypeKind.IsAmbientService );
-            a.GetKind( typeof( SpecScopedDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientScope );
-            a.GetKind( typeof( SpecSingletonDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
+            a.GetKind( TestHelper.Monitor, typeof( SpecObjDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientObject );
+            a.GetKind( TestHelper.Monitor, typeof( SpecServDefinerLevel2 ) ).Should().Be( AmbientTypeKind.IsAmbientService );
+            a.GetKind( TestHelper.Monitor, typeof( SpecScopedDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientScope );
+            a.GetKind( TestHelper.Monitor, typeof( SpecSingletonDefinerLevel2 ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
         }
 
         interface INotPossible0 : IAmbientService, IAmbientObject { }
@@ -120,10 +120,10 @@ namespace CK.StObj.Engine.Tests
         public void conflict_detection()
         {
             var a = new AmbientTypeKindDetector();
-            a.GetKind( typeof( INotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
-            a.GetKind( typeof( INotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
-            a.GetKind( typeof( NotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
-            a.GetKind( typeof( NotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+            a.GetKind( TestHelper.Monitor, typeof( INotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+            a.GetKind( TestHelper.Monitor, typeof( INotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+            a.GetKind( TestHelper.Monitor, typeof( NotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+            a.GetKind( TestHelper.Monitor, typeof( NotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
         }
 
 

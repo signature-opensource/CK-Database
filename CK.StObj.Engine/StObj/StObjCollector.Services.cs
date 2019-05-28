@@ -299,13 +299,13 @@ namespace CK.Setup
             public IStObjServiceFinalManualMapping GetFinalMapping(
                 IActivityMonitor m,
                 StObjObjectEngineMap engineMap,
-                IServiceLifetimeResult serviceLifetimeResult,
+                AmbientTypeKindDetector typeKindDetector,
                 ref bool success )
             {
                 if( !_finalMappingDone )
                 {
                     _finalMappingDone = true;
-                    Class.GetFinalMustBeScopedLifetime( m, serviceLifetimeResult, ref success );
+                    Class.GetFinalMustBeScopedLifetime( m, typeKindDetector, ref success );
                     if( Assignments.Any() )
                     {
                         _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
@@ -353,18 +353,18 @@ namespace CK.Setup
         {
             readonly IActivityMonitor _monitor;
             readonly StObjObjectEngineMap _engineMap;
-            readonly IServiceLifetimeResult _serviceLifetime;
+            readonly AmbientTypeKindDetector _ambientTypeKindDetector;
             readonly Dictionary<AmbientServiceClassInfo, BuildClassInfo> _infos;
 
             public FinalRegisterer(
                 IActivityMonitor monitor,
                 StObjObjectEngineMap engineMap,
-                IServiceLifetimeResult lifetimeResult )
+                AmbientTypeKindDetector typeKindDetector )
             {
                 _monitor = monitor;
                 _engineMap = engineMap;
                 _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
-                _serviceLifetime = lifetimeResult;
+                _ambientTypeKindDetector = typeKindDetector;
             }
 
             /// <summary>
@@ -414,7 +414,7 @@ namespace CK.Setup
                 Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
                 IStObjServiceFinalManualMapping manual = null;
                 if( _infos.TryGetValue( final, out var build )
-                    && (manual = build.GetFinalMapping( _monitor, _engineMap, _serviceLifetime, ref success )) != null )
+                    && (manual = build.GetFinalMapping( _monitor, _engineMap, _ambientTypeKindDetector, ref success )) != null )
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
                     _engineMap.ServiceManualMappings.Add( t, manual );
@@ -422,7 +422,7 @@ namespace CK.Setup
                 else
                 {
                     _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
-                    final.GetFinalMustBeScopedLifetime( _monitor, _serviceLifetime, ref success );
+                    final.GetFinalMustBeScopedLifetime( _monitor, _ambientTypeKindDetector, ref success );
                     _engineMap.ServiceSimpleMappings.Add( t, final );
                 }
             }
@@ -432,8 +432,9 @@ namespace CK.Setup
         /// Called once Mutable items have been created.
         /// </summary>
         /// <param name="typeResult">The Ambient types discovery result.</param>
+        /// <param name="typeKindDetector">The type detector to finalize registration with <see cref="AmbientTypeKindDetector.PromoteToSingleton(IActivityMonitor, Type)"/>.</param>
         /// <returns>True on success, false on error.</returns>
-        bool RegisterServices( AmbientTypeCollectorResult typeResult )
+        bool RegisterServices( AmbientTypeCollectorResult typeResult, AmbientTypeKindDetector typeKindDetector )
         {
             var engineMap = typeResult.AmbientContracts.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
@@ -452,7 +453,7 @@ namespace CK.Setup
                     }
                     else _monitor.Trace( $"{families.Count} Service families found." );
                     bool success = true;
-                    var manuals = new FinalRegisterer( _monitor, engineMap, typeResult.ServiceLifetime );
+                    var manuals = new FinalRegisterer( _monitor, engineMap, typeKindDetector );
                     foreach( var f in families )
                     {
                         success &= f.Resolve( _monitor, manuals );
@@ -460,6 +461,10 @@ namespace CK.Setup
                     if( success )
                     {
                         success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
+                    }
+                    if( success )
+                    {
+
                     }
                     return success;
                 }

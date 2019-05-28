@@ -10,7 +10,8 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientObject"/> and <see cref="IAmbientService"/> marker interfaces.
+    /// Discovers types that support <see cref="IAmbientObject"/> and <see cref="IAmbientService"/>
+    /// marker interfaces.
     /// </summary>
     public partial class AmbientTypeCollector
     {
@@ -140,7 +141,7 @@ namespace CK.Core
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
             Debug.Assert( (acParent == null && sParent == null) || (acParent == null) != (sParent == null) );
 
-            AmbientTypeKind lt = _ambientServiceDetector.GetKind( t );
+            AmbientTypeKind lt = _ambientServiceDetector.GetKind( _monitor, t );
             var conflictMsg = lt.GetAmbientKindCombinationError();
             if( conflictMsg != null )
             {
@@ -213,7 +214,7 @@ namespace CK.Core
                 AmbientObjectCollectorResult contracts;
                 using( _monitor.OpenInfo( "Ambient contracts handling." ) )
                 {
-                    contracts = GetAmbientContractResult();
+                    contracts = GetAmbientObjectResult();
                     Debug.Assert( contracts != null );
                 }
                 AmbientServiceCollectorResult services;
@@ -225,7 +226,7 @@ namespace CK.Core
             }
         }
 
-        AmbientObjectCollectorResult GetAmbientContractResult()
+        AmbientObjectCollectorResult GetAmbientObjectResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
             StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations );

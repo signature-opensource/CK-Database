@@ -19,13 +19,13 @@ namespace CK.Core
             IPocoSupportResult pocoSupport,
             AmbientObjectCollectorResult c,
             AmbientServiceCollectorResult s,
-            IServiceLifetimeResult serviceLifetime )
+            AmbientTypeKindDetector typeKindDetector )
         {
             PocoSupport = pocoSupport;
             Assemblies = assemblies;
             AmbientContracts = c;
             AmbientServices = s;
-            ServiceLifetime = serviceLifetime;
+            TypeKindDetector = typeKindDetector;
         }
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace CK.Core
         public AmbientServiceCollectorResult AmbientServices { get; }
 
         /// <summary>
-        /// Gets the services lifetime analysis result.
+        /// Gets the ambient type detector.
         /// </summary>
-        public IServiceLifetimeResult ServiceLifetime { get; }
+        public AmbientTypeKindDetector TypeKindDetector { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.
@@ -64,7 +64,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets all the <see cref="ImplementableTypeInfo"/>: Abstract types that require a code generation
-        /// that are either StObjs (AmbientContracts) or service classes (AmbientServices).
+        /// that are either <see cref="IAmbientService"/> or <see cref="IAmbientObject"/>.
         /// </summary>
         public IEnumerable<ImplementableTypeInfo> TypesToImplement
         {

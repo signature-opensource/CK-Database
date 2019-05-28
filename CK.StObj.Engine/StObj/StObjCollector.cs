@@ -169,6 +169,16 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Explicitly registers a set of types that are known to be scoped services.
+        /// </summary>
+        /// <param name="types">Types to register.</param>
+        public void DefineAsExternalScoped( IReadOnlyCollection<Type> types )
+        {
+            if( types == null ) throw new ArgumentNullException( nameof( types ) );
+            DoDefineAsExternalScoped( types, types.Count );
+        }
+
+        /// <summary>
         /// Explicitly registers a set of types by their assembly qualified names that are known to be
         /// singleton services.
         /// </summary>
@@ -179,9 +189,25 @@ namespace CK.Setup
             DoDefineAsExternalSingletons( typeNames.Select( n => SimpleTypeFinder.WeakResolver( n, true ) ), typeNames.Count );
         }
 
+        /// <summary>
+        /// Explicitly registers a set of types by their assembly qualified names that are known to be
+        /// scoped services.
+        /// </summary>
+        /// <param name="typeNames">Assembly qualified names of the scoped types.</param>
+        public void DefineAsExternalScoped( IReadOnlyCollection<string> typeNames )
+        {
+            if( typeNames == null ) throw new ArgumentNullException( nameof( typeNames ) );
+            DoDefineAsExternalScoped( typeNames.Select( n => SimpleTypeFinder.WeakResolver( n, true ) ), typeNames.Count );
+        }
+
         void DoDefineAsExternalSingletons( IEnumerable<Type> types, int count )
         {
             SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( cc, t ) => cc.DefineAsExternalSingleton( t ) );
+        }
+
+        void DoDefineAsExternalScoped( IEnumerable<Type> types, int count )
+        {
+            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( cc, t ) => cc.DefineAsExternalScoped( t ) );
         }
 
         void DoRegisterTypes( IEnumerable<Type> types, int count )
@@ -233,7 +259,7 @@ namespace CK.Setup
             var (typeResult, orderedItems) = CreateTypeAndContractResults();
             if( orderedItems != null )
             {
-                if( !RegisterServices( typeResult ) ) orderedItems = null;
+                if( !RegisterServices( typeResult, typeResult.TypeKindDetector ) ) orderedItems = null;
             }
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }

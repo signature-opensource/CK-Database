@@ -94,16 +94,25 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
-            r.Services.ExternallyDefinedSingletons.Contains( typeof( IExternalService ) );
+            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( IExternalService ) ).Should().BeTrue();
         }
 
         [Test]
         public void a_singleton_that_depends_on_external_that_is_defined_as_a_singleton_is_fine()
         {
             var collector = CreateStObjCollector();
-            collector.DefineAsExternalSingletons( new[] { typeof( IExternalService) } );
+            collector.DefineAsExternalSingletons( new[] { typeof( IExternalService ) } );
             collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
             CheckSuccess( collector );
+        }
+
+        [Test]
+        public void a_singleton_that_depends_on_external_that_is_defined_as_a_Scoped_is_an_error()
+        {
+            var collector = CreateStObjCollector();
+            collector.DefineAsExternalScoped( new[] { typeof( IExternalService ) } );
+            collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
+            CheckFailure( collector );
         }
 
         class SingletonThatDependsOnSingleton : Core.ISingletonAmbientService
@@ -139,6 +148,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
             r.Services.SimpleMappings[typeof( AmbientThatDependsOnSingleton )].IsScoped.Should().BeFalse();
+            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( AmbientThatDependsOnSingleton ) ).Should().BeTrue();
         }
 
         interface IAmbientThatDependsOnNothing : IAmbientService { }

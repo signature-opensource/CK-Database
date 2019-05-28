@@ -30,7 +30,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Defines a type as being a pure <see cref="AmbientTypeKind.IsSingleton"/>.
+        /// Defines a type as being <see cref="AmbientTypeKind.IsSingleton"/>.
         /// Can be called multiple times as long as no different registration already exists.
         /// </summary>
         /// <param name="t">The type to register.</param>
@@ -38,17 +38,27 @@ namespace CK.Core
         public bool DefineAsExternalSingleton( Type t ) => _ambientServiceDetector.DefineAsExternalSingleton( _monitor, t );
 
         /// <summary>
-        /// Defines a type as being a pure <see cref="AmbientTypeKind.IsScoped"/>.
+        /// Defines a type as being <see cref="AmbientTypeKind.IsScoped"/>.
         /// Can be called multiple times as long as no different registration already exists.
         /// </summary>
         /// <param name="t">The type to register.</param>
         /// <returns>True on success, false on error.</returns>
         public bool DefineAsExternalScoped( Type t ) => _ambientServiceDetector.DefineAsExternalScoped( _monitor, t );
 
+        /// <summary>
+        /// Defines a type as being a <see cref="AmbientTypeKind.IsSingleton"/> because it is used
+        /// as a ctor parameter of a Singleton Service or an injected singleton property or
+        /// StObjConstruct/StObjFinalize parameter of an Ambient Object.
+        /// Can be called multiple times as long as lifetime is Singleton.
+        /// </summary>
+        /// <param name="t">The type to register.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool DefineAsSingletonReference( Type t ) => _ambientServiceDetector.DefineAsSingletonReference( _monitor, t );
 
-        internal bool IsAmbientService( Type t ) => _ambientServiceDetector.GetKind( t ) != AmbientTypeKind.None;
 
-        internal AmbientTypeKind GetAmbientServiceLifetime( Type t ) => _ambientServiceDetector.GetKind( t );
+        internal AmbientTypeKind GetAmbientTypeKind( Type t ) => _ambientServiceDetector.GetKind( _monitor, t );
+
+        bool IsAmbientService( Type t ) => (_ambientServiceDetector.GetKind( _monitor, t ) & AmbientTypeKind.IsAmbientService) != 0;
 
         internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
         {
@@ -70,7 +80,7 @@ namespace CK.Core
         AmbientServiceInterfaceInfo RegisterServiceInterface( Type t, AmbientTypeKind lt )
         {
             Debug.Assert( t.IsInterface
-                            && lt == _ambientServiceDetector.GetKind( t )
+                            && lt == _ambientServiceDetector.GetKind( _monitor, t )
                             && (lt == AmbientTypeKind.IsAmbientService
                                 || lt == AmbientTypeKind.AmbientSingleton
                                 || lt == AmbientTypeKind.AmbientScope) );
@@ -92,7 +102,7 @@ namespace CK.Core
         {
             foreach( var iT in interfaces )
             {
-                AmbientTypeKind lt = _ambientServiceDetector.GetKind( iT );
+                AmbientTypeKind lt = _ambientServiceDetector.GetKind( _monitor, iT );
                 var conflictMsg = lt.GetAmbientKindCombinationError();
                 if( conflictMsg != null )
                 {
@@ -109,7 +119,6 @@ namespace CK.Core
         AmbientServiceCollectorResult GetAmbientServiceResult( AmbientObjectCollectorResult contracts )
         {
             bool success = true;
-            contracts.EngineMap.OnAmbientServiceStart( _ambientServiceDetector.ExternallyDefinedSingletons );
             List<Type> abstractTails = null;
             success &= InitializeRootServices( contracts.EngineMap, out var classAmbiguities, ref abstractTails );
             List<AmbientServiceClassInfo> subGraphs = new List<AmbientServiceClassInfo>();
