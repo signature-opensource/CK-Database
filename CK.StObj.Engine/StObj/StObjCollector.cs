@@ -309,7 +309,7 @@ namespace CK.Setup
                         // except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
                         // the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
                         // a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
-                        // During this step, DirectProperties and AmbientContracts are also collected: all these properties are added to PreConstruct collectors
+                        // During this step, DirectProperties and AmbientObjects are also collected: all these properties are added to PreConstruct collectors
                         // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {

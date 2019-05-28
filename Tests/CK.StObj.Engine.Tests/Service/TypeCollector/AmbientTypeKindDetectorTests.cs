@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CK.StObj.Engine.Tests
+namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
     [TestFixture]
     public class AmbientTypeKindDetectorTests

@@ -14,6 +14,8 @@ namespace CK.Core
     public class AmbientServiceClassInfo : AmbientTypeInfo, IStObjServiceClassDescriptor
     {
         HashSet<AmbientServiceClassInfo> _ctorParmetersClosure;
+        // When not null, this contains the constructor parameters that must be singletons
+        // for this service to be a singleton.
         List<ParameterInfo> _requiredParametersToBeSingletons;
         bool? _ctorBinding;
 
@@ -522,8 +524,11 @@ namespace CK.Core
                     // We check here the Singleton to Scoped dependency error at the Type level.
                     // This must be done here since CtorParameters are not created for types that are external (those
                     // are considered as Scoped) or for ambient interfaces that have no implementation classes.
+                    // If the parameter knwn to be singleton, we have nothing to do.
                     if( param.Lifetime == AmbientTypeKind.None || (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
                     {
+                        // Note: if this DeclaredLifetime is AmbientScoped nothing is done here: as a
+                        //       scoped service there is nothing to say about its constructor parameters' lifetime.
                         if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
                         {
                             if( param.Lifetime == AmbientTypeKind.None )
