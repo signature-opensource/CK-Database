@@ -210,7 +210,7 @@ namespace CK.Core
                         RegisterClass( pocoSupport.FinalFactory );
                     }
                 }
-                AmbientContractCollectorResult contracts;
+                AmbientObjectCollectorResult contracts;
                 using( _monitor.OpenInfo( "Ambient contracts handling." ) )
                 {
                     contracts = GetAmbientContractResult();
@@ -225,7 +225,7 @@ namespace CK.Core
             }
         }
 
-        AmbientContractCollectorResult GetAmbientContractResult()
+        AmbientObjectCollectorResult GetAmbientContractResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
             StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations );
@@ -298,7 +298,7 @@ namespace CK.Core
                     }
                 }
             }
-            return new AmbientContractCollectorResult(
+            return new AmbientObjectCollectorResult(
                 engineMap,
                 concreteClasses,
                 classAmbiguities != null

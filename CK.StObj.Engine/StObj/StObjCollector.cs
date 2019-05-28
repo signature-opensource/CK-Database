@@ -370,7 +370,7 @@ namespace CK.Setup
         /// (see <see cref="MutableItem.ConfigureTopDown(IActivityMonitor, MutableItem)"/>).
         /// This is the very first step.
         /// </summary>
-        int ConfigureMutableItems( AmbientContractCollectorResult typeResult )
+        int ConfigureMutableItems( AmbientObjectCollectorResult typeResult )
         {
             var concreteClasses = typeResult.ConcreteClasses;
             int nbItems = 0;

@@ -106,7 +106,7 @@ namespace CK.Core
             }
         }
 
-        AmbientServiceCollectorResult GetAmbientServiceResult( AmbientContractCollectorResult contracts )
+        AmbientServiceCollectorResult GetAmbientServiceResult( AmbientObjectCollectorResult contracts )
         {
             bool success = true;
             contracts.EngineMap.OnAmbientServiceStart( _ambientServiceDetector.ExternallyDefinedSingletons );

@@ -91,7 +91,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets all the specialization. If there is no error, this list corresponds to the
-        /// last items of the <see cref="AmbientContractCollectorResult.ConcreteClasses"/>.
+        /// last items of the <see cref="AmbientObjectCollectorResult.ConcreteClasses"/>.
         /// </summary>
         internal IReadOnlyCollection<MutableItem> AllSpecializations => _allSpecializations;
 

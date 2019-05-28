@@ -12,11 +12,11 @@ namespace CK.Core
     /// <summary>
     /// Result of the <see cref="AmbientTypeCollector"/> work.
     /// </summary>
-    public class AmbientContractCollectorResult
+    public class AmbientObjectCollectorResult
     {
         IReadOnlyList<IReadOnlyList<MutableItem>> _concreteClassesPath;
 
-        internal AmbientContractCollectorResult(
+        internal AmbientObjectCollectorResult(
             StObjObjectEngineMap mappings,
             IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses,
             IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,

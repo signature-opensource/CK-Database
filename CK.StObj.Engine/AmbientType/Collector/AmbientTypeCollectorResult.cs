@@ -17,7 +17,7 @@ namespace CK.Core
         internal AmbientTypeCollectorResult(
             ISet<Assembly> assemblies,
             IPocoSupportResult pocoSupport,
-            AmbientContractCollectorResult c,
+            AmbientObjectCollectorResult c,
             AmbientServiceCollectorResult s,
             IServiceLifetimeResult serviceLifetime )
         {
@@ -41,7 +41,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the reults for <see cref="IAmbientObject"/> objects.
         /// </summary>
-        public AmbientContractCollectorResult AmbientContracts { get; }
+        public AmbientObjectCollectorResult AmbientContracts { get; }
 
         /// <summary>
         /// Gets the reults for <see cref="IScopedAmbientService"/> objects.
