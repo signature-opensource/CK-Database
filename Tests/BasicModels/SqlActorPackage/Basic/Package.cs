@@ -148,9 +148,9 @@ namespace SqlActorPackage.Basic
         public class ScalarCmdWithAccessToABaseOfTheHome<T> : IDisposable
         {
             readonly SqlCommand _cmd;
-            readonly SqlPackageBase _package;
+            readonly SqlPackage _package;
 
-            public ScalarCmdWithAccessToABaseOfTheHome( SqlCommand cmd, SqlPackageBase package )
+            public ScalarCmdWithAccessToABaseOfTheHome( SqlCommand cmd, SqlPackage package )
             {
                 _cmd = cmd;
                 _package = package;
@@ -294,9 +294,9 @@ namespace SqlActorPackage.Basic
         public class OutputCmd<T> : IDisposable
         {
             readonly SqlCommand _cmd;
-            readonly SqlPackageBase _p;
+            readonly SqlPackage _p;
 
-            public OutputCmd( SqlCommand cmd, SqlPackageBase p )
+            public OutputCmd( SqlCommand cmd, SqlPackage p )
             {
                 _cmd = cmd;
                 _p = p;

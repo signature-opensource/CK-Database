@@ -25,7 +25,8 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        class BaseDatabaseObject : IAmbientObject, IAmbientDefiner<BaseDatabaseObject>
+        [AmbientDefiner]
+        class BaseDatabaseObject : IAmbientObject
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }

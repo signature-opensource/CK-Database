@@ -107,9 +107,7 @@ namespace CK.Core
             if( !_cache.TryGetValue( t, out var k ) )
             {
                 var allInterfaces = t.GetInterfaces();
-                bool isAbstract = allInterfaces.Any( i => i.IsGenericType
-                                            && i.GetGenericTypeDefinition().Name == typeof( IAmbientDefiner<> ).Name
-                                            && i.GetGenericArguments()[0] == t );
+                bool isDefiner = t.GetCustomAttributesData().Any( a => a.AttributeType.Name == typeof(AmbientDefinerAttribute).Name );
                 if( t.IsInterface
                     && allInterfaces.Length <= 1
                     && t.GetMembers().Length == 0 )
@@ -121,7 +119,7 @@ namespace CK.Core
                     else if( allInterfaces.Length == 1 )
                     {
                         k = RawGet( allInterfaces[0] ) & MaskBase;
-                        if( isAbstract ) k |= FlagIsBase;
+                        if( isDefiner ) k |= FlagIsBase;
                     }
                     _cache.Add( t, k );
                     return k;
@@ -130,7 +128,7 @@ namespace CK.Core
                 {
                     k |= RawGet( i ) & MaskBase;
                 }
-                if( isAbstract ) k |= FlagIsBase;
+                if( isDefiner ) k |= FlagIsBase;
                 _cache.Add( t, k );
             }
             return k;

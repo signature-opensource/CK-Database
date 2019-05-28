@@ -48,10 +48,10 @@ namespace CK.StObj.Engine.Tests
             a.GetKind( typeof( SpecSingleton ) ).Should().Be( AmbientTypeKind.AmbientSingleton );
         }
 
-        class ObjDefiner : IAmbientObject, IAmbientDefiner<ObjDefiner> { }
-        class ServDefiner : IAmbientService, IAmbientDefiner<ServDefiner> { }
-        class ScopedDefiner : IScopedAmbientService, IAmbientDefiner<ScopedDefiner> { }
-        class SingletonDefiner : ISingletonAmbientService, IAmbientDefiner<SingletonDefiner> { }
+        [AmbientDefiner] class ObjDefiner : IAmbientObject { }
+        [AmbientDefiner] class ServDefiner : IAmbientService { }
+        [AmbientDefiner] class ScopedDefiner : IScopedAmbientService { }
+        [AmbientDefiner] class SingletonDefiner : ISingletonAmbientService { }
 
         [Test]
         public void Definers_are_marked_with_IAmbientDefiner_and_are_not_ambient()
@@ -79,10 +79,10 @@ namespace CK.StObj.Engine.Tests
         }
 
 
-        class ObjDefinerLevel2 : ObjDefiner, IAmbientDefiner<ObjDefinerLevel2> { }
-        class ServDefinerLevel2 : ServDefiner, IAmbientDefiner<ServDefinerLevel2> { }
-        class ScopedDefinerLevel2 : ScopedDefiner, IAmbientDefiner<ScopedDefinerLevel2> { }
-        class SingletonDefinerLevel2 : SingletonDefiner, IAmbientDefiner<SingletonDefinerLevel2> { }
+        [AmbientDefiner] class ObjDefinerLevel2 : ObjDefiner { }
+        [AmbientDefiner] class ServDefinerLevel2 : ServDefiner { }
+        [AmbientDefiner] class ScopedDefinerLevel2 : ScopedDefiner { }
+        [AmbientDefiner] class SingletonDefinerLevel2 : SingletonDefiner { }
 
         [Test]
         public void Definers_can_be_specialized_as_another_layer_of_Definers_and_are_still_not_ambient()
