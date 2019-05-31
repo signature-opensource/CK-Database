@@ -16,7 +16,9 @@ namespace CK.Setup
         ParameterInfo _param;
 
         internal MutableParameter( MutableItem owner, ParameterInfo param, bool isContainer )
-            : base( owner, isContainer ? StObjMutableReferenceKind.ConstructParameter|StObjMutableReferenceKind.Container : StObjMutableReferenceKind.ConstructParameter )
+            : base( owner, isContainer
+                            ? StObjMutableReferenceKind.ConstructParameter|StObjMutableReferenceKind.Container
+                            : StObjMutableReferenceKind.ConstructParameter )
         {
             _param = param;
             Type = param.ParameterType;

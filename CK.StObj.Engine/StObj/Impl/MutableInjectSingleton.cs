@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableInjectContract.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,23 +13,23 @@ namespace CK.Setup
     /// </summary>
     internal class MutableInjectSingleton : MutableReferenceOptional, IStObjMutableInjectSingleton
     {
-        internal readonly InjectSingletonInfo AmbientContractInfo;
+        internal readonly InjectSingletonInfo InjecttInfo;
 
         internal MutableInjectSingleton( MutableItem owner, InjectSingletonInfo info )
-            : base( owner, StObjMutableReferenceKind.AmbientContract )
+            : base( owner, StObjMutableReferenceKind.SingletonReference )
         {
-            AmbientContractInfo = info;
-            Type = AmbientContractInfo.PropertyType;
-            IsOptional = AmbientContractInfo.IsOptional;
+            InjecttInfo = info;
+            Type = InjecttInfo.PropertyType;
+            IsOptional = InjecttInfo.IsOptional;
         }
 
-        public override string Name => AmbientContractInfo.Name;
+        public override string Name => InjecttInfo.Name;
 
-        internal override string KindName => "AmbientContract";
+        internal override string KindName => "InjectSingleton";
 
-        internal override Type UnderlyingType => AmbientContractInfo.PropertyType;
+        internal override Type UnderlyingType => InjecttInfo.PropertyType;
 
-        public override string ToString() => $"Ambient Singleton '{Name}' of '{Owner}'";
+        public override string ToString() => $"Inject Singleton '{Name}' of '{Owner}'";
 
     }
 }

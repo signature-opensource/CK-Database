@@ -12,6 +12,21 @@ namespace CK.Core
         readonly Dictionary<Type, IStObjServiceFinalManualMapping> _serviceManualMap;
         readonly ServiceManualMapTypeAdapter _exposedManualServiceMap;
         readonly List<IStObjServiceFinalManualMapping> _serviceManualList;
+        readonly AmbientTypeKindDetector _typeKindDetector;
+
+        /// <summary>
+        /// Defines a type as being a <see cref="AmbientTypeKind.IsSingleton"/> because it is used
+        /// as a ctor parameter of a Singleton Service or an injected singleton property or
+        /// StObjConstruct/StObjFinalize parameter of an Ambient Object.
+        /// Can be called multiple times as long as lifetime is Singleton.
+        /// </summary>
+        /// <param name="m">The monitor.</param>
+        /// <param name="t">The type to register.</param>
+        /// <returns>True on success, false on error.</returns>
+        internal bool DefineAsSingletonReference( IActivityMonitor m, Type t )
+        {
+            return _typeKindDetector.DefineAsSingletonReference( m, t );
+        }
 
         class ServiceMapTypeAdapter : IReadOnlyDictionary<Type, IStObjServiceClassDescriptor>
         {

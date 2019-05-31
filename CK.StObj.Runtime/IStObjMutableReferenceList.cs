@@ -15,7 +15,8 @@ namespace CK.Setup
 {
     /// <summary>
     /// Provides mutable list of <see cref="IStObjMutableReference"/>: items can be changed and the list itself
-    /// can be modified either by <see cref="AddNew">adding new references</see> or <see cref="RemoveAt">removing</see> some of them.
+    /// can be modified either by <see cref="AddNew">adding new references</see> or <see cref="RemoveAt">removing</see>
+    /// existing ones.
     /// </summary>
     public interface IStObjMutableReferenceList : IReadOnlyList<IStObjMutableReference>
     {

@@ -62,6 +62,12 @@ namespace CK.Setup
         /// <summary>
         /// Pure reference to another object without any structural constraint.
         /// </summary>
-        AmbientContract = 128
+        AmbientObject = 128,
+
+        /// <summary>
+        /// Reference to an Ambient type or Object without any structural constraint (except
+        /// that this implies the Singleton lifetime).
+        /// </summary>
+        SingletonReference = 256
     }
 }

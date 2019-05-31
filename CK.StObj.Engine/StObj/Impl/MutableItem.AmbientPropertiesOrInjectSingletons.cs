@@ -92,9 +92,9 @@ namespace CK.Setup
                 MutableInjectSingleton c = item as MutableInjectSingleton;
                 if( c != null
                     && c.Owner == _item._leafData.LeafSpecialization
-                    && c.AmbientContractInfo.Index < _count )
+                    && c.InjecttInfo.Index < _count )
                 {
-                    idx = c.AmbientContractInfo.Index;
+                    idx = c.InjecttInfo.Index;
                 }
                 return idx;
             }
@@ -160,7 +160,7 @@ namespace CK.Setup
                 MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )
                 {
-                    AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, valueCollector );
+                    AddPostBuildProperty( c.InjecttInfo.SettablePropertyInfo, m, valueCollector );
                 }
             }
 

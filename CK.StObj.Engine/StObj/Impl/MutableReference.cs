@@ -36,19 +36,21 @@ namespace CK.Setup
             _kind = kind;
             if( _kind == StObjMutableReferenceKind.Requires 
                 || _kind == StObjMutableReferenceKind.Group 
-                || _kind == StObjMutableReferenceKind.AmbientContract 
+                || _kind == StObjMutableReferenceKind.AmbientObject 
                 || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
-            else if( _kind == StObjMutableReferenceKind.RequiredBy || _kind == StObjMutableReferenceKind.AmbientProperty )
+            else if( _kind == StObjMutableReferenceKind.RequiredBy
+                     || _kind == StObjMutableReferenceKind.AmbientProperty
+                     || _kind == StObjMutableReferenceKind.SingletonReference )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
             else
             {
                 Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0 );
-                StObjRequirementBehavior = StObjRequirementBehavior.WarnIfNotStObj;
+                StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
         }
 
@@ -69,15 +71,24 @@ namespace CK.Setup
         public Type Type { get; set; }
 
         internal virtual MutableItem ResolveToStObj( IActivityMonitor monitor, StObjObjectEngineMap collector )
-        {           
+        {
             MutableItem result = null;
-            if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
-          
-            result = collector.ToHighestImpl( Type );
-            if( result == null )
+            if( Type != null && StObjRequirementBehavior != StObjRequirementBehavior.ExternalReference )
             {
-                // No warn or errot on value type or string not found.
-                WarnOrErrorIfStObjRequired(monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found");
+                result = collector.ToHighestImpl( Type );
+                if( result == null )
+                {
+                    if( _kind == StObjMutableReferenceKind.SingletonReference
+                        || _kind == StObjMutableReferenceKind.ConstructParameter )
+                    {
+                        collector.DefineAsSingletonReference( monitor, Type );
+                    }
+                    else
+                    {
+                        // No warn on value type or string not found.
+                        WarnOrErrorIfStObjRequired( monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found" );
+                    }
+                }
             }
             return result;
         }
@@ -90,9 +101,9 @@ namespace CK.Setup
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof(string)))
+                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof( string )) )
                 {
-                    Warn(monitor, text);
+                    Warn( monitor, text );
                 }
             }
         }

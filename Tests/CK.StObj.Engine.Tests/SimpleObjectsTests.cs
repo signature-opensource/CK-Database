@@ -1,12 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\SimpleObjectsTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
-using System.Reflection;
 using CK.Core;
 using CK.Setup;
 using CK.StObj.Engine.Tests.SimpleObjects;
@@ -37,7 +29,19 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
+        [Test]
+        public void an_AmbientObject_that_references_a_scoped_is_an_error()
+        {
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.IsClass )
+                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.True );
+        }
 
         [Test]
         public void DiscoverSimpleObjects()

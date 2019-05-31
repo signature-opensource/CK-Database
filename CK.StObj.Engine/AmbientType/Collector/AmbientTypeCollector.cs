@@ -229,7 +229,7 @@ namespace CK.Core
         AmbientObjectCollectorResult GetAmbientObjectResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
-            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations );
+            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations, _ambientServiceDetector );
             List<List<MutableItem>> concreteClasses = new List<List<MutableItem>>();
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();

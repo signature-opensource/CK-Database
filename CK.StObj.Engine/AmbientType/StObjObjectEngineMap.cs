@@ -30,7 +30,11 @@ namespace CK.Core
         /// Predimensioned array that will be filled with actual
         /// mutable items by <see cref="StObjCollector.GetResult()"/>.
         /// </param>
-        internal protected StObjObjectEngineMap( string mapName, MutableItem[] allSpecializations )
+        /// <param name="typeKindDetector">The type kind detector.</param>
+        internal protected StObjObjectEngineMap(
+            string mapName,
+            MutableItem[] allSpecializations,
+            AmbientTypeKindDetector typeKindDetector )
         {
             Debug.Assert( mapName != null );
             MapName = mapName;
@@ -41,6 +45,7 @@ namespace CK.Core
             _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
             _exposedManualServiceMap = new ServiceManualMapTypeAdapter( _serviceManualMap );
             _serviceManualList = new List<IStObjServiceFinalManualMapping>();
+            _typeKindDetector = typeKindDetector;
         }
 
         internal void AddClassMapping( Type t, MutableItem m )
