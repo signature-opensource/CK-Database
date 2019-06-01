@@ -1,26 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-  
   <Import Project="..\..\Common\Shared.props" />
-
   <ItemGroup>
     <EmbeddedResource Include="Res\TextFile.txt;Another\Namespace\TextFile.txt;SubNamespace\**\*.txt" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System" />
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
 </Project>
