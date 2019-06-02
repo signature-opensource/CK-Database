@@ -1,8 +1,4 @@
 using Cake.Common.Diagnostics;
-using Cake.Common.IO;
-using Cake.Common.Solution;
-using Cake.Common.Tools.NuGet;
-using Cake.Common.Tools.NuGet.Push;
 using Cake.Core;
 using System.Collections.Generic;
 using System.IO;
@@ -31,12 +27,12 @@ new CKSetupComponent( "CK.Setupable.Model", "net461" ),
 new CKSetupComponent( "CK.Setupable.Model", "netstandard2.0" ),
 new CKSetupComponent( "CK.Setupable.Runtime", "net461" ),
 new CKSetupComponent( "CK.Setupable.Runtime", "netcoreapp2.1" ),
-new CKSetupComponent( "CK.Setupable.Engine", "net461" ),
-new CKSetupComponent( "CK.Setupable.Engine", "netcoreapp2.1" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Model", "net461" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Model", "netstandard2.0" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "net461" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.Setupable.Engine", "net461" ),
+new CKSetupComponent( "CK.Setupable.Engine", "netcoreapp2.1" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Engine", "net461" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
 };
@@ -88,12 +84,12 @@ new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
         /// </summary>
         /// <param name="globalInfo">The configured <see cref="CheckRepositoryInfo"/>.</param>
         /// <param name="components">The set of component to push. When null (the default), <see cref="GetCKSetupComponents"/> is used.</param>
-        void StandardPushCKSetupComponents( CheckRepositoryInfo globalInfo, IEnumerable<CKSetupComponent> components = null )
+        void StandardPushCKSetupComponents( StandardGlobalInfo globalInfo, IEnumerable<CKSetupComponent> components = null )
         {
             var storeConf = Cake.CKSetupCreateDefaultConfiguration();
             if( globalInfo.IsLocalCIRelease )
             {
-                storeConf.TargetStoreUrl = System.IO.Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
+                storeConf.TargetStoreUrl = Path.Combine( globalInfo.LocalFeedPath, "CKSetupStore" );
             }
             if( !storeConf.IsValid )
             {
@@ -103,10 +99,9 @@ new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
 
             Cake.Information( $"Using CKSetupStoreConfiguration: {storeConf}" );
             if( components == null ) components = GetCKSetupComponents();
-
             if( !Cake.CKSetupPublishAndAddComponentFoldersToStore(
                         storeConf,
-                        components.Select( c => c.GetBinPath( globalInfo.BuildConfiguration ) ) ) )
+                        components.Select( c => c.GetBinPath( globalInfo.IsRelease ? "Release" : "Debug" ) ) ) )
             {
                 Cake.TerminateWithError( "Error while registering components in local temporary store." );
             }

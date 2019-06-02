@@ -28,19 +28,6 @@ namespace CK.Setup
         /// </summary>
         IList<object> ExternalItems { get; }
 
-        /// <summary>
-        /// Gets or sets a function that will be called with the list of items once all of them are registered.
-        /// This can be used to analyse information about items registration and ordering.
-        /// </summary>
-        Action<IEnumerable<IDependentItem>> DependencySorterHookInput { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when items have been sorted.
-        /// The final <see cref="IDependencySorterResult"/> may not be successful (ie. <see cref="IDependencySorterResult.HasStructureError"/> may be true),
-        /// but if a cycle has been detected, this hook is not called.
-        /// This can be used to analyse information about items registration and ordering.
-        /// </summary>
-        Action<IEnumerable<ISortedItem>> DependencySorterHookOutput { get; set; }
 
     }
 }

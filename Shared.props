@@ -1,44 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <!-- Centralized version dependencies. -->
-    <CKCoreVersion>11.1.0</CKCoreVersion>
-    <CKActivityMonitorVersion>11.1.0</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>8.1.0</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.5.0</CKSqlServerVersion>
-    <CKSqlServerParserVersion>11.2.0</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>8.1.0</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>8.0.2</CKReflectionVersion>
-    <CKCodeGenVersion>0.6.0</CKCodeGenVersion>
-    <YodiiScriptVersion>0.7.2</YodiiScriptVersion>
-    <CKSetupVersion>9.2.0</CKSetupVersion>
-    <CKTestingVersion>0.9.0</CKTestingVersion>
-    <FluentAssertionsVersion>5.6.0</FluentAssertionsVersion>
-  </PropertyGroup>
-  <!-- Ignore any CKSetup-WorkingDir folder. -->
-  <ItemGroup>
-    <Compile Remove="CKSetup-WorkingDir\**" />
-    <EmbeddedResource Remove="CKSetup-WorkingDir\**" />
-    <None Remove="CKSetup-WorkingDir\**" />
-  </ItemGroup>
-  <!-- When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion). -->
-  <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
-    <Version>0.0.0-0</Version>
-    <AssemblyVersion>0.0.0</AssemblyVersion>
-    <FileVersion>0.0.0.0</FileVersion>
-    <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
-  </PropertyGroup>
-  <!--<SourceLink>: is enabled only for Cake build. -->
-  <PropertyGroup>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
-    <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
-  </ItemGroup>
-  <!--</SourceLink>-->
   <!--<BasicDefinitions>: It is useful to knwow whether we are in the Tests/ folder and/or if the current project is a Test.-->
   <PropertyGroup>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
@@ -47,6 +7,7 @@
     <SolutionDir Condition=" $(SolutionDir) != '' ">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
   </PropertyGroup>
   <!--</BasicDefinitions>-->
+
   <!--<StandardProperties>-->
   <PropertyGroup>
     <RepositoryUrl>https://gitlab.com/Signature-Code/CK-Database.git</RepositoryUrl>
@@ -62,14 +23,16 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
   <!--</StandardProperties>-->
+
   <!--<ReproducibleBuilds>: See http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html.-->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <Deterministic>true</Deterministic>
-    <!-- Finds the CKli-World.htm that must exist at the root of the development directory. This is path to map to C:\CKli-World. -->
-    <CKliWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CKli-World.htm))</CKliWorldPath>
-    <PathMap Condition=" '$(CKliWorldPath)' != '' ">$(CKliWorldPath)=C:\CKli-World</PathMap>
+    <!-- Finds the CK-World.htm that must exist at the root of the development directory. This is path to map to C:\CK-World. -->
+    <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World.htm))</CKWorldPath>
+    <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
   </PropertyGroup>
   <!--</ReproducibleBuilds>-->
+
   <!--<ZeroVersion>: When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion).-->
   <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
     <Version>0.0.0-0</Version>
@@ -78,9 +41,23 @@
     <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
   </PropertyGroup>
   <!--</ZeroVersion>-->
+
   <!--<GenerateDocumentation>: Default is in Release or during Cake builds (except for projects below Tests/). Each project can override GenerateDocumentationFile property.-->
   <PropertyGroup Condition=" '$(IsInTestsFolder)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <!--</GenerateDocumentation>-->
+
+  <!--<SourceLink>: is enabled only for Cake build. -->
+  <PropertyGroup>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
+  </ItemGroup>
+  <!--</SourceLink>-->
 </Project>

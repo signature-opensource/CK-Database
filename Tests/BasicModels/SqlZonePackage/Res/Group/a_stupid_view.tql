@@ -1,0 +1,10 @@
+-- SetupConfig: { "TransformerRequires": "CK.zefuncNewGroup"  }
+create transformer on CK.a_stupid_view 
+as
+begin
+    replace last {;} with "
+            union all
+                select 0, 1, IsInGroup = CK.zefuncNewGroup( 2 )
+		        from CK.tActorProfile p;"
+end
+

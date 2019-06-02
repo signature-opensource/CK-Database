@@ -5,7 +5,9 @@ using CK.SqlServer.Setup;
 namespace SqlZonePackage.Zone
 {
     [SqlTable( "tGroup", Package = typeof( Package ), ResourcePath=".Group" ), Versions( "CK.tGroup-Zone=2.11.25, 2.12.10" )]
-    public abstract class GroupHome : SqlActorPackage.Basic.GroupHome
+    [SqlObjectItem( "transform:a_stupid_view" )]
+    [SqlObjectItem( "zefuncNewGroup" )]
+   public abstract class GroupHome : SqlActorPackage.Basic.GroupHome
     {
         void StObjConstruct( SecurityZoneHome zone )
         {

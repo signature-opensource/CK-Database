@@ -16,8 +16,6 @@ namespace CK.Setup
         readonly SetupableAspectConfiguration _config;
         readonly SetupAspectConfigurator _configurator;
         readonly List<object> _externalItems;
-        Action<IEnumerable<IDependentItem>> _dependencySorterHookInput;
-        Action<IEnumerable<ISortedItem>> _dependencySorterHookOutput;
 
         IVersionedItemReader _versionedItemReader;
         IVersionedItemWriter _versionedItemWriter;
@@ -42,17 +40,6 @@ namespace CK.Setup
             public SetupAspectConfigurator Configurator => _a._configurator;
 
             public IList<object> ExternalItems => _a._externalItems;
-
-            public Action<IEnumerable<IDependentItem>> DependencySorterHookInput
-            {
-                get => _a._dependencySorterHookInput;
-                set => _a._dependencySorterHookInput = value;
-            }
-            public Action<IEnumerable<ISortedItem>> DependencySorterHookOutput
-            {
-                get => _a._dependencySorterHookOutput;
-                set => _a._dependencySorterHookOutput = value;
-            }
         }
 
         /// <summary>
@@ -149,8 +136,6 @@ namespace CK.Setup
                     DependencySorterOptions sorterOptions = new DependencySorterOptions() { ReverseName = _config.RevertOrderingNames };
                     if( _config.TraceDependencySorterInput ) sorterOptions.HookInput += i => i.Trace( monitor );
                     if( _config.TraceDependencySorterOutput ) sorterOptions.HookOutput += i => i.Trace( monitor );
-                    sorterOptions.HookInput += _dependencySorterHookInput;
-                    sorterOptions.HookOutput += _dependencySorterHookOutput;
 
                     var itemsToRegister = OfTypeRecurse<ISetupItem>( _externalItems ).Concat( stObjItems );
                     SetupCoreEngineRegisterResult r = engine.RegisterAndCreateDrivers( itemsToRegister, _externalItems.OfType<IDependentItemDiscoverer<ISetupItem>>(), sorterOptions );

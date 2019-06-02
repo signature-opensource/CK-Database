@@ -12,9 +12,8 @@ namespace SqlCallDemo.Tests.ProviderDemo
     [TestFixture]
     public class ProviderDemoTests
     {
-        Func<IDisposableAllCallContext> _contextOdd = () => new SqlFinalApplicationContext( 1, 3 , 5 );
+        Func<IDisposableAllCallContext> _contextOdd = () => new SqlFinalApplicationContext( 1, 3, 5 );
         Func<IDisposableAllCallContext> _contextEven = () => new SqlFinalApplicationContext( 2, 4, 6 );
-
 
         /// <summary>
         /// This service will only call methods that require a <see cref="IActorCallContext"/>.
@@ -32,7 +31,8 @@ namespace SqlCallDemo.Tests.ProviderDemo
             }
 
             /// <summary>
-            /// Calls sActoronly and checks the result. Returns true if the actorId is 1 (_contextOdd is used).
+            /// Calls sActoronly and checks the result.
+            /// Returns true if the actorId is 1 (_contextOdd is used).
             /// </summary>
             /// <returns>True if ActorId is 1, false for 2.</returns>
             public bool DoSomething()

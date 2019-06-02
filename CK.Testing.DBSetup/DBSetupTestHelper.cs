@@ -68,11 +68,13 @@ namespace CK.Testing
                     var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _setupableSetup );
 
                     stObjConf.ForceSetup |= _sqlServer.EnsureDatabase( db );
+                    stObjConf.Configuration.TraceDependencySorterInput = traceStObjGraphOrdering;
+                    stObjConf.Configuration.TraceDependencySorterOutput = traceStObjGraphOrdering;
 
                     var setupable = new SetupableAspectConfiguration();
                     setupable.RevertOrderingNames = revertNames;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
-                    setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
+                    setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
                     stObjConf.Configuration.Aspects.Add( setupable );
 
                     var sqlServer = new SqlSetupAspectConfiguration();

@@ -407,10 +407,6 @@ namespace CK.Setup
                     typeFilter, configurator, configurator,
                     secondaryRunAccessor );
                 stObjC.RevertOrderingNames = _config.RevertOrderingNames;
-                if( _config.TraceDependencySorterInput ) stObjC.DependencySorterHookInput += i => i.Trace( _monitor );
-                if( _config.TraceDependencySorterOutput ) stObjC.DependencySorterHookOutput += i => i.Trace( _monitor );
-                stObjC.DependencySorterHookInput += _startContext.StObjDependencySorterHookInput;
-                stObjC.DependencySorterHookOutput += _startContext.StObjDependencySorterHookOutput;
                 using( _monitor.OpenInfo( "Registering types." ) )
                 {
                     if( f.ExternalSingletonTypes.Count != 0 )
