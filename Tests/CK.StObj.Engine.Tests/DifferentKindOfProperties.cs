@@ -7,6 +7,7 @@
 
 using CK.Core;
 using CK.Setup;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace CK.StObj.Engine.Tests
@@ -100,21 +101,21 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
+        class ScopedService : IScopedAmbientService { }
 
-        class InvalidAmbientContractProperty : IAmbientObject
+        class InvalidAmbientObjectProperty : IAmbientObject
         {
-            [InjectSingletonAttribute]
-            public DifferentKindOfProperties NotAnIAmbientContractProperty { get; protected set; }
+            [InjectSingleton]
+            public ScopedService NotAnIAmbientContractProperty { get; protected set; }
         }
 
         [Test]
-        public void AmbientContractsMustBeAmbientContracts()
+        public void InjectSingleton_must_not_be_scoped_service()
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
-                collector.RegisterType( typeof( InvalidAmbientContractProperty ) );
-                var r = collector.GetResult(  );
-                Assert.That( r.HasFatalError );
+                collector.RegisterType( typeof( InvalidAmbientObjectProperty ) );
+                collector.RegisteringFatalOrErrorCount.Should().BeGreaterThan( 0 );
             }
         }
 

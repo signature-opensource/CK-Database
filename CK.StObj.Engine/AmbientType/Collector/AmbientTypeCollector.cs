@@ -54,9 +54,9 @@ namespace CK.Core
             _serviceRoots = new List<AmbientServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
-            _ambientServiceDetector = new AmbientTypeKindDetector();
-            _ambientServiceDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
-            _ambientServiceDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
+            _ambientKindDetector = new AmbientTypeKindDetector();
+            _ambientKindDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
+            _ambientKindDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -141,7 +141,7 @@ namespace CK.Core
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
             Debug.Assert( (acParent == null && sParent == null) || (acParent == null) != (sParent == null) );
 
-            AmbientTypeKind lt = _ambientServiceDetector.GetKind( _monitor, t );
+            AmbientTypeKind lt = _ambientKindDetector.GetKind( _monitor, t );
             var conflictMsg = lt.GetAmbientKindCombinationError();
             if( conflictMsg != null )
             {
@@ -170,7 +170,7 @@ namespace CK.Core
 
         AmbientObjectClassInfo CreateStObjTypeInfo( Type t, AmbientObjectClassInfo parent )
         {
-            AmbientObjectClassInfo result = new AmbientObjectClassInfo( _monitor, parent, t, _serviceProvider, !_typeFilter( _monitor, t ) );
+            AmbientObjectClassInfo result = new AmbientObjectClassInfo( _monitor, parent, t, _serviceProvider, _ambientKindDetector, !_typeFilter( _monitor, t ) );
             if( !result.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -222,14 +222,14 @@ namespace CK.Core
                 {
                     services = GetAmbientServiceResult( contracts );
                 }
-                return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _ambientServiceDetector );
+                return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _ambientKindDetector );
             }
         }
 
         AmbientObjectCollectorResult GetAmbientObjectResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
-            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations, _ambientServiceDetector );
+            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations, _ambientKindDetector );
             List<List<MutableItem>> concreteClasses = new List<List<MutableItem>>();
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();

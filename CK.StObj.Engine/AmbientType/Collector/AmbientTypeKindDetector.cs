@@ -99,23 +99,19 @@ namespace CK.Core
         {
             Debug.Assert( (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != 0
                             && (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
-
-            if( _cache.TryGetValue( t, out var k ) )
+            var k = RawGet( m, t );
+            if( (k & IsDefiner) != 0 )
             {
-                if( (k & IsDefiner) != 0 )
-                {
-                    throw new Exception( $"Type '{t.Name}' is a Definer. It cannot be defined as {kind}." );
-                }
-                var kType = k & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton);
-                Debug.Assert( kType != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
-                if( kType != AmbientTypeKind.None && kType != (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) )
-                {
-                    m.Error( $"Type '{t.Name}' is already registered as a '{k}'. It can not be defined as {kind}." );
-                    return false;
-                }
-                _cache[t] = k | kind;
+                throw new Exception( $"Type '{t.Name}' is a Definer. It cannot be defined as {ToStringFull( kind )}." );
             }
-            else _cache.Add( t, kind );
+            var kType = k & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton);
+            Debug.Assert( kType != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
+            if( kType != AmbientTypeKind.None && kType != (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) )
+            {
+                m.Error( $"Type '{t.Name}' is already registered as a '{ToStringFull( k )}'. It can not be defined as {ToStringFull( kind )}." );
+                return false;
+            }
+            _cache[t] = k | kind;
             return true;
         }
 
@@ -179,6 +175,17 @@ namespace CK.Core
             return k;
         }
 
+        static string ToStringFull( AmbientTypeKind t )
+        {
+            var c = (t & MaskPublicInfo).ToStringClear();
+            if( (t&IsDefiner) !=0 ) c += " [IsDefiner]";
+            if( (t & IsReasonMarker) != 0 ) c += " [Marker]";
+            if( (t & IsReasonExternal) != 0 ) c += " [External]";
+            if( (t & IsSingletonReasonReference) != 0 ) c += " [ReferencedBySingleton]";
+            if( (t & IsSingletonReasonFinal) != 0 ) c += " [OpimizedAsSingleton]";
+            if( (t & IsScopedReasonReference) != 0 ) c += " [UsesScoped]";
+            return c;
+        }
     }
 
 }

@@ -47,7 +47,8 @@ namespace CK.Setup
         static public void CreateAmbientPropertyListForExactType( 
             IActivityMonitor monitor, 
             Type t, 
-            int definerSpecializationDepth, 
+            int definerSpecializationDepth,
+            AmbientTypeKindDetector ambientTypeKind,
             List<StObjPropertyInfo> stObjProperties, 
             out IList<AmbientPropertyInfo> apListResult,
             out IList<InjectSingletonInfo> acListResult )
@@ -98,6 +99,8 @@ namespace CK.Setup
                     }
                     else
                     {
+                        // Ignore errors: it is logged (and will make the whole process fail).
+                        ambientTypeKind.DefineAsSingletonReference( monitor, p.PropertyType );
                         if( acListResult == null ) acListResult = new List<InjectSingletonInfo>();
                         var amb = new InjectSingletonInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count );
                         acListResult.Add( amb );

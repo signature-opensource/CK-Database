@@ -56,6 +56,26 @@ namespace CK.Core
     public static class AmbientTypeKindExtension
     {
         /// <summary>
+        /// Returns a string that correctly handles flags and results to <see cref="GetAmbientKindCombinationError(AmbientTypeKind)"/>
+        /// if this kind is invalid.
+        /// </summary>
+        /// <param name="this">This ambnient type kind.</param>
+        /// <returns>A readable string.</returns>
+        public static string ToStringClear( this AmbientTypeKind @this )
+        {
+            switch( @this )
+            {
+                case AmbientTypeKind.None: return "None";
+                case AmbientTypeKind.AmbientObject: return "AmbientObject";
+                case AmbientTypeKind.AmbientSingleton: return "AmbientSingleton";
+                case AmbientTypeKind.AmbientScope: return "AmbientScope";
+                case AmbientTypeKind.IsScoped: return "Scoped Service";
+                case AmbientTypeKind.IsSingleton: return "Singleton Service";
+                default: return GetAmbientKindCombinationError( @this );
+            }
+        }
+
+        /// <summary>
         /// Gets whether this <see cref="AmbientTypeKind"/> is <see cref="AmbientTypeKind.None"/> or
         /// is invalid (see <see cref="GetAmbientKindCombinationError(AmbientTypeKind)"/>).
         /// </summary>

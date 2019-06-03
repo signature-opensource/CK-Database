@@ -34,7 +34,7 @@ namespace CK.Setup
             static object _lock = new object();
             static Dictionary<Type,TypeInfoForBaseClasses> _cache;
 
-            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t )
+            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, AmbientTypeKindDetector ambientTypeKind )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -84,7 +84,7 @@ namespace CK.Setup
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
                             IReadOnlyList<AmbientPropertyInfo> apList;
                             IReadOnlyList<InjectSingletonInfo> acList;
-                            CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, stObjProperties, out apList, out acList );
+                            CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, ambientTypeKind, stObjProperties, out apList, out acList );
                             Debug.Assert( apList != null && acList != null );
                             result.AmbientProperties = apList;
                             result.AmbientContracts = acList;
@@ -103,6 +103,7 @@ namespace CK.Setup
                 IActivityMonitor monitor,
                 Type type,
                 int specializationLevel,
+                AmbientTypeKindDetector ambientTypeKind,
                 List<StObjPropertyInfo> stObjProperties,
                 out IReadOnlyList<AmbientPropertyInfo> apListResult,
                 out IReadOnlyList<InjectSingletonInfo> acListResult )
@@ -116,9 +117,9 @@ namespace CK.Setup
                 {
                     IList<AmbientPropertyInfo> apCollector;
                     IList<InjectSingletonInfo> acCollector;
-                    AmbientPropertyOrInjectSingletonInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, stObjProperties, out apCollector, out acCollector );
+                    AmbientPropertyOrInjectSingletonInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
 
-                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, stObjProperties, out apListResult, out acListResult );
+                    CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, ambientTypeKind, stObjProperties, out apListResult, out acListResult );
 
                     apListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
                     acListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
@@ -126,13 +127,13 @@ namespace CK.Setup
             }
         }
 
-        internal AmbientObjectClassInfo( IActivityMonitor monitor, AmbientObjectClassInfo parent, Type t, IServiceProvider provider, bool isExcluded )
+        internal AmbientObjectClassInfo( IActivityMonitor monitor, AmbientObjectClassInfo parent, Type t, IServiceProvider provider, AmbientTypeKindDetector ambientTypeKind, bool isExcluded )
             : base( monitor, parent, t, provider, isExcluded )
         {
             Debug.Assert( parent == Generalization );
             if( IsExcluded ) return;
 
-            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType );
+            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType, ambientTypeKind );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Ambient Object ones).
@@ -162,7 +163,7 @@ namespace CK.Setup
             // In the same time, StObjPropertyAttribute that are associated to actual properties are collected into stObjProperties.
             IList<AmbientPropertyInfo> apCollector;
             IList<InjectSingletonInfo> acCollector;
-            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, stObjProperties, out apCollector, out acCollector );
+            AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
             // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
             // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
