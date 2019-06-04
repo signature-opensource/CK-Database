@@ -30,33 +30,9 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Defines a type as being <see cref="AmbientTypeKind.IsSingleton"/>.
-        /// Can be called multiple times as long as no different registration already exists.
+        /// Exposes the <see cref="AmbientTypeKindDetector"/>.
         /// </summary>
-        /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsExternalSingleton( Type t ) => _ambientKindDetector.DefineAsExternalSingleton( _monitor, t );
-
-        /// <summary>
-        /// Defines a type as being <see cref="AmbientTypeKind.IsScoped"/>.
-        /// Can be called multiple times as long as no different registration already exists.
-        /// </summary>
-        /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsExternalScoped( Type t ) => _ambientKindDetector.DefineAsExternalScoped( _monitor, t );
-
-        /// <summary>
-        /// Defines a type as being a <see cref="AmbientTypeKind.IsSingleton"/> because it is used
-        /// as a ctor parameter of a Singleton Service or an injected singleton property or
-        /// StObjConstruct/StObjFinalize parameter of an Ambient Object.
-        /// Can be called multiple times as long as lifetime is Singleton.
-        /// </summary>
-        /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsSingletonReference( Type t ) => _ambientKindDetector.DefineAsSingletonReference( _monitor, t );
-
-
-        internal AmbientTypeKind GetAmbientTypeKind( Type t ) => _ambientKindDetector.GetKind( _monitor, t );
+        public AmbientTypeKindDetector AmbientKindDetector => _ambientKindDetector;
 
         bool IsAmbientService( Type t ) => (_ambientKindDetector.GetKind( _monitor, t ) & AmbientTypeKind.IsAmbientService) != 0;
 

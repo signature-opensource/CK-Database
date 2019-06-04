@@ -462,10 +462,6 @@ namespace CK.Setup
                     {
                         success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
                     }
-                    if( success )
-                    {
-
-                    }
                     return success;
                 }
                 catch( Exception ex )

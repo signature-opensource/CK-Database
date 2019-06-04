@@ -133,35 +133,5 @@ namespace CK.Setup
             }
         }
 
-        internal void WritePreConstructProperties( BinaryWriter w )
-        {
-            WritePropertySetterList( w, _preConstruct );
-        }
-
-        internal void WritePostBuildProperties( BinaryWriter w )
-        {
-            Debug.Assert( Specialization == null, "Called on leaves only." ); 
-            WritePropertySetterList( w, _leafData.PostBuildProperties );
-        }
-
-        private static void WritePropertySetterList( BinaryWriter w, List<PropertySetter> setters )
-        {
-            int nb = setters == null ? 0 : setters.Count;
-            w.Write( nb );
-            if( nb > 0 )
-            {
-                foreach( var p in setters )
-                {
-                    w.Write( p.Property.DeclaringType.AssemblyQualifiedName );
-                    w.Write( p.Property.Name );
-                    if( p.IndexValue == -1 )
-                    {
-                        w.Write( -(((MutableItem)p.Value).IndexOrdered+1) );
-                    }
-                    else w.Write( p.IndexValue );
-                }
-            }
-        }
-
     }
 }

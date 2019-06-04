@@ -534,7 +534,7 @@ namespace CK.Core
                             if( param.Lifetime == AmbientTypeKind.None )
                             {
                                 m.Warn( $"Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
-                                if( !collector.DefineAsSingletonReference( p.ParameterType ) )
+                                if( !collector.AmbientKindDetector.DefineAsSingletonReference( m, p.ParameterType ) )
                                 {
                                     success = false;
                                 }
@@ -622,7 +622,7 @@ namespace CK.Core
                 }
                 else 
                 {
-                    var genLifetime = collector.GetAmbientTypeKind( tGen );
+                    var genLifetime = collector.AmbientKindDetector.GetKind( m, tGen );
                     if( genLifetime != AmbientTypeKind.None )
                     {
                         return new CtorParameterData( true, null, null, false, genLifetime );
@@ -630,7 +630,7 @@ namespace CK.Core
                 }
             }
             // We only consider I(Scoped/Singleton)AmbientService marked type parameters.
-            var lifetime = collector.GetAmbientTypeKind( tParam );
+            var lifetime = collector.AmbientKindDetector.GetKind( m, tParam );
             if( (lifetime&AmbientTypeKind.IsAmbientService) == 0 )
             {
                 return new CtorParameterData( true, null, null, false, lifetime );

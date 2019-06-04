@@ -19,7 +19,7 @@ namespace CK.Setup
         class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
             public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
-            public IReadOnlyList<InjectSingletonInfo> AmbientContracts { get; private set; }
+            public IReadOnlyList<InjectSingletonInfo> InjectSingletons { get; private set; }
             public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
             public int SpecializationDepth { get; private set; }
             public Type Container { get; private set; }
@@ -48,7 +48,7 @@ namespace CK.Setup
                         if( t == typeof( object ) )
                         {
                             result.AmbientProperties = Util.Array.Empty<AmbientPropertyInfo>();
-                            result.AmbientContracts = Util.Array.Empty<InjectSingletonInfo>();
+                            result.InjectSingletons = Util.Array.Empty<InjectSingletonInfo>();
                             result.StObjProperties = Util.Array.Empty<StObjPropertyInfo>();
                         }
                         else
@@ -87,7 +87,7 @@ namespace CK.Setup
                             CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, ambientTypeKind, stObjProperties, out apList, out acList );
                             Debug.Assert( apList != null && acList != null );
                             result.AmbientProperties = apList;
-                            result.AmbientContracts = acList;
+                            result.InjectSingletons = acList;
                             result.StObjProperties = stObjProperties;
                         }
                         _cache.Add( t, result );
@@ -167,9 +167,9 @@ namespace CK.Setup
             // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
             // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
-            AmbientContracts = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientContracts, acCollector );
+            InjectSingletons = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.InjectSingletons, acCollector );
             StObjProperties = stObjProperties;
-            Debug.Assert( AmbientContracts != null && AmbientProperties != null && StObjProperties != null );
+            Debug.Assert( InjectSingletons != null && AmbientProperties != null && StObjProperties != null );
 
             // Simple detection of name clashing: I prefer to keep it simple and check property kind coherency here instead of injecting 
             // the detection inside CreateAmbientPropertyListForExactType and MergeWithAboveProperties with a multi-type property collector. 
@@ -177,7 +177,7 @@ namespace CK.Setup
             // have been resolved...
             {
                 var names = new Dictionary<string, INamedPropertyInfo>();
-                foreach( var newP in AmbientProperties.Cast<INamedPropertyInfo>().Concat( AmbientContracts ).Concat( StObjProperties ) )
+                foreach( var newP in AmbientProperties.Cast<INamedPropertyInfo>().Concat( InjectSingletons ).Concat( StObjProperties ) )
                 {
                     INamedPropertyInfo exists;
                     if( names.TryGetValue( newP.Name, out exists ) )
@@ -291,7 +291,7 @@ namespace CK.Setup
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
-        public IReadOnlyList<InjectSingletonInfo> AmbientContracts { get; private set; }
+        public IReadOnlyList<InjectSingletonInfo> InjectSingletons { get; private set; }
 
         public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
 

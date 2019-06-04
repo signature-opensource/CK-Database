@@ -29,22 +29,54 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
-        [Test]
-        public void an_AmbientObject_that_references_a_scoped_is_an_error()
-        {
-            var types = TestHelper.Assembly.GetTypes()
-                            .Where( t => t.IsClass )
-                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
+        class Scoped : IScopedAmbientService { }
 
+        class AmbientConstruct : IAmbientObject
+        {
+            void StObjConstruct( Scoped s ) { }
+        }
+
+        class AmbientInject : IAmbientObject
+        {
+            [InjectSingleton]
+            public Scoped Service { get; private set; }
+        }
+
+        [Test]
+        public void an_AmbientObject_that_references_a_scoped_from_its_StObjConstruct_is_an_error()
+        {
+            var types = new[] { typeof( AmbientConstruct ) };
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
-
             var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.True );
         }
 
         [Test]
-        public void DiscoverSimpleObjects()
+        public void an_AmbientObject_that_references_a_scoped_from_an_InjectSingleton_is_an_error()
+        {
+            var types = new[] { typeof( AmbientInject ) };
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+            Assert.That( collector.RegisteringFatalOrErrorCount, Is.GreaterThan( 0 ) );
+        }
+
+        [Test]
+        public void AmbientObject_InjectSingleton_service()
+        {
+            var types = TestHelper.Assembly.GetTypes()
+                            .Where( t => t.IsClass )
+                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+            
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.False );
+            result.StObjs.Obtain<ObjectA>().Service.Should().NotBeNull();
+        }
+
+        [Test]
+        public void Discovering_SimpleObjects()
         {
             var types = TestHelper.Assembly.GetTypes()
                             .Where( t => t.IsClass )
@@ -76,7 +108,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void DiscoverWithLevel3()
+        public void Discovering_with_Level3()
         {
             using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
@@ -109,7 +141,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void CycleInPackage()
+        public void Cycle_in_package()
         {
             using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
@@ -129,7 +161,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void Cycle()
+        public void ObjectXNeedsY_and_ObjectYNeedsX_Cycle()
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
@@ -148,7 +180,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void MissingReference()
+        public void Missing_reference()
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
@@ -165,12 +197,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void LoggerInjection()
+        public void IActivityMonitor_injected_in_the_StObjConstruct_is_the_Setup_monitor()
         {
             using( TestHelper.Monitor.OpenInfo( "ConsoleMonitor injection (and optional parameter)." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
-                                .Where( t => t.Name == "LoggerInjected" );
+                var types = new[] { typeof( SimpleObjects.LoggerInjection.LoggerInjected ) };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );

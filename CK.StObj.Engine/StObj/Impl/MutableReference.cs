@@ -81,7 +81,10 @@ namespace CK.Setup
                     if( _kind == StObjMutableReferenceKind.SingletonReference
                         || _kind == StObjMutableReferenceKind.ConstructParameter )
                     {
-                        collector.DefineAsSingletonReference( monitor, Type );
+                        if( !collector.DefineAsSingletonReference( monitor, Type ) )
+                        {
+                            Error( monitor, $"{Type.FullName} cannot be referenced since it is not a singleton." );
+                        }
                     }
                     else
                     {

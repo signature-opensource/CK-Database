@@ -25,7 +25,7 @@ namespace CK.Setup
             {
                 LeafSpecialization = leaf;
                 AllAmbientProperties = ap;
-                AllAmbientContracts = ac;
+                AllInjectSingletons = ac;
             }
 
             /// <summary>
@@ -44,10 +44,10 @@ namespace CK.Setup
             /// <summary>
             /// Like Ambient Properties above, Ambient Contracts are shared by the inheritance chain (it is
             /// not null only at the specialization level), but can use here an array instead of a dynamic list
-            /// since there is no caching needed. Each MutableAmbientContract here is bound to its AmbientContractInfo
-            /// in the StObjTypeInfo.AmbientContracts.
+            /// since there is no caching needed. Each MutableInjectSingleton here is bound to its InjectSingletonInfo
+            /// in the AmbientObjectClassInfo.InjectSingletons.
             /// </summary>
-            public readonly MutableInjectSingleton[] AllAmbientContracts;
+            public readonly MutableInjectSingleton[] AllInjectSingletons;
 
             // Direct properties are collected at leaf level and are allocated only if needed (by SetDirectPropertyValue).
             public Dictionary<PropertyInfo,object> DirectPropertiesToSet;
@@ -174,10 +174,10 @@ namespace CK.Setup
             else
             {
                 var ap = Type.AmbientProperties.Select( p => new MutableAmbientProperty( this, p ) ).ToList();
-                var ac = new MutableInjectSingleton[Type.AmbientContracts.Count];
+                var ac = new MutableInjectSingleton[Type.InjectSingletons.Count];
                 for( int i = ac.Length - 1; i >= 0; --i )
                 {
-                    ac[i] = new MutableInjectSingleton( this, Type.AmbientContracts[i] );
+                    ac[i] = new MutableInjectSingleton( this, Type.InjectSingletons[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
                 _leafData.ImplementableTypeInfo = implementableTypeInfo;
@@ -186,15 +186,16 @@ namespace CK.Setup
 
         #region Configuration
 
-        internal void ConfigureTopDown( IActivityMonitor monitor, MutableItem rootGeneralization )
+        internal bool ConfigureTopDown( IActivityMonitor monitor, MutableItem rootGeneralization, AmbientTypeKindDetector ambientTypeKind )
         {
             Debug.Assert( _leafData.RootGeneralization == null || _leafData.RootGeneralization == rootGeneralization );
             Debug.Assert( (rootGeneralization == this) == (Generalization == null) );
 
             _leafData.RootGeneralization = rootGeneralization;
             ApplyTypeInformation( monitor );
-            AnalyzeConstruct( monitor );
+            bool success = AnalyzeConstruct( monitor, ambientTypeKind );
             ConfigureFromAttributes( monitor );
+            return success;
         }
 
         void ApplyTypeInformation( IActivityMonitor monitor )
@@ -233,11 +234,12 @@ namespace CK.Setup
             }
         }
 
-        void AnalyzeConstruct( IActivityMonitor monitor )
+        bool AnalyzeConstruct( IActivityMonitor monitor, AmbientTypeKindDetector ambientTypeKind )
         {
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
+            bool success = true;
             if( Type.StObjConstruct != null && Type.ConstructParameters.Length > 0 )
             {
                 var parameters = new MutableParameter[Type.ConstructParameters.Length];
@@ -252,6 +254,7 @@ namespace CK.Setup
                         _container = p;
                     }
                     parameters[idx] = p;
+                    if( !p.IsSetupLogger && !p.CheckIsAmbientObject( monitor, ambientTypeKind ) ) success = false;
                 }
                 _constructParameterEx = parameters;
             }
@@ -259,6 +262,7 @@ namespace CK.Setup
             {
                 _constructParameterEx = Util.Array.Empty<MutableParameter>();
             }
+            return success;
         }
 
         void ConfigureFromAttributes( IActivityMonitor monitor )

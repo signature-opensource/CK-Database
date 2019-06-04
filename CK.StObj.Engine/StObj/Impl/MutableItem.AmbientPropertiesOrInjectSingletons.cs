@@ -71,9 +71,6 @@ namespace CK.Setup
 
         /// <summary>
         /// This is the clone of ListAmbientProperty above.
-        /// To share the implementation I need yet another unification between MutableAmbientProperty and MutableAmbientContract (which should be an interface since 
-        /// they have only in common MutableReferenceOptional), and routing calls to _specialization._allAmbientContracts or _specialization._allAmbientProperties...
-        /// I prefer duplicating code here.
         /// </summary>
         class ListInjectSingleton : IReadOnlyList<MutableInjectSingleton>
         {
@@ -83,7 +80,7 @@ namespace CK.Setup
             public ListInjectSingleton( MutableItem item )
             {
                 _item = item;
-                _count = _item.Type.AmbientContracts.Count;
+                _count = _item.Type.InjectSingletons.Count;
             }
 
             public int IndexOf( object item )
@@ -104,7 +101,7 @@ namespace CK.Setup
                 get
                 {
                     if( index >= _count ) throw new IndexOutOfRangeException();
-                    return _item._leafData.AllAmbientContracts[index];
+                    return _item._leafData.AllInjectSingletons[index];
                 }
             }
 
@@ -113,14 +110,11 @@ namespace CK.Setup
                 return IndexOf( item ) >= 0;
             }
 
-            public int Count
-            {
-                get { return _count; }
-            }
+            public int Count => _count; 
 
             public IEnumerator<MutableInjectSingleton> GetEnumerator()
             {
-                return _item._leafData.AllAmbientContracts.Take( _count ).GetEnumerator();
+                return _item._leafData.AllInjectSingletons.Take( _count ).GetEnumerator();
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -155,7 +149,7 @@ namespace CK.Setup
                     if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
             }
-            foreach( var c in _leafData.AllAmbientContracts )
+            foreach( var c in _leafData.AllInjectSingletons )
             {
                 MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )

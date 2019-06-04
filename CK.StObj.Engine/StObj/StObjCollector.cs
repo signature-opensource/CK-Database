@@ -202,20 +202,20 @@ namespace CK.Setup
 
         void DoDefineAsExternalSingletons( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( cc, t ) => cc.DefineAsExternalSingleton( t ) );
+            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( m, cc, t ) => cc.AmbientKindDetector.DefineAsExternalSingleton( m, t ) );
         }
 
         void DoDefineAsExternalScoped( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( cc, t ) => cc.DefineAsExternalScoped( t ) );
+            SafeTypesHandler( "Defining interfaces or classes as Singleton Services", types, count, ( m, cc, t ) => cc.AmbientKindDetector.DefineAsExternalScoped( m, t ) );
         }
 
         void DoRegisterTypes( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Objects or Service classes", types, count, ( cc, t ) => cc.RegisterClassOrPoco( t ) );
+            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Objects or Service classes", types, count, ( m, cc, t ) => cc.RegisterClassOrPoco( t ) );
         }
 
-        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<AmbientTypeCollector,Type> a )
+        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<IActivityMonitor,AmbientTypeCollector,Type> a )
         {
             Debug.Assert( types != null );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
@@ -225,7 +225,7 @@ namespace CK.Setup
                 {
                     foreach( var t in types )
                     {
-                        a( _cc, t );
+                        a( _monitor, _cc, t );
                     }
                 }
                 catch( Exception ex )
@@ -260,6 +260,19 @@ namespace CK.Setup
             if( orderedItems != null )
             {
                 if( !RegisterServices( typeResult, typeResult.TypeKindDetector ) ) orderedItems = null;
+                else
+                {
+                    using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
+                    {
+                        // Finalize construction by injecting Ambient Objects
+                        // and PostBuild Ambient Properties on specializations.
+                        // Since Singleton Ambient Services are not instanciated they are not configured.
+                        foreach( MutableItem item in typeResult.AmbientContracts.EngineMap.AllSpecializations )
+                        {
+                            item.SetPostBuildProperties( _monitor );
+                        }
+                    }
+                }
             }
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }
@@ -374,16 +387,6 @@ namespace CK.Setup
                         }
                     }
                     if( error ) return (typeResult, null);
-                    using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
-                    {
-                        // Finalize construction by injecting Ambient Contracts objects
-                        // and PostBuild Ambient Properties on specializations.
-                        foreach( MutableItem item in engineMap.AllSpecializations )
-                        {
-                            item.SetPostBuildProperties( _monitor );
-                        }
-                    }
-                    if( error ) return (typeResult, null);
                 }
 
                 Debug.Assert( !error );
@@ -428,7 +431,7 @@ namespace CK.Setup
                 MutableItem m = generalization;
                 do
                 {
-                    m.ConfigureTopDown( _monitor, generalization );
+                    m.ConfigureTopDown( _monitor, generalization, _cc.AmbientKindDetector );
                     if( _configurator != null ) _configurator.Configure( _monitor, m );
                 }
                 while( (m = m.Specialization) != null );

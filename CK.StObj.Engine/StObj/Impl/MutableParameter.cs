@@ -13,7 +13,7 @@ namespace CK.Setup
     /// </summary>
     internal class MutableParameter : MutableReferenceWithValue, IStObjMutableParameter, IStObjFinalParameter
     {
-        ParameterInfo _param;
+        readonly ParameterInfo _param;
 
         internal MutableParameter( MutableItem owner, ParameterInfo param, bool isContainer )
             : base( owner, isContainer
@@ -36,11 +36,22 @@ namespace CK.Setup
 
         internal override Type UnderlyingType => _param.ParameterType;
 
-        internal bool IsSetupLogger => _param.ParameterType == typeof( IActivityMonitor ) && _param.Name == "monitor";
+        internal bool IsSetupLogger => _param.ParameterType == typeof( IActivityMonitor );
 
         internal override MutableItem ResolveToStObj( IActivityMonitor monitor, StObjObjectEngineMap collector )
         {
             return IsSetupLogger ? null : base.ResolveToStObj( monitor, collector );
+        }
+
+        internal bool CheckIsAmbientObject( IActivityMonitor m, AmbientTypeKindDetector ambientTypeKind )
+        {
+            var k = ambientTypeKind.GetKind( m, Type );
+            if( k != AmbientTypeKind.AmbientObject )
+            {
+                Error( m, $"{Type.FullName} must be an Ambient Object (kind is '{k.ToStringClear()}')." );
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
