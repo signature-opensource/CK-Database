@@ -59,8 +59,6 @@ namespace CK.Setup
         readonly StObjEngineAspectTrampoline<IStObjEngineConfigureContext> _trampoline;
 
         List<Type> _explicitRegisteredTypes;
-        Action<IEnumerable<IDependentItem>> _stObjDependencySorterHookInput;
-        Action<IEnumerable<ISortedItem>> _stObjDependencySorterHookOutput;
 
         internal StObjEngineConfigureContext( IActivityMonitor monitor, StObjEngineConfiguration config, IStObjEngineStatus status )
         {
@@ -155,18 +153,6 @@ namespace CK.Setup
                 if( !_trampoline.Execute( _monitor, onError ) ) success = false;
                 if( success ) _container.ConfigureDone( _monitor );
             }
-        }
-
-        public Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput
-        {
-            get { return _stObjDependencySorterHookInput; }
-            set { _stObjDependencySorterHookInput = value; }
-        }
-
-        public Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput
-        {
-            get { return _stObjDependencySorterHookOutput; }
-            set { _stObjDependencySorterHookOutput = value; }
         }
 
     }

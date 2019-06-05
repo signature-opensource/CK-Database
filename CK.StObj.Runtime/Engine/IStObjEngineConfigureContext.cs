@@ -55,20 +55,6 @@ namespace CK.Setup
         IReadOnlyList<IStObjEngineAspect> Aspects { get; }
 
         /// <summary>
-        /// Gets or sets a function that will be called with the list of StObjs once all of them are 
-        /// registered in the <see cref="DependencySorter"/> used by the StObjCollector.
-        /// This action, like any action, is composable by using += operator.
-        /// </summary>
-        Action<IEnumerable<IDependentItem>> StObjDependencySorterHookInput { get; }
-
-        /// <summary>
-        /// Gets or sets a function that will be called when StObjs have been successfuly sorted by 
-        /// the <see cref="DependencySorter"/> used by the StObjCollector.
-        /// This action, like any action, is composable by using += operator.
-        /// </summary>
-        Action<IEnumerable<ISortedItem>> StObjDependencySorterHookOutput { get; }
-
-        /// <summary>
         /// Pushes a defered configure action.
         /// It will be executed after the configuration of all aspects.
         /// An action can be pushed at any moment and a pushed action can push another action.

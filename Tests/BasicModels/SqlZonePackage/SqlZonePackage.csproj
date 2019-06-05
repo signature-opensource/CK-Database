@@ -7,7 +7,7 @@
   <Import Project="..\..\..\Common\Shared.props" />
 
   <ItemGroup>
-    <EmbeddedResource Include="Res\**\*.sql" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    <EmbeddedResource Include="Res\**\*.sql;Res\**\*.tql" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
 
   <ItemGroup>
