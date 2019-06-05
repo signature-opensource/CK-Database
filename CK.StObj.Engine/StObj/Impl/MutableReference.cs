@@ -41,15 +41,12 @@ namespace CK.Setup
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
-            else if( _kind == StObjMutableReferenceKind.RequiredBy
-                     || _kind == StObjMutableReferenceKind.AmbientProperty
-                     || _kind == StObjMutableReferenceKind.SingletonReference )
-            {
-                StObjRequirementBehavior = StObjRequirementBehavior.None;
-            }
             else
             {
-                Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0 );
+                Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0
+                                || _kind == StObjMutableReferenceKind.RequiredBy
+                                || _kind == StObjMutableReferenceKind.AmbientProperty
+                                || _kind == StObjMutableReferenceKind.SingletonReference );
                 StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
         }
@@ -78,15 +75,8 @@ namespace CK.Setup
                 result = collector.ToHighestImpl( Type );
                 if( result == null )
                 {
-                    if( _kind == StObjMutableReferenceKind.SingletonReference
-                        || _kind == StObjMutableReferenceKind.ConstructParameter )
-                    {
-                        if( !collector.DefineAsSingletonReference( monitor, Type ) )
-                        {
-                            Error( monitor, $"{Type.FullName} cannot be referenced since it is not a singleton." );
-                        }
-                    }
-                    else
+                    if( _kind != StObjMutableReferenceKind.SingletonReference
+                        && _kind != StObjMutableReferenceKind.ConstructParameter )
                     {
                         // No warn on value type or string not found.
                         WarnOrErrorIfStObjRequired( monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found" );

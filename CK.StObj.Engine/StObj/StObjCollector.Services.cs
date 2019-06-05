@@ -432,11 +432,10 @@ namespace CK.Setup
         /// Called once Mutable items have been created.
         /// </summary>
         /// <param name="typeResult">The Ambient types discovery result.</param>
-        /// <param name="typeKindDetector">The type detector to finalize registration with <see cref="AmbientTypeKindDetector.PromoteToSingleton(IActivityMonitor, Type)"/>.</param>
         /// <returns>True on success, false on error.</returns>
-        bool RegisterServices( AmbientTypeCollectorResult typeResult, AmbientTypeKindDetector typeKindDetector )
+        bool RegisterServices( AmbientTypeCollectorResult typeResult )
         {
-            var engineMap = typeResult.AmbientContracts.EngineMap;
+            var engineMap = typeResult.AmbientObjects.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
             {
                 try
@@ -453,7 +452,7 @@ namespace CK.Setup
                     }
                     else _monitor.Trace( $"{families.Count} Service families found." );
                     bool success = true;
-                    var manuals = new FinalRegisterer( _monitor, engineMap, typeKindDetector );
+                    var manuals = new FinalRegisterer( _monitor, engineMap, typeResult.TypeKindDetector );
                     foreach( var f in families )
                     {
                         success &= f.Resolve( _monitor, manuals );

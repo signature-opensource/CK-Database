@@ -88,7 +88,7 @@ namespace CK.Setup
             Type.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
-        internal void SetPostBuildProperties( IActivityMonitor monitor )
+        internal void SetPostBuildProperties( IActivityMonitor monitor, AmbientTypeKindDetector ambientTypeKind, Func<Type,object> singletonServiceInstance )
         {
             Debug.Assert( Specialization == null, "Called on leaves only." );
             if( _leafData.PostBuildProperties != null )
@@ -96,6 +96,13 @@ namespace CK.Setup
                 foreach( var p in _leafData.PostBuildProperties )
                 {
                     SetPropertyValue( monitor, p );
+                }
+            }
+            foreach( var c in _leafData.AllInjectSingletons )
+            {
+                if( c.ResolveToStObj( monitor, EngineMap ) == null && ambientTypeKind.IsSingleton( c.Type ) ) 
+                {
+                    DoSetPropertyValue( monitor, c.InjecttInfo.PropertyInfo, singletonServiceInstance( c.Type ) );
                 }
             }
         }
@@ -123,15 +130,19 @@ namespace CK.Setup
             object o = p.Value;
             MutableItem m = o as MutableItem;
             if( m != null ) o = m.InitialObject;
+            DoSetPropertyValue( monitor, p.Property, o );
+        }
+
+        void DoSetPropertyValue( IActivityMonitor monitor, PropertyInfo p, object o )
+        {
             try
             {
-                p.Property.SetValue( _leafData.StructuredObject, o, null );
+                p.SetValue( _leafData.StructuredObject, o, null );
             }
             catch( Exception ex )
             {
-                monitor.Error( $"While setting '{p.Property.DeclaringType.FullName}.{p.Property.Name}'.", ex );
+                monitor.Error( $"While setting '{p.DeclaringType.FullName}.{p.Name}'.", ex );
             }
         }
-
     }
 }

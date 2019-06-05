@@ -61,7 +61,7 @@ namespace CK.StObj.Engine.Tests
 
             public class C : IC
             {
-                [InjectSingletonAttribute]
+                [InjectSingleton]
                 public A TheA { get; private set; }
             }
 
@@ -202,11 +202,38 @@ namespace CK.StObj.Engine.Tests
 
         public class PostBuildSet
         {
+            /// <summary>
+            /// Ambient service: will necessarily be Singleton since referenced by A.
+            /// </summary>
+            public interface IAmAnAmbientService : IAmbientService
+            {
+                /// <summary>
+                /// Services are uninitialized objects during Setup.
+                /// </summary>
+                bool IAmInitialized { get; }
+            }
+
+            public class TheServiceImpl : IAmAnAmbientService
+            {
+                public TheServiceImpl()
+                {
+                    IAmInitialized = true;
+                }
+
+                public bool IAmInitialized { get; }
+            }
+
             public class A : IAmbientObject
             {
                 [StObjProperty]
-                public string StObjPower { get; set; }
+                public string StObjPower { get; private set; }
 
+                [InjectSingleton]
+                public IAmAnAmbientService TheService { get; private set; }
+
+                /// <summary>
+                /// StObjInitialize is NOT called on setup instances.
+                /// </summary>
                 public bool StObjInitializeOnACalled; 
 
                 void StObjConstruct( IActivityMonitor monitor, [Container]BSpec bIsTheContainerOfA )
@@ -220,7 +247,7 @@ namespace CK.StObj.Engine.Tests
                     StObjInitializeOnACalled = true;
                 }
 
-                [InjectSingletonAttribute]
+                [InjectSingleton]
                 public BSpec TheB { get; private set; }
             }
 
@@ -251,7 +278,7 @@ namespace CK.StObj.Engine.Tests
                 [InjectSingletonAttribute]
                 public A TheA { get; private set; }
 
-                [InjectSingletonAttribute]
+                [InjectSingleton]
                 public A TheInjectedA { get; private set; }
             }
 
@@ -260,8 +287,15 @@ namespace CK.StObj.Engine.Tests
                 void StObjConstruct( )
                 {
                 }
+
+                [InjectSingleton]
+                public TheServiceImpl TheServiceMustBeTheSameAsTheOneInA { get; private set; }
+
             }
 
+            /// <summary>
+            /// Configures the 2 A's StObjPower with "This is the A property." (for A) and "ASpec level property." (for ASpec).
+            /// </summary>
             class StObjPropertyConfigurator : IStObjStructuralConfigurator
             {
                 public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
@@ -274,6 +308,7 @@ namespace CK.StObj.Engine.Tests
             public void DoTest()
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new StObjPropertyConfigurator() );
+                collector.RegisterType( typeof( TheServiceImpl ) );
                 collector.RegisterType( typeof( BSpec ) );
                 collector.RegisterType( typeof( ASpec ) );
                 collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
@@ -290,7 +325,11 @@ namespace CK.StObj.Engine.Tests
                     ASpec theA = (ASpec)r.StObjs.Obtain<A>();
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
-                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
+                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on setup instances." );
+
+                    Assert.That( r.StObjs.Obtain<A>().TheService, Is.Not.Null );
+                    Assert.That( r.StObjs.Obtain<A>().TheService.IAmInitialized, Is.False, "Services are uninitialized objects during Setup." );
+                    Assert.That( r.StObjs.Obtain<BSpec>().TheServiceMustBeTheSameAsTheOneInA, Is.SameAs( r.StObjs.Obtain<A>().TheService ) );
                 }
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null );
@@ -310,6 +349,10 @@ namespace CK.StObj.Engine.Tests
 
                     Assert.That( theA.StObjInitializeOnACalled, Is.True );
                     Assert.That( theA.StObjInitializeOnASpecCalled, Is.True );
+
+                    BSpec theB = c.StObjs.Obtain<BSpec>();
+                    Assert.That( theB.TheServiceMustBeTheSameAsTheOneInA, Is.SameAs( theA.TheService ) );
+                    Assert.That( theA.TheService.IAmInitialized, Is.True );
                 }
             }
 

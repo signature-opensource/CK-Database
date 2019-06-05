@@ -423,7 +423,7 @@ namespace CK.Core
                         if( DeclaredLifetime != AmbientTypeKind.AmbientSingleton )
                         {
                             m.Info( $"Nothing prevents the class '{Type.Name}' to be a Singleton: this is the most efficient choice." );
-                            success &= typeKindDetector.PromoteToSingleton( m, Type );
+                            success &= typeKindDetector.PromoteToSingleton( m, Type ) != null;
                         }
                     }
                 }
@@ -534,7 +534,7 @@ namespace CK.Core
                             if( param.Lifetime == AmbientTypeKind.None )
                             {
                                 m.Warn( $"Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
-                                if( !collector.AmbientKindDetector.DefineAsSingletonReference( m, p.ParameterType ) )
+                                if( collector.AmbientKindDetector.DefineAsSingletonReference( m, p.ParameterType ) == null )
                                 {
                                     success = false;
                                 }

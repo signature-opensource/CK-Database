@@ -259,22 +259,50 @@ namespace CK.Setup
             var (typeResult, orderedItems) = CreateTypeAndContractResults();
             if( orderedItems != null )
             {
-                if( !RegisterServices( typeResult, typeResult.TypeKindDetector ) ) orderedItems = null;
+                if( !RegisterServices( typeResult ) ) orderedItems = null;
                 else
                 {
-                    using( _monitor.OpenInfo( "Setting PostBuild properties." ) )
-                    {
-                        // Finalize construction by injecting Ambient Objects
-                        // and PostBuild Ambient Properties on specializations.
-                        // Since Singleton Ambient Services are not instanciated they are not configured.
-                        foreach( MutableItem item in typeResult.AmbientContracts.EngineMap.AllSpecializations )
-                        {
-                            item.SetPostBuildProperties( _monitor );
-                        }
-                    }
+                    SetPostBuildPropertiesAndInjectedSingletons( typeResult );
                 }
             }
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
+        }
+
+        void SetPostBuildPropertiesAndInjectedSingletons( AmbientTypeCollectorResult typeResult )
+        {
+            using( _monitor.OpenInfo( "Setting PostBuild properties and injected singletons." ) )
+            {
+                // Finalize construction by injecting Ambient Objects
+                // and PostBuild Ambient Properties on specializations.
+                // Currently we inject fake Singleton Ambient Services but not null ones in order to
+                // ensure the existence and enable reference equality and null checks on the object graph.
+                IStObjMap engineMap = typeResult.AmbientObjects.EngineMap;
+                Dictionary<Type, object> fakeInstances = new Dictionary<Type, object>();
+                object GetSingletonServiceInstance( Type t )
+                {
+                    if( !fakeInstances.TryGetValue( t, out var o ) )
+                    {
+                        IStObjServiceClassFactory manualMapped = null;
+                        if( !engineMap.Services.SimpleMappings.TryGetValue( t, out var serviceClassDescriptor )
+                            && !engineMap.Services.ManualMappings.TryGetValue( t, out manualMapped ) )
+                        {
+                            throw new Exception( $"Type '{t}' must be resolved as a singleton but is not in Services.SimpleMappings nor ManualMappings." );
+                        }
+                        if( serviceClassDescriptor == null ) serviceClassDescriptor = manualMapped;
+                        if( !fakeInstances.TryGetValue( serviceClassDescriptor.ClassType, out o ) )
+                        {
+                            o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject( serviceClassDescriptor.ClassType );
+                            fakeInstances.Add( serviceClassDescriptor.ClassType, o );
+                        }
+                        if( t != serviceClassDescriptor.ClassType ) fakeInstances.Add( t, o );
+                    }
+                    return o;
+                }
+                foreach( MutableItem item in typeResult.AmbientObjects.EngineMap.AllSpecializations )
+                {
+                    item.SetPostBuildProperties( _monitor, typeResult.TypeKindDetector, GetSingletonServiceInstance );
+                }
+            }
         }
 
         (AmbientTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndContractResults()
@@ -293,13 +321,13 @@ namespace CK.Setup
                     if( error || typeResult.HasFatalError ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Creating final objects and configuring items." ) )
                     {
-                        int nbItems = ConfigureMutableItems( typeResult.AmbientContracts );
+                        int nbItems = ConfigureMutableItems( typeResult.AmbientObjects );
                         _monitor.CloseGroup( $"{nbItems} items configured." );
                     }
                 }
                 if( error ) return (typeResult, null); 
 
-                StObjObjectEngineMap engineMap = typeResult.AmbientContracts.EngineMap;
+                StObjObjectEngineMap engineMap = typeResult.AmbientObjects.EngineMap;
                 IDependencySorterResult sortResult = null;
                 BuildValueCollector valueCollector = new BuildValueCollector();
                 using( _monitor.OpenInfo( "Topological graph ordering." ) )
@@ -326,7 +354,7 @@ namespace CK.Setup
                         // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
-                            item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
+                            item.ResolvePreConstructAndSomePostBuildProperties( _monitor, valueCollector, _valueResolver );
                         }
                     }
                     if( error ) return (typeResult, null);
@@ -388,7 +416,6 @@ namespace CK.Setup
                     }
                     if( error ) return (typeResult, null);
                 }
-
                 Debug.Assert( !error );
                 return (typeResult, ordered);
             }

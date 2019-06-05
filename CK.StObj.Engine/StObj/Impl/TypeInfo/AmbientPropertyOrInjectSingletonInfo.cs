@@ -51,13 +51,13 @@ namespace CK.Setup
             AmbientTypeKindDetector ambientTypeKind,
             List<StObjPropertyInfo> stObjProperties, 
             out IList<AmbientPropertyInfo> apListResult,
-            out IList<InjectSingletonInfo> acListResult )
+            out IList<InjectSingletonInfo> injectedListResult )
         {
             Debug.Assert( stObjProperties != null );
             
             var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
             apListResult = null;
-            acListResult = null;
+            injectedListResult = null;
             foreach( var p in properties )
             {
                 StObjPropertyAttribute stObjAttr = p.GetCustomAttribute<StObjPropertyAttribute>(false);
@@ -101,9 +101,9 @@ namespace CK.Setup
                     {
                         // Ignore errors: it is logged (and will make the whole process fail).
                         ambientTypeKind.DefineAsSingletonReference( monitor, p.PropertyType );
-                        if( acListResult == null ) acListResult = new List<InjectSingletonInfo>();
-                        var amb = new InjectSingletonInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count );
-                        acListResult.Add( amb );
+                        if( injectedListResult == null ) injectedListResult = new List<InjectSingletonInfo>();
+                        var amb = new InjectSingletonInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, injectedListResult.Count );
+                        injectedListResult.Add( amb );
                     }
                 }
             }

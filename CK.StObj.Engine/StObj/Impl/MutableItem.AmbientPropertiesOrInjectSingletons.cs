@@ -136,7 +136,7 @@ namespace CK.Setup
         /// This is where the TrackedAmbientPropertyInfo is added to the target and where covariance is handled. 
         /// (This is also where, each time I look at this code, I ask myself "wtf...???" :-).)
         /// </summary>
-        internal void ResolvePreConstructAndPostBuildProperties(
+        internal void ResolvePreConstructAndSomePostBuildProperties(
             IActivityMonitor monitor,
             BuildValueCollector valueCollector,
             IStObjValueResolver valueResolver )
@@ -149,6 +149,7 @@ namespace CK.Setup
                     if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
             }
+            // Only StObj (MutableItems) are handled here. Services are handled later.
             foreach( var c in _leafData.AllInjectSingletons )
             {
                 MutableItem m = c.ResolveToStObj( monitor, EngineMap );

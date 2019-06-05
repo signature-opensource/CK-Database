@@ -155,7 +155,7 @@ class GStObj : IStObj
             var rootCtor = rootType.CreateFunction( $"public {StObjContextRoot.RootContextTypeName}(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" );
 
             rootCtor.Append( $"_stObjs = new GStObj[{OrderedStObjs.Count}];" ).NewLine()
-                    .Append( $"_implStObjs = new GStObj[{AmbientTypeResult.AmbientContracts.EngineMap.AllSpecializations.Count}];" ).NewLine();
+                    .Append( $"_implStObjs = new GStObj[{AmbientTypeResult.AmbientObjects.EngineMap.AllSpecializations.Count}];" ).NewLine();
             int iStObj = 0;
             int iImplStObj = 0;
             foreach( MutableItem m in OrderedStObjs )
@@ -180,7 +180,7 @@ class GStObj : IStObj
             }
 
             rootCtor.Append( $"_map = new Dictionary<Type,GStObj>();" ).NewLine();
-            var allMappings = AmbientTypeResult.AmbientContracts.EngineMap.RawMappings;
+            var allMappings = AmbientTypeResult.AmbientObjects.EngineMap.RawMappings;
             // We skip highest implementation Type mappings (ie. AmbientContractInterfaceKey keys) since 
             // there is no ToStObj mapping (to root generalization) on final (runtime) IStObjMap.
             foreach( var e in allMappings.Where( e => e.Key is Type ) )

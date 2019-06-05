@@ -50,8 +50,8 @@ namespace CK.Core
         /// </summary>
         /// <param name="m">The monitor.</param>
         /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsExternalSingleton( IActivityMonitor m, Type t )
+        /// <returns>The type kind on success, null on error.</returns>
+        public AmbientTypeKind? DefineAsExternalSingleton( IActivityMonitor m, Type t )
         {
             return SetLifeTime( m, t, AmbientTypeKind.IsSingleton | IsReasonExternal );
         }
@@ -64,8 +64,8 @@ namespace CK.Core
         /// </summary>
         /// <param name="m">The monitor.</param>
         /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsSingletonReference( IActivityMonitor m, Type t )
+        /// <returns>The type kind on success, null on error.</returns>
+        public AmbientTypeKind? DefineAsSingletonReference( IActivityMonitor m, Type t )
         {
             return SetLifeTime( m, t, AmbientTypeKind.IsSingleton | IsSingletonReasonReference );
         }
@@ -76,8 +76,8 @@ namespace CK.Core
         /// </summary>
         /// <param name="m">The monitor.</param>
         /// <param name="t">The type to register.</param>
-        /// <returns>True on success, false on error.</returns>
-        public bool DefineAsExternalScoped( IActivityMonitor m, Type t )
+        /// <returns>The type kind on success, null on error.</returns>
+        public AmbientTypeKind? DefineAsExternalScoped( IActivityMonitor m, Type t )
         {
             return SetLifeTime( m, t, AmbientTypeKind.IsScoped | IsReasonExternal );
         }
@@ -89,16 +89,19 @@ namespace CK.Core
         /// </summary>
         /// <param name="m">The monitor to use.</param>
         /// <param name="t">The type to promote.</param>
-        /// <returns>True on success, false on erro.</returns>
-        public bool PromoteToSingleton( IActivityMonitor m, Type t )
+        /// <returns>The type kind on success, null on error.</returns>
+        public AmbientTypeKind? PromoteToSingleton( IActivityMonitor m, Type t )
         {
             return SetLifeTime( m, t, AmbientTypeKind.IsSingleton | IsSingletonReasonFinal );
         }
 
-        bool SetLifeTime( IActivityMonitor m, Type t, AmbientTypeKind kind  )
+
+
+        AmbientTypeKind? SetLifeTime( IActivityMonitor m, Type t, AmbientTypeKind kind  )
         {
-            Debug.Assert( (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != 0
-                            && (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
+            Debug.Assert( (kind & IsDefiner) == 0
+                          && (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != 0
+                          && (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
             var k = RawGet( m, t );
             if( (k & IsDefiner) != 0 )
             {
@@ -109,10 +112,12 @@ namespace CK.Core
             if( kType != AmbientTypeKind.None && kType != (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) )
             {
                 m.Error( $"Type '{t.Name}' is already registered as a '{ToStringFull( k )}'. It can not be defined as {ToStringFull( kind )}." );
-                return false;
+                return null;
             }
-            _cache[t] = k | kind;
-            return true;
+            k |= kind;
+            _cache[t] = k;
+            Debug.Assert( (k & IsDefiner) == 0 );
+            return k & MaskPublicInfo;
         }
 
         /// <summary>
