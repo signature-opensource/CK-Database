@@ -21,11 +21,11 @@ namespace CK.Setup
     {
         class LeafData
         {
-            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableInjectSingleton[] ac )
+            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableInjectObject[] ac )
             {
                 LeafSpecialization = leaf;
                 AllAmbientProperties = ap;
-                AllInjectSingletons = ac;
+                AllInjectObjects = ac;
             }
 
             /// <summary>
@@ -41,13 +41,14 @@ namespace CK.Setup
             /// and cached into this list.
             /// </summary>
             public readonly List<MutableAmbientProperty> AllAmbientProperties;
+
             /// <summary>
-            /// Like Ambient Properties above, Ambient Contracts are shared by the inheritance chain (it is
+            /// Like Ambient Properties above, Inject Objects are shared by the inheritance chain (it is
             /// not null only at the specialization level), but can use here an array instead of a dynamic list
             /// since there is no caching needed. Each MutableInjectSingleton here is bound to its InjectSingletonInfo
             /// in the AmbientObjectClassInfo.InjectSingletons.
             /// </summary>
-            public readonly MutableInjectSingleton[] AllInjectSingletons;
+            public readonly MutableInjectObject[] AllInjectObjects;
 
             // Direct properties are collected at leaf level and are allocated only if needed (by SetDirectPropertyValue).
             public Dictionary<PropertyInfo,object> DirectPropertiesToSet;
@@ -85,9 +86,9 @@ namespace CK.Setup
         // This is available at any level thanks to the ordering of ambient properties
         // and the ListAmbientProperty that exposes only the start of the list: only the 
         // properties that are available at the level appear in the list.
-        // (This is the same for AmbientContracts.)
+        // (This is the same for the injected ambient objects.)
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
-        readonly IReadOnlyList<MutableInjectSingleton> _ambientContractsEx;
+        readonly IReadOnlyList<MutableInjectObject> _ambientInjectObjectsEx;
 
         MutableReference _container;
         MutableReferenceList _requires;
@@ -153,7 +154,7 @@ namespace CK.Setup
             Generalization = generalization;
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
             _ambientPropertiesEx = new ListAmbientProperty( this );
-            _ambientContractsEx = new ListInjectSingleton( this );
+            _ambientInjectObjectsEx = new ListInjectSingleton( this );
         }
 
         /// <summary>
@@ -174,10 +175,10 @@ namespace CK.Setup
             else
             {
                 var ap = Type.AmbientProperties.Select( p => new MutableAmbientProperty( this, p ) ).ToList();
-                var ac = new MutableInjectSingleton[Type.InjectSingletons.Count];
+                var ac = new MutableInjectObject[Type.InjectObjects.Count];
                 for( int i = ac.Length - 1; i >= 0; --i )
                 {
-                    ac[i] = new MutableInjectSingleton( this, Type.InjectSingletons[i] );
+                    ac[i] = new MutableInjectObject( this, Type.InjectObjects[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
                 _leafData.ImplementableTypeInfo = implementableTypeInfo;
@@ -186,16 +187,15 @@ namespace CK.Setup
 
         #region Configuration
 
-        internal bool ConfigureTopDown( IActivityMonitor monitor, MutableItem rootGeneralization, AmbientTypeKindDetector ambientTypeKind )
+        internal void ConfigureTopDown( IActivityMonitor monitor, MutableItem rootGeneralization )
         {
             Debug.Assert( _leafData.RootGeneralization == null || _leafData.RootGeneralization == rootGeneralization );
             Debug.Assert( (rootGeneralization == this) == (Generalization == null) );
 
             _leafData.RootGeneralization = rootGeneralization;
             ApplyTypeInformation( monitor );
-            bool success = AnalyzeConstruct( monitor, ambientTypeKind );
+            AnalyzeConstruct( monitor );
             ConfigureFromAttributes( monitor );
-            return success;
         }
 
         void ApplyTypeInformation( IActivityMonitor monitor )
@@ -234,12 +234,11 @@ namespace CK.Setup
             }
         }
 
-        bool AnalyzeConstruct( IActivityMonitor monitor, AmbientTypeKindDetector ambientTypeKind )
+        void AnalyzeConstruct( IActivityMonitor monitor )
         {
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
-            bool success = true;
             if( Type.StObjConstruct != null && Type.ConstructParameters.Length > 0 )
             {
                 var parameters = new MutableParameter[Type.ConstructParameters.Length];
@@ -254,7 +253,6 @@ namespace CK.Setup
                         _container = p;
                     }
                     parameters[idx] = p;
-                    if( !p.IsSetupLogger && !p.CheckIsAmbientObject( monitor, ambientTypeKind ) ) success = false;
                 }
                 _constructParameterEx = parameters;
             }
@@ -262,7 +260,6 @@ namespace CK.Setup
             {
                 _constructParameterEx = Util.Array.Empty<MutableParameter>();
             }
-            return success;
         }
 
         void ConfigureFromAttributes( IActivityMonitor monitor )
@@ -346,7 +343,7 @@ namespace CK.Setup
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties => _ambientPropertiesEx; 
 
-        IReadOnlyList<IStObjMutableInjectSingleton> IStObjMutableItem.SpecializedAmbientSingletons => _ambientContractsEx;
+        IReadOnlyList<IStObjMutableInjectObject> IStObjMutableItem.SpecializedInjectObjects => _ambientInjectObjectsEx;
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {

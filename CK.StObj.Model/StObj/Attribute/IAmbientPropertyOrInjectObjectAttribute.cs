@@ -6,9 +6,9 @@ using System.Text;
 namespace CK.Setup
 {
     /// <summary>
-    /// Unifies <see cref="AmbientPropertyAttribute"/> and <see cref="InjectSingletonAttribute"/>.
+    /// Unifies <see cref="AmbientPropertyAttribute"/> and <see cref="InjectObjectAttribute"/>.
     /// </summary>
-    public interface IAmbientPropertyOrInjectSingletonAttribute
+    public interface IAmbientPropertyOrInjectObjectAttribute
     {
         /// <summary>
         /// Gets whether resolving this property is required or not.

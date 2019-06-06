@@ -11,21 +11,21 @@ namespace CK.Core
     /// Wrapper for keys in Type mapping dictionaries: when wrapped in this class,
     /// the Type is the key of its highest implementation instead of its final concrete class.
     /// This enables the use of one and only one dictionnary for Mappings (Type => Final Type) as well as 
-    /// highest implementation association (Ambient contract interface => its highest implementation).
+    /// highest implementation association (Ambient object interface => its highest implementation).
     /// </summary>
-    internal class AmbientContractInterfaceKey
+    internal class AmbientObjecttInterfaceKey
     {
         public readonly Type InterfaceType;
 
-        public AmbientContractInterfaceKey( Type ambientContractInterface )
+        public AmbientObjecttInterfaceKey( Type ambientObjectInterface )
         {
-            Debug.Assert( ambientContractInterface.IsInterface );
-            InterfaceType = ambientContractInterface;
+            Debug.Assert( ambientObjectInterface.IsInterface );
+            InterfaceType = ambientObjectInterface;
         }
 
         public override bool Equals( object obj )
         {
-            AmbientContractInterfaceKey k = obj as AmbientContractInterfaceKey;
+            AmbientObjecttInterfaceKey k = obj as AmbientObjecttInterfaceKey;
             return k != null && k.InterfaceType == InterfaceType;
         }
 

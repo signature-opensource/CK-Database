@@ -6,11 +6,11 @@ using System.Reflection;
 
 namespace CK.Setup
 {
-    internal class InjectSingletonInfo : AmbientPropertyOrInjectSingletonInfo
+    internal class InjectObjectInfo : AmbientPropertyOrInjectObjectInfo
     {
-        public new readonly static string KindName = "[InjectSingleton]";
+        public new readonly static string KindName = "[InjectObject]";
         
-        internal InjectSingletonInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
+        internal InjectObjectInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, isOptionalDefined, isOptional, definerSpecializationDepth, index )
         {
         }

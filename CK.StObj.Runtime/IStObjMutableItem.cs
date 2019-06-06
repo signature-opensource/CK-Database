@@ -94,10 +94,10 @@ namespace CK.Setup
         IReadOnlyList<IStObjAmbientProperty> SpecializedAmbientProperties { get; }
 
         /// <summary>
-        /// Gets a list of mutable <see cref="IStObjMutableInjectSingleton"/> defined at this level (and above) but potentially specialized.
+        /// Gets a list of mutable <see cref="IStObjMutableInjectObject"/> defined at this level (and above) but potentially specialized.
         /// This guarantees that properties are accessed by their most precise overridden/masked version.
         /// </summary>
-        IReadOnlyList<IStObjMutableInjectSingleton> SpecializedAmbientSingletons { get; }
+        IReadOnlyList<IStObjMutableInjectObject> SpecializedInjectObjects { get; }
 
         /// <summary>
         /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 

@@ -43,17 +43,6 @@ namespace CK.Setup
             return IsSetupLogger ? null : base.ResolveToStObj( monitor, collector );
         }
 
-        internal bool CheckIsAmbientObject( IActivityMonitor m, AmbientTypeKindDetector ambientTypeKind )
-        {
-            var k = ambientTypeKind.GetKind( m, Type );
-            if( k != AmbientTypeKind.AmbientObject )
-            {
-                Error( m, $"{Type.FullName} must be an Ambient Object (kind is '{k.ToStringClear()}')." );
-                return false;
-            }
-            return true;
-        }
-
         /// <summary>
         /// Stores the index of the runtime value to use. 0 for null, Positive for objects collected in BuildValueCollector, the negative IndexOrdered+1 for StObj
         /// Int32.MaxValue for the setup Logger and negative values with an offset of 1 for MutableItem.IndexOrdered.

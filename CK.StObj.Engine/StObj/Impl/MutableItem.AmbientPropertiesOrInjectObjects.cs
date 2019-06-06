@@ -72,7 +72,7 @@ namespace CK.Setup
         /// <summary>
         /// This is the clone of ListAmbientProperty above.
         /// </summary>
-        class ListInjectSingleton : IReadOnlyList<MutableInjectSingleton>
+        class ListInjectSingleton : IReadOnlyList<MutableInjectObject>
         {
             readonly MutableItem _item;
             readonly int _count;
@@ -80,13 +80,13 @@ namespace CK.Setup
             public ListInjectSingleton( MutableItem item )
             {
                 _item = item;
-                _count = _item.Type.InjectSingletons.Count;
+                _count = _item.Type.InjectObjects.Count;
             }
 
             public int IndexOf( object item )
             {
                 int idx = -1;
-                MutableInjectSingleton c = item as MutableInjectSingleton;
+                MutableInjectObject c = item as MutableInjectObject;
                 if( c != null
                     && c.Owner == _item._leafData.LeafSpecialization
                     && c.InjecttInfo.Index < _count )
@@ -96,12 +96,12 @@ namespace CK.Setup
                 return idx;
             }
 
-            public MutableInjectSingleton this[int index]
+            public MutableInjectObject this[int index]
             {
                 get
                 {
                     if( index >= _count ) throw new IndexOutOfRangeException();
-                    return _item._leafData.AllInjectSingletons[index];
+                    return _item._leafData.AllInjectObjects[index];
                 }
             }
 
@@ -112,21 +112,18 @@ namespace CK.Setup
 
             public int Count => _count; 
 
-            public IEnumerator<MutableInjectSingleton> GetEnumerator()
+            public IEnumerator<MutableInjectObject> GetEnumerator()
             {
-                return _item._leafData.AllInjectSingletons.Take( _count ).GetEnumerator();
+                return _item._leafData.AllInjectObjects.Take( _count ).GetEnumerator();
             }
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
         /// Works on leaf only. 
         /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to StObjConstruct of the root of the inheritance chain.
-        /// Registers all the AmbientContracts (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
+        /// Registers all the InjectObjects (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
         /// will be created.
         /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before StObjConstruct (like DirectProperties) or only after the whole graph
         /// is created.
@@ -136,7 +133,7 @@ namespace CK.Setup
         /// This is where the TrackedAmbientPropertyInfo is added to the target and where covariance is handled. 
         /// (This is also where, each time I look at this code, I ask myself "wtf...???" :-).)
         /// </summary>
-        internal void ResolvePreConstructAndSomePostBuildProperties(
+        internal void ResolvePreConstructAndPostBuildProperties(
             IActivityMonitor monitor,
             BuildValueCollector valueCollector,
             IStObjValueResolver valueResolver )
@@ -149,8 +146,7 @@ namespace CK.Setup
                     if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
             }
-            // Only StObj (MutableItems) are handled here. Services are handled later.
-            foreach( var c in _leafData.AllInjectSingletons )
+            foreach( var c in _leafData.AllInjectObjects )
             {
                 MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )

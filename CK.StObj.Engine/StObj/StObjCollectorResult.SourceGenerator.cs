@@ -181,7 +181,7 @@ class GStObj : IStObj
 
             rootCtor.Append( $"_map = new Dictionary<Type,GStObj>();" ).NewLine();
             var allMappings = AmbientTypeResult.AmbientObjects.EngineMap.RawMappings;
-            // We skip highest implementation Type mappings (ie. AmbientContractInterfaceKey keys) since 
+            // We skip highest implementation Type mappings (ie. AmbientObjectInterfaceKey keys) since 
             // there is no ToStObj mapping (to root generalization) on final (runtime) IStObjMap.
             foreach( var e in allMappings.Where( e => e.Key is Type ) )
             {

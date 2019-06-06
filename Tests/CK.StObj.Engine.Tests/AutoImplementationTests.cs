@@ -44,7 +44,7 @@ namespace CK.StObj.Engine.Tests
 
 
         [Test]
-        public void abstract_auto_impl_is_supported_on_non_IAmbientContract_base_class()
+        public void abstract_auto_impl_is_supported_on_non_IAmbientObject_base_class()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( A2 ) );

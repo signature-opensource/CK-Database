@@ -76,7 +76,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace( $"Ambient Contracts: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
+            using( monitor.OpenTrace( $"Ambient Objects: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
             {
                 foreach( var a in InterfaceAmbiguities )
                 {

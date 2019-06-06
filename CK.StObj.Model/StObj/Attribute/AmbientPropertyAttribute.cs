@@ -11,7 +11,7 @@ namespace CK.Setup
     /// the same property on the base class or defaults to <see cref="PropertyResolutionSource.FromGeneralizationAndThenContainer"/>.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    public class AmbientPropertyAttribute : Attribute, IAmbientPropertyOrInjectSingletonAttribute
+    public class AmbientPropertyAttribute : Attribute, IAmbientPropertyOrInjectObjectAttribute
     {
         bool? _isOptional;
         PropertyResolutionSource? _source;
@@ -52,8 +52,8 @@ namespace CK.Setup
         /// </summary>
         public bool IsResolutionSourceDefined => _source.HasValue; 
 
-        bool IAmbientPropertyOrInjectSingletonAttribute.IsOptionalDefined => _isOptional.HasValue; 
+        bool IAmbientPropertyOrInjectObjectAttribute.IsOptionalDefined => _isOptional.HasValue; 
 
-        bool IAmbientPropertyOrInjectSingletonAttribute.IsAmbientProperty =>  true; 
+        bool IAmbientPropertyOrInjectObjectAttribute.IsAmbientProperty =>  true; 
     }
 }

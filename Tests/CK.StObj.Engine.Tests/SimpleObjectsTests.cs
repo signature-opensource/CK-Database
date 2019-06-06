@@ -29,21 +29,21 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
-        class Scoped : IScopedAmbientService { }
+        class Ambient : IAmbientService { }
 
         class AmbientConstruct : IAmbientObject
         {
-            void StObjConstruct( Scoped s ) { }
+            void StObjConstruct( Ambient s ) { }
         }
 
         class AmbientInject : IAmbientObject
         {
-            [InjectSingleton]
-            public Scoped Service { get; private set; }
+            [InjectObject]
+            public Ambient Service { get; private set; }
         }
 
         [Test]
-        public void an_AmbientObject_that_references_a_scoped_from_its_StObjConstruct_is_an_error()
+        public void an_AmbientObject_that_references_an_ambient_from_its_StObjConstruct_is_an_error()
         {
             var types = new[] { typeof( AmbientConstruct ) };
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
@@ -53,26 +53,13 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void an_AmbientObject_that_references_a_scoped_from_an_InjectSingleton_is_an_error()
+        public void an_AmbientObject_that_references_an_ambient_from_an_InjectSingleton_is_an_error()
         {
             var types = new[] { typeof( AmbientInject ) };
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
-            Assert.That( collector.RegisteringFatalOrErrorCount, Is.GreaterThan( 0 ) );
-        }
-
-        [Test]
-        public void AmbientObject_InjectSingleton_service()
-        {
-            var types = TestHelper.Assembly.GetTypes()
-                            .Where( t => t.IsClass )
-                            .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
-            collector.RegisterTypes( types.ToList() );
-            
             var result = collector.GetResult();
-            Assert.That( result.HasFatalError, Is.False );
-            result.StObjs.Obtain<ObjectA>().Service.Should().NotBeNull();
+            Assert.That( result.HasFatalError, Is.True );
         }
 
         [Test]

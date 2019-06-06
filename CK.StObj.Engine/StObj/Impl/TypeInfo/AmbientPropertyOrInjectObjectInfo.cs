@@ -9,12 +9,12 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    internal abstract class AmbientPropertyOrInjectSingletonInfo : CovariantPropertyInfo
+    internal abstract class AmbientPropertyOrInjectObjectInfo : CovariantPropertyInfo
     {
         readonly bool _isOptionalDefined;
         bool _isOptional;
 
-        internal AmbientPropertyOrInjectSingletonInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
+        internal AmbientPropertyOrInjectObjectInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, definerSpecializationDepth, index )
         {
             _isOptionalDefined = isOptionalDefined;
@@ -26,7 +26,7 @@ namespace CK.Setup
         protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
             base.SetGeneralizationInfo( monitor, g );
-            AmbientPropertyOrInjectSingletonInfo gen = (AmbientPropertyOrInjectSingletonInfo)g;
+            AmbientPropertyOrInjectObjectInfo gen = (AmbientPropertyOrInjectObjectInfo)g;
             // A required property can not become optional.
             if( IsOptional && !gen.IsOptional )
             {
@@ -51,7 +51,7 @@ namespace CK.Setup
             AmbientTypeKindDetector ambientTypeKind,
             List<StObjPropertyInfo> stObjProperties, 
             out IList<AmbientPropertyInfo> apListResult,
-            out IList<InjectSingletonInfo> injectedListResult )
+            out IList<InjectObjectInfo> injectedListResult )
         {
             Debug.Assert( stObjProperties != null );
             
@@ -74,7 +74,7 @@ namespace CK.Setup
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
                 AmbientPropertyAttribute ap = p.GetCustomAttribute<AmbientPropertyAttribute>( false );
-                IAmbientPropertyOrInjectSingletonAttribute ac = p.GetCustomAttribute<InjectSingletonAttribute>( false );
+                IAmbientPropertyOrInjectObjectAttribute ac = p.GetCustomAttribute<InjectObjectAttribute>( false );
                 if( ac != null || ap != null )
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
@@ -82,8 +82,8 @@ namespace CK.Setup
                         monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Singleton, an Ambient Property or a StObj property." );
                         continue;
                     }
-                    IAmbientPropertyOrInjectSingletonAttribute attr = ac ?? ap;
-                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : InjectSingletonInfo.KindName;
+                    IAmbientPropertyOrInjectObjectAttribute attr = ac ?? ap;
+                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : InjectObjectInfo.KindName;
 
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
@@ -99,10 +99,8 @@ namespace CK.Setup
                     }
                     else
                     {
-                        // Ignore errors: it is logged (and will make the whole process fail).
-                        ambientTypeKind.DefineAsSingletonReference( monitor, p.PropertyType );
-                        if( injectedListResult == null ) injectedListResult = new List<InjectSingletonInfo>();
-                        var amb = new InjectSingletonInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, injectedListResult.Count );
+                        if( injectedListResult == null ) injectedListResult = new List<InjectObjectInfo>();
+                        var amb = new InjectObjectInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, injectedListResult.Count );
                         injectedListResult.Add( amb );
                     }
                 }

@@ -88,7 +88,7 @@ namespace CK.Setup
             Type.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
-        internal void SetPostBuildProperties( IActivityMonitor monitor, AmbientTypeKindDetector ambientTypeKind, Func<Type,object> singletonServiceInstance )
+        internal void SetPostBuildProperties( IActivityMonitor monitor )
         {
             Debug.Assert( Specialization == null, "Called on leaves only." );
             if( _leafData.PostBuildProperties != null )
@@ -96,13 +96,6 @@ namespace CK.Setup
                 foreach( var p in _leafData.PostBuildProperties )
                 {
                     SetPropertyValue( monitor, p );
-                }
-            }
-            foreach( var c in _leafData.AllInjectSingletons )
-            {
-                if( c.ResolveToStObj( monitor, EngineMap ) == null && ambientTypeKind.IsSingleton( c.Type ) ) 
-                {
-                    DoSetPropertyValue( monitor, c.InjecttInfo.PropertyInfo, singletonServiceInstance( c.Type ) );
                 }
             }
         }

@@ -11,12 +11,12 @@ namespace CK.Setup
     /// <summary>
     /// Describes an Ambient singleton property.
     /// </summary>
-    internal class MutableInjectSingleton : MutableReferenceOptional, IStObjMutableInjectSingleton
+    internal class MutableInjectObject : MutableReferenceOptional, IStObjMutableInjectObject
     {
-        internal readonly InjectSingletonInfo InjecttInfo;
+        internal readonly InjectObjectInfo InjecttInfo;
 
-        internal MutableInjectSingleton( MutableItem owner, InjectSingletonInfo info )
-            : base( owner, StObjMutableReferenceKind.SingletonReference )
+        internal MutableInjectObject( MutableItem owner, InjectObjectInfo info )
+            : base( owner, StObjMutableReferenceKind.AmbientObject )
         {
             InjecttInfo = info;
             Type = InjecttInfo.PropertyType;
@@ -25,11 +25,11 @@ namespace CK.Setup
 
         public override string Name => InjecttInfo.Name;
 
-        internal override string KindName => "InjectSingleton";
+        internal override string KindName => "InjectObject";
 
         internal override Type UnderlyingType => InjecttInfo.PropertyType;
 
-        public override string ToString() => $"Inject Singleton '{Name}' of '{Owner}'";
+        public override string ToString() => $"Inject Object '{Name}' of '{Owner}'";
 
     }
 }

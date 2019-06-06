@@ -58,7 +58,7 @@ namespace CK.Core
         {
             Debug.Assert( t.IsInterface );
             _map.Add( t, finalType );
-            _map.Add( new AmbientContractInterfaceKey( t ), m );
+            _map.Add( new AmbientObjecttInterfaceKey( t ), m );
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace CK.Core
         internal IReadOnlyCollection<MutableItem> AllSpecializations => _allSpecializations;
 
         /// <summary>
-        /// Gets all the mapping from object (including <see cref="AmbientContractInterfaceKey"/>) to
+        /// Gets all the mapping from object (including <see cref="AmbientObjecttInterfaceKey"/>) to
         /// <see cref="MutableItem"/>.
         /// </summary>
         internal IEnumerable<KeyValuePair<object, MutableItem>> RawMappings => _map;
@@ -122,7 +122,7 @@ namespace CK.Core
                 {
                     if( t.IsInterface )
                     {
-                        _map.TryGetValue( new AmbientContractInterfaceKey( t ), out c );
+                        _map.TryGetValue( new AmbientObjecttInterfaceKey( t ), out c );
                     }
                     else
                     {

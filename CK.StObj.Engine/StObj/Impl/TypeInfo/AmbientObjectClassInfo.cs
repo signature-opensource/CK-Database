@@ -19,7 +19,7 @@ namespace CK.Setup
         class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
         {
             public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
-            public IReadOnlyList<InjectSingletonInfo> InjectSingletons { get; private set; }
+            public IReadOnlyList<InjectObjectInfo> InjectObjects { get; private set; }
             public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
             public int SpecializationDepth { get; private set; }
             public Type Container { get; private set; }
@@ -48,7 +48,7 @@ namespace CK.Setup
                         if( t == typeof( object ) )
                         {
                             result.AmbientProperties = Util.Array.Empty<AmbientPropertyInfo>();
-                            result.InjectSingletons = Util.Array.Empty<InjectSingletonInfo>();
+                            result.InjectObjects = Util.Array.Empty<InjectObjectInfo>();
                             result.StObjProperties = Util.Array.Empty<StObjPropertyInfo>();
                         }
                         else
@@ -80,14 +80,14 @@ namespace CK.Setup
                                 }
                                 tAbove = tAbove.BaseType;
                             }
-                            // Ambient, Contracts & StObj Properties (uses a recursive function).
+                            // Ambient, InjectObjects & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
-                            IReadOnlyList<AmbientPropertyInfo> apList;
-                            IReadOnlyList<InjectSingletonInfo> acList;
-                            CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, ambientTypeKind, stObjProperties, out apList, out acList );
-                            Debug.Assert( apList != null && acList != null );
-                            result.AmbientProperties = apList;
-                            result.InjectSingletons = acList;
+                            IReadOnlyList<AmbientPropertyInfo> propList;
+                            IReadOnlyList<InjectObjectInfo> injectList;
+                            CreateAllAmbientPropertyList( monitor, t, result.SpecializationDepth, ambientTypeKind, stObjProperties, out propList, out injectList );
+                            Debug.Assert( propList != null && injectList != null );
+                            result.AmbientProperties = propList;
+                            result.InjectObjects = injectList;
                             result.StObjProperties = stObjProperties;
                         }
                         _cache.Add( t, result );
@@ -97,7 +97,7 @@ namespace CK.Setup
             }
 
             /// <summary>
-            /// Recursive function to collect/merge Ambient Properties, Contracts and StObj Properties on base (non IAmbientContract) types.
+            /// Recursive function to collect/merge Ambient Properties, InjectObject and StObj Properties on base (non IAmbientObject) types.
             /// </summary>
             static void CreateAllAmbientPropertyList(
                 IActivityMonitor monitor,
@@ -106,23 +106,23 @@ namespace CK.Setup
                 AmbientTypeKindDetector ambientTypeKind,
                 List<StObjPropertyInfo> stObjProperties,
                 out IReadOnlyList<AmbientPropertyInfo> apListResult,
-                out IReadOnlyList<InjectSingletonInfo> acListResult )
+                out IReadOnlyList<InjectObjectInfo> acListResult )
             {
                 if( type == typeof( object ) )
                 {
                     apListResult = Util.Array.Empty<AmbientPropertyInfo>();
-                    acListResult = Util.Array.Empty<InjectSingletonInfo>();
+                    acListResult = Util.Array.Empty<InjectObjectInfo>();
                 }
                 else
                 {
                     IList<AmbientPropertyInfo> apCollector;
-                    IList<InjectSingletonInfo> acCollector;
-                    AmbientPropertyOrInjectSingletonInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
+                    IList<InjectObjectInfo> acCollector;
+                    AmbientPropertyOrInjectObjectInfo.CreateAmbientPropertyListForExactType( monitor, type, specializationLevel, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
 
                     CreateAllAmbientPropertyList( monitor, type.BaseType, specializationLevel - 1, ambientTypeKind, stObjProperties, out apListResult, out acListResult );
 
-                    apListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
-                    acListResult = AmbientPropertyOrInjectSingletonInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
+                    apListResult = AmbientPropertyOrInjectObjectInfo.MergeWithAboveProperties( monitor, apListResult, apCollector );
+                    acListResult = AmbientPropertyOrInjectObjectInfo.MergeWithAboveProperties( monitor, acListResult, acCollector );
                 }
             }
         }
@@ -162,14 +162,14 @@ namespace CK.Setup
             // Ambient properties for the exact Type (can be null). 
             // In the same time, StObjPropertyAttribute that are associated to actual properties are collected into stObjProperties.
             IList<AmbientPropertyInfo> apCollector;
-            IList<InjectSingletonInfo> acCollector;
+            IList<InjectObjectInfo> acCollector;
             AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
-            // For type that have no Generalization: we must handle [AmbientProperty], [AmbientContract] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
-            // since they are not necessarily IAmbientContract, we use infoFromParent abstraction).
+            // For type that have no Generalization: we must handle [AmbientProperty], [InjectObject] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
+            // since they are not necessarily IAmbientObject, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
-            InjectSingletons = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.InjectSingletons, acCollector );
+            InjectObjects = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.InjectObjects, acCollector );
             StObjProperties = stObjProperties;
-            Debug.Assert( InjectSingletons != null && AmbientProperties != null && StObjProperties != null );
+            Debug.Assert( InjectObjects != null && AmbientProperties != null && StObjProperties != null );
 
             // Simple detection of name clashing: I prefer to keep it simple and check property kind coherency here instead of injecting 
             // the detection inside CreateAmbientPropertyListForExactType and MergeWithAboveProperties with a multi-type property collector. 
@@ -177,7 +177,7 @@ namespace CK.Setup
             // have been resolved...
             {
                 var names = new Dictionary<string, INamedPropertyInfo>();
-                foreach( var newP in AmbientProperties.Cast<INamedPropertyInfo>().Concat( InjectSingletons ).Concat( StObjProperties ) )
+                foreach( var newP in AmbientProperties.Cast<INamedPropertyInfo>().Concat( InjectObjects ).Concat( StObjProperties ) )
                 {
                     INamedPropertyInfo exists;
                     if( names.TryGetValue( newP.Name, out exists ) )
@@ -291,7 +291,7 @@ namespace CK.Setup
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
-        public IReadOnlyList<InjectSingletonInfo> InjectSingletons { get; private set; }
+        public IReadOnlyList<InjectObjectInfo> InjectObjects { get; private set; }
 
         public IReadOnlyList<StObjPropertyInfo> StObjProperties { get; private set; }
 

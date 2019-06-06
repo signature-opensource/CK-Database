@@ -105,8 +105,8 @@ namespace CK.StObj.Engine.Tests
 
         class InvalidAmbientObjectProperty : IAmbientObject
         {
-            [InjectSingleton]
-            public ScopedService NotAnIAmbientContractProperty { get; protected set; }
+            [InjectObject]
+            public ScopedService NotAnAmbientObjectPropertyType { get; protected set; }
         }
 
         [Test]
@@ -115,7 +115,7 @@ namespace CK.StObj.Engine.Tests
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterType( typeof( InvalidAmbientObjectProperty ) );
-                collector.RegisteringFatalOrErrorCount.Should().BeGreaterThan( 0 );
+                collector.GetResult().HasFatalError.Should().BeTrue();
             }
         }
 
@@ -135,19 +135,19 @@ namespace CK.StObj.Engine.Tests
 
         class CB : IAmbientObject
         {
-            [InjectSingletonAttribute]
+            [InjectObjectAttribute]
             public CA A { get; set; }
         }
 
         class CB2 : CB
         {
-            [InjectSingletonAttribute]
+            [InjectObjectAttribute]
             public new CA2 A { get { return (CA2)base.A; } }
         }
 
         class CB3 : CB2
         {
-            [InjectSingletonAttribute]
+            [InjectObjectAttribute]
             public new CA3 A 
             {
                 get { return (CA3)base.A; }
@@ -175,7 +175,7 @@ namespace CK.StObj.Engine.Tests
 
         class CMissingSetterOnTopDefiner : IAmbientObject
         {
-            [InjectSingletonAttribute]
+            [InjectObjectAttribute]
             public CA2 A { get { return null; } }
         }
 
@@ -192,7 +192,7 @@ namespace CK.StObj.Engine.Tests
 
         class CPrivateSetter : IAmbientObject
         {
-            [InjectSingletonAttribute]
+            [InjectObjectAttribute]
             public CA2 A { get; private set; }
         }
 

@@ -26,8 +26,8 @@ namespace SqlActorPackage.Basic
     {
         IUnknownAbstraction _unexistingByConstructParam;
         IReadOnlyList<IAnyService> _allServices;
-        
-        void StObjConstruct(IUnknownAbstraction zone = null)
+
+        void StObjConstruct( IUnknownAbstraction zone = null )
         {
             _unexistingByConstructParam = zone;
         }
@@ -35,11 +35,11 @@ namespace SqlActorPackage.Basic
         public IUnknownAbstraction UnexistingByConstructParam => _unexistingByConstructParam;
 
 
-        [InjectSingletonAttribute(IsOptional = true)]
-        public IUnknownAbstraction UnexistingByInjectContract { get; protected set; }
+        [InjectObject( IsOptional = true )]
+        public IUnknownAbstraction UnexistingByInjectObject { get; private set; }
 
-        [InjectSingletonAttribute(IsOptional = true )]
-        public ISecurityZoneAbstraction ZoneHome { get; protected set; }
+        [InjectObject( IsOptional = true )]
+        public ISecurityZoneAbstraction ZoneHome { get; private set; }
 
         /// <summary>
         /// Interface IAnyService is supported by SqlActorPackage.GroupHome 
@@ -52,15 +52,14 @@ namespace SqlActorPackage.Basic
             _allServices = map.StObjs.Implementations.OfType<IAnyService>().ToArray();
         }
 
-        [InjectSingletonAttribute]
+        [InjectObject]
         public UserHome UserHome { get; protected set; }
         
-        [InjectSingletonAttribute]
+        [InjectObject]
         public GroupHome GroupHome { get; protected set; }
 
         [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
         public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
-
        
         #region Command injection (Connection & transaction)
 
@@ -91,10 +90,7 @@ namespace SqlActorPackage.Basic
 
         #endregion
 
-        string IKnowTheConnectionString.GetConnectionString()
-        {
-            return Database.ConnectionString;
-        }
+        string IKnowTheConnectionString.GetConnectionString() => Database.ConnectionString;
 
         #region Command Wrapper
 

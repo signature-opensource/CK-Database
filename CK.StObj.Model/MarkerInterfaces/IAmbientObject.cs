@@ -15,19 +15,22 @@ namespace CK.Core
     /// named "IAmbientObject" defined in any namespace will be considered as
     /// a valid marker (this duck typing is the same as <see cref="IAmbientService"/> markers).
     /// </para>
-    /// <para>
     /// </summary>
     /// <remarks>
+    /// <para>
     /// If the lifetimes of this <see cref="IAmbientObject"/> and <see cref="ISingletonAmbientService"/>
     /// instances are the same, their roles are different as well as the way they are handled.
-    /// Ambient objects should not use any constructor injection and support StObjConstruct/StObjInitialize
+    /// Ambient objects can not use any constructor injection and support StObjConstruct/StObjInitialize
     /// private methods that isolate dependencies between a base class and its specializations whereas
     /// singleton services relies on "normal" constructor injection.
-    /// Ambient objects must be used to model actual singletons in a system, typically external resources
+    /// </para>
+    /// <para>
+    /// Ambient objects must be used to model actual singletons "in real life", typically external resources
     /// with wich the system interacts such as a data repository or an external service.
     /// Singleton services are more classical services that happens to be able to be shared by different
     /// activities because of their thread safety and the fact that they depend only on other singleton
     /// services or ambient objects.
+    /// </para>
     /// </remarks>
     public interface IAmbientObject
     {

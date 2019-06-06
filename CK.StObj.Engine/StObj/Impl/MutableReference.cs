@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableReference.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,8 +38,7 @@ namespace CK.Setup
             {
                 Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0
                                 || _kind == StObjMutableReferenceKind.RequiredBy
-                                || _kind == StObjMutableReferenceKind.AmbientProperty
-                                || _kind == StObjMutableReferenceKind.SingletonReference );
+                                || _kind == StObjMutableReferenceKind.AmbientProperty );
                 StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
         }
@@ -74,13 +66,9 @@ namespace CK.Setup
             {
                 result = collector.ToHighestImpl( Type );
                 if( result == null )
-                {
-                    if( _kind != StObjMutableReferenceKind.SingletonReference
-                        && _kind != StObjMutableReferenceKind.ConstructParameter )
-                    {
-                        // No warn on value type or string not found.
-                        WarnOrErrorIfStObjRequired( monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found" );
-                    }
+                {                        // No warn on value type or string not found.
+                    WarnOrErrorIfStObjRequired( monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found" );
+
                 }
             }
             return result;

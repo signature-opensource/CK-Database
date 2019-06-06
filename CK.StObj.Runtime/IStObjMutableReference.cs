@@ -38,7 +38,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether this reference must be satisfied with an available <see cref="IStObjResult"/> if the <see cref="P:Type"/> is not set to null.
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.SpecializedAmbientSingletons">Ambient Contracts</see>, <see cref="IStObjMutableItem.Requires"/> 
+        /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.SpecializedInjectObjects">Inject Objects</see>, <see cref="IStObjMutableItem.Requires"/> 
         /// and <see cref="IStObjMutableItem.Container"/> (a described dependency is required unless explicitly declared as optional by <see cref="IStObjStructuralConfigurator"/>).
         /// </para>
         /// <para>

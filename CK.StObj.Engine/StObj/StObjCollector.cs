@@ -256,56 +256,15 @@ namespace CK.Setup
             {
                 throw new CKException( $"There are {_registerFatalOrErrorCount} registration errors." );
             }
-            var (typeResult, orderedItems) = CreateTypeAndContractResults();
+            var (typeResult, orderedItems) = CreateTypeAndObjectResults();
             if( orderedItems != null )
             {
                 if( !RegisterServices( typeResult ) ) orderedItems = null;
-                else
-                {
-                    SetPostBuildPropertiesAndInjectedSingletons( typeResult );
-                }
             }
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }
 
-        void SetPostBuildPropertiesAndInjectedSingletons( AmbientTypeCollectorResult typeResult )
-        {
-            using( _monitor.OpenInfo( "Setting PostBuild properties and injected singletons." ) )
-            {
-                // Finalize construction by injecting Ambient Objects
-                // and PostBuild Ambient Properties on specializations.
-                // Currently we inject fake Singleton Ambient Services but not null ones in order to
-                // ensure the existence and enable reference equality and null checks on the object graph.
-                IStObjMap engineMap = typeResult.AmbientObjects.EngineMap;
-                Dictionary<Type, object> fakeInstances = new Dictionary<Type, object>();
-                object GetSingletonServiceInstance( Type t )
-                {
-                    if( !fakeInstances.TryGetValue( t, out var o ) )
-                    {
-                        IStObjServiceClassFactory manualMapped = null;
-                        if( !engineMap.Services.SimpleMappings.TryGetValue( t, out var serviceClassDescriptor )
-                            && !engineMap.Services.ManualMappings.TryGetValue( t, out manualMapped ) )
-                        {
-                            throw new Exception( $"Type '{t}' must be resolved as a singleton but is not in Services.SimpleMappings nor ManualMappings." );
-                        }
-                        if( serviceClassDescriptor == null ) serviceClassDescriptor = manualMapped;
-                        if( !fakeInstances.TryGetValue( serviceClassDescriptor.ClassType, out o ) )
-                        {
-                            o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject( serviceClassDescriptor.ClassType );
-                            fakeInstances.Add( serviceClassDescriptor.ClassType, o );
-                        }
-                        if( t != serviceClassDescriptor.ClassType ) fakeInstances.Add( t, o );
-                    }
-                    return o;
-                }
-                foreach( MutableItem item in typeResult.AmbientObjects.EngineMap.AllSpecializations )
-                {
-                    item.SetPostBuildProperties( _monitor, typeResult.TypeKindDetector, GetSingletonServiceInstance );
-                }
-            }
-        }
-
-        (AmbientTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndContractResults()
+        (AmbientTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
         {
             bool error = false;
             using( _monitor.OnError( () => error = true ) )
@@ -313,7 +272,7 @@ namespace CK.Setup
                 AmbientTypeCollectorResult typeResult;
                 using( _monitor.OpenInfo( "Initializing object graph." ) )
                 {
-                    using( _monitor.OpenInfo( "Collecting Ambient Contracts, Services, Type structure and Poco." ) )
+                    using( _monitor.OpenInfo( "Collecting Ambient Objects, Services, Type structure and Poco." ) )
                     {
                         typeResult = _cc.GetResult();
                         typeResult.LogErrorAndWarnings( _monitor );
@@ -354,7 +313,7 @@ namespace CK.Setup
                         // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
-                            item.ResolvePreConstructAndSomePostBuildProperties( _monitor, valueCollector, _valueResolver );
+                            item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
                         }
                     }
                     if( error ) return (typeResult, null);
@@ -415,6 +374,16 @@ namespace CK.Setup
                         }
                     }
                     if( error ) return (typeResult, null);
+                    using( _monitor.OpenInfo( "Setting PostBuild properties and injected Objects." ) )
+                    {
+                        // Finalize construction by injecting Ambient Objects
+                        // and PostBuild Ambient Properties on specializations.
+                        foreach( MutableItem item in engineMap.AllSpecializations )
+                        {
+                            item.SetPostBuildProperties( _monitor );
+                        }
+                    }
+                    if( error ) return (typeResult, null);
                 }
                 Debug.Assert( !error );
                 return (typeResult, ordered);
@@ -458,7 +427,7 @@ namespace CK.Setup
                 MutableItem m = generalization;
                 do
                 {
-                    m.ConfigureTopDown( _monitor, generalization, _cc.AmbientKindDetector );
+                    m.ConfigureTopDown( _monitor, generalization );
                     if( _configurator != null ) _configurator.Configure( _monitor, m );
                 }
                 while( (m = m.Specialization) != null );

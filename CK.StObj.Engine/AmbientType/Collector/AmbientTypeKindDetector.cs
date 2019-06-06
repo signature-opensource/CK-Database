@@ -58,8 +58,7 @@ namespace CK.Core
 
         /// <summary>
         /// Defines a type as being a <see cref="AmbientTypeKind.IsSingleton"/> because it is used
-        /// as a ctor parameter of a Singleton Service or an injected singleton property or
-        /// StObjConstruct/StObjFinalize parameter of an Ambient Object.
+        /// as a ctor parameter of a Singleton Service.
         /// Can be called multiple times as long as lifetime is Singleton.
         /// </summary>
         /// <param name="m">The monitor.</param>
