@@ -18,7 +18,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the structured object final implementation or null if no mapping exists.
         /// </summary>
-        /// <param name="t">Key type (that must be an Ambient Contract).</param>
+        /// <param name="t">Key type (that must be an Ambient Object).</param>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
         object Obtain( Type t );
 
@@ -29,15 +29,15 @@ namespace CK.Core
 
         /// <summary>
         /// Gets all the <see cref="IStObj"/> and their final implementation that exist in this context.
-        /// This contains only classes, not <see cref="IAmbientContract"/> interfaces. 
+        /// This contains only classes, not <see cref="IAmbientObject"/> interfaces. 
         /// Use <see cref="Mappings"/> to dump all the types to implementation mappings.
         /// </summary>
         IEnumerable<StObjImplementation> StObjs { get; }
 
         /// <summary>
-        /// Gets all the <see cref="IAmbientContract"/> types to implementation objects that this
+        /// Gets all the <see cref="IAmbientObject"/> types to implementation objects that this
         /// context contains.
-        /// The key types are interfaces (IAmbientContract) as well as classes.
+        /// The key types are interfaces (IAmbientObject) as well as classes.
         /// </summary>
         IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
 

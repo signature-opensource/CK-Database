@@ -30,7 +30,7 @@ namespace CK.Setup
             IReadOnlyList<MutableItem> orderedStObjs )
         {
             AmbientTypeResult = typeResult;
-            _liftedMap = AmbientTypeResult?.AmbientContracts?.EngineMap;
+            _liftedMap = AmbientTypeResult?.AmbientObjects?.EngineMap;
             _tempAssembly = tempAssembly;
             if( primaryRunCache != null ) SecondaryRunAccessor = key => primaryRunCache[key];
             OrderedStObjs = orderedStObjs;

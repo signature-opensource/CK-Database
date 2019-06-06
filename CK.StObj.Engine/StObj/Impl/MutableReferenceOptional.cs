@@ -16,7 +16,7 @@ using System.Reflection;
 namespace CK.Setup
 {
     /// <summary>
-    /// Base class for construct parameters, ambient properties or Ambient contracts.
+    /// Base class for construct parameters, ambient properties or Ambient inject.
     /// </summary>
     internal abstract class MutableReferenceOptional : MutableReference
     {

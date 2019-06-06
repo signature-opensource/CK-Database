@@ -94,16 +94,25 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
-            r.Services.ExternallyDefinedSingletons.Contains( typeof( IExternalService ) );
+            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( IExternalService ) ).Should().BeTrue();
         }
 
         [Test]
         public void a_singleton_that_depends_on_external_that_is_defined_as_a_singleton_is_fine()
         {
             var collector = CreateStObjCollector();
-            collector.DefineAsExternalSingletons( new[] { typeof( IExternalService) } );
+            collector.DefineAsExternalSingletons( new[] { typeof( IExternalService ) } );
             collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
             CheckSuccess( collector );
+        }
+
+        [Test]
+        public void a_singleton_that_depends_on_external_that_is_defined_as_a_Scoped_is_an_error()
+        {
+            var collector = CreateStObjCollector();
+            collector.DefineAsExternalScoped( new[] { typeof( IExternalService ) } );
+            collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
+            CheckFailure( collector );
         }
 
         class SingletonThatDependsOnSingleton : Core.ISingletonAmbientService
@@ -139,6 +148,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
             r.Services.SimpleMappings[typeof( AmbientThatDependsOnSingleton )].IsScoped.Should().BeFalse();
+            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( AmbientThatDependsOnSingleton ) ).Should().BeTrue();
         }
 
         interface IAmbientThatDependsOnNothing : IAmbientService { }
@@ -173,15 +183,15 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( AmbientThatDependsOnExternal )].IsScoped.Should().BeTrue();
         }
 
-        interface ISampleAmbientContract : IAmbientContract { }
+        interface ISampleAmbientObject : IAmbientObject { }
 
-        class SampleAmbientContract : ISampleAmbientContract { }
+        class SampleAmbientObject : ISampleAmbientObject { }
 
         interface ISamplePoco : IPoco { }
 
         class AmbientThatWillBeResolvedAsSingleton : IAmbientService
         {
-            public AmbientThatWillBeResolvedAsSingleton( ISampleAmbientContract c )
+            public AmbientThatWillBeResolvedAsSingleton( ISampleAmbientObject c )
             {
             }
         }
@@ -192,7 +202,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             public AmbientThatDependsOnAllKindOfSingleton(
                 IExternalService e,
                 IPocoFactory<ISamplePoco> pocoFactory,
-                ISampleAmbientContract contract,
+                ISampleAmbientObject contract,
                 IAmbientThatDependsOnNothing ambientThatDependsOnNothing,
                 AmbientThatDependsOnSingleton d,
                 SimpleClassSingleton s,
@@ -208,7 +218,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.DefineAsExternalSingletons( new[] { typeof( IExternalService ) } );
             collector.RegisterType( typeof( AmbientThatDependsOnAllKindOfSingleton ) );
             collector.RegisterType( typeof( AmbientThatDependsOnExternal ) );
-            collector.RegisterType( typeof( SampleAmbientContract ) );
+            collector.RegisterType( typeof( SampleAmbientObject ) );
             collector.RegisterType( typeof( AmbientThatDependsOnSingleton ) );
             collector.RegisterType( typeof( SimpleClassSingleton ) );
             collector.RegisterType( typeof( AmbientThatWillBeResolvedAsSingleton ) );
@@ -231,7 +241,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             public AmbientThatDependsOnAllKindOfSingletonAndAnOtherExternalService(
                 IExternalService e,
                 IPocoFactory<ISamplePoco> pocoFactory,
-                ISampleAmbientContract contract,
+                ISampleAmbientObject contract,
                 IAmbientThatDependsOnNothing ambientThatDependsOnNothing,
                 AmbientThatDependsOnSingleton d,
                 SimpleClassSingleton s,
@@ -248,7 +258,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.DefineAsExternalSingletons( new[] { typeof( IExternalService ) } );
             collector.RegisterType( typeof( AmbientThatDependsOnAllKindOfSingletonAndAnOtherExternalService ) );
             collector.RegisterType( typeof( AmbientThatDependsOnExternal ) );
-            collector.RegisterType( typeof( SampleAmbientContract ) );
+            collector.RegisterType( typeof( SampleAmbientObject ) );
             collector.RegisterType( typeof( AmbientThatDependsOnSingleton ) );
             collector.RegisterType( typeof( SimpleClassSingleton ) );
             collector.RegisterType( typeof( AmbientThatDependsOnAnotherExternalService ) );

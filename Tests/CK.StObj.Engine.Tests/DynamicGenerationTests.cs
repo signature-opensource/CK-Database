@@ -32,7 +32,7 @@ namespace CK.StObj.Engine.Tests
                 }
             }
 
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
             }
 
@@ -54,14 +54,14 @@ namespace CK.StObj.Engine.Tests
                 public abstract int Auto( int i );
             }
 
-            public interface IC : IAmbientContract
+            public interface IC : IAmbientObject
             {
                 A TheA { get; }
             }
 
             public class C : IC
             {
-                [InjectContract]
+                [InjectObject]
                 public A TheA { get; private set; }
             }
 
@@ -114,7 +114,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CConstructCalledAndStObjProperties
         {
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
                 [StObjProperty]
                 public string StObjPower { get; set; }
@@ -139,7 +139,7 @@ namespace CK.StObj.Engine.Tests
                 public B TheB { get; private set; }
             }
 
-            public class B : IAmbientContract
+            public class B : IAmbientObject
             {
                 void StObjConstruct( A a )
                 {
@@ -202,11 +202,14 @@ namespace CK.StObj.Engine.Tests
 
         public class PostBuildSet
         {
-            public class A : IAmbientContract
+            public class A : IAmbientObject
             {
                 [StObjProperty]
-                public string StObjPower { get; set; }
+                public string StObjPower { get; private set; }
 
+                /// <summary>
+                /// StObjInitialize is NOT called on setup instances.
+                /// </summary>
                 public bool StObjInitializeOnACalled; 
 
                 void StObjConstruct( IActivityMonitor monitor, [Container]BSpec bIsTheContainerOfA )
@@ -216,11 +219,11 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
                 }
 
-                [InjectContract]
+                [InjectObject]
                 public BSpec TheB { get; private set; }
             }
 
@@ -238,7 +241,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );
                     StObjInitializeOnASpecCalled = true;
                 }
@@ -246,12 +249,12 @@ namespace CK.StObj.Engine.Tests
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class B : IAmbientContract
+            public class B : IAmbientObject
             {
-                [InjectContract]
+                [InjectObjectAttribute]
                 public A TheA { get; private set; }
 
-                [InjectContract]
+                [InjectObject]
                 public A TheInjectedA { get; private set; }
             }
 
@@ -260,8 +263,12 @@ namespace CK.StObj.Engine.Tests
                 void StObjConstruct( )
                 {
                 }
+
             }
 
+            /// <summary>
+            /// Configures the 2 A's StObjPower with "This is the A property." (for A) and "ASpec level property." (for ASpec).
+            /// </summary>
             class StObjPropertyConfigurator : IStObjStructuralConfigurator
             {
                 public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
@@ -290,7 +297,8 @@ namespace CK.StObj.Engine.Tests
                     ASpec theA = (ASpec)r.StObjs.Obtain<A>();
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
-                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
+                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on setup instances." );
+
                 }
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null );
@@ -310,13 +318,14 @@ namespace CK.StObj.Engine.Tests
 
                     Assert.That( theA.StObjInitializeOnACalled, Is.True );
                     Assert.That( theA.StObjInitializeOnASpecCalled, Is.True );
+
                 }
             }
 
         }
 
         [Test]
-        public void PostBuildAndAmbientContracts()
+        public void PostBuildAndInjectObjects()
         {
             new PostBuildSet().DoTest();
         }

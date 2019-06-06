@@ -9,7 +9,7 @@ using CK.Core;
 
 namespace CK.StObj.Engine.Tests.SimpleObjects
 {
-    public interface IAbstractionA : IAmbientContract
+    public interface IAbstractionA : IAmbientObject
     {
         int ConstructCount { get; }
         

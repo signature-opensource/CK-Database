@@ -20,13 +20,19 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-
         [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
-        class SqlDatabaseDefault : IAmbientContract
+        class SqlDatabaseDefault : IAmbientObject
         {
+            void StObjConstruct( string connectionString )
+            {
+                ConnectionString = connectionString;
+            }
+
+            public string ConnectionString { get; private set; }
         }
 
-        class BaseDatabaseObject : IAmbientContractDefiner
+        [AmbientDefiner]
+        class BaseDatabaseObject : IAmbientObject
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }
@@ -42,10 +48,10 @@ namespace CK.StObj.Engine.Tests
         [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
         class BasicPackage : BaseDatabaseObject
         {
-            [InjectContract]
+            [InjectObjectAttribute]
             public BasicUser UserHome { get; protected set; }
             
-            [InjectContract]
+            [InjectObjectAttribute]
             public BasicGroup GroupHome { get; protected set; }
         }
 
@@ -74,7 +80,7 @@ namespace CK.StObj.Engine.Tests
         // ZonePackage specializes BasicPackage. Its Schema is the same as BasicPackage (CK).
         class ZonePackage : BasicPackage
         {
-            [InjectContract]
+            [InjectObject]
             public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } }
         }
 
@@ -120,10 +126,26 @@ namespace CK.StObj.Engine.Tests
 
         #endregion
 
+        class ValueResolver : IStObjValueResolver
+        {
+            public void ResolveExternalPropertyValue( IActivityMonitor monitor, IStObjFinalAmbientProperty ambientProperty )
+            {
+            }
+
+            public void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
+            {
+                if( parameter.Name == "connectionString" && parameter.Type == typeof( string ) )
+                {
+                    parameter.SetParameterValue( "The connection String" );
+                }
+            }
+        }
+
         [Test]
         public void LayeredArchitecture()
         {
-            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            var valueResolver = new ValueResolver();
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), valueResolver: valueResolver );
             collector.RegisterType( typeof( BasicPackage ) );
             collector.RegisterType( typeof( BasicActor ) );
             collector.RegisterType( typeof( BasicUser ) );

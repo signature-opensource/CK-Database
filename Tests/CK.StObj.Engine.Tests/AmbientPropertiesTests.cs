@@ -35,14 +35,14 @@ namespace CK.StObj.Engine.Tests
 
         [DirectPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectDirect : IAmbientContract
+        public class SimpleObjectDirect : IAmbientObject
         {
             public int OneIntValue { get; set; }
         }
 
         [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectAmbient : IAmbientContract
+        public class SimpleObjectAmbient : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -143,14 +143,14 @@ namespace CK.StObj.Engine.Tests
         #region Propagation to container's children.
 
         [StObj( Container = typeof( SimpleObjectDirect ) )]
-        public class SimpleObjectInsideDirect : IAmbientContract
+        public class SimpleObjectInsideDirect : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
         }
 
         [StObj( Container = typeof( SimpleObjectAmbient ) )]
-        public class SimpleObjectInsideAmbiant : IAmbientContract
+        public class SimpleObjectInsideAmbiant : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -191,17 +191,17 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        class TypeToMap : TypeToMapBase, IAmbientContract
+        class TypeToMap : TypeToMapBase, IAmbientObject
         {
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : BaseForObject, IAmbientContract
+        class C1 : BaseForObject, IAmbientObject
         {
         }
 
         [StObj( Container = typeof( C1 ) )]
-        class O1InC1 : BaseForObject, IAmbientContract
+        class O1InC1 : BaseForObject, IAmbientObject
         {
         }
 

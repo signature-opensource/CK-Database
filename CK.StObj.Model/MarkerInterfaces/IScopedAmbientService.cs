@@ -17,14 +17,15 @@ namespace CK.Core
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Note that even if an implementation only relies on other singletons or contracts,
+    /// Note that even if an implementation only relies on other singletons or objects,
     /// this interface forces the service to be scoped.
     /// </para>
     /// <para>
     /// If there is no specific constraint, the <see cref="IAmbientService"/> marker
-    /// should be used so that its scoped vs. singleton lifetime is either determined
-    /// by the final implementation or automatically detected based on its constructor
-    /// dependencies.
+    /// should be used for abstractions so that its scoped vs. singleton lifetime is
+    /// either determined by the final, actual, implementation that can be automatically
+    /// detected based on its constructor dependencies and/or by the way this Service is
+    /// used referenced by the other participants.
     /// </para>
     /// </remarks>
     public interface IScopedAmbientService : IAmbientService

@@ -12,11 +12,11 @@ namespace CK.Core
     /// <summary>
     /// Result of the <see cref="AmbientTypeCollector"/> work.
     /// </summary>
-    public class AmbientContractCollectorResult
+    public class AmbientObjectCollectorResult
     {
         IReadOnlyList<IReadOnlyList<MutableItem>> _concreteClassesPath;
 
-        internal AmbientContractCollectorResult(
+        internal AmbientObjectCollectorResult(
             StObjObjectEngineMap mappings,
             IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses,
             IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,
@@ -36,7 +36,7 @@ namespace CK.Core
         internal StObjObjectEngineMap EngineMap { get; }
 
         /// <summary>
-        /// Gets all the paths from <see cref="IAmbientContract"/> base classes to their most
+        /// Gets all the paths from <see cref="IAmbientObject"/> base classes to their most
         /// specialized concrete classes that this context contains.
         /// </summary>
         public IReadOnlyList<IReadOnlyList<IStObjMutableItem>> ConcreteClasses => _concreteClassesPath;
@@ -76,7 +76,7 @@ namespace CK.Core
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace( $"Ambient Contracts: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
+            using( monitor.OpenTrace( $"Ambient Objects: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
             {
                 foreach( var a in InterfaceAmbiguities )
                 {
@@ -90,9 +90,7 @@ namespace CK.Core
             }
         }
 
-        internal static void CommonLogAndWarings(
-            IActivityMonitor monitor,
-            IReadOnlyList<Type> abstractTails )
+        internal static void CommonLogAndWarings( IActivityMonitor monitor, IReadOnlyList<Type> abstractTails )
         {
             if( abstractTails.Count > 0 )
             {

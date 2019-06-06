@@ -17,15 +17,15 @@ namespace CK.Core
         internal AmbientTypeCollectorResult(
             ISet<Assembly> assemblies,
             IPocoSupportResult pocoSupport,
-            AmbientContractCollectorResult c,
+            AmbientObjectCollectorResult c,
             AmbientServiceCollectorResult s,
-            IServiceLifetimeResult serviceLifetime )
+            AmbientTypeKindDetector typeKindDetector )
         {
             PocoSupport = pocoSupport;
             Assemblies = assemblies;
-            AmbientContracts = c;
+            AmbientObjects = c;
             AmbientServices = s;
-            ServiceLifetime = serviceLifetime;
+            TypeKindDetector = typeKindDetector;
         }
 
         /// <summary>
@@ -39,9 +39,9 @@ namespace CK.Core
         public ISet<Assembly> Assemblies { get; }
 
         /// <summary>
-        /// Gets the reults for <see cref="IAmbientContract"/> objects.
+        /// Gets the reults for <see cref="IAmbientObject"/> objects.
         /// </summary>
-        public AmbientContractCollectorResult AmbientContracts { get; }
+        public AmbientObjectCollectorResult AmbientObjects { get; }
 
         /// <summary>
         /// Gets the reults for <see cref="IScopedAmbientService"/> objects.
@@ -49,9 +49,9 @@ namespace CK.Core
         public AmbientServiceCollectorResult AmbientServices { get; }
 
         /// <summary>
-        /// Gets the services lifetime analysis result.
+        /// Gets the ambient type detector.
         /// </summary>
-        public IServiceLifetimeResult ServiceLifetime { get; }
+        public AmbientTypeKindDetector TypeKindDetector { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.
@@ -60,17 +60,17 @@ namespace CK.Core
         /// False to continue the process (only warnings - or error considered as 
         /// warning - occured), true to stop remaining processes.
         /// </returns>
-        public bool HasFatalError => PocoSupport == null || AmbientContracts.HasFatalError || AmbientServices.HasFatalError;
+        public bool HasFatalError => PocoSupport == null || AmbientObjects.HasFatalError || AmbientServices.HasFatalError;
 
         /// <summary>
         /// Gets all the <see cref="ImplementableTypeInfo"/>: Abstract types that require a code generation
-        /// that are either StObjs (AmbientContracts) or service classes (AmbientServices).
+        /// that are either <see cref="IAmbientService"/> or <see cref="IAmbientObject"/>.
         /// </summary>
         public IEnumerable<ImplementableTypeInfo> TypesToImplement
         {
             get
             {
-                var all = AmbientContracts.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
+                var all = AmbientObjects.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
                             .Concat( AmbientServices.RootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
                             .Concat( AmbientServices.SubGraphRootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
                             .Where( i => i != null );
@@ -92,7 +92,7 @@ namespace CK.Core
                 {
                     monitor.Fatal( $"Poco support failed!" );
                 }
-                AmbientContracts.LogErrorAndWarnings( monitor );
+                AmbientObjects.LogErrorAndWarnings( monitor );
                 AmbientServices.LogErrorAndWarnings( monitor );
             }
         }

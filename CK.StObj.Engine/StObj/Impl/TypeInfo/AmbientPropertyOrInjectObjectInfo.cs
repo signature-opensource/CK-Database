@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\TypeInfo\AmbientPropertyOrInjectContractInfo.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +9,12 @@ using CK.Core;
 namespace CK.Setup
 {
 
-    internal abstract class AmbientPropertyOrInjectContractInfo : CovariantPropertyInfo
+    internal abstract class AmbientPropertyOrInjectObjectInfo : CovariantPropertyInfo
     {
         readonly bool _isOptionalDefined;
         bool _isOptional;
 
-        internal AmbientPropertyOrInjectContractInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
+        internal AmbientPropertyOrInjectObjectInfo( PropertyInfo p, bool isOptionalDefined, bool isOptional, int definerSpecializationDepth, int index )
             : base( p, definerSpecializationDepth, index )
         {
             _isOptionalDefined = isOptionalDefined;
@@ -33,7 +26,7 @@ namespace CK.Setup
         protected override void SetGeneralizationInfo( IActivityMonitor monitor, CovariantPropertyInfo g )
         {
             base.SetGeneralizationInfo( monitor, g );
-            AmbientPropertyOrInjectContractInfo gen = (AmbientPropertyOrInjectContractInfo)g;
+            AmbientPropertyOrInjectObjectInfo gen = (AmbientPropertyOrInjectObjectInfo)g;
             // A required property can not become optional.
             if( IsOptional && !gen.IsOptional )
             {
@@ -54,16 +47,17 @@ namespace CK.Setup
         static public void CreateAmbientPropertyListForExactType( 
             IActivityMonitor monitor, 
             Type t, 
-            int definerSpecializationDepth, 
+            int definerSpecializationDepth,
+            AmbientTypeKindDetector ambientTypeKind,
             List<StObjPropertyInfo> stObjProperties, 
             out IList<AmbientPropertyInfo> apListResult,
-            out IList<InjectContractInfo> acListResult )
+            out IList<InjectObjectInfo> injectedListResult )
         {
             Debug.Assert( stObjProperties != null );
             
             var properties = t.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly ).Where( p => !p.Name.Contains( '.' ) );
             apListResult = null;
-            acListResult = null;
+            injectedListResult = null;
             foreach( var p in properties )
             {
                 StObjPropertyAttribute stObjAttr = p.GetCustomAttribute<StObjPropertyAttribute>(false);
@@ -80,16 +74,16 @@ namespace CK.Setup
                     // Continue to detect Ambient properties. Properties that are both Ambient and StObj must be detected.
                 }
                 AmbientPropertyAttribute ap = p.GetCustomAttribute<AmbientPropertyAttribute>( false );
-                IAmbientPropertyOrInjectContractAttribute ac = p.GetCustomAttribute<InjectContractAttribute>( false );
+                IAmbientPropertyOrInjectObjectAttribute ac = p.GetCustomAttribute<InjectObjectAttribute>( false );
                 if( ac != null || ap != null )
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
                     {
-                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Contract, an Ambient Property or a StObj property." );
+                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Singleton, an Ambient Property or a StObj property." );
                         continue;
                     }
-                    IAmbientPropertyOrInjectContractAttribute attr = ac ?? ap;
-                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : InjectContractInfo.KindName;
+                    IAmbientPropertyOrInjectObjectAttribute attr = ac ?? ap;
+                    string kindName = attr.IsAmbientProperty ? AmbientPropertyInfo.KindName : InjectObjectInfo.KindName;
 
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
@@ -105,9 +99,9 @@ namespace CK.Setup
                     }
                     else
                     {
-                        if( acListResult == null ) acListResult = new List<InjectContractInfo>();
-                        var amb = new InjectContractInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, acListResult.Count );
-                        acListResult.Add( amb );
+                        if( injectedListResult == null ) injectedListResult = new List<InjectObjectInfo>();
+                        var amb = new InjectObjectInfo( p, attr.IsOptionalDefined, attr.IsOptional, definerSpecializationDepth, injectedListResult.Count );
+                        injectedListResult.Add( amb );
                     }
                 }
             }

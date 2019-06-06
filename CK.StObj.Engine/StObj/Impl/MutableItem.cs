@@ -21,11 +21,11 @@ namespace CK.Setup
     {
         class LeafData
         {
-            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableInjectContract[] ac )
+            public LeafData( MutableItem leaf, List<MutableAmbientProperty> ap, MutableInjectObject[] ac )
             {
                 LeafSpecialization = leaf;
                 AllAmbientProperties = ap;
-                AllAmbientContracts = ac;
+                AllInjectObjects = ac;
             }
 
             /// <summary>
@@ -41,13 +41,14 @@ namespace CK.Setup
             /// and cached into this list.
             /// </summary>
             public readonly List<MutableAmbientProperty> AllAmbientProperties;
+
             /// <summary>
-            /// Like Ambient Properties above, Ambient Contracts are shared by the inheritance chain (it is
+            /// Like Ambient Properties above, Inject Objects are shared by the inheritance chain (it is
             /// not null only at the specialization level), but can use here an array instead of a dynamic list
-            /// since there is no caching needed. Each MutableAmbientContract here is bound to its AmbientContractInfo
-            /// in the StObjTypeInfo.AmbientContracts.
+            /// since there is no caching needed. Each MutableInjectSingleton here is bound to its InjectSingletonInfo
+            /// in the AmbientObjectClassInfo.InjectSingletons.
             /// </summary>
-            public readonly MutableInjectContract[] AllAmbientContracts;
+            public readonly MutableInjectObject[] AllInjectObjects;
 
             // Direct properties are collected at leaf level and are allocated only if needed (by SetDirectPropertyValue).
             public Dictionary<PropertyInfo,object> DirectPropertiesToSet;
@@ -85,9 +86,9 @@ namespace CK.Setup
         // This is available at any level thanks to the ordering of ambient properties
         // and the ListAmbientProperty that exposes only the start of the list: only the 
         // properties that are available at the level appear in the list.
-        // (This is the same for AmbientContracts.)
+        // (This is the same for the injected ambient objects.)
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
-        readonly IReadOnlyList<MutableInjectContract> _ambientContractsEx;
+        readonly IReadOnlyList<MutableInjectObject> _ambientInjectObjectsEx;
 
         MutableReference _container;
         MutableReferenceList _requires;
@@ -146,14 +147,14 @@ namespace CK.Setup
         /// <summary>
         /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( StObjTypeInfo type, MutableItem generalization, StObjObjectEngineMap engineMap )
+        internal MutableItem( AmbientObjectClassInfo type, MutableItem generalization, StObjObjectEngineMap engineMap )
         {
             EngineMap = engineMap;
             Type = type;
             Generalization = generalization;
             // These 2 lists can be initialized here (even if they can not work until InitializeBottomUp is called).
             _ambientPropertiesEx = new ListAmbientProperty( this );
-            _ambientContractsEx = new ListInjectContract( this );
+            _ambientInjectObjectsEx = new ListInjectSingleton( this );
         }
 
         /// <summary>
@@ -174,10 +175,10 @@ namespace CK.Setup
             else
             {
                 var ap = Type.AmbientProperties.Select( p => new MutableAmbientProperty( this, p ) ).ToList();
-                var ac = new MutableInjectContract[Type.AmbientContracts.Count];
+                var ac = new MutableInjectObject[Type.InjectObjects.Count];
                 for( int i = ac.Length - 1; i >= 0; --i )
                 {
-                    ac[i] = new MutableInjectContract( this, Type.AmbientContracts[i] );
+                    ac[i] = new MutableInjectObject( this, Type.InjectObjects[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
                 _leafData.ImplementableTypeInfo = implementableTypeInfo;
@@ -277,7 +278,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the StObjTypeInfo basic and immutable information.
         /// </summary>
-        public StObjTypeInfo Type { get; }
+        public AmbientObjectClassInfo Type { get; }
 
         /// <summary>
         /// The ImplementableTypeInfo is not null only if the Type is abstract but
@@ -342,7 +343,7 @@ namespace CK.Setup
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties => _ambientPropertiesEx; 
 
-        IReadOnlyList<IStObjMutableInjectAmbientContract> IStObjMutableItem.SpecializedAmbientContracts => _ambientContractsEx;
+        IReadOnlyList<IStObjMutableInjectObject> IStObjMutableItem.SpecializedInjectObjects => _ambientInjectObjectsEx;
 
         bool IStObjMutableItem.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {

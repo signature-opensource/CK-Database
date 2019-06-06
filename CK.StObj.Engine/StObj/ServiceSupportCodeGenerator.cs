@@ -82,12 +82,10 @@ namespace CK.Setup
             _rootType.Append( @"
 Dictionary<Type, IStObjServiceClassDescriptor> _simpleServiceMappings;
 Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
-Type[] _externallyDefinedSingletons;
 
 public IStObjServiceMap Services => this;
 IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
-IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;
-IReadOnlyCollection<Type> IStObjServiceMap.ExternallyDefinedSingletons => _externallyDefinedSingletons;" )
+IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
                      .NewLine();
 
             // Service mappings (Simple).
@@ -117,18 +115,6 @@ IReadOnlyCollection<Type> IStObjServiceMap.ExternallyDefinedSingletons => _exter
             foreach( var serviceFactory in liftedMap.ServiceManualList )
             {
                 CreateServiceClassFactory( serviceFactory );
-            }
-            // ExternallyDefinedSingletons.
-            {
-                bool atLeastOne = false;
-                _rootCtor.Append( "_externallyDefinedSingletons = new Type[]{ " );
-                foreach( var s in liftedMap.ExternallyDefinedSingletons )
-                {
-                    if( atLeastOne ) _rootCtor.Append( ", " );
-                    else atLeastOne = true;
-                    _rootCtor.AppendTypeOf( s );
-                }
-                _rootCtor.Append( "};" ).NewLine();
             }
 
         }

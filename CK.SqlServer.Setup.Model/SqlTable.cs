@@ -15,10 +15,11 @@ namespace CK.SqlServer.Setup
 {
     /// <summary>
     /// Base class for table objects. 
-    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
-    /// are de facto ambient contracts.
+    /// Unless marked with <see cref="AmbientDefinerAttribute"/>, direct specializations are de facto ambient objects.
+    /// A table is a <see cref="SqlPackage"/> with a <see cref="TableName"/>.
     /// </summary>
-    public class SqlTable : SqlPackageBase, IAmbientContractDefiner
+    [AmbientDefiner]
+    public class SqlTable : SqlPackage
     {
         /// <summary>
         /// Initializes a new <see cref="SqlTable"/> with a null <see cref="TableName"/>.

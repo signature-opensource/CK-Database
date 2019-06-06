@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
             : base( monitor, data )
         {
             Context = data.StObj.StObjMap.MapName;
-            SqlPackageBase p = ActualObject;
+            SqlPackage p = ActualObject;
             if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
             // By default, a Sql package always has a an associated Model package.
@@ -39,9 +39,9 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Masked to formally be associated to <see cref="SqlPackageBase"/>.
+        /// Masked to formally be associated to <see cref="SqlPackage"/>.
         /// </summary>
-        public new SqlPackageBase ActualObject => (SqlPackageBase)base.ActualObject;
+        public new SqlPackage ActualObject => (SqlPackage)base.ActualObject;
 
         /// <summary>
         /// Gets or sets a <see cref="ResourceLocation"/> that locates the resources associated 

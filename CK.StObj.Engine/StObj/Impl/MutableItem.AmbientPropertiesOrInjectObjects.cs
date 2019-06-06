@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableItem.AmbientPropertiesOrInjectContracts.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,40 +71,37 @@ namespace CK.Setup
 
         /// <summary>
         /// This is the clone of ListAmbientProperty above.
-        /// To share the implementation I need yet another unification between MutableAmbientProperty and MutableAmbientContract (which should be an interface since 
-        /// they have only in common MutableReferenceOptional), and routing calls to _specialization._allAmbientContracts or _specialization._allAmbientProperties...
-        /// I prefer duplicating code here.
         /// </summary>
-        class ListInjectContract : IReadOnlyList<MutableInjectContract>
+        class ListInjectSingleton : IReadOnlyList<MutableInjectObject>
         {
             readonly MutableItem _item;
             readonly int _count;
 
-            public ListInjectContract( MutableItem item )
+            public ListInjectSingleton( MutableItem item )
             {
                 _item = item;
-                _count = _item.Type.AmbientContracts.Count;
+                _count = _item.Type.InjectObjects.Count;
             }
 
             public int IndexOf( object item )
             {
                 int idx = -1;
-                MutableInjectContract c = item as MutableInjectContract;
+                MutableInjectObject c = item as MutableInjectObject;
                 if( c != null
                     && c.Owner == _item._leafData.LeafSpecialization
-                    && c.AmbientContractInfo.Index < _count )
+                    && c.InjecttInfo.Index < _count )
                 {
-                    idx = c.AmbientContractInfo.Index;
+                    idx = c.InjecttInfo.Index;
                 }
                 return idx;
             }
 
-            public MutableInjectContract this[int index]
+            public MutableInjectObject this[int index]
             {
                 get
                 {
                     if( index >= _count ) throw new IndexOutOfRangeException();
-                    return _item._leafData.AllAmbientContracts[index];
+                    return _item._leafData.AllInjectObjects[index];
                 }
             }
 
@@ -120,26 +110,20 @@ namespace CK.Setup
                 return IndexOf( item ) >= 0;
             }
 
-            public int Count
+            public int Count => _count; 
+
+            public IEnumerator<MutableInjectObject> GetEnumerator()
             {
-                get { return _count; }
+                return _item._leafData.AllInjectObjects.Take( _count ).GetEnumerator();
             }
 
-            public IEnumerator<MutableInjectContract> GetEnumerator()
-            {
-                return _item._leafData.AllAmbientContracts.Take( _count ).GetEnumerator();
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
         /// Works on leaf only. 
         /// Registers all the DirectProperties values by calling RootGeneralization.AddPreConstructProperty: they will be set right before the call to StObjConstruct of the root of the inheritance chain.
-        /// Registers all the AmbientContracts (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
+        /// Registers all the InjectObjects (resolves the MutableItem) by calling AddPostBuildProperty on the most specialized leaf: these properties will be set after the whole graph
         /// will be created.
         /// For AmbientProperties, it is slightly more complicated: depending of the property, we will be able to set it before StObjConstruct (like DirectProperties) or only after the whole graph
         /// is created.
@@ -162,12 +146,12 @@ namespace CK.Setup
                     if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
             }
-            foreach( var c in _leafData.AllAmbientContracts )
+            foreach( var c in _leafData.AllInjectObjects )
             {
                 MutableItem m = c.ResolveToStObj( monitor, EngineMap );
                 if( m != null )
                 {
-                    AddPostBuildProperty( c.AmbientContractInfo.SettablePropertyInfo, m, valueCollector );
+                    AddPostBuildProperty( c.InjecttInfo.SettablePropertyInfo, m, valueCollector );
                 }
             }
 

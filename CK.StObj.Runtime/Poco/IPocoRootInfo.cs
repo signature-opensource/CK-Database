@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +17,7 @@ namespace CK.Core
         Type PocoClass { get; }
 
         /// <summary>
-        /// Gets the <see cref="IPocoInterfaceInfo"/> that this Poco implements.
+        /// Gets all the <see cref="IPocoInterfaceInfo"/> that this Poco implements.
         /// </summary>
         IReadOnlyList<IPocoInterfaceInfo> Interfaces { get; }
 

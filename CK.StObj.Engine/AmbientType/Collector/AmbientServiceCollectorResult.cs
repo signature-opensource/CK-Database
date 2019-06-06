@@ -98,7 +98,7 @@ namespace CK.Core
                 {
                     monitor.Error( $"Base class '{a[0].Type.FullName}' cannot be unified by any of this candidates: '{a.Skip( 1 ).Select( t => t.Type.FullName ).Concatenate( "', '" )}'." );
                 }
-                AmbientContractCollectorResult.CommonLogAndWarings( monitor, AbstractTails );
+                AmbientObjectCollectorResult.CommonLogAndWarings( monitor, AbstractTails );
             }
         }
 

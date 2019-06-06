@@ -1,11 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.Collections;
-using System.Reflection;
-using CK.Setup;
 
 namespace CK.Core
 {
@@ -16,13 +12,8 @@ namespace CK.Core
         readonly Dictionary<Type, IStObjServiceFinalManualMapping> _serviceManualMap;
         readonly ServiceManualMapTypeAdapter _exposedManualServiceMap;
         readonly List<IStObjServiceFinalManualMapping> _serviceManualList;
-        IReadOnlyCollection<Type> _externallyDefinedSingletons;
+        readonly AmbientTypeKindDetector _typeKindDetector;
 
-        internal void OnAmbientServiceStart( IReadOnlyCollection<Type> refExternallyDefinedSingletons )
-        {
-            Debug.Assert( refExternallyDefinedSingletons != null );
-            _externallyDefinedSingletons = refExternallyDefinedSingletons;
-        }
 
         class ServiceMapTypeAdapter : IReadOnlyDictionary<Type, IStObjServiceClassDescriptor>
         {
@@ -183,7 +174,6 @@ namespace CK.Core
 
         IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _exposedManualServiceMap;
 
-        public IReadOnlyCollection<Type> ExternallyDefinedSingletons => _externallyDefinedSingletons;
 
      }
 }

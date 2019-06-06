@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
        
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            if( !typeof( SqlPackage ).IsAssignableFrom( o.ObjectType.BaseType ) )
             {
                 monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackageBase." );
             }
@@ -83,7 +83,7 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                var p = (SqlPackageBase)data.StObj.InitialObject;
+                var p = (SqlPackage)data.StObj.InitialObject;
                 var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {

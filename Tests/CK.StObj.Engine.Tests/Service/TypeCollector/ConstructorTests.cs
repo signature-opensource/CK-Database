@@ -14,7 +14,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     public class ConstructorTests : TestsBase
     {
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class PackageA : IAmbientContract
+        class PackageA : IAmbientObject
         {
         }
 
@@ -87,21 +87,13 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        interface INotAnAmbientService
-        {
-        }
+        interface INotAnAmbientService { }
 
-        interface ISNotRegistered : IScopedAmbientService
-        {
-        }
+        interface ISNotRegistered : IScopedAmbientService { }
 
-        interface ISRegistered : IScopedAmbientService
-        {
-        }
+        interface ISRegistered : IScopedAmbientService { }
 
-        class ServiceForISRegistered : ISRegistered
-        {
-        }
+        class ServiceForISRegistered : ISRegistered { }
 
         class Consumer1Service : IScopedAmbientService
         {

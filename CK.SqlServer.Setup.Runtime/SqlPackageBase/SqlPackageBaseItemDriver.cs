@@ -23,7 +23,7 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseItemDriver( BuildInfo info )
             : base( info ) 
         {
-            SqlPackageBase p = Item.ActualObject;
+            SqlPackage p = Item.ActualObject;
             string schema = p.Schema;
             if( schema != null && p.Database != null ) p.Database.EnsureSchema( schema );
             Debug.Assert( (int)SetupCallGroupStep.Init == 1 && (int)SetupCallGroupStep.SettleContent == 6 );

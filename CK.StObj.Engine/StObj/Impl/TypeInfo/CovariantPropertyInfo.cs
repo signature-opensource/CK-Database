@@ -38,7 +38,7 @@ namespace CK.Setup
         public PropertyInfo PropertyInfo => _p;
 
         /// <summary>
-        /// Gets the index of this <see cref="AmbientPropertyInfo"/> inside the <see cref="StObjTypeInfo"/> collection into which it appears.
+        /// Gets the index of this <see cref="AmbientPropertyInfo"/> inside the <see cref="AmbientObjectClassInfo"/> collection into which it appears.
         /// </summary>
         public int Index => _index;
 
