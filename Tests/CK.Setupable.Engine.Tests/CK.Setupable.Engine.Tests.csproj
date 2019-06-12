@@ -10,7 +10,7 @@
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <PackageReference Include="NUnit" Version="[2.6.4]" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
