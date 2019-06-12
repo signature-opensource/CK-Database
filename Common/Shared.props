@@ -2,16 +2,16 @@
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>11.1.0</CKCoreVersion>
-    <CKActivityMonitorVersion>11.1.0</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>8.1.0</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.5.0</CKSqlServerVersion>
-    <CKSqlServerParserVersion>11.2.0</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>8.1.0</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>8.0.2</CKReflectionVersion>
-    <CKCodeGenVersion>0.6.0</CKCodeGenVersion>
-    <YodiiScriptVersion>0.7.2</YodiiScriptVersion>
-    <CKSetupVersion>9.2.0</CKSetupVersion>
-    <CKTestingVersion>0.9.0</CKTestingVersion>
+    <CKActivityMonitorVersion>11.1.1--0002-develop</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>8.1.1--0002-develop</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.5.1--0002-develop</CKSqlServerVersion>
+    <CKSqlServerParserVersion>11.2.1--0002-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>8.1.1--0002-develop</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>8.0.3--0001-develop</CKReflectionVersion>
+    <CKCodeGenVersion>0.6.1--0002-develop</CKCodeGenVersion>
+    <YodiiScriptVersion>0.7.3--0001-develop</YodiiScriptVersion>
+    <CKSetupVersion>9.2.1--0003-develop</CKSetupVersion>
+    <CKTestingVersion>0.9.1--0002-develop</CKTestingVersion>
     <FluentAssertionsVersion>5.6.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -65,7 +65,7 @@
   <!--<ReproducibleBuilds>: See http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html.-->
   <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
     <Deterministic>true</Deterministic>
-    <PathMap>$(SolutionDir)=C:\CKli-World\CK-Database-Projects\CK-Database</PathMap>
+    <PathMap>'$(SolutionDir)'=C:\CKli-World\CK-Database-Projects\CK-Database</PathMap>
   </PropertyGroup>
   <!--</ReproducibleBuilds>-->
   <!--<ZeroVersion>: When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion).-->
