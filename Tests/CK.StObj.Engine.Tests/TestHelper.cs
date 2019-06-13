@@ -100,7 +100,7 @@ namespace CK.StObj.Engine.Tests
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
                     if( c != null )
                     {
-                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}"  );
+                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}" );
                     }
                     else _monitor.Trace( "[G]Children = " + Names( g.Children ) );
                 }
@@ -133,7 +133,7 @@ namespace CK.StObj.Engine.Tests
 
         public static void TraceSortedItem( this IActivityMonitor @this, ISortedItem i )
         {
-            using( _monitor.OpenTrace( $"[{i.ItemKind.ToString()[0]}]FullName = {i.FullName}"  ) )
+            using( _monitor.OpenTrace( $"[{i.ItemKind.ToString()[0]}]FullName = {i.FullName}" ) )
             {
                 _monitor.Trace( "Container = " + (i.Container != null ? i.Container.FullName : "(null)") );
                 _monitor.Trace( "Generalization = " + (i.Generalization != null ? i.Generalization.FullName : "(null)") );

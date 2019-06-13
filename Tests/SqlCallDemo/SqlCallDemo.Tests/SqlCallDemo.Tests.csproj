@@ -3,12 +3,14 @@
   <Import Project="..\..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
     <ProjectReference Include="..\..\SqlCallDemo\SqlCallDemo\SqlCallDemo.csproj" />
+    <PackageReference Include="NUnitLite" Version="3.12.0" />
   </ItemGroup>
 
   <ItemGroup>

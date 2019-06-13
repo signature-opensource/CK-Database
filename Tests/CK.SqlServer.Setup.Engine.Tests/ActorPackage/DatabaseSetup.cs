@@ -14,11 +14,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     [Category( "DBSetup" )]
     public partial class DatabaseSetup
     {
-        [Test]
-        public void InstallActorBasic()
-        {
-            InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
-        }
+        //[Test]
+        //public void InstallActorBasic()
+        //{
+        //    InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
+        //}
 
         [Test]
         public void InstallActorBasicFromScracthDropAndReverseInstall()
