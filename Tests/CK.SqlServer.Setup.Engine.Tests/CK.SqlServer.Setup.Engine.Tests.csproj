@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461</TargetFrameworks>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <Import Project="..\..\Common\Shared.props" />
@@ -18,7 +19,7 @@
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
-
+    <PackageReference Include="NUnitLite" Version="3.12.0" />
   </ItemGroup>
 
   <ItemGroup>
