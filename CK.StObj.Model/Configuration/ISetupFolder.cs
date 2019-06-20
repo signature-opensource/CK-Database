@@ -32,6 +32,11 @@ namespace CK.Core
         HashSet<string> ExternalSingletonTypes { get; }
 
         /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be scoped. 
+        /// </summary>
+        HashSet<string> ExternalScopedTypes { get; }
+
+        /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  
         /// registration.
         /// </summary>
