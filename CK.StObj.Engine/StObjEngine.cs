@@ -89,6 +89,7 @@ namespace CK.Setup
             public readonly HashSet<string> Assemblies;
             public readonly HashSet<string> Types;
             public readonly HashSet<string> ExternalSingletonTypes;
+            public readonly HashSet<string> ExternalScopedTypes;
             public readonly HashSet<string> ExcludedTypes;
             public readonly bool SameAsRoot;
 
@@ -98,6 +99,7 @@ namespace CK.Setup
                 Assemblies = f.Assemblies;
                 Types = f.Types;
                 ExternalSingletonTypes = f.ExternalSingletonTypes;
+                ExternalScopedTypes = f.ExternalScopedTypes;
                 ExcludedTypes = f.ExcludedTypes;
                 SameAsRoot = sameAsRoot;
             }
@@ -318,9 +320,9 @@ namespace CK.Setup
                                         }
                                         if( ok )
                                         {
-                                            // For ExternalSingletonTypes, we allow them to be different
+                                            // For ExternalSingletonTypes and ExternalScopedTypes, we allow them to be different
                                             // for the root and any SetupFolders.
-                                            // This is because ExternalSingletonTypes only impacts the
+                                            // This is because ExternalSingleton/ScopedTypes only impacts the
                                             // way auto DI configuration is generated: for some SetupFolder
                                             // a service may be a singleton whereas for another one the
                                             // same service type may be implemented as a Scoped one.
@@ -330,7 +332,8 @@ namespace CK.Setup
                                             bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
                                                               && f.Types.Count == root.Types.Count
                                                               && root.ExcludedTypes.Count == f.ExcludedTypes.Count
-                                                              && root.ExternalSingletonTypes.SetEquals( f.ExternalSingletonTypes );
+                                                              && root.ExternalSingletonTypes.SetEquals( f.ExternalSingletonTypes )
+                                                              && root.ExternalScopedTypes.SetEquals( f.ExternalScopedTypes );
                                             normalized.Add( new NormalizedFolder( n, f, sameAsRoot ) );
                                         }
                                     }
@@ -412,6 +415,10 @@ namespace CK.Setup
                     if( f.ExternalSingletonTypes.Count != 0 )
                     {
                         stObjC.DefineAsExternalSingletons( f.ExternalSingletonTypes );
+                    }
+                    if( f.ExternalScopedTypes.Count != 0 )
+                    {
+                        stObjC.DefineAsExternalScoped( f.ExternalScopedTypes );
                     }
                     stObjC.RegisterAssemblyTypes( f.Assemblies );
                     stObjC.RegisterTypes( f.Types );

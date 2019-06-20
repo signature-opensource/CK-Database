@@ -19,6 +19,7 @@ namespace CK.Core
             Types = new HashSet<string>();
             ExcludedTypes = new HashSet<string>();
             ExternalSingletonTypes = new HashSet<string>();
+            ExternalScopedTypes = new HashSet<string>();
         }
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace CK.Core
             Assemblies = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly ) );
             Types = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type ) );
             ExternalSingletonTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExternalSingletonTypes, StObjEngineConfiguration.XmlNames.Type ) );
+            ExternalScopedTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExternalScopedTypes, StObjEngineConfiguration.XmlNames.Type ) );
             ExcludedTypes = new HashSet<string>( StObjEngineConfiguration.FromXml( e, StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type ) );
         }
 
@@ -44,6 +46,7 @@ namespace CK.Core
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Assemblies, StObjEngineConfiguration.XmlNames.Assembly, Assemblies ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.Types, StObjEngineConfiguration.XmlNames.Type, Types ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExternalSingletonTypes, StObjEngineConfiguration.XmlNames.Type, ExternalSingletonTypes ),
+                                    StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExternalScopedTypes, StObjEngineConfiguration.XmlNames.Type, ExternalScopedTypes ),
                                     StObjEngineConfiguration.ToXml( StObjEngineConfiguration.XmlNames.ExcludedTypes, StObjEngineConfiguration.XmlNames.Type, ExcludedTypes ) );
         }
 
@@ -69,6 +72,11 @@ namespace CK.Core
         /// Gets a set of assembly qualified type names that are known to be singletons. 
         /// </summary>
         public HashSet<string> ExternalSingletonTypes { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be scoped. 
+        /// </summary>
+        public HashSet<string> ExternalScopedTypes { get; }
 
         /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  

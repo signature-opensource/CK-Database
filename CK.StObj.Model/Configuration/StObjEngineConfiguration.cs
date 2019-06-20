@@ -27,6 +27,7 @@ namespace CK.Core
             Assemblies = new HashSet<string>();
             Types = new HashSet<string>();
             ExternalSingletonTypes = new HashSet<string>();
+            ExternalScopedTypes = new HashSet<string>();
             ExcludedTypes = new HashSet<string>();
             Aspects = new List<IStObjEngineAspectConfiguration>();
             SetupFolders = new List<SetupFolder>();
@@ -66,6 +67,11 @@ namespace CK.Core
             /// The ExternalSingletonTypes element name.
             /// </summary>
             static public readonly XName ExternalSingletonTypes = XNamespace.None + "ExternalSingletonTypes";
+
+            /// <summary>
+            /// The ExternalScopedTypes element name.
+            /// </summary>
+            static public readonly XName ExternalScopedTypes = XNamespace.None + "ExternalScopedTypes";
 
             /// <summary>
             /// The ExcludedTypes element name.
@@ -146,6 +152,7 @@ namespace CK.Core
             Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
             Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
             ExternalSingletonTypes = new HashSet<string>( FromXml( e, XmlNames.ExternalSingletonTypes, XmlNames.Type ) );
+            ExternalScopedTypes = new HashSet<string>( FromXml( e, XmlNames.ExternalScopedTypes, XmlNames.Type ) );
             ExcludedTypes = new HashSet<string>( FromXml( e, XmlNames.ExcludedTypes, XmlNames.Type ) );
             SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
             Aspects = new List<IStObjEngineAspectConfiguration>();
@@ -187,6 +194,7 @@ namespace CK.Core
                    ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
                    ToXml( XmlNames.Types, XmlNames.Type, Types ),
                    ToXml( XmlNames.ExternalSingletonTypes, XmlNames.Type, ExternalSingletonTypes ),
+                   ToXml( XmlNames.ExternalScopedTypes, XmlNames.Type, ExternalScopedTypes ),
                    ToXml( XmlNames.ExcludedTypes, XmlNames.Type, ExcludedTypes ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, CleanName( a.GetType() ) ) ) ) ),
                    SetupFolders.Select( f => f.ToXml() ) );
@@ -248,6 +256,11 @@ namespace CK.Core
         /// Gets a set of assembly qualified type names that are known to be singletons. 
         /// </summary>
         public HashSet<string> ExternalSingletonTypes { get; }
+
+        /// <summary>
+        /// Gets a set of assembly qualified type names that are known to be scoped. 
+        /// </summary>
+        public HashSet<string> ExternalScopedTypes { get; }
 
         /// <summary>
         /// Gets a set of assembly qualified type names that must be excluded from  
