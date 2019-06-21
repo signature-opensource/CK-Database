@@ -1,5 +1,8 @@
 using CK.Core;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -109,19 +112,37 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSingleton( kv.Key, kv.Value );
             }
             // Service direct type mapping.
-            foreach( var kv in map.Services.SimpleMappings )
+            services.AddServiceSimpleMappings( map.Services.SimpleMappings );
+
+            // Manual type: Use the automatically generated code.
+            services.AddServiceManualMappings( map.Services.ManualMappings );
+
+            return services;
+        }
+
+        public static IServiceCollection AddServiceSimpleMappings( this IServiceCollection services, IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> mappings )
+        {
+            // Service direct type mapping.
+            foreach( var kv in mappings )
             {
                 if( kv.Value.IsScoped )
                 {
-                    services.AddScoped( kv.Key, kv.Value.ClassType );
+                    services.TryAddScoped( kv.Value.ClassType );
+                    if( kv.Key != kv.Value.ClassType ) services.AddScoped( kv.Key, sp => sp.GetRequiredService( kv.Value.ClassType ) );
                 }
                 else
                 {
-                    services.AddSingleton( kv.Key, kv.Value.ClassType );
+                    services.TryAddSingleton( kv.Value.ClassType );
+                    if( kv.Key != kv.Value.ClassType ) services.AddSingleton( kv.Key, sp => sp.GetRequiredService( kv.Value.ClassType ) );
                 }
             }
-            // Manual type: Use the automatically generated code.
-            foreach( var kv in map.Services.ManualMappings )
+
+            return services;
+        }
+
+        public static IServiceCollection AddServiceManualMappings( this IServiceCollection services, IReadOnlyDictionary<Type, IStObjServiceClassFactory> mappings )
+        {
+            foreach( var kv in mappings )
             {
                 if( kv.Value.IsScoped )
                 {
@@ -134,6 +155,5 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             return services;
         }
-
     }
 }
