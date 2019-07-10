@@ -10,7 +10,6 @@
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
     <PackageReference Include="CK.Testing.SqlTransform" Version="$(CKSqlServerParserVersion)" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
