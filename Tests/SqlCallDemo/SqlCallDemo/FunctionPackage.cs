@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -32,6 +32,7 @@ namespace SqlCallDemo
 
         [SqlScalarFunction( "fByteFunction" )]
         public abstract Task<byte?> NullableByteFunctionAsync( SqlStandardCallContext ctx, int v = -1 );
+
 
         public enum Power
         {

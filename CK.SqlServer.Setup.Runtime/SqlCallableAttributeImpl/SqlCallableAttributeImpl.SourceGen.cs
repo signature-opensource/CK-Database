@@ -107,7 +107,7 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
-            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.CallableObject, m, mParameters, cB, hasRefSqlCommand );
+            return GenerateCreateSqlCommand( dynamicAssembly, gType, monitor, mCreateCommand, item.CallableObject, m, mParameters, cB, hasRefSqlCommand, Attribute.TimeoutSeconds );
         }
 
         static bool GenerateCreateSqlCommand(
@@ -119,7 +119,8 @@ namespace CK.SqlServer.Setup
             MethodInfo m,
             ParameterInfo[] mParameters,
             ITypeScope tB,
-            bool hasRefSqlCommand )
+            bool hasRefSqlCommand,
+            int timeoutSeconds )
         {
             tB.Namespace.EnsureUsing( "CK.SqlServer" );
             int nbError = 0;
@@ -300,7 +301,7 @@ namespace CK.SqlServer.Setup
                     // Only the transaction parameter: the connection is the one of the transaction if
                     // it is not null.
                     cB.Append( "  cmd_loc.Transaction = " ).Append( firstSqlTransactionParameter.Name ).Append( ";" ).NewLine()
-                    .Append( "  cmd_loc.Connection = " ).Append( firstSqlTransactionParameter.Name ).Append( "?.Connection;" ).NewLine();
+                      .Append( "  cmd_loc.Connection = " ).Append( firstSqlTransactionParameter.Name ).Append( "?.Connection;" ).NewLine();
                 }
                 if( sqlParamHandlers.Handlers.Count > 0 )
                 {
@@ -312,7 +313,7 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
-
+            cB.Append( "cmd_loc.CommandTimeout = (int)(" ).Append( timeoutSeconds ).Append( " * CK.SqlServer.SqlHelper.CommandTimeoutFactor);" ).NewLine();
             if( gType == GenerationType.ReturnSqlCommand )
             {
                 cB.Append( "return cmd_loc;" ).NewLine();
