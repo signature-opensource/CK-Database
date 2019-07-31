@@ -1,7 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>
@@ -9,13 +7,10 @@
       CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
     </Description>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

@@ -1,19 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="**\*.sql;**\*.tql;**\*.y4" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <PackageReference Include="CK.SqlServer.Transaction" Version="$(CKSqlServerVersion)" />
   </ItemGroup>
-
 </Project>

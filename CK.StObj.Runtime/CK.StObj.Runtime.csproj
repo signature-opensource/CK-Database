@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Import Project="..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <Description>
@@ -9,7 +7,6 @@
       CK.StObj.Runtime contains runtime objects that enables StObj implementation to be generated.
     </Description>
   </PropertyGroup>
-    
   <ItemGroup>
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
     <!-- IDynamicAssembly exposes IList<ICodeGeneratorModule> SourceModules { get; } -->
@@ -18,9 +15,7 @@
     <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

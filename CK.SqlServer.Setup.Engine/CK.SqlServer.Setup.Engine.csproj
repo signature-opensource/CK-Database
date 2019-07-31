@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Import Project="..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <Description>
@@ -9,13 +7,10 @@
       CK.SqlServer.Setup.Engine provides full Sql Server setup support.
     </Description>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
   </ItemGroup>
-
 </Project>

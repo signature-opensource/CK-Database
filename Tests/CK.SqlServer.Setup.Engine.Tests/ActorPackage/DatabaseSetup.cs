@@ -14,11 +14,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
     [Category( "DBSetup" )]
     public partial class DatabaseSetup
     {
-        [Test]
-        public void InstallActorBasic()
-        {
-            InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
-        }
+        //[Test]
+        //public void InstallActorBasic()
+        //{
+        //    InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
+        //}
 
         [Test]
         public void InstallActorBasicFromScracthDropAndReverseInstall()
@@ -69,7 +69,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                var a = Assembly.Load( new AssemblyName( dllName ) );
+                var a = Assembly.Load( new AssemblyName( dllName ) );//Maybe a problem here.
                 IStObjMap m = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
