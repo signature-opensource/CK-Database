@@ -32,7 +32,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
-        [ReplaceAmbientService(typeof(SampleService))]
+        [ReplaceAmbientService( typeof( SampleService ) )]
         class SampleService2 : ISampleService
         {
         }
@@ -80,6 +80,33 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( UseActivityMonitor ) );
             CheckFailure( collector );
+        }
+
+        class Obj : IAmbientObject, ISampleService
+        {
+        }
+
+        interface IInvalidInterface : IAmbientObject, ISampleService
+        {
+        }
+
+        [Test]
+        public void an_AmbientObject_class_can_be_an_IAmbientService_but_an_interface_cannot()
+        {
+            {
+                var collector = CreateStObjCollector();
+                collector.RegisterType( typeof( Obj ) );
+                var r = CheckSuccess( collector );
+                r.Services.SimpleMappings[typeof( ISampleService )].ClassType.Should().Be( typeof( Obj ) );
+                r.Services.SimpleMappings[typeof( ISampleService )].IsScoped.Should().BeFalse();
+                r.StObjs.Obtain<Obj>().Should().BeOfType<Obj>();
+                r.StObjs.Obtain<ISampleService>().Should().BeNull();
+            }
+            {
+                var collector = CreateStObjCollector();
+                collector.RegisterType( typeof( IInvalidInterface ) );
+                CheckFailure( collector );
+            }
         }
 
     }

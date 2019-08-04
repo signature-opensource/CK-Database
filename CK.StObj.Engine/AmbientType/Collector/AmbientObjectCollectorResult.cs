@@ -10,7 +10,9 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Result of the <see cref="AmbientTypeCollector"/> work.
+    /// One of the <see cref="AmbientTypeCollector"/> work's result: handles <see cref="IAmbientObject"/>
+    /// types. This and <see cref="AmbientServiceCollectorResult"/> are exposed by
+    /// the <see cref="AmbientTypeCollectorResult"/>.
     /// </summary>
     public class AmbientObjectCollectorResult
     {

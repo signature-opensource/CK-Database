@@ -116,14 +116,22 @@ namespace CK.Core
             : base( m, parent, t, serviceProvider, isExcluded )
         {
             Debug.Assert( Generalization == parent );
+            // Forgets the AmbientObject flag: this enables AmbientObjects
+            // to be valid implementation of IAmbientService or ISingletionAmbientService
+            // as singleton.
+            if( lifetime == (AmbientTypeKind.AmbientObject|AmbientTypeKind.AmbientSingleton) )
+            {
+                lifetime = AmbientTypeKind.AmbientSingleton;
+            }
             Debug.Assert( lifetime == AmbientTypeKind.IsAmbientService
                           || lifetime == AmbientTypeKind.AmbientSingleton
                           || lifetime == AmbientTypeKind.AmbientScope );
             DeclaredLifetime = lifetime;
             if( lifetime == AmbientTypeKind.AmbientScope ) MustBeScopedLifetime = true;
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
-            if( IsExcluded ) return;
 
+            //if( IsExcluded ) return;
+            //
             // AmbientServiceAttribute is currently not used. This is to associate a service
             // to a StObj package and may be useful for Service Unification support.
             //var aC = t.GetCustomAttribute<AmbientServiceAttribute>();

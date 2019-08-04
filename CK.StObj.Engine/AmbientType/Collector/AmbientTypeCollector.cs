@@ -10,8 +10,9 @@ using CK.Setup;
 namespace CK.Core
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientObject"/> and <see cref="IAmbientService"/>
-    /// marker interfaces.
+    /// Discovers types that support <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>
+    /// and <see cref="IPoco"/> marker interfaces.
+    /// The <see cref="GetResult"/> method encapsulates the whole work.
     /// </summary>
     public partial class AmbientTypeCollector
     {
@@ -139,22 +140,21 @@ namespace CK.Core
             AmbientObjectClassInfo acParent = null;
             AmbientServiceClassInfo sParent = null;
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
-            Debug.Assert( (acParent == null && sParent == null) || (acParent == null) != (sParent == null) );
 
             AmbientTypeKind lt = _ambientKindDetector.GetKind( _monitor, t );
-            var conflictMsg = lt.GetAmbientKindCombinationError();
+            var conflictMsg = lt.GetAmbientKindCombinationError( true );
             if( conflictMsg != null )
             {
                 _monitor.Error( $"Type {t.FullName}: {conflictMsg}." );
             }
             else
             {
-                if( acParent != null || (lt == AmbientTypeKind.AmbientObject) )
+                if( acParent != null || (lt & AmbientTypeKind.AmbientObject) == AmbientTypeKind.AmbientObject )
                 {
                     result = CreateStObjTypeInfo( t, acParent );
                     Debug.Assert( result != null );
                 }
-                else if( sParent != null || (lt & AmbientTypeKind.IsAmbientService) != 0 )
+                if( sParent != null || (lt & AmbientTypeKind.IsAmbientService) != 0 )
                 {
                     serviceInfo = RegisterServiceClass( t, sParent, lt );
                     Debug.Assert( serviceInfo != null );

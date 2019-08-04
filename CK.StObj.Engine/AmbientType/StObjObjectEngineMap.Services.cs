@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace CK.Core
 {
-    partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
+    partial class StObjObjectEngineMap
     {
         readonly Dictionary<Type, AmbientServiceClassInfo> _serviceMap;
         readonly ServiceMapTypeAdapter _exposedServiceMap;

@@ -90,8 +90,9 @@ namespace CK.Core
         /// Gets the conflicting duplicate status message or null if this ambient kind is valid.
         /// </summary>
         /// <param name="this">This ambient kind.</param>
+        /// <param name="ambientObjectCanBeSingletonService">True for Class type (not for interface).</param>
         /// <returns>An error message or null.</returns>
-        public static string GetAmbientKindCombinationError( this AmbientTypeKind @this )
+        public static string GetAmbientKindCombinationError( this AmbientTypeKind @this, bool ambientObjectCanBeSingletonService = false )
         {
             bool isAmbientScope = (@this & AmbientTypeKind.AmbientScope) == AmbientTypeKind.AmbientScope;
             bool isAmbientSingleton = (@this & AmbientTypeKind.AmbientSingleton) == AmbientTypeKind.AmbientSingleton;
@@ -106,7 +107,7 @@ namespace CK.Core
             {
                 conflict = "AmbientScope and AmbientObject";
             }
-            else if( isAmbientSingleton && isAmbientObject )
+            else if( isAmbientSingleton && isAmbientObject && !ambientObjectCanBeSingletonService )
             {
                 conflict = "AmbientSingleton and AmbientObject";
             }
