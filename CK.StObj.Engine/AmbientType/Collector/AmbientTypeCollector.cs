@@ -212,7 +212,7 @@ namespace CK.Core
                     }
                 }
                 AmbientObjectCollectorResult contracts;
-                using( _monitor.OpenInfo( "Ambient contracts handling." ) )
+                using( _monitor.OpenInfo( "Ambient objects handling." ) )
                 {
                     contracts = GetAmbientObjectResult();
                     Debug.Assert( contracts != null );

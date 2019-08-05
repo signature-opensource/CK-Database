@@ -671,22 +671,13 @@ namespace CK.Setup
         public override string ToString() => Type.Type.FullName;
 
 
-        #region IDependentItemContainerAsk Members
+        #region IDependentItem/Ref Members
 
-        string IDependentItem.FullName
-        {
-            get { return _dFullName; }
-        }
+        string IDependentItem.FullName => _dFullName; 
 
-        IDependentItemRef IDependentItem.Generalization
-        {
-            get { return Generalization; }
-        }
+        IDependentItemRef IDependentItem.Generalization => Generalization; 
 
-        IDependentItemContainerRef IDependentItem.Container
-        {
-            get { return _dContainer; }
-        }
+        IDependentItemContainerRef IDependentItem.Container => _dContainer; 
 
         IEnumerable<IDependentItemRef> IDependentItemGroup.Children
         {
@@ -703,10 +694,7 @@ namespace CK.Setup
             }
         }
 
-        DependentItemKind IDependentItemContainerTyped.ItemKind
-        {
-            get { return _itemKind; }
-        }
+        DependentItemKind IDependentItemContainerTyped.ItemKind => _itemKind; 
 
         IEnumerable<IDependentItemGroupRef> IDependentItem.Groups
         {

@@ -18,11 +18,17 @@ namespace CK.Core
     /// </summary>
     /// <remarks>
     /// <para>
-    /// If the lifetimes of this <see cref="IAmbientObject"/> and <see cref="ISingletonAmbientService"/>
+    /// If the lifetimes of this IAmbientObject and <see cref="ISingletonAmbientService"/>
     /// instances are the same, their roles are different as well as the way they are handled.
     /// Ambient objects can not use any constructor injection and support StObjConstruct/StObjInitialize
     /// private methods that isolate dependencies between a base class and its specializations whereas
     /// singleton services relies on "normal" constructor injection.
+    /// </para>
+    /// <para>
+    /// Note that a class that is a IAmbientObject can perfectly implement a IAmbientService: this will be
+    /// resolved as a singleton (a ISingletonAmbientService) and will be a potential implementation of the service
+    /// (that may be replaced). This applies only to class, not to interface: an interface cannot be both
+    /// a IAmbientService and a IAmbientObject.
     /// </para>
     /// <para>
     /// Ambient objects must be used to model actual singletons "in real life", typically external resources
