@@ -320,18 +320,17 @@ namespace CK.Setup
 
         public readonly int ContainerConstructParameterIndex;
 
-        Type[] EnsureAllAmbientInterfaces()
+        Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, AmbientTypeKindDetector d )
         {
             return _ambientInterfaces
-                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => t != typeof( IAmbientObject )
-                                                                          && typeof( IAmbientObject ).IsAssignableFrom( t ) ).ToArray());
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&AmbientTypeKind.AmbientObject) == AmbientTypeKind.AmbientObject ).ToArray());
         }
 
-        internal Type[] EnsureThisAmbientInterfaces()
+        internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, AmbientTypeKindDetector d )
         {
             return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = Generalization != null
-                                                        ? EnsureAllAmbientInterfaces().Except( Generalization.EnsureAllAmbientInterfaces() ).ToArray()
-                                                        : EnsureAllAmbientInterfaces());
+                                                        ? EnsureAllAmbientInterfaces( m, d ).Except( Generalization.EnsureAllAmbientInterfaces( m, d ) ).ToArray()
+                                                        : EnsureAllAmbientInterfaces( m, d ));
         }
 
 

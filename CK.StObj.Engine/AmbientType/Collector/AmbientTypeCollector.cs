@@ -276,7 +276,7 @@ namespace CK.Core
                 MutableItem finalType = path[path.Count - 1];
                 foreach( var item in path )
                 {
-                    foreach( Type itf in item.Type.EnsureThisAmbientInterfaces() )
+                    foreach( Type itf in item.Type.EnsureThisAmbientInterfaces( _monitor, _ambientKindDetector ) )
                     {
                         MutableItem alreadyMapped;
                         if( (alreadyMapped = engineMap.ToLeaf( itf )) != null )
