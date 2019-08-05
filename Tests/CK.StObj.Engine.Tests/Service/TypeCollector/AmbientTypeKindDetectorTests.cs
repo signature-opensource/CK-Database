@@ -122,8 +122,11 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             var a = new AmbientTypeKindDetector();
             a.GetKind( TestHelper.Monitor, typeof( INotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
             a.GetKind( TestHelper.Monitor, typeof( INotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
-            a.GetKind( TestHelper.Monitor, typeof( NotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
             a.GetKind( TestHelper.Monitor, typeof( NotPossible1 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+
+            // This is explictly allowed thanks to the parameter.
+            a.GetKind( TestHelper.Monitor, typeof( NotPossible0 ) ).GetAmbientKindCombinationError().Should().NotBeNull();
+            a.GetKind( TestHelper.Monitor, typeof( NotPossible0 ) ).GetAmbientKindCombinationError( ambientObjectCanBeSingletonService:true ).Should().BeNull();
         }
 
 
