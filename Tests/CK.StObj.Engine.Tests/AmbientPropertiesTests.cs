@@ -183,40 +183,40 @@ namespace CK.StObj.Engine.Tests
 
         #region Potentially recursive resolution with type resolution
 
-        class BaseForObject
+        public class BaseForObject
         {
             [AmbientProperty]
             public TypeToMapBase Ambient { get; set; }
         }
 
-        class TypeToMapBase
+        public class TypeToMapBase
         {
         }
 
-        class TypeToMap : TypeToMapBase, IAmbientObject
+        public class TypeToMap : TypeToMapBase, IAmbientObject
         {
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : BaseForObject, IAmbientObject
+        public class C1 : BaseForObject, IAmbientObject
         {
         }
 
         [StObj( Container = typeof( C1 ) )]
-        class O1InC1 : BaseForObject, IAmbientObject
+        public class O1InC1 : BaseForObject, IAmbientObject
         {
         }
 
-        class C2 : C1
+        public class C2 : C1
         {
         }
 
         [StObj( Container = typeof( C2 ) )]
-        class O2InC2 : O1InC1
+        public class O2InC2 : O1InC1
         {
         }
 
-        class AmbientResolutionTypeSetter : IStObjStructuralConfigurator
+        public class AmbientResolutionTypeSetter : IStObjStructuralConfigurator
         {
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {

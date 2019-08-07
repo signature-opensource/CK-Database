@@ -34,14 +34,14 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
-        class Ambient : IAmbientService { }
+        public class Ambient : IAmbientService { }
 
-        class AmbientConstruct : IAmbientObject
+        public class AmbientConstruct : IAmbientObject
         {
             void StObjConstruct( Ambient s ) { }
         }
 
-        class AmbientInject : IAmbientObject
+        public class AmbientInject : IAmbientObject
         {
             [InjectObject]
             public Ambient Service { get; private set; }
@@ -209,16 +209,16 @@ namespace CK.StObj.Engine.Tests
         #region Buggy & Valid Model
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : IAmbientObject
+        public class C1 : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( C1 ), ItemKind = DependentItemKindSpec.Container )]
-        class C2InC1 : IAmbientObject
+        public class C2InC1 : IAmbientObject
         {
         }
 
-        class C3InC2SpecializeC1 : C1
+        public class C3InC2SpecializeC1 : C1
         {
             void StObjConstruct( [Container]C2InC1 c2 )
             {
@@ -247,7 +247,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( C2InC1 ), Children = new Type[] { typeof( C1 ) } )]
-        class C3ContainsC1 : IAmbientObject
+        public class C3ContainsC1 : IAmbientObject
         {
         }
 
@@ -271,7 +271,7 @@ namespace CK.StObj.Engine.Tests
             Assert.That( result.HasFatalError, Is.True );
         }
 
-        class C3RequiresC2SpecializeC1 : C1
+        public class C3RequiresC2SpecializeC1 : C1
         {
             void StObjConstruct( C2InC1 c2 )
             {

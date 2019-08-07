@@ -24,31 +24,31 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
                     typeof( AuthenticationUser )
                 } )]
 
-        class SqlDatabaseDefault : IAmbientObject
+        public class SqlDatabaseDefault : IAmbientObject
         {
         }
 
         #region Basic Package
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class BasicPackage : IAmbientObject
+        public class BasicPackage : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicActor : IAmbientObject
-        {
-        }
-
-
-        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicUser : IAmbientObject
+        public class BasicActor : IAmbientObject
         {
         }
 
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicGroup : IAmbientObject
+        public class BasicUser : IAmbientObject
+        {
+        }
+
+
+        [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
+        public class BasicGroup : IAmbientObject
         {
             void StObjConstruct( BasicActor actor )
             {
@@ -59,24 +59,24 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
 
         #region Zone Package
 
-        class ZonePackage : BasicPackage
+        public class ZonePackage : BasicPackage
         {
         }
 
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
-        class ZoneGroup : BasicGroup
+        public class ZoneGroup : BasicGroup
         {
             void StObjConstruct( ISecurityZone zone )
             {
             }
         }
 
-        interface ISecurityZone : IAmbientObject
+        public interface ISecurityZone : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
-        class SecurityZone : ISecurityZone
+        public class SecurityZone : ISecurityZone
         {
             void StObjConstruct( BasicGroup group )
             {
@@ -88,12 +88,12 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         #region Authentication Package
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class AuthenticationPackage : IAmbientObject
+        public class AuthenticationPackage : IAmbientObject
         {
         }
 
         [StObj( Container = typeof( AuthenticationPackage ) )]
-        class AuthenticationUser : BasicUser
+        public class AuthenticationUser : BasicUser
         {
         }
 

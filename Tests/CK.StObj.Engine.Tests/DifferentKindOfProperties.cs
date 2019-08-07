@@ -11,27 +11,27 @@ namespace CK.StObj.Engine.Tests
     public class DifferentKindOfProperties
     {
 
-        class ObjA : IAmbientObject
+        public class ObjA : IAmbientObject
         {
             [AmbientProperty]
             public ObjB NoProblem { get; set; }
         }
 
-        class ObjB : IAmbientObject
+        public class ObjB : IAmbientObject
         {
             [StObjProperty]
             [AmbientProperty]
             public ObjA TwoAttributes { get; set; } 
         }
 
-        class ObjSpecA : ObjA
+        public class ObjSpecA : ObjA
         {
             [StObjProperty]
             public new ObjB NoProblem { get; set; }
         }
 
         [StObjProperty( PropertyName = "NoProblem", PropertyType = typeof(object) )]
-        class ObjSpecA2 : ObjA
+        public class ObjSpecA2 : ObjA
         {
         }
 
@@ -60,17 +60,17 @@ namespace CK.StObj.Engine.Tests
 
         // A null property type triggers an error: it must be explicitly typeof(object).
         [StObjProperty( PropertyName = "AProperty", PropertyType = null )]
-        class MissingStObjPropertyType : IAmbientObject
+        public class MissingStObjPropertyType : IAmbientObject
         {
         }
 
         [StObjProperty( PropertyName = "  " )]
-        class MissingStObjPropertyName : IAmbientObject
+        public class MissingStObjPropertyName : IAmbientObject
         {
         }
 
         [StObjProperty( PropertyName = "Albert", PropertyType = typeof(object) )]
-        class DuplicateStObjProperty : IAmbientObject
+        public class DuplicateStObjProperty : IAmbientObject
         {
             [StObjProperty]
             public object Albert { get; set; }
@@ -96,9 +96,9 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        class ScopedService : IScopedAmbientService { }
+        public class ScopedService : IScopedAmbientService { }
 
-        class InvalidAmbientObjectProperty : IAmbientObject
+        public class InvalidAmbientObjectProperty : IAmbientObject
         {
             [InjectObject]
             public ScopedService NotAnAmbientObjectPropertyType { get; protected set; }
@@ -116,31 +116,31 @@ namespace CK.StObj.Engine.Tests
 
         #region Covariance support
 
-        class CA : IAmbientObject
+        public class CA : IAmbientObject
         {
         }
 
-        class CA2 : CA
+        public class CA2 : CA
         {
         }
 
-        class CA3 : CA2
+        public class CA3 : CA2
         {
         }
 
-        class CB : IAmbientObject
+        public class CB : IAmbientObject
         {
             [InjectObjectAttribute]
             public CA A { get; set; }
         }
 
-        class CB2 : CB
+        public class CB2 : CB
         {
             [InjectObjectAttribute]
             public new CA2 A { get { return (CA2)base.A; } }
         }
 
-        class CB3 : CB2
+        public class CB3 : CB2
         {
             [InjectObjectAttribute]
             public new CA3 A 
@@ -168,7 +168,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        class CMissingSetterOnTopDefiner : IAmbientObject
+        public class CMissingSetterOnTopDefiner : IAmbientObject
         {
             [InjectObjectAttribute]
             public CA2 A { get { return null; } }
@@ -185,7 +185,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        class CPrivateSetter : IAmbientObject
+        public class CPrivateSetter : IAmbientObject
         {
             [InjectObjectAttribute]
             public CA2 A { get; private set; }

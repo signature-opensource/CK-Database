@@ -37,8 +37,8 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
             }
         }
 
-        [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )] 
-        class SqlDatabaseDefault : IAmbientObject
+        [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
+        public class SqlDatabaseDefault : IAmbientObject
         {
             void StObjConstruct( string connectionString )
             {
@@ -49,7 +49,7 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         }
 
         [AmbientDefiner]
-        class BaseDatabaseObject : IAmbientObject
+        public class BaseDatabaseObject : IAmbientObject
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }
@@ -63,7 +63,7 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         // We want BasicActor, BasicUser and BasicGroup to be in CK schema since they belong to BasicPackage.
         [StObj( ItemKind = DependentItemKindSpec.Container )]
         [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
-        class BasicPackage : BaseDatabaseObject
+        public class BasicPackage : BaseDatabaseObject
         {
             [InjectObjectAttribute]
             public BasicUser UserHome { get; protected set; }
@@ -73,17 +73,17 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicActor : BaseDatabaseObject
+        public class BasicActor : BaseDatabaseObject
         {
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicUser : BaseDatabaseObject
+        public class BasicUser : BaseDatabaseObject
         {
         }
 
         [StObj( Container = typeof( BasicPackage ), ItemKind = DependentItemKindSpec.Item )]
-        class BasicGroup : BaseDatabaseObject
+        public class BasicGroup : BaseDatabaseObject
         {
             void StObjConstruct( BasicActor actor )
             {
@@ -95,14 +95,14 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         #region Zone Package
 
         // ZonePackage specializes BasicPackage. Its Schema is the same as BasicPackage (CK).
-        class ZonePackage : BasicPackage
+        public class ZonePackage : BasicPackage
         {
             [InjectObject]
             public new ZoneGroup GroupHome { get { return (ZoneGroup)base.GroupHome; } }
         }
 
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
-        class ZoneGroup : BasicGroup
+        public class ZoneGroup : BasicGroup
         {
             void StObjConstruct( SecurityZone zone )
             {
@@ -111,7 +111,7 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
 
         // This new object in ZonePackage will be in CK schema.
         [StObj( Container = typeof( ZonePackage ), ItemKind = DependentItemKindSpec.Item )]
-        class SecurityZone : BaseDatabaseObject
+        public class SecurityZone : BaseDatabaseObject
         {
             void StObjConstruct( BasicGroup group )
             {
@@ -126,24 +126,24 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         // The objects that are specializations of objects from other packages must stay in CK.
         // But a new object like AuthenticationDetail must be in CKAuth.
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CKAuth" )] 
-        class AuthenticationPackage : BaseDatabaseObject
+        [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CKAuth" )]
+        public class AuthenticationPackage : BaseDatabaseObject
         {
         }
 
         [StObj( Container = typeof( AuthenticationPackage ) )]
-        class AuthenticationUser : BasicUser
+        public class AuthenticationUser : BasicUser
         {
         }
 
         [StObj( Container = typeof( AuthenticationPackage ) )]
-        class AuthenticationDetail : BaseDatabaseObject
+        public class AuthenticationDetail : BaseDatabaseObject
         {
         }
 
         #endregion
 
-        class ValueResolver : IStObjValueResolver
+        public class ValueResolver : IStObjValueResolver
         {
             public void ResolveExternalPropertyValue( IActivityMonitor monitor, IStObjFinalAmbientProperty ambientProperty )
             {
