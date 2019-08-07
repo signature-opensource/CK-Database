@@ -146,7 +146,7 @@ namespace CK.SqlServer.Setup
                             {
                                 _monitor.Info( $"Creating database '{name}'." );
                                 master.Open();
-                                using( var cmd = new SqlCommand( $"create database {name}" ) { Connection = master } ) cmd.ExecuteNonQuery();
+                                using( var cmd = new SqlCommand( $"create database [{name.Replace( "[", "[[" ).Replace( "]", "]]" )}]" ) { Connection = master } ) cmd.ExecuteNonQuery();
                             }
                             catch( Exception exCreate )
                             {
