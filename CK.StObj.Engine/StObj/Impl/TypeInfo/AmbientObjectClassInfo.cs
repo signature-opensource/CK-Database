@@ -223,7 +223,7 @@ namespace CK.Setup
                 StObjConstruct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
                 if( StObjConstruct != null )
                 {
-                    monitor.Warn( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
+                    monitor.Error( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
                 }
             }
             if( StObjConstruct != null )
@@ -264,17 +264,17 @@ namespace CK.Setup
             }
             #endregion
 
-            #region StObjInitialize method checks: (non virtual) void Initialize( IActivityMonitor, IStObjMap )
-            var initialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-            if( initialize != null )
+            #region StObjInitialize method checks: (non virtual) void StObjInitialize( IActivityMonitor, IStObjMap )
+            StObjInitialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( StObjInitialize != null )
             {
-                if( initialize.IsVirtual )
+                if( StObjInitialize.IsVirtual )
                 {
                     monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual." );
                 }
                 else
                 {
-                    var parameters = initialize.GetParameters();
+                    var parameters = StObjInitialize.GetParameters();
                     if( parameters.Length != 2
                         || parameters[0].ParameterType != typeof( IActivityMonitor )
                         || parameters[1].ParameterType != typeof( IStObjMap ) )
@@ -285,6 +285,49 @@ namespace CK.Setup
             }
             #endregion
 
+
+            #region RegisterStartupServices method checks: (non virtual) void RegisterStartupServices( IActivityMonitor, SimpleServiceContainer )
+            RegisterStartupServices = t.GetMethod( StObjContextRoot.RegisterStartupServicesMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( RegisterStartupServices != null )
+            {
+                if( RegisterStartupServices.IsVirtual )
+                {
+                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.RegisterStartupServicesMethodName}' method must NOT be virtual." );
+                }
+                else
+                {
+                    var parameters = RegisterStartupServices.GetParameters();
+                    if( parameters.Length != 2
+                        || parameters[0].ParameterType != typeof( IActivityMonitor )
+                        || parameters[1].ParameterType != typeof( SimpleServiceContainer ) )
+                    {
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, SimpleServiceContainer)." );
+                    }
+                }
+            }
+            #endregion
+
+            #region ConfigureServices method checks: (non virtual) void ConfigureServices( IServiceCollection, ... )
+            var configureServices = t.GetMethod( StObjContextRoot.ConfigureServicesMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( configureServices != null )
+            {
+                if( configureServices.IsVirtual )
+                {
+                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConfigureServicesMethodName}' method must NOT be virtual." );
+                }
+                else
+                {
+                    ConfigureServicesParameters = configureServices.GetParameters();
+                    if( ConfigureServicesParameters.Length == 0
+                        || (ConfigureServicesParameters[0].ParameterType != typeof( StObjContextRoot.ServiceRegister )
+                            && !(ConfigureServicesParameters[0].ParameterType.IsByRef
+                                 && ConfigureServicesParameters[0].ParameterType.GetElementType() == typeof( StObjContextRoot.ServiceRegister ))) )
+                    {
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConfigureServicesMethodName}': first parameter must be a StObjContextRoot.ServiceRegister." );
+                    }
+                }
+            }
+            #endregion
         }
 
         public new AmbientObjectClassInfo Generalization => (AmbientObjectClassInfo)base.Generalization;
@@ -319,6 +362,17 @@ namespace CK.Setup
         public readonly ParameterInfo[] ConstructParameters;
 
         public readonly int ContainerConstructParameterIndex;
+
+        public readonly MethodInfo StObjInitialize;
+
+        public readonly MethodInfo RegisterStartupServices;
+
+        /// <summary>
+        /// ConfigureService parameters. The first parameter is a StObjContextRoot.ServiceRegister.
+        /// When null no ConfigureService method exists.
+        /// </summary>
+        public readonly ParameterInfo[] ConfigureServicesParameters;
+
 
         Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, AmbientTypeKindDetector d )
         {

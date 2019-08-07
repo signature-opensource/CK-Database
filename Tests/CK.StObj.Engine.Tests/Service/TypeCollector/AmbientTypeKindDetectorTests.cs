@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
     [TestFixture]

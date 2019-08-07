@@ -1,15 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\StObjPropertiesTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests
 {

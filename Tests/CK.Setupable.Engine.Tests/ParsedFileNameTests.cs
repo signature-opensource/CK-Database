@@ -8,6 +8,8 @@ using System.Xml;
 using System.Xml.Linq;
 using CK.Setup;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.Setupable.Engine.Tests
 {
     [TestFixture]
@@ -55,7 +57,7 @@ namespace CK.Setupable.Engine.Tests
             var locName = new ContextLocName( "[]db^Name" );
             ParsedFileName result = ParsedFileName.CreateFromSourceCode( locName, "sql" );
             Assert.That( result.FullName, Is.EqualTo( "[]db^Name" ) );
-            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@56.sql" ) );
+            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@58.sql" ) );
             Assert.That( result.Extension, Is.EqualTo( "sql" ) );
         }
 

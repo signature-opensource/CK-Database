@@ -1,12 +1,11 @@
 using CK.Core;
-using CK.Setup;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service.StObj
 {
@@ -255,8 +254,10 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( AbstractS3 )].ClassType.Should().NotBeSameAs( typeof( AbstractS3 ) );
             r.Services.SimpleMappings[typeof( AbstractS3 )].ClassType.Should().BeAssignableTo( typeof( AbstractS3 ) );
 
-            IServiceProvider p = TestHelper.CreateAndConfigureSimpleContainer( map );
-            var oG = p.GetService<ISBase>();
+            var services = new ServiceCollection();
+            new StObjContextRoot.ServiceRegister( TestHelper.Monitor, services ).AddStObjMap( map );
+            IServiceProvider p = services.BuildServiceProvider();
+            var oG = p.GetService( typeof( ISBase ) );
             oG.GetType().FullName.Should().StartWith( "CK._g.AbstractS1" );
 
         }

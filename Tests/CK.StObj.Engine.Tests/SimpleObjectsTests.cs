@@ -6,11 +6,16 @@ using NUnit.Framework;
 using System.Linq;
 using FluentAssertions;
 
+using static CK.Testing.MonitorTestHelper;
+using System.Reflection;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
     public class SimpleObjectsTests
     {
+        static Assembly ThisAssembly = typeof( SimpleObjectsTests ).Assembly;
+
         public class ObjectALevel1Conflict : ObjectA
         {
         }
@@ -18,7 +23,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void StObj_must_have_only_one_specialization_chain()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.IsClass )
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
@@ -65,7 +70,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void Discovering_SimpleObjects()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.IsClass )
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
@@ -99,7 +104,7 @@ namespace CK.StObj.Engine.Tests
         {
             using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => (t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                               || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
@@ -114,7 +119,7 @@ namespace CK.StObj.Engine.Tests
 
             using( TestHelper.Monitor.OpenInfo( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3" );
@@ -133,7 +138,7 @@ namespace CK.StObj.Engine.Tests
             using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
@@ -152,7 +157,7 @@ namespace CK.StObj.Engine.Tests
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                .Where( t => t.IsClass )
                                .Where( t => t.Name == "ObjectXNeedsY"
                                              || t.Name == "ObjectYNeedsX"
@@ -171,7 +176,7 @@ namespace CK.StObj.Engine.Tests
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                .Where( t => t.IsClass )
                                .Where( t => t.Name == "ObjectXNeedsY"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
@@ -229,7 +234,7 @@ namespace CK.StObj.Engine.Tests
             //            ⊐ []CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1 
             //                ↟ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
 
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1" );
@@ -255,7 +260,7 @@ namespace CK.StObj.Engine.Tests
             //            ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1 
             //                ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
 
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1" );
@@ -276,7 +281,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void ValidModelWithRequires()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                            .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1" );

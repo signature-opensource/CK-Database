@@ -118,9 +118,9 @@ namespace CK.Testing
         }
 
         /// <summary>
-        /// Gets the <see cref="IStObjSetupTestHelperCore"/> default implementation.
+        /// Gets the <see cref="IStObjSetupTestHelper"/> default implementation.
         /// </summary>
-        public static IStObjSetupTestHelperCore TestHelper => TestHelperResolver.Default.Resolve<IStObjSetupTestHelperCore>();
+        public static IStObjSetupTestHelper TestHelper => TestHelperResolver.Default.Resolve<IStObjSetupTestHelper>();
 
     }
 }

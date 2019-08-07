@@ -4,6 +4,8 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]

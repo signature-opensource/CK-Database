@@ -100,7 +100,7 @@ namespace CK.Setup
             }
         }
 
-        public struct PropertySetter
+        public readonly struct PropertySetter
         {
             public readonly PropertyInfo Property;
             public readonly object Value;

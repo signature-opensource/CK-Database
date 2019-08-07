@@ -38,7 +38,7 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets whether a registered type is a known to be a singleton.
+        /// Gets whether a registered type is known to be a singleton.
         /// </summary>
         /// <param name="t">The already registered type.</param>
         /// <returns>True if this is a singleton.</returns>
@@ -93,8 +93,6 @@ namespace CK.Core
         {
             return SetLifeTime( m, t, AmbientTypeKind.IsSingleton | IsSingletonReasonFinal );
         }
-
-
 
         AmbientTypeKind? SetLifeTime( IActivityMonitor m, Type t, AmbientTypeKind kind  )
         {
@@ -174,11 +172,14 @@ namespace CK.Core
                         m.Error( $"Attribute [AmbientDefiner] is defined on type '{t}' that is not an ambient type." );
                     }
                 }
+                if( k != AmbientTypeKind.None && !(t.IsPublic || t.IsNestedPublic) )
+                {
+                    m.Error( $"Type '{t}' being '{(k&MaskPublicInfo).ToStringClear( t.IsClass )}' must be public." );
+                }
                 _cache.Add( t, k );
             }
             return k;
         }
-
         static string ToStringFull( AmbientTypeKind t )
         {
             var c = (t & MaskPublicInfo).ToStringClear();

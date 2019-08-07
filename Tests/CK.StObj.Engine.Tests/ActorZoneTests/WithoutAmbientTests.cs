@@ -3,10 +3,12 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 
-namespace CK.StObj.Engine.Tests
+using static CK.Testing.MonitorTestHelper;
+
+namespace CK.StObj.Engine.Tests.ActorZoneTests
 {
     [TestFixture]
-    public class ActorZoneWithoutAmbientTests
+    public class WithoutAmbientTests
     {
         [StObj( ItemKind = DependentItemKindSpec.Group,
                 Children = new Type[] 
@@ -118,9 +120,9 @@ namespace CK.StObj.Engine.Tests
             var r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
 
-            r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
+            WithAmbientTests.CheckChildren<BasicPackage>( r.StObjs, "BasicActor,BasicUser,BasicGroup" );
+            WithAmbientTests.CheckChildren<ZonePackage>( r.StObjs, "SecurityZone,ZoneGroup" );
+            WithAmbientTests.CheckChildren<SqlDatabaseDefault>( r.StObjs, "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser" );
         }
     }
 }

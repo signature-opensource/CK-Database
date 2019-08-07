@@ -11,6 +11,7 @@ using System.IO;
 using CK.CodeGen;
 using CK.Text;
 using CK.CodeGen.Abstractions;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CK.Setup
 {
@@ -19,7 +20,7 @@ namespace CK.Setup
         /// <summary>
         /// Captures code generation result.
         /// </summary>
-        public struct CodeGenerateResult
+        public readonly struct CodeGenerateResult
         {
             /// <summary>
             /// Gets whether the generation succeeded.
@@ -75,6 +76,8 @@ namespace CK.Setup
                 using( monitor.OpenInfo( "Compiling source code." ) )
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );
+                    g.ParseOptions = new CSharpParseOptions( LanguageVersion.CSharp7_3 );
+
                     g.Modules.AddRange( _tempAssembly.SourceModules );
                     var result = g.Generate( ws, finalFilePath );
                     if( saveSource && result.Sources != null )
@@ -161,10 +164,6 @@ class GStObj : IStObj
             foreach( MutableItem m in OrderedStObjs )
             {
                 string generalization = m.Generalization == null ? "null" : $"_stObjs[{m.Generalization.IndexOrdered}]";
-                //string typeName = m.ObjectType.ToCSharpName();
-                //string actualTypeName = m.Specialization == null 
-                //                            ? "typeof("+m.GetFinalTypeCSharpName( monitor, a )+")"
-                //                            : "null";
                 rootCtor.Append( $"_stObjs[{iStObj++}] = " );
                 if( m.Specialization == null )
                 {
@@ -240,13 +239,14 @@ class GStObj : IStObj
                 var mConstruct = m.Type.StObjConstruct;
                 if( mConstruct != null )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
                            .Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, " );
                     if( m.ConstructParameters.Count == 0 ) rootCtor.Append( "Array.Empty<object>()" );
                     else
                     {
                         rootCtor.Append( "new object[] {" );
-                        // Missing Value {get;} on IStObjMutableParameter. We cast for the moment.
+                        // Missing Value {get;} on IStObjMutableParameter and we need the BuilderValueIndex...
+                        // Hideous downcast for the moment.
                         foreach( var p in m.ConstructParameters.Cast<MutableParameter>() )
                         {
                             if( p.BuilderValueIndex < 0 )
@@ -279,10 +279,10 @@ class GStObj : IStObj
             }
             foreach( MutableItem m in OrderedStObjs )
             {
-                MethodInfo init = m.ObjectType.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ); 
+                MethodInfo init = m.Type.StObjInitialize;
                 if( init != null )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
                            .NewLine();
                     rootCtor.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, this }} );" )
                            .NewLine();
@@ -307,6 +307,7 @@ class GStObj : IStObj
 
             var serviceGen = new ServiceSupportCodeGenerator( rootType, rootCtor );
             serviceGen.CreateServiceSupportCode( _liftedMap );
+            serviceGen.CreateConfigureServiceMethod( OrderedStObjs );
         }
 
         static void GenerateValue( ICodeWriter b, object o )

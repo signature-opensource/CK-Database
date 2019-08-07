@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using CK.Core;
-using CK.Setup;
-using System.IO;
-using System.CodeDom.Compiler;
-using System.Reflection;
-using System.Collections;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.Setup;
+using NUnit.Framework;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using static CK.Testing.MonitorTestHelper;
+
 
 namespace CK.StObj.Engine.Tests
 {
@@ -95,7 +93,7 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( r.HasFatalError, Is.False );
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false, null );
-                var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
+                var a = Assembly.Load( "TEST_SimpleEmit" );
                 IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.StObjs.ToLeafType( typeof( A ) ) ) );
                 Assert.That( c.StObjs.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
@@ -181,7 +179,7 @@ namespace CK.StObj.Engine.Tests
 
                 r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false, null );
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
+                    var a = Assembly.Load( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.StObjs.Obtain<B>().TheA, Is.SameAs( c.StObjs.Obtain<A>() ).And.SameAs( c.StObjs.Obtain<ASpec>() ) );
                     Assert.That( c.StObjs.Obtain<ASpec>().TheB, Is.SameAs( c.StObjs.Obtain<B>() ) );
@@ -304,7 +302,7 @@ namespace CK.StObj.Engine.Tests
                 r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null );
 
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
+                    var a = Assembly.Load( "TEST_PostBuildSet" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.StObjs.Obtain<B>().TheA, Is.SameAs( c.StObjs.Obtain<A>() ).And.SameAs( c.StObjs.Obtain<ASpec>() ) );
                     Assert.That( c.StObjs.Obtain<ASpec>().TheB, Is.SameAs( c.StObjs.Obtain<B>() ) );

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 
@@ -41,6 +42,14 @@ namespace CK.Core
         /// </summary>
         IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
 
-
+        /// <summary>
+        /// Configures a <see cref="IServiceCollection"/> by calling first <see cref="StObjContextRoot.RegisterStartupServicesMethodName"/>
+        /// an then <see cref="StObjContextRoot.ConfigureServicesMethodName"/> on all the <see cref="Implementations"/> that expose
+        /// such methods.
+        /// </summary>
+        /// <param name="m">The monitor to use. Must not be null.</param>
+        /// <param name="register">The service register.</param>
+        void ConfigureServices( in StObjContextRoot.ServiceRegister register );
+           
     }
 }

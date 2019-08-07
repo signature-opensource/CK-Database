@@ -21,14 +21,29 @@ namespace CK.Core
         public static readonly string RootContextTypeFullName = "CK.StObj." + RootContextTypeName;
 
         /// <summary>
-        /// Holds the name of 'Construct' method.
+        /// Holds the name of 'Construct' method: StObjConstruct.
         /// </summary>
         public static readonly string ConstructMethodName = "StObjConstruct";
 
         /// <summary>
-        /// Holds the name of 'Initialize' method.
+        /// Holds the name of 'Initialize' method: StObjInitialize.
+        /// This must be a non virtual, typically private void method with parameters that must be (IActivityMonitor, IStObjMap).
         /// </summary>
         public static readonly string InitializeMethodName = "StObjInitialize";
+
+        /// <summary>
+        /// Holds the name 'RegisterStartupServices'.
+        /// This must be a non virtual, typically private void method with parameters that must be (IActivityMonitor, ISimpleServiceContainer).
+        /// </summary>
+        public static readonly string RegisterStartupServicesMethodName = "RegisterStartupServices";
+
+        /// <summary>
+        /// Holds the name 'ConfigureServices'.
+        /// This must be a non virtual, typically private void method with parameters that must contain at least an interface named "IServiceCollection".
+        /// Other parameters can be a IActivityMonitor or any services previously registered in the ISimpleServiceContainer by
+        /// any <see cref="RegisterStartupServicesMethodName"/>.
+        /// </summary>
+        public static readonly string ConfigureServicesMethodName = "ConfigureServices";
 
         static IStObjRuntimeBuilder _stObjBuilder;
 

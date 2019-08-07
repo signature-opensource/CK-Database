@@ -1,13 +1,30 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 
-namespace CK.StObj.Engine.Tests
+using static CK.Testing.MonitorTestHelper;
+
+namespace CK.StObj.Engine.Tests.ActorZoneTests
 {
     [TestFixture]
-    public class ActorZoneWithAmbientTests
+    public class WithAmbientTests
     {
+
+        internal static void CheckChildren<T>( IStObjObjectEngineMap map, string childrenTypeNames )
+        {
+            IEnumerable<IStObjResult> items = map.ToStObj( typeof( T ) ).Children;
+            var s1 = items.Select( i => i.ObjectType.Name ).OrderBy( Util.FuncIdentity );
+            var s2 = childrenTypeNames.Split( ',' ).OrderBy( Util.FuncIdentity );
+            if( !s1.SequenceEqual( s2 ) )
+            {
+                Assert.Fail( "Expecting '{0}' but was '{1}'.", String.Join( ", ", s2 ), String.Join( ", ", s1 ) );
+            }
+        }
+
+
         public class AmbientPropertySetAttribute : Attribute, IStObjStructuralConfigurator
         {
             public string PropertyName { get; set; }
@@ -163,9 +180,9 @@ namespace CK.StObj.Engine.Tests
 
             StObjCollectorResult r = collector.GetResult();
             Assert.That( r.HasFatalError, Is.False );
-            r.StObjs.CheckChildren<BasicPackage>( "BasicActor,BasicUser,BasicGroup" );
-            r.StObjs.CheckChildren<ZonePackage>( "SecurityZone,ZoneGroup" );
-            r.StObjs.CheckChildren<SqlDatabaseDefault>( "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
+            CheckChildren<BasicPackage>( r.StObjs, "BasicActor,BasicUser,BasicGroup" );
+            CheckChildren<ZonePackage>( r.StObjs, "SecurityZone,ZoneGroup" );
+            CheckChildren<SqlDatabaseDefault>( r.StObjs, "BasicPackage,BasicActor,BasicUser,BasicGroup,ZonePackage,SecurityZone,ZoneGroup,AuthenticationPackage,AuthenticationUser,AuthenticationDetail" );
 
             var basicPackage = r.StObjs.Obtain<BasicPackage>();
             Assert.That( basicPackage is ZonePackage );

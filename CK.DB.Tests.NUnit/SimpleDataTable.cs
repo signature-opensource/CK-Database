@@ -19,7 +19,7 @@ namespace CK.Core
         /// <summary>
         /// Header of a column.
         /// </summary>
-        public struct Header
+        public readonly struct Header
         {
             /// <summary>
             /// Name of the column.

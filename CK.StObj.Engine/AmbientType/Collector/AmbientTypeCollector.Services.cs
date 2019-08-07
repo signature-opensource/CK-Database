@@ -230,7 +230,7 @@ namespace CK.Core
             AmbientServiceClassInfo _rootAmbiguity;
             AmbientServiceClassInfo[] _allLeaves;
 
-            struct ClassAmbiguity
+            readonly struct ClassAmbiguity
             {
                 public readonly AmbientServiceClassInfo Class;
                 public readonly List<AmbientServiceClassInfo> Leaves;

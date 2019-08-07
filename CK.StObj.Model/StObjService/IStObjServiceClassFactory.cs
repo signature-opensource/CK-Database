@@ -13,8 +13,8 @@ namespace CK.Core
         /// <summary>
         /// Actual object factory.
         /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
+        /// <param name="provider">The current service provider to use.</param>
+        /// <returns>The created instance.</returns>
         object CreateInstance( IServiceProvider provider );
     }
 }

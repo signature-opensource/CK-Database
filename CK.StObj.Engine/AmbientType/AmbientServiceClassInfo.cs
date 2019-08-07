@@ -499,7 +499,7 @@ namespace CK.Core
                 var target = collector.FindServiceClassInfo( replaced );
                 if( target == null )
                 {
-                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type.Name}': the Type to replace is not an Abienst Service class implementation. It is ignored." );
+                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type.Name}': the Type to replace is not an Ambient Service class implementation. It is ignored." );
                 }
                 else
                 {
@@ -643,7 +643,7 @@ namespace CK.Core
             {
                 return new CtorParameterData( true, null, null, false, lifetime );
             }
-            var conflictMsg = lifetime.GetAmbientKindCombinationError(); 
+            var conflictMsg = lifetime.GetAmbientKindCombinationError( tParam.IsClass ); 
             if( conflictMsg != null )
             {
                 m.Error( $"Type '{tParam.FullName}' for parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor: {conflictMsg}" );

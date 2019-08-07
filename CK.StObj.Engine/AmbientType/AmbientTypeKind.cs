@@ -60,18 +60,27 @@ namespace CK.Core
         /// if this kind is invalid.
         /// </summary>
         /// <param name="this">This ambnient type kind.</param>
+        /// <param name="ambientObjectCanBeSingletonService">True for Class type (not for interface).</param>
         /// <returns>A readable string.</returns>
-        public static string ToStringClear( this AmbientTypeKind @this )
+        public static string ToStringClear( this AmbientTypeKind @this, bool ambientObjectCanBeSingletonService = false )
         {
             switch( @this )
             {
                 case AmbientTypeKind.None: return "None";
                 case AmbientTypeKind.AmbientObject: return "AmbientObject";
-                case AmbientTypeKind.AmbientSingleton: return "AmbientSingleton";
-                case AmbientTypeKind.AmbientScope: return "AmbientScope";
-                case AmbientTypeKind.IsScoped: return "Scoped Service";
-                case AmbientTypeKind.IsSingleton: return "Singleton Service";
-                default: return GetAmbientKindCombinationError( @this );
+                case AmbientTypeKind.AmbientSingleton: return "SingletonAmbientService";
+                case AmbientTypeKind.AmbientScope: return "ScopedAmbientService";
+                case AmbientTypeKind.IsScoped: return "ScopedService";
+                case AmbientTypeKind.IsSingleton: return "SingletonService";
+                case AmbientTypeKind.IsAmbientService: return "AmbientService";
+                default:
+                    {
+                        if( ambientObjectCanBeSingletonService && @this == (AmbientTypeKind.AmbientObject|AmbientTypeKind.AmbientSingleton) )
+                        {
+                            return "AmbientObject and AmbientSingleton";
+                        }
+                        return GetAmbientKindCombinationError( @this );
+                    }
             }
         }
 

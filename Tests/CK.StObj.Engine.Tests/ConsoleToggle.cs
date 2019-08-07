@@ -6,6 +6,8 @@ using NUnit.Framework;
 using CK.StObj.Engine.Tests.Poco;
 using System.Diagnostics;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
@@ -15,7 +17,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void toggle_console()
         {
-            TestHelper.LogsToConsole = !TestHelper.LogsToConsole;
+            TestHelper.LogToConsole = !TestHelper.LogToConsole;
             TestHelper.Monitor.MinimalFilter = LogFilter.Debug;
         }
 

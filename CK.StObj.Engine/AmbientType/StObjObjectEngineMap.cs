@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Reflection;
 using CK.Setup;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.Core
 {
@@ -181,5 +182,10 @@ namespace CK.Core
         IStObjResult IStObjObjectEngineMap.ToLeaf( Type t ) => ToLeaf( t );
 
         IStObj IStObjObjectMap.ToLeaf( Type t ) => ToLeaf( t );
+
+        void IStObjObjectMap.ConfigureServices( in StObjContextRoot.ServiceRegister register )
+        {
+            throw new NotSupportedException( "ConfigureServices is not supported at build time." );
+        }
     }
 }

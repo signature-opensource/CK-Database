@@ -15,7 +15,7 @@ namespace CK.Core
     /// </summary>
     public class TypeAttributesCache : ICKCustomAttributeTypeMultiProvider
     {
-        struct Entry
+        readonly struct Entry
         {
             public Entry( MemberInfo m, object a )
             {

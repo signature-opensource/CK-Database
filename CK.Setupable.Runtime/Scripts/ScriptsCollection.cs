@@ -55,8 +55,8 @@ namespace CK.Setup
         /// <param name="script">The script to add. Can not be null.</param>
         /// <param name="onExisting">
         /// Optional conflict resolver that takes the new <paramref name="script"/> and 
-        /// the existing one (in this order) and returns one of them (returning the second -existing- one is
-        /// the same as returning null).
+        /// the existing one (in this order) and returns one of them or a merged one (returning
+        /// the second -existing- one is the same as returning null).
         /// </param>
         /// <returns>True if the script has been added, false otherwise.</returns>
         public bool Add( IActivityMonitor monitor, ISetupScript script, Func<ISetupScript, ISetupScript, ISetupScript> onExisting = null )
