@@ -172,7 +172,7 @@ namespace CK.Core
                         m.Error( $"Attribute [AmbientDefiner] is defined on type '{t}' that is not an ambient type." );
                     }
                 }
-                if( k != AmbientTypeKind.None && !(t.IsPublic || t.IsNestedPublic) )
+                if( k != AmbientTypeKind.None && !t.Assembly.IsDynamic && !(t.IsPublic || t.IsNestedPublic) )
                 {
                     m.Error( $"Type '{t}' being '{(k&MaskPublicInfo).ToStringClear( t.IsClass )}' must be public." );
                 }

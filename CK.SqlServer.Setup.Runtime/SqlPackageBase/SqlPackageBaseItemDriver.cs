@@ -64,7 +64,7 @@ namespace CK.SqlServer.Setup
         /// Loads the init/install/settle scripts, filters them thanks to the provided target version (the 
         /// current, latest, one) and the currently installed version (that is null if no previous version has been 
         /// installed yet). The selected scripts are then given to a <see cref="SetupHandler"/> that is registered
-        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.InstallScript"/> 
+        /// on the driver object: this SetupHandler will <see cref="SqlDatabaseItemDriver.RunSetupScript"/> 
         /// the appropriate scripts into this <see cref="DatabaseDriver"/> for each <see cref="SetupCallGroupStep"/>.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
@@ -167,7 +167,7 @@ namespace CK.SqlServer.Setup
             {
                 foreach( var s in _scripts[(int)step - 1] )
                 {
-                    if( !_main.DatabaseDriver.InstallScript( monitor, s ) ) return false;
+                    if( !_main.DatabaseDriver.RunSetupScript( monitor, s ) ) return false;
                 }
                 return true;
             }

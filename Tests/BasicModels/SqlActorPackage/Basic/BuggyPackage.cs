@@ -19,7 +19,8 @@ using System.Threading.Tasks;
 namespace SqlActorPackage.Basic
 {
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" ), Versions( "1.0.0" )]
+    [SqlPackage( Schema = "CK", Package = typeof( Package )/*, Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res"*/ )]
+    [Versions( "1.0.0" )]
     [Setup( DriverTypeName = "SqlActorPackage.Runtime.BuggyPackageDriver, SqlActorPackage.Runtime" )]
     public abstract class BuggyPackage : SqlPackage
     {
