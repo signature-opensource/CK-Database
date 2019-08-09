@@ -89,8 +89,8 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), runtimeBuilder: runtimeBuilder );
                 collector.RegisterType( typeof( B ) );
                 collector.RegisterType( typeof( D ) );
-                collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
+                collector.DependencySorterHookInput = items => items.Trace( TestHelper.Monitor );
+                collector.DependencySorterHookOutput = sortedItems => sortedItems.Trace( TestHelper.Monitor );
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
 
@@ -163,8 +163,8 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new StObjPropertyConfigurator() );
                 collector.RegisterType( typeof( B ) );
                 collector.RegisterType( typeof( ASpec ) );
-                collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
+                collector.DependencySorterHookInput = items => items.Trace( TestHelper.Monitor );
+                collector.DependencySorterHookOutput = sortedItems => sortedItems.Trace( TestHelper.Monitor );
                 var r = collector.GetResult(  );
                 {
                     Assert.That( r.HasFatalError, Is.False );
@@ -276,8 +276,8 @@ namespace CK.StObj.Engine.Tests
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new StObjPropertyConfigurator() );
                 collector.RegisterType( typeof( BSpec ) );
                 collector.RegisterType( typeof( ASpec ) );
-                collector.DependencySorterHookInput = items => TestHelper.Monitor.TraceDependentItem( items );
-                collector.DependencySorterHookOutput = sortedItems => TestHelper.Monitor.TraceSortedItem( sortedItems, false );
+                collector.DependencySorterHookInput = items => items.Trace( TestHelper.Monitor );
+                collector.DependencySorterHookOutput = sortedItems => sortedItems.Trace( TestHelper.Monitor );
                 var r = collector.GetResult(  );
                 {
                     Assert.That( r.HasFatalError, Is.False );

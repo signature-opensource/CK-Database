@@ -1,12 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
-
   <Import Project="..\..\..\..\Common\Shared.props" />
-
   <ItemGroup>
     <EmbeddedResource Include="IntermediateTransformation\Res\Package3%28vBase%29.tql" />
     <EmbeddedResource Include="IntermediateTransformation\Res\vDependent.sql" />
@@ -15,13 +13,10 @@
     <EmbeddedResource Include="IntermediateTransformation\Res\Package2%28vBase%29.tql" />
     <EmbeddedResource Include="Res\sSimpleTransformTest.tql" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>
