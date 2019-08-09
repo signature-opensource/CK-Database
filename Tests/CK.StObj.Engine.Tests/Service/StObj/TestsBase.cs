@@ -61,7 +61,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             var r = CheckSuccess( c );
             var assemblyName = DateTime.Now.ToString( "Service_yyMdHmsf" );
             var assemblyPath = Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" );
-            var codeGen = r.GenerateFinalAssembly( TestHelper.Monitor, assemblyPath, true, null );
+            var codeGen = r.GenerateFinalAssembly( TestHelper.Monitor, assemblyPath, true, null, false );
             codeGen.Success.Should().BeTrue( "CodeGeneration should work." );
             var a = Assembly.Load( new AssemblyName( assemblyName ) );
             return (r, StObjContextRoot.Load( a, null, TestHelper.Monitor ));

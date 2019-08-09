@@ -5,6 +5,8 @@ namespace CK.Core
 {
     /// <summary>
     /// Exposes Service Types (interfaces and classes) to Service class mappings.
+    /// This is exposed by <see cref="IStObjMap.Services"/> and is the result of the setup: its implementation
+    /// is dynamically generated.
     /// </summary>
     public interface IStObjServiceMap
     {

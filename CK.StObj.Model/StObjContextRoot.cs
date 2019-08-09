@@ -5,8 +5,8 @@ using System.Reflection;
 namespace CK.Core
 {
     /// <summary>
-    /// Abstract root object that is a <see cref="IStObjMap"/> and is able to build and load concrete maps thanks
-    /// to static methods.
+    /// Abstract root object that will be dynamically generated to implement a <see cref="IStObjMap"/> and
+    /// is able to load concrete (dynamically generated) maps thanks to static <see cref="Load(Assembly, IStObjRuntimeBuilder, IActivityMonitor)"/>.
     /// </summary>
     public abstract partial class StObjContextRoot
     {

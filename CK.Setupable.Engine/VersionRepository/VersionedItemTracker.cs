@@ -35,6 +35,11 @@ namespace CK.Setup
                 return _versions.Count;
             }
 
+            /// <summary>
+            /// Gets the version from a full name.
+            /// </summary>
+            /// <param name="fullName">The full name.</param>
+            /// <returns>The version or null on error.</returns>
             public VersionedTypedName GetOriginalVersion( string fullName )
             {
                 VersionedNameTracked v;
@@ -90,6 +95,16 @@ namespace CK.Setup
             _versionReader = versionRepository;
         }
 
+        /// <summary>
+        /// Gets the features previously registered.
+        /// </summary>
+        public IReadOnlyCollection<VFeature> OriginalFeatures { get; private set; }
+
+        /// <summary>
+        /// Reads the original versions from the store.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>true on success, false on error.</returns>
         public bool Initialize( IActivityMonitor monitor )
         {
             using( monitor.OpenInfo( "Reading original versions." ) )
@@ -97,10 +112,11 @@ namespace CK.Setup
                 try
                 {
                     var originals = _versionReader.GetOriginalVersions( monitor );
-                    if( originals == null ) monitor.Fatal( "VersionedItemRepository must return a non null OriginalVersions." );
+                    if( originals.Items == null ) monitor.Fatal( $"VersionedItemRepository must return an initialized {nameof( OriginalReadInfo )}." );
                     else
                     {
-                        int nbRead = _tracker.Initialize( originals );
+                        OriginalFeatures = originals.Features;
+                        int nbRead = _tracker.Initialize( originals.Items );
                         monitor.CloseGroup( $"Got {nbRead} versions." );
                         return true;
                     }

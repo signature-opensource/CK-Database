@@ -69,7 +69,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Initializes a new <see cref="StObjEngine"/> from a xml element.
+        /// Initializes a new <see cref="StObjEngine"/> from a xml element (see <see cref="StObjEngineConfiguration(XElement)"/>).
         /// </summary>
         /// <param name="monitor">Logger that must be used.</param>
         /// <param name="config">Configuration that describes the key aspects of the build.</param>
@@ -86,6 +86,9 @@ namespace CK.Setup
         class NormalizedFolder
         {
             public readonly string Directory;
+            public readonly string DirectoryTarget;
+            public readonly bool SkipCompilation;
+            public readonly bool GenerateSourceFiles;
             public readonly HashSet<string> Assemblies;
             public readonly HashSet<string> Types;
             public readonly HashSet<string> ExternalSingletonTypes;
@@ -96,6 +99,9 @@ namespace CK.Setup
             public NormalizedFolder( string d, ISetupFolder f, bool sameAsRoot )
             {
                 Directory = d;
+                DirectoryTarget = f.DirectoryTarget;
+                SkipCompilation = f.SkipCompilation;
+                GenerateSourceFiles = f.GenerateSourceFiles;
                 Assemblies = f.Assemblies;
                 Types = f.Types;
                 ExternalSingletonTypes = f.ExternalSingletonTypes;
@@ -130,7 +136,7 @@ namespace CK.Setup
                     StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0], null );
                     if( r == null ) return _status.Success = false;
                     
-                    var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs );
+                    var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs, r.Features );
                     runCtx.RunAspects( () => _status.Success = false );
 
                     if( _status.Success )
@@ -138,17 +144,8 @@ namespace CK.Setup
                         string dllName = _config.GeneratedAssemblyName;
                         if( !dllName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) dllName += ".dll";
 
-                        // If configuration states that the assembly in the root must be generated
-                        // OR there is only one folder (the root), OR one of the SetupFolder is actually the
-                        // same as the root, then we must produce (compile) the assembly of the root.
-                        //
-                        // The only case where the compilation is skipped is when there are multiple folders
-                        // and none of them contains the whole (unified) set of components.
-                        bool actualGenerationRequired = _config.ForceAppContextAssemblyGeneration
-                                                        || _config.AppContextAssemblyGeneratedDirectoryTarget != null
-                                                        || normalizedFolders.Count == 1
-                                                        || normalizedFolders.Any( f => f.SameAsRoot );
-                        _status.Success = FirstGenerationRun( normalizedFolders, r, dllName, !actualGenerationRequired, _config.AppContextAssemblyGeneratedDirectoryTarget );
+                        var rootFolders = normalizedFolders.Where( f => f.SameAsRoot ).ToList();
+                        _status.Success = FirstGenerationRun( rootFolders, r, dllName );
 
                         if( _status.Success )
                         {
@@ -189,27 +186,37 @@ namespace CK.Setup
                 StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
                 if( rFolder == null ) return false;
                 string finalPath = Path.Combine( f.Directory, dllName );
-                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion );
+                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, f.GenerateSourceFiles, _config.InformationalVersion, f.SkipCompilation );
                 return g.Success;
             }
         }
 
-        bool FirstGenerationRun( List<NormalizedFolder> normalizedFolders, StObjCollectorResult r, string dllName, bool skipCompilation, string targetDir )
+        bool FirstGenerationRun( IReadOnlyCollection<NormalizedFolder> rootFolders, StObjCollectorResult r, string dllName )
         {
+            Debug.Assert( rootFolders.All( f => f.SameAsRoot ) );
             using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
             {
                 string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
-                var g = r.GenerateFinalAssembly( _monitor, finalPath, _config.GenerateSourceFiles, _config.InformationalVersion, skipCompilation );
+                var g = r.GenerateFinalAssembly( _monitor, finalPath, rootFolders.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, rootFolders.All( f => f.SkipCompilation ) );
                 if( g.GeneratedFileNames.Count > 0 )
                 {
-                    var targetDirs = normalizedFolders.Where( f => f.SameAsRoot ).Select( f => f.Directory );
-                    if( !String.IsNullOrWhiteSpace( targetDir ) ) targetDirs = targetDirs.Append( Path.GetFullPath( targetDir ) ).Distinct();
-                    foreach( var dir in targetDirs )
+                    foreach( var f in rootFolders )
                     {
+                        if( !f.GenerateSourceFiles && f.SkipCompilation ) continue;
+                        var dir = Path.GetFullPath( f.DirectoryTarget ?? f.Directory );
+                        if( dir == AppContext.BaseDirectory ) continue;
                         using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )
                         {
                             foreach( var file in g.GeneratedFileNames )
                             {
+                                if( file == dllName )
+                                {
+                                    if( f.SkipCompilation ) continue;
+                                }
+                                else
+                                {
+                                    if( !f.GenerateSourceFiles ) continue;
+                                }
                                 try
                                 {
                                     _monitor.Info( file );
@@ -308,7 +315,7 @@ namespace CK.Setup
                                         aliens = f.Types.Except( root.Types );
                                         if( aliens.Any() )
                                         {
-                                            _monitor.Error( $"SetupFolder '{n}' contains at least one explicit class that is not in global configuration: {aliens.Concatenate()}" );
+                                            _monitor.Error( $"SetupFolder '{n}' contains at least one explicit Type that is not in global configuration: {aliens.Concatenate()}" );
                                             ok = false;
                                         }
                                         // Reverse for excluded types.
@@ -323,12 +330,12 @@ namespace CK.Setup
                                             // For ExternalSingletonTypes and ExternalScopedTypes, we allow them to be different
                                             // for the root and any SetupFolders.
                                             // This is because ExternalSingleton/ScopedTypes only impacts the
-                                            // way auto DI configuration is generated: for some SetupFolder
+                                            // way automatic DI configuration is generated: for some SetupFolder
                                             // a service may be a singleton whereas for another one the
                                             // same service type may be implemented as a Scoped one.
-                                            // If this appears to be an issue and we should force the lifetimes
-                                            // to be the same, this will be changed but for the moment, this
-                                            // configuration is "free" to diverge between SetupFolders.
+                                            // If this appears to be an issue and we may force the lifetimes
+                                            // to be the same and this will need to be changed but for the
+                                            // moment, this configuration is "free" to diverge between SetupFolders.
                                             bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
                                                               && f.Types.Count == root.Types.Count
                                                               && root.ExcludedTypes.Count == f.ExcludedTypes.Count

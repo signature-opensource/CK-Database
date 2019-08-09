@@ -5,7 +5,8 @@ using System.Collections.Generic;
 namespace CK.Core
 {
     /// <summary>
-    /// Main interface that offers access to type mapping and Ambient Object instances.
+    /// Main interface that offers access to type mapping, Ambient Object instances and
+    /// simple feature model.
     /// </summary>
     public interface IStObjMap
     {
@@ -28,6 +29,11 @@ namespace CK.Core
         /// Never null, defaults to the empty string.
         /// </summary>
         string MapName { get; }
+
+        /// <summary>
+        /// Gets the set of <see cref="VFeature"/> that is contained in this map.
+        /// </summary>
+        IReadOnlyCollection<VFeature> Features { get; }
 
     }
 }

@@ -124,18 +124,5 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        static VersionedTypedName HandleSkippedVersionWrite( IActivityMonitor monitor, bool rewriteToSameDatabase, VersionedNameTracked t, string startMsg )
-        {
-            if( rewriteToSameDatabase )
-            {
-                monitor.Info( startMsg + "left as-is." );
-            }
-            else
-            {
-                monitor.Info( startMsg + "injected to the target database version." );
-                return t.Original;
-            }
-            return null;
-        }
     }
 }

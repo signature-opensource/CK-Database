@@ -6,6 +6,8 @@ namespace CK.Core
 {
     /// <summary>
     /// Extends <see cref="IStObjTypeMap"/> to expose <see cref="IStObj"/> and Type to Object resolution.
+    /// This is exposed by <see cref="IStObjMap.StObjs"/> and is the result of the setup: its implementation
+    /// is dynamically generated.
     /// </summary>
     public interface IStObjObjectMap : IStObjTypeMap
     {

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Reflection;
 using CK.Setup;
 using Microsoft.Extensions.DependencyInjection;
+using CSemVer;
 
 namespace CK.Core
 {
@@ -22,6 +23,7 @@ namespace CK.Core
     {
         readonly Dictionary<object, MutableItem> _map;
         readonly MutableItem[] _allSpecializations;
+        readonly IReadOnlyCollection<Assembly> _assemblies;
 
         /// <summary>
         /// Initializes a new <see cref="StObjObjectEngineMap"/>.
@@ -32,15 +34,18 @@ namespace CK.Core
         /// mutable items by <see cref="StObjCollector.GetResult()"/>.
         /// </param>
         /// <param name="typeKindDetector">The type kind detector.</param>
+        /// <param name="assemblies">Reference to the set of assemblies used to implement the IStObjMap.Features property.</param>
         internal protected StObjObjectEngineMap(
             string mapName,
             MutableItem[] allSpecializations,
-            AmbientTypeKindDetector typeKindDetector )
+            AmbientTypeKindDetector typeKindDetector,
+            IReadOnlyCollection<Assembly> assemblies )
         {
             Debug.Assert( mapName != null );
             MapName = mapName;
             _map = new Dictionary<object, MutableItem>();
             _allSpecializations = allSpecializations;
+            _assemblies = assemblies;
             _serviceMap = new Dictionary<Type, AmbientServiceClassInfo>();
             _exposedServiceMap = new ServiceMapTypeAdapter( _serviceMap );
             _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
@@ -186,6 +191,18 @@ namespace CK.Core
         void IStObjObjectMap.ConfigureServices( in StObjContextRoot.ServiceRegister register )
         {
             throw new NotSupportedException( "ConfigureServices is not supported at build time." );
+        }
+
+        /// <summary>
+        /// Dynamically projects <see cref="AmbientTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
+        /// (ordered by <see cref="VFeature.Name"/> since by design there can not be multiple versions by feature).
+        /// </summary>
+        public IReadOnlyCollection<VFeature> Features => _assemblies.Select( ToVFeature ).OrderBy( Util.FuncIdentity ).ToList();
+
+        static VFeature ToVFeature( Assembly a )
+        {
+            var v = InformationalVersion.ReadFromAssembly( a ).NuGetVersion;
+            return new VFeature( a.GetName().Name, v.IsValid ? v : SVersion.ZeroVersion );
         }
     }
 }

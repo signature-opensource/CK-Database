@@ -10,9 +10,26 @@ namespace CK.Core
     public interface ISetupFolder
     {
         /// <summary>
-        /// Gets or the path of the directory.
+        /// Gets the path of the directory to process.
         /// </summary>
         string Directory { get; }
+
+        /// <summary>
+        /// Gets an optional target (output) directory where genreated files (assembly and/or sources)
+        /// must be copied. When null, this <see cref="Directory"/> is used.
+        /// </summary>
+        string DirectoryTarget { get; }
+
+        /// <summary>
+        /// Gets whether the compilation should be skipped for this folder: no assembly (see <see cref="StObjEngineConfiguration.GeneratedAssemblyName"/>)
+        /// will be compiled however source files can be available (see <see cref="GenerateSourceFiles"/>).
+        /// </summary>
+        bool SkipCompilation { get; }
+
+        /// <summary>
+        /// Gets whether generated source files should be generated.
+        /// </summary>
+        bool GenerateSourceFiles { get; }
 
         /// <summary>
         /// Gets a set of assembly names that must be processed for setup.
@@ -27,6 +44,12 @@ namespace CK.Core
         HashSet<string> Types { get; }
 
         /// <summary>
+        /// Gets a set of assembly qualified type names that must be excluded from  
+        /// registration.
+        /// </summary>
+        HashSet<string> ExcludedTypes { get; }
+
+        /// <summary>
         /// Gets a set of assembly qualified type names that are known to be singletons. 
         /// </summary>
         HashSet<string> ExternalSingletonTypes { get; }
@@ -36,11 +59,6 @@ namespace CK.Core
         /// </summary>
         HashSet<string> ExternalScopedTypes { get; }
 
-        /// <summary>
-        /// Gets a set of assembly qualified type names that must be excluded from  
-        /// registration.
-        /// </summary>
-        HashSet<string> ExcludedTypes { get; }
 
     }
 }

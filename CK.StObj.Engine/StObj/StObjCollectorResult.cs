@@ -72,7 +72,13 @@ namespace CK.Setup
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// Null if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObjResult> OrderedStObjs { get; } 
+        public IReadOnlyList<IStObjResult> OrderedStObjs { get; }
+
+        /// <summary>
+        /// Gets the features.
+        /// </summary>
+        public IReadOnlyCollection<VFeature> Features => _liftedMap.Features;
+
 
     }
 }

@@ -45,17 +45,38 @@ namespace CK.Setup
             List<string> generatedFileNames = new List<string>();
             try
             {
-                // Injects System.Reflection and setup assemblies into the
-                // workspace that will be used to generate source code.
+                // Retrieves CK._g workspace.
                 var ws = _tempAssembly.DefaultGenerationNamespace.Workspace;
-                ws.EnsureAssemblyReference( typeof( BindingFlags ) );
-                ws.EnsureAssemblyReference( AmbientTypeResult.Assemblies );
 
                 IReadOnlyList<ActivityMonitorSimpleCollector.Entry> errorSummary = null;
                 using( monitor.OpenInfo( "Generating source code." ) )
                 using( monitor.CollectEntries( entries => errorSummary = entries ) )
                 {
-                   GenerateContextSource( monitor, _tempAssembly );
+                    // Injects System.Reflection and setup assemblies into the
+                    // workspace that will be used to generate source code.
+                    ws.EnsureAssemblyReference( typeof( BindingFlags ) );
+                    ws.EnsureAssemblyReference( AmbientTypeResult.Assemblies );
+
+                    // Gets the global name space and injects, once for all, basic namespaces that we
+                    // always want available.
+                    var global = ws.Global.EnsureUsing( "CK.Core" )
+                                          .EnsureUsing( "System" )
+                                          .EnsureUsing( "System.Collections.Generic" )
+                                          .EnsureUsing( "System.Linq" )
+                                          .EnsureUsing( "System.Text" )
+                                          .EnsureUsing( "System.Reflection" );
+
+                    // Asks every ImplementableTypeInfo to generate their code. 
+                    // This step MUST always be done, even if SkipCompilation is true and GenerateSourceFiles is false
+                    // since during this step, side effects MAY occur (this is typically the case of the first run where
+                    // the "reality cache" is created).
+                    foreach( var t in AmbientTypeResult.TypesToImplement )
+                    {
+                        t.GenerateType( monitor, _tempAssembly );
+                    }
+
+                    // Generates the StObjContextRoot implementation.
+                    GenerateStObjContextRootSource( monitor, global.FindOrCreateNamespace( "CK.StObj" ) );
                 }
                 if( errorSummary != null )
                 {
@@ -73,7 +94,7 @@ namespace CK.Setup
                     monitor.OpenInfo( "Compilation is skipped." );
                     return new CodeGenerateResult( true, generatedFileNames );
                 }
-                using( monitor.OpenInfo( "Compiling source code." ) )
+                using( monitor.OpenInfo( "Compiling source code (using C# v7.3 language version)." ) )
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.ParseOptions = new CSharpParseOptions( LanguageVersion.CSharp7_3 );
@@ -102,7 +123,7 @@ namespace CK.Setup
             }
         }
 
-        static readonly string _sourceGStObj = @"
+        const string _sourceGStObj = @"
 class GStObj : IStObj
 {
     public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType, IStObjMap m )
@@ -131,23 +152,8 @@ class GStObj : IStObj
 
     internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
 }";
-        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a )
+        void GenerateStObjContextRootSource( IActivityMonitor monitor, INamespaceScope ns )
         {
-            var global = a.DefaultGenerationNamespace.Workspace.Global
-                          .EnsureUsing( "CK.Core" )
-                          .EnsureUsing( "System" )
-                          .EnsureUsing( "System.Collections.Generic" )
-                          .EnsureUsing( "System.Linq" )
-                          .EnsureUsing( "System.Text" )
-                          .EnsureUsing( "System.Reflection" );
-
-            foreach( var t in AmbientTypeResult.TypesToImplement )
-            {
-                t.GenerateType( monitor, a );
-            }
-
-            var ns = global.FindOrCreateNamespace( "CK.StObj" );
-
             ns.Append( _sourceGStObj ).NewLine();
 
             var rootType = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap, IStObjObjectMap, IStObjServiceMap" )
@@ -308,6 +314,31 @@ class GStObj : IStObj
             var serviceGen = new ServiceSupportCodeGenerator( rootType, rootCtor );
             serviceGen.CreateServiceSupportCode( _liftedMap );
             serviceGen.CreateConfigureServiceMethod( OrderedStObjs );
+
+            GenerateVFeatures( monitor, rootType, rootCtor, _liftedMap.Features );
+        }
+
+        void GenerateVFeatures( IActivityMonitor monitor, ITypeScope rootType, IFunctionScope rootCtor, IReadOnlyCollection<VFeature> features )
+        {
+            monitor.Info( $"Generating Features: {features.Select( f => f.ToString()).Concatenate()}." );
+
+            rootType.Append( "readonly IReadOnlyCollection<VFeature> _vFeatures;" ).NewLine();
+
+            rootCtor.Append( "_vFeatures = new[]{ " );
+            bool atleastOne = false;
+            foreach( var f in features )
+            {
+                if( atleastOne ) rootCtor.Append( ", " );
+                atleastOne = true;
+                rootCtor.Append( "new VFeature( " )
+                        .AppendSourceString( f.Name )
+                        .Append(',')
+                        .Append( "CSemVer.SVersion.Parse( " )
+                        .AppendSourceString( f.Version.ToNuGetPackageString() )
+                        .Append( " ) )" );
+            }
+            rootCtor.Append( "};" );
+            rootType.Append( "public IReadOnlyCollection<VFeature> Features => _vFeatures;" ).NewLine();
         }
 
         static void GenerateValue( ICodeWriter b, object o )

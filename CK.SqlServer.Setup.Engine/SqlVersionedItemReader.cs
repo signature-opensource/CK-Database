@@ -6,6 +6,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using System.Diagnostics;
+using CSemVer;
 
 namespace CK.SqlServer.Setup
 {
@@ -73,9 +74,10 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <returns>The set of original verions.</returns>
-        public IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
+        public OriginalReadInfo GetOriginalVersions( IActivityMonitor monitor )
         {
             var result = new List<VersionedTypedName>();
+            var fResult = new List<VFeature>();
             if( !_initialized )
             {
                 AutoInitialize( Manager );
@@ -87,15 +89,23 @@ namespace CK.SqlServer.Setup
                 while( r.Read() )
                 {
                     string fullName = r.GetString( 0 );
-                    Version v;
-                    if( !Version.TryParse( r.GetString( 2 ), out v ) )
+                    string itemType = r.GetString( 1 );
+                    if( itemType == "VFeature" )
                     {
-                        throw new Exception( $"Unable to parse version for {fullName}: '{r.GetString(2)}'." );
+                        fResult.Add( new VFeature( fullName, SVersion.Parse( r.GetString( 2 ) ) ) );
                     }
-                    result.Add( new VersionedTypedName( fullName, r.GetString( 1 ), v ) );
+                    else
+                    {
+                        Version v;
+                        if( !Version.TryParse( r.GetString( 2 ), out v ) )
+                        {
+                            throw new Exception( $"Unable to parse version for {fullName}: '{r.GetString( 2 )}'." );
+                        }
+                        result.Add( new VersionedTypedName( fullName, r.GetString( 1 ), v ) );
+                    }
                 }
             }
-            return result;
+            return new OriginalReadInfo( result, fResult );
         }
 
         /// <summary>
