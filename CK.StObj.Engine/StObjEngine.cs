@@ -83,30 +83,29 @@ namespace CK.Setup
             _ckSetupConfig = config.Element( "CKSetup" );
         }
 
-        class NormalizedFolder
+        readonly struct NormalizedFolder
         {
-            public readonly string Directory;
-            public readonly string DirectoryTarget;
-            public readonly bool SkipCompilation;
-            public readonly bool GenerateSourceFiles;
-            public readonly HashSet<string> Assemblies;
-            public readonly HashSet<string> Types;
-            public readonly HashSet<string> ExternalSingletonTypes;
-            public readonly HashSet<string> ExternalScopedTypes;
-            public readonly HashSet<string> ExcludedTypes;
+            readonly ISetupFolder _folder;
             public readonly bool SameAsRoot;
+            public readonly NormalizedPath Directory;
+            public readonly NormalizedPath DirectoryTarget;
+            public bool IsValid => _folder != null;
+            public bool SkipCompilation => _folder.SkipCompilation;
+            public bool GenerateSourceFiles => _folder.GenerateSourceFiles;
+            public HashSet<string> Assemblies => _folder.Assemblies;
+            public HashSet<string> Types => _folder.Types;
+            public HashSet<string> ExternalSingletonTypes => _folder.ExternalSingletonTypes;
+            public HashSet<string> ExternalScopedTypes => _folder.ExternalScopedTypes;
+            public HashSet<string> ExcludedTypes => _folder.ExternalScopedTypes;
 
-            public NormalizedFolder( string d, ISetupFolder f, bool sameAsRoot )
+            public NormalizedFolder( ISetupFolder f, NormalizedPath dirTarget, bool sameAsRoot )
             {
-                Directory = d;
-                DirectoryTarget = f.DirectoryTarget;
-                SkipCompilation = f.SkipCompilation;
-                GenerateSourceFiles = f.GenerateSourceFiles;
-                Assemblies = f.Assemblies;
-                Types = f.Types;
-                ExternalSingletonTypes = f.ExternalSingletonTypes;
-                ExternalScopedTypes = f.ExternalScopedTypes;
-                ExcludedTypes = f.ExcludedTypes;
+                Debug.Assert( dirTarget == Path.GetFullPath( f.Directory ) );
+                _folder = f;
+                Directory = dirTarget;
+                DirectoryTarget = f.DirectoryTarget != null && f.DirectoryTarget != f.Directory
+                                    ? new NormalizedPath( Path.GetFullPath( f.DirectoryTarget ) )
+                                    : Directory;
                 SameAsRoot = sameAsRoot;
             }
         }
@@ -144,14 +143,14 @@ namespace CK.Setup
                         string dllName = _config.GeneratedAssemblyName;
                         if( !dllName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) dllName += ".dll";
 
-                        var rootFolders = normalizedFolders.Where( f => f.SameAsRoot ).ToList();
-                        _status.Success = FirstGenerationRun( rootFolders, r, dllName );
+                        var rootFolders = normalizedFolders.Where( (f,idx) => idx == 0 || f.SameAsRoot ).ToList();
+                        _status.Success = PrimaryCodeGeneration( rootFolders, r, dllName );
 
                         if( _status.Success )
                         {
                             foreach( var f in normalizedFolders.Skip( 1 ).Where( f => !f.SameAsRoot ) )
                             {
-                                if( !SecondaryGenerationRun( r, dllName, f ) )
+                                if( !SecondaryCodeGeneration( r, dllName, f ) )
                                 {
                                     _status.Success = false;
                                     break;
@@ -179,32 +178,32 @@ namespace CK.Setup
             }
         }
 
-        bool SecondaryGenerationRun( StObjCollectorResult r, string dllName, NormalizedFolder f )
+        bool SecondaryCodeGeneration( StObjCollectorResult r, string dllName, NormalizedFolder f )
         {
             using( _monitor.OpenInfo( $"Generating assembly for folder '{f.Directory}'." ) )
             {
                 StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
                 if( rFolder == null ) return false;
-                string finalPath = Path.Combine( f.Directory, dllName );
-                var g = rFolder.GenerateFinalAssembly( _monitor, finalPath, f.GenerateSourceFiles, _config.InformationalVersion, f.SkipCompilation );
+                var g = rFolder.GenerateFinalAssembly( _monitor, f.DirectoryTarget.AppendPart( dllName ), f.GenerateSourceFiles, _config.InformationalVersion, f.SkipCompilation );
                 return g.Success;
             }
         }
 
-        bool FirstGenerationRun( IReadOnlyCollection<NormalizedFolder> rootFolders, StObjCollectorResult r, string dllName )
+        bool PrimaryCodeGeneration( IReadOnlyList<NormalizedFolder> rootFolders, StObjCollectorResult r, string dllName )
         {
-            Debug.Assert( rootFolders.All( f => f.SameAsRoot ) );
+            Debug.Assert( rootFolders.Count > 0 && !rootFolders[0].SameAsRoot && rootFolders.Skip( 1 ).All( f => f.SameAsRoot ) );
             using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
             {
-                string finalPath = Path.Combine( AppContext.BaseDirectory, dllName );
+                var root = rootFolders[0];
+                var finalPath = root.DirectoryTarget.AppendPart( dllName );
                 var g = r.GenerateFinalAssembly( _monitor, finalPath, rootFolders.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, rootFolders.All( f => f.SkipCompilation ) );
                 if( g.GeneratedFileNames.Count > 0 )
                 {
                     foreach( var f in rootFolders )
                     {
                         if( !f.GenerateSourceFiles && f.SkipCompilation ) continue;
-                        var dir = Path.GetFullPath( f.DirectoryTarget ?? f.Directory );
-                        if( dir == AppContext.BaseDirectory ) continue;
+                        var dir = f.DirectoryTarget;
+                        if( dir == root.DirectoryTarget ) continue;
                         using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )
                         {
                             foreach( var file in g.GeneratedFileNames )
@@ -220,7 +219,7 @@ namespace CK.Setup
                                 try
                                 {
                                     _monitor.Info( file );
-                                    File.Copy( Path.Combine( AppContext.BaseDirectory, file ), Path.Combine( dir, file ), true );
+                                    File.Copy( root.DirectoryTarget.Combine( file ), dir.Combine( file ), true );
                                 }
                                 catch( Exception ex )
                                 {
@@ -283,8 +282,8 @@ namespace CK.Setup
                 else
                 {
                     var normalized = new List<NormalizedFolder>();
-                    string baseDir = FileUtil.NormalizePathSeparator( AppContext.BaseDirectory, true );
-                    var root = new NormalizedFolder( baseDir, _config, false );
+                    Debug.Assert( _config.Directory == AppContext.BaseDirectory );
+                    var root = new NormalizedFolder( _config, Path.GetFullPath( _config.Directory ), false );
                     normalized.Add( root );
                     foreach( var f in _config.SetupFolders )
                     {
@@ -293,13 +292,12 @@ namespace CK.Setup
                         {
                             try
                             {
-                                string n = FileUtil.NormalizePathSeparator( Path.GetFullPath( f.Directory ), true );
+                                NormalizedPath n = Path.GetFullPath( f.Directory );
                                 if( !Directory.Exists( n ) ) _monitor.Error( $"Directory '{n}' does not exist." );
                                 else
                                 {
-                                    var clash = normalized.FirstOrDefault( norm => n.StartsWith( norm.Directory, StringComparison.OrdinalIgnoreCase )
-                                                                                   || norm.Directory.StartsWith( n, StringComparison.OrdinalIgnoreCase ) );
-                                    if( clash != null )
+                                    var clash = normalized.FirstOrDefault( norm => n.StartsWith( norm.Directory, strict: false ) || norm.Directory.StartsWith( n ) );
+                                    if( clash.IsValid )
                                     {
                                         _monitor.Error( $"Directory '{n}' can not be the same, below or above other SetupFolder '{clash.Directory}'." );
                                     }
@@ -341,7 +339,7 @@ namespace CK.Setup
                                                               && root.ExcludedTypes.Count == f.ExcludedTypes.Count
                                                               && root.ExternalSingletonTypes.SetEquals( f.ExternalSingletonTypes )
                                                               && root.ExternalScopedTypes.SetEquals( f.ExternalScopedTypes );
-                                            normalized.Add( new NormalizedFolder( n, f, sameAsRoot ) );
+                                            normalized.Add( new NormalizedFolder( f, n, sameAsRoot ) );
                                         }
                                     }
                                 }

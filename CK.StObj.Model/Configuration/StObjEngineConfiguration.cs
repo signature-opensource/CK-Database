@@ -30,7 +30,14 @@ namespace CK.Core
         public string GeneratedAssemblyName
         {
             get => String.IsNullOrWhiteSpace(_generatedAssemblyName) ? DefaultGeneratedAssemblyName : _generatedAssemblyName;
-            set => _generatedAssemblyName = value;
+            set
+            {
+                if( value != null && FileUtil.IndexOfInvalidFileNameChars( value ) >= 0 )
+                {
+                    throw new ArgumentException( $"Invalid file character in file name '{value}'." );
+                }
+                _generatedAssemblyName = value;
+            }
         }
 
         /// <summary>

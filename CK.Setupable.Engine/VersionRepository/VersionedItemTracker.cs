@@ -117,7 +117,7 @@ namespace CK.Setup
                     {
                         OriginalFeatures = originals.Features;
                         int nbRead = _tracker.Initialize( originals.Items );
-                        monitor.CloseGroup( $"Got {nbRead} versions." );
+                        monitor.CloseGroup( $"Got {nbRead} versioned items." );
                         return true;
                     }
                 }
@@ -135,12 +135,13 @@ namespace CK.Setup
         /// <param name="monitor">The monitor that will be used.</param>
         /// <param name="writer">The version writer.</param>
         /// <param name="deleteUnaccessedItems">True to delete non accessed names.</param>
+        /// <param name="features">The current features.</param>
         /// <returns>True on success, false on error.</returns>
-        internal bool ConcludeWithFatalOnError( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems )
+        internal bool Conclude( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems, IReadOnlyCollection<VFeature> features )
         {
             try
             {
-                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems );
+                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems, OriginalFeatures, features );
                 return true;
             }
             catch( Exception ex )

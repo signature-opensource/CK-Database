@@ -8,7 +8,7 @@ namespace LocalTestHelper
     {
 
         [Explicit]
-        [Test]
+        [TestCase]
         public void delete_netcore_published_folders()
         {
             TestHelper.LogToConsole = true;
