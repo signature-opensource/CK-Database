@@ -16,14 +16,9 @@ namespace CK.Core
         /// </summary>
         public StObjEngineConfiguration()
         {
-            GenerateSourceFiles = true;
-            Assemblies = new HashSet<string>();
-            Types = new HashSet<string>();
-            ExternalSingletonTypes = new HashSet<string>();
-            ExternalScopedTypes = new HashSet<string>();
-            ExcludedTypes = new HashSet<string>();
             Aspects = new List<IStObjEngineAspectConfiguration>();
-            SetupFolders = new List<SetupFolder>();
+            BinPaths = new List<BinPath>();
+            GlobalExcludedTypes = new HashSet<string>();
         }
 
         /// <summary>
@@ -72,19 +67,34 @@ namespace CK.Core
             static public readonly XName ExcludedTypes = XNamespace.None + "ExcludedTypes";
 
             /// <summary>
+            /// The ExcludedTypes element name.
+            /// </summary>
+            static public readonly XName GlobalExcludedTypes = XNamespace.None + "GlobalExcludedTypes";
+
+            /// <summary>
             /// The Type element name.
             /// </summary>
             static public readonly XName Type = XNamespace.None + "Type";
 
             /// <summary>
-            /// The SetupFolder element name.
+            /// The BasePath element name.
             /// </summary>
-            static public readonly XName SetupFolder = XNamespace.None + "SetupFolder";
+            static public readonly XName BasePath = XNamespace.None + "BasePath";
 
             /// <summary>
-            /// The Directory element name.
+            /// The BinPath element name.
             /// </summary>
-            static public readonly XName Directory = XNamespace.None + "Directory";
+            static public readonly XName BinPath = XNamespace.None + "BinPath";
+
+            /// <summary>
+            /// The BinPaths element name.
+            /// </summary>
+            static public readonly XName BinPaths = XNamespace.None + "BinPaths";
+
+            /// <summary>
+            /// The Path element name.
+            /// </summary>
+            static public readonly XName Path = XNamespace.None + "Path";
 
             /// <summary>
             /// The RevertOrderingNames element name.
@@ -92,9 +102,9 @@ namespace CK.Core
             static public readonly XName RevertOrderingNames = XNamespace.None + "RevertOrderingNames";
 
             /// <summary>
-            /// The DirectoryTarget element name.
+            /// The OutputPath element name.
             /// </summary>
-            static public readonly XName DirectoryTarget = XNamespace.None + "DirectoryTarget";
+            static public readonly XName OutputPath = XNamespace.None + "OutputPath";
 
             /// <summary>
             /// The GenerateSourceFiles element name.
@@ -135,27 +145,17 @@ namespace CK.Core
         public StObjEngineConfiguration( XElement e )
         {
             // Global options.
+            BasePath = (string)e.Element( XmlNames.BasePath );
+            GeneratedAssemblyName = (string)e.Element( XmlNames.GeneratedAssemblyName );
             TraceDependencySorterInput = (bool?)e.Element( XmlNames.TraceDependencySorterInput ) ?? false;
             TraceDependencySorterOutput = (bool?)e.Element( XmlNames.TraceDependencySorterOutput ) ?? false;
             RevertOrderingNames = (bool?)e.Element( XmlNames.RevertOrderingNames ) ?? false;
-            GeneratedAssemblyName = (string)e.Element( XmlNames.GeneratedAssemblyName );
             InformationalVersion = (string)e.Element( XmlNames.InformationalVersion );
  
-            // Root SetupFolder options.
-            DirectoryTarget = (string)e.Element( XmlNames.DirectoryTarget )
-                                // Handling previous v11 AppContextAssemblyGeneratedDirectoryTarget name.
-                                ?? (string)e.Element( XNamespace.None + "AppContextAssemblyGeneratedDirectoryTarget" );
-            SkipCompilation = (bool?)e.Element( XmlNames.SkipCompilation ) ?? false;
-            GenerateSourceFiles = (bool?)e.Element( XmlNames.GenerateSourceFiles )?? true;
+            GlobalExcludedTypes = new HashSet<string>( FromXml( e, XmlNames.GlobalExcludedTypes, XmlNames.Type ) );
 
-            Assemblies = new HashSet<string>( FromXml( e, XmlNames.Assemblies, XmlNames.Assembly ) );
-            Types = new HashSet<string>( FromXml( e, XmlNames.Types, XmlNames.Type ) );
-            ExternalSingletonTypes = new HashSet<string>( FromXml( e, XmlNames.ExternalSingletonTypes, XmlNames.Type ) );
-            ExternalScopedTypes = new HashSet<string>( FromXml( e, XmlNames.ExternalScopedTypes, XmlNames.Type ) );
-            ExcludedTypes = new HashSet<string>( FromXml( e, XmlNames.ExcludedTypes, XmlNames.Type ) );
-
-            // SetupFolders.
-            SetupFolders = e.Descendants( XmlNames.SetupFolder ).Select( f => new SetupFolder( f ) ).ToList();
+            // BinPaths.
+            BinPaths = e.Elements( XmlNames.BinPaths ).Elements( XmlNames.BinPath ).Select( f => new BinPath( f ) ).ToList();
 
             // Aspects.
             Aspects = new List<IStObjEngineAspectConfiguration>();
@@ -183,22 +183,16 @@ namespace CK.Core
             }
 
             e.Add( new XComment( "Please see https://gitlab.com/signature-code/CK-Database/raw/develop/CK.StObj.Model/Configuration/StObjEngineConfiguration.cs for documentation." ),
+                   !BasePath.IsEmptyPath ? new XElement( XmlNames.BasePath, BasePath ) : null,
+                   GeneratedAssemblyName != DefaultGeneratedAssemblyName ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName ) : null,
                    TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, true ) : null,
                    TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, true ) : null,
                    RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, true ) : null,
-                   GeneratedAssemblyName != DefaultGeneratedAssemblyName ? new XElement( XmlNames.GeneratedAssemblyName, GeneratedAssemblyName ) : null,
                    InformationalVersion != null ? new XElement( XmlNames.InformationalVersion, InformationalVersion ) : null,
-                   DirectoryTarget != null ? new XElement( XmlNames.DirectoryTarget, DirectoryTarget ) : null,
-                   SkipCompilation ? new XElement( XmlNames.SkipCompilation, true ) : null,
-                   GenerateSourceFiles ? null : new XElement( XmlNames.GenerateSourceFiles, false ),
-                   ToXml( XmlNames.Assemblies, XmlNames.Assembly, Assemblies ),
-                   ToXml( XmlNames.Types, XmlNames.Type, Types ),
-                   ToXml( XmlNames.ExcludedTypes, XmlNames.Type, ExcludedTypes ),
-                   ToXml( XmlNames.ExternalSingletonTypes, XmlNames.Type, ExternalSingletonTypes ),
-                   ToXml( XmlNames.ExternalScopedTypes, XmlNames.Type, ExternalScopedTypes ),
+                   ToXml( XmlNames.GlobalExcludedTypes, XmlNames.Type, GlobalExcludedTypes ),
                    Aspects.Select( a => a.SerializeXml( new XElement( XmlNames.Aspect, new XAttribute( XmlNames.Type, CleanName( a.GetType() ) ) ) ) ),
-                   new XComment( "Please see https://gitlab.com/signature-code/CK-Database/raw/develop/CK.StObj.Model/Configuration/SetupFolder.cs for documentation." ),
-                   SetupFolders.Select( f => f.ToXml() ) );
+                   new XComment( "BinPaths: please see https://gitlab.com/signature-code/CK-Database/raw/develop/CK.StObj.Model/Configuration/BinPath.cs for documentation." ),
+                   new XElement( XmlNames.BinPaths, BinPaths.Select( f => f.ToXml() ) ) );
             return e;
         }
 

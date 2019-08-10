@@ -83,37 +83,30 @@ namespace CK.Setup
             _ckSetupConfig = config.Element( "CKSetup" );
         }
 
-        readonly struct NormalizedFolder
-        {
-            readonly ISetupFolder _folder;
-            public readonly bool SameAsRoot;
-            public readonly NormalizedPath Directory;
-            public readonly NormalizedPath DirectoryTarget;
-            public bool IsValid => _folder != null;
-            public bool SkipCompilation => _folder.SkipCompilation;
-            public bool GenerateSourceFiles => _folder.GenerateSourceFiles;
-            public HashSet<string> Assemblies => _folder.Assemblies;
-            public HashSet<string> Types => _folder.Types;
-            public HashSet<string> ExternalSingletonTypes => _folder.ExternalSingletonTypes;
-            public HashSet<string> ExternalScopedTypes => _folder.ExternalScopedTypes;
-            public HashSet<string> ExcludedTypes => _folder.ExternalScopedTypes;
-
-            public NormalizedFolder( ISetupFolder f, NormalizedPath dirTarget, bool sameAsRoot )
-            {
-                Debug.Assert( dirTarget == Path.GetFullPath( f.Directory ) );
-                _folder = f;
-                Directory = dirTarget;
-                DirectoryTarget = f.DirectoryTarget != null && f.DirectoryTarget != f.Directory
-                                    ? new NormalizedPath( Path.GetFullPath( f.DirectoryTarget ) )
-                                    : Directory;
-                SameAsRoot = sameAsRoot;
-            }
-        }
-
         /// <summary>
         /// Gets whether this engine is running or has <see cref="Run"/> (it can run only once).
         /// </summary>
         public bool Started => _startContext != null;
+
+        class BinPathComparer : IEqualityComparer<BinPath>
+        {
+            public static BinPathComparer Default = new BinPathComparer();
+
+            public bool Equals( BinPath x, BinPath y )
+            {
+                return x.Types.SetEquals( y.Types )
+                        && x.Assemblies.SetEquals( y.Assemblies )
+                        && x.ExcludedTypes.SetEquals( y.ExcludedTypes )
+                        && x.ExternalScopedTypes.SetEquals( y.ExternalScopedTypes )
+                        && x.ExternalSingletonTypes.SetEquals( y.ExternalSingletonTypes );
+            }
+
+            public int GetHashCode( BinPath b ) => b.ExcludedTypes.Count
+                                                    + b.ExternalScopedTypes.Count * 37
+                                                    + b.Types.Count * 59
+                                                    + b.ExternalSingletonTypes.Count * 83
+                                                    + b.Assemblies.Count * 117;
+        }
 
         /// <summary>
         /// Runs the setup.
@@ -122,9 +115,27 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
+            if( !RootBinPathsAndOutputPaths() ) return false;
             if( _ckSetupConfig != null && !ApplyCKSetupConfiguration() ) return false;
-            List<NormalizedFolder> normalizedFolders = NormalizeConfiguration();
-            if( normalizedFolders == null ) return false; 
+
+            var rootBinPath = new BinPath();
+            rootBinPath.Path = AppContext.BaseDirectory;
+            rootBinPath.Assemblies.AddRange( _config.BinPaths.SelectMany( b => b.Assemblies ) );
+            rootBinPath.Types.AddRange( _config.BinPaths.SelectMany( b => b.Types ) );
+            rootBinPath.ExcludedTypes.AddRange( _config.GlobalExcludedTypes );
+            foreach( var f in _config.BinPaths ) f.ExcludedTypes.AddRange( rootBinPath.ExcludedTypes );
+            // Unifies External lifetime definition: choose Scope as soon as one BinPath want Scope.
+            // Unifies also all the Singletons but remove any Scoped from them... This is not perfect
+            // but should bo the kob in practice.
+            rootBinPath.ExternalScopedTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalScopedTypes ) );
+            rootBinPath.ExternalSingletonTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalSingletonTypes ).Except( rootBinPath.ExternalScopedTypes ) );
+            rootBinPath.GenerateSourceFiles = false;
+            rootBinPath.SkipCompilation = true;
+
+            // Groups similar configurations to optimize runs.
+            var groups = _config.BinPaths.Append( rootBinPath ).GroupBy( Util.FuncIdentity, BinPathComparer.Default ).ToList();
+            var rootGroup = groups.Single( g => g.Contains( rootBinPath ) );
+
             _status = new Status( _monitor );
             _startContext = new StObjEngineConfigureContext( _monitor, _config, _status );
             try
@@ -132,10 +143,10 @@ namespace CK.Setup
                 _startContext.CreateAndConfigureAspects( _config.Aspects, () => _status.Success = false );
                 if( _status.Success )
                 {
-                    StObjCollectorResult r = SafeBuildStObj( normalizedFolders[0], null );
-                    if( r == null ) return _status.Success = false;
-                    
-                    var runCtx = new StObjEngineRunContext( _monitor, _startContext, r.OrderedStObjs, r.Features );
+                    StObjCollectorResult firstRun = SafeBuildStObj( rootBinPath, null );
+                    if( firstRun == null ) return _status.Success = false;
+
+                    var runCtx = new StObjEngineRunContext( _monitor, _startContext, firstRun.OrderedStObjs, firstRun.Features );
                     runCtx.RunAspects( () => _status.Success = false );
 
                     if( _status.Success )
@@ -143,14 +154,15 @@ namespace CK.Setup
                         string dllName = _config.GeneratedAssemblyName;
                         if( !dllName.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) dllName += ".dll";
 
-                        var rootFolders = normalizedFolders.Where( (f,idx) => idx == 0 || f.SameAsRoot ).ToList();
-                        _status.Success = PrimaryCodeGeneration( rootFolders, r, dllName );
-
+                        using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
+                        {
+                            _status.Success = CodeGenerationForPaths( rootGroup, firstRun, dllName );
+                        }
                         if( _status.Success )
                         {
-                            foreach( var f in normalizedFolders.Skip( 1 ).Where( f => !f.SameAsRoot ) )
+                            foreach( var g in groups.Where( g => g != rootGroup ) )
                             {
-                                if( !SecondaryCodeGeneration( r, dllName, f ) )
+                                if( !SecondaryCodeGeneration( firstRun, dllName, g ) )
                                 {
                                     _status.Success = false;
                                     break;
@@ -178,185 +190,155 @@ namespace CK.Setup
             }
         }
 
-        bool SecondaryCodeGeneration( StObjCollectorResult r, string dllName, NormalizedFolder f )
+        private bool RootBinPathsAndOutputPaths()
         {
-            using( _monitor.OpenInfo( $"Generating assembly for folder '{f.Directory}'." ) )
+            if( _ckSetupConfig != null )
             {
-                StObjCollectorResult rFolder = SafeBuildStObj( f, r.SecondaryRunAccessor );
-                if( rFolder == null ) return false;
-                var g = rFolder.GenerateFinalAssembly( _monitor, f.DirectoryTarget.AppendPart( dllName ), f.GenerateSourceFiles, _config.InformationalVersion, f.SkipCompilation );
-                return g.Success;
-            }
-        }
-
-        bool PrimaryCodeGeneration( IReadOnlyList<NormalizedFolder> rootFolders, StObjCollectorResult r, string dllName )
-        {
-            Debug.Assert( rootFolders.Count > 0 && !rootFolders[0].SameAsRoot && rootFolders.Skip( 1 ).All( f => f.SameAsRoot ) );
-            using( _monitor.OpenInfo( "Generating AppContext assembly (first run)." ) )
-            {
-                var root = rootFolders[0];
-                var finalPath = root.DirectoryTarget.AppendPart( dllName );
-                var g = r.GenerateFinalAssembly( _monitor, finalPath, rootFolders.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, rootFolders.All( f => f.SkipCompilation ) );
-                if( g.GeneratedFileNames.Count > 0 )
+                if( _config.BasePath.IsEmptyPath )
                 {
-                    foreach( var f in rootFolders )
-                    {
-                        if( !f.GenerateSourceFiles && f.SkipCompilation ) continue;
-                        var dir = f.DirectoryTarget;
-                        if( dir == root.DirectoryTarget ) continue;
-                        using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )
-                        {
-                            foreach( var file in g.GeneratedFileNames )
-                            {
-                                if( file == dllName )
-                                {
-                                    if( f.SkipCompilation ) continue;
-                                }
-                                else
-                                {
-                                    if( !f.GenerateSourceFiles ) continue;
-                                }
-                                try
-                                {
-                                    _monitor.Info( file );
-                                    File.Copy( root.DirectoryTarget.Combine( file ), dir.Combine( file ), true );
-                                }
-                                catch( Exception ex )
-                                {
-                                    _monitor.Error( ex );
-                                    return false;
-                                }
-                            }
-                        }
-                    }
+                    _config.BasePath = (string)_ckSetupConfig.Element( StObjEngineConfiguration.XmlNames.BasePath );
+                    if( _config.BasePath.IsEmptyPath ) _monitor.Trace( "No BasePath defined: using CKSetup BasePath." );
                 }
-                return g.Success;
             }
+            if( _config.BasePath.IsEmptyPath )
+            {
+                _config.BasePath = Environment.CurrentDirectory;
+                _monitor.Info( $"No BasePath. Using current directory '{_config.BasePath}'." );
+            }
+            foreach( var b in _config.BinPaths )
+            {
+                if( b == null )
+                {
+                    _monitor.Error( "Null BinPath found." );
+                    return false;
+                }
+                if( !b.Path.IsRooted ) b.Path = _config.BasePath.Combine( b.Path );
+                b.Path = b.Path.ResolveDots();
+
+                if( b.OutputPath.IsEmptyPath ) b.OutputPath = b.Path;
+                else if( !b.OutputPath.IsRooted ) b.OutputPath = _config.BasePath.Combine( b.Path );
+                b.OutputPath = b.OutputPath.ResolveDots();
+            }
+            return true;
         }
 
         bool ApplyCKSetupConfiguration()
         {
             using( _monitor.OpenInfo( "Applying CKSetup configuration." ) )
             {
-                if( _config.Types.Count > 0 || _config.Assemblies.Count > 0 || _config.SetupFolders.Count > 0 )
+                var binPaths = _ckSetupConfig.Element( StObjEngineConfiguration.XmlNames.BinPaths );
+                if( binPaths == null )
                 {
-                    _monitor.Error( "Configuration must not contain Types, Assemblies or SetupFolders." );
+                    _monitor.Error( "Missing CKSetup/BinPaths element." );
+                    return false;
                 }
-                else
+                var matched = _config.BinPaths.Select( b => (M: b, P: new NormalizedPath()) ).ToList();
+                int initialCount = matched.Count;
+                foreach( var ckSetupBinPath in binPaths.Elements( StObjEngineConfiguration.XmlNames.BinPath ) )
                 {
-                    var binPaths = _ckSetupConfig.Element( "BinPaths" );
-                    if( binPaths == null ) _monitor.Error( "Missing CKSetup/BinPaths element." );
-                    else
+                    NormalizedPath directory = (string)ckSetupBinPath.Attribute( StObjEngineConfiguration.XmlNames.BinPath );
+                    var assemblies = ckSetupBinPath.Elements()
+                                        .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
+                                        .Select( e => e.Value );
+
+                    var match = matched.Where( b => b.M.Path.StartsWith( directory, false ) ).ToArray();
+                    if( match.Length > 1 )
                     {
-                        var folders = new List<SetupFolder>();
-                        foreach( var b in binPaths.Elements( "BinPath" ) )
+                        _monitor.Error( $"Ambiguous match for CKSetup BinPath '{directory}': {match.Select( b => b.M.Path.Path ).Concatenate()} " );
+                        return false;
+                    }
+                    if( match.Length == 1 )
+                    {
+                        if( match[0].P.IsEmptyPath )
                         {
-                            var directory = (string)b.Attribute( "BinPath" );
-                            var assemblies = b.Elements()
-                                                .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
-                                                .Select( e => e.Value );
-                            var f = new SetupFolder();
-                            f.Directory = directory;
-                            f.Assemblies.AddRange( assemblies );
-                            _config.Assemblies.AddRange( assemblies );
-                            folders.Add( f );
+                            match[0].P = directory;
+                            var a = match[0].M.Assemblies;
+                            int aCount = a.Count;
+                            a.AddRange( assemblies );
+                            _monitor.Info( $"CKStup BinPath '{directory}' matched. Added {a.Count - aCount} assemblies." );
                         }
-                        if( folders.Count == 0 ) _monitor.Error( "Missing at least one BinPath element." );
                         else
                         {
-                            _monitor.Info( $"Handling {folders.Count} BinPath(s)." );
-                            _config.SetupFolders.AddRange( folders );
-                            return true;
+                            _monitor.Error( $"Ambiguous BinPath match between '{directory}' and '{match[0].P}'." );
+                            return false;
                         }
+                    }
+                    else
+                    {
+                        _monitor.Info( $"CKStup BinPath '{directory}' not matched. Creating new default BinPath." );
+                        var b = new BinPath();
+                        b.Assemblies.AddRange( assemblies );
+                        _config.BinPaths.Add( b );
+                        matched.Add( (b, directory) );
+                    }
+                }
+                var noMatch = matched.Where( b => b.P.IsEmptyPath );
+                if( noMatch.Any() )
+                {
+                    if( initialCount == matched.Count )
+                    {
+                        _monitor.Warn( $"Missing match for BinPath: {noMatch.Select( b => b.P.Path ).Concatenate()}." );
+                    }
+                    else
+                    {
+                        _monitor.Error( $"BinPath '{noMatch.Select( b => b.P.Path ).Concatenate( "', '" )}' not matched and at the same time CKSetup BinPath '{matched.Skip( initialCount ).Select( b => b.P.Path ).Concatenate( "', '" )}' have been created. This must be corrected." );
+                        return false;
                     }
                 }
             }
-            return false;
+            return true;
         }
 
-        List<NormalizedFolder> NormalizeConfiguration()
+
+        bool SecondaryCodeGeneration( StObjCollectorResult firstRunResult, string dllName, IGrouping<BinPath,BinPath> binPaths )
         {
-            using( _monitor.OpenInfo( "Validating configuration." ) )
+            using( _monitor.OpenInfo( $"Generating assembly for BinPaths '{binPaths.Select( b => b.Path.Path ).Concatenate("', '")}'." ) )
             {
-                if( _config.Assemblies.Count == 0 && _config.Types.Count == 0 ) _monitor.Error( "Assemblies and ExplicitClasses are empty." );
-                else
+                var head = binPaths.Key;
+                StObjCollectorResult rFolder = SafeBuildStObj( head, firstRunResult.SecondaryRunAccessor );
+                if( rFolder == null ) return false;
+                return CodeGenerationForPaths( binPaths, rFolder, dllName );
+            }
+        }
+
+        bool CodeGenerationForPaths( IGrouping<BinPath, BinPath> binPaths, StObjCollectorResult r, string dllName )
+        {
+            var head = binPaths.Key;
+            var g = r.GenerateFinalAssembly( _monitor, head.OutputPath.AppendPart( dllName ), binPaths.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, binPaths.All( f => f.SkipCompilation ) );
+            if( g.GeneratedFileNames.Count > 0 )
+            {
+                foreach( var f in binPaths )
                 {
-                    var normalized = new List<NormalizedFolder>();
-                    Debug.Assert( _config.Directory == AppContext.BaseDirectory );
-                    var root = new NormalizedFolder( _config, Path.GetFullPath( _config.Directory ), false );
-                    normalized.Add( root );
-                    foreach( var f in _config.SetupFolders )
+                    if( !f.GenerateSourceFiles && f.SkipCompilation ) continue;
+                    var dir = f.OutputPath;
+                    if( dir == head.OutputPath ) continue;
+                    using( _monitor.OpenInfo( $"Copying generated files to folder: '{dir}'." ) )
                     {
-                        if( f == null ) _monitor.Error( "A null SetupFolder found in SetupFolders." );
-                        else
+                        foreach( var file in g.GeneratedFileNames )
                         {
+                            if( file == dllName )
+                            {
+                                if( f.SkipCompilation ) continue;
+                            }
+                            else
+                            {
+                                if( !f.GenerateSourceFiles ) continue;
+                            }
                             try
                             {
-                                NormalizedPath n = Path.GetFullPath( f.Directory );
-                                if( !Directory.Exists( n ) ) _monitor.Error( $"Directory '{n}' does not exist." );
-                                else
-                                {
-                                    var clash = normalized.FirstOrDefault( norm => n.StartsWith( norm.Directory, strict: false ) || norm.Directory.StartsWith( n ) );
-                                    if( clash.IsValid )
-                                    {
-                                        _monitor.Error( $"Directory '{n}' can not be the same, below or above other SetupFolder '{clash.Directory}'." );
-                                    }
-                                    else
-                                    {
-                                        bool ok = true;
-                                        var aliens = f.Assemblies.Except( root.Assemblies );
-                                        if( aliens.Any() )
-                                        {
-                                            _monitor.Error( $"SetupFolder '{n}' contains at least one assembly that is not in global configuration: {aliens.Concatenate()}" );
-                                            ok = false;
-                                        }
-                                        aliens = f.Types.Except( root.Types );
-                                        if( aliens.Any() )
-                                        {
-                                            _monitor.Error( $"SetupFolder '{n}' contains at least one explicit Type that is not in global configuration: {aliens.Concatenate()}" );
-                                            ok = false;
-                                        }
-                                        // Reverse for excluded types.
-                                        aliens = root.ExcludedTypes.Except( f.ExcludedTypes );
-                                        if( aliens.Any() )
-                                        {
-                                            _monitor.Error( $"SetupFolder '{n}' MUST exlude all types that are excluded at the global configuration level: {aliens.Concatenate()}" );
-                                            ok = false;
-                                        }
-                                        if( ok )
-                                        {
-                                            // For ExternalSingletonTypes and ExternalScopedTypes, we allow them to be different
-                                            // for the root and any SetupFolders.
-                                            // This is because ExternalSingleton/ScopedTypes only impacts the
-                                            // way automatic DI configuration is generated: for some SetupFolder
-                                            // a service may be a singleton whereas for another one the
-                                            // same service type may be implemented as a Scoped one.
-                                            // If this appears to be an issue and we may force the lifetimes
-                                            // to be the same and this will need to be changed but for the
-                                            // moment, this configuration is "free" to diverge between SetupFolders.
-                                            bool sameAsRoot = f.Assemblies.Count == root.Assemblies.Count
-                                                              && f.Types.Count == root.Types.Count
-                                                              && root.ExcludedTypes.Count == f.ExcludedTypes.Count
-                                                              && root.ExternalSingletonTypes.SetEquals( f.ExternalSingletonTypes )
-                                                              && root.ExternalScopedTypes.SetEquals( f.ExternalScopedTypes );
-                                            normalized.Add( new NormalizedFolder( f, n, sameAsRoot ) );
-                                        }
-                                    }
-                                }
+                                _monitor.Info( file );
+                                File.Copy( head.OutputPath.Combine( file ), dir.Combine( file ), true );
                             }
                             catch( Exception ex )
                             {
-                                _monitor.Error( $"Invalid SetupFolder.Directory.", ex );
+                                _monitor.Error( ex );
+                                return false;
                             }
                         }
                     }
-                    if( normalized.Count == _config.SetupFolders.Count + 1 )
-                    {
-                        return normalized;
-                    }
                 }
             }
-            return null;
+            return g.Success;
         }
 
         class TypeFilterFromConfiguration : IStObjTypeFilter
@@ -364,9 +346,9 @@ namespace CK.Setup
             readonly StObjConfigurationLayer _firstLayer;
             readonly HashSet<string> _excludedTypes;
 
-            public TypeFilterFromConfiguration( NormalizedFolder f, StObjConfigurationLayer firstLayer )
+            public TypeFilterFromConfiguration( BinPath f, StObjConfigurationLayer firstLayer )
             {
-                _excludedTypes = f.Types;
+                _excludedTypes = f.ExcludedTypes;
                 _firstLayer = firstLayer;
             }
 
@@ -397,7 +379,7 @@ namespace CK.Setup
             }
         }
 
-        StObjCollectorResult SafeBuildStObj( NormalizedFolder f, Func<string,object> secondaryRunAccessor )
+        StObjCollectorResult SafeBuildStObj( BinPath f, Func<string,object> secondaryRunAccessor )
         {
             bool hasError = false;
             using( _monitor.OnError( () => hasError = true ) )

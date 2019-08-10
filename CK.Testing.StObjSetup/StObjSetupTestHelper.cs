@@ -65,15 +65,14 @@ namespace CK.Testing
                                         .Any( p => !File.Exists( p ) );
 
             var stObjConf = new StObjEngineConfiguration();
-            if( stObjConf.Directory != helper.BinFolder )
-            {
-                throw new InvalidOperationException( $"Unable to create a valid Setup configuration: TestHelper.BinFolder (that SHOULD be AppContex.BaseDirectory) is '{TestHelper.BinFolder}' and StObjEngineConfiguration.Directory (that MUST be AppContex.BaseDirectory by design) is '{stObjConf.Directory}'." );
-            }
-            stObjConf.GenerateSourceFiles = helper.StObjGenerateSourceFiles;
             stObjConf.RevertOrderingNames = helper.StObjRevertOrderingNames;
             stObjConf.TraceDependencySorterInput = helper.StObjTraceGraphOrdering;
             stObjConf.TraceDependencySorterOutput = helper.StObjTraceGraphOrdering;
             stObjConf.GeneratedAssemblyName = helper.GeneratedAssemblyName;
+            var b = new BinPath();
+            b.Path = helper.BinFolder;
+            b.GenerateSourceFiles = helper.StObjGenerateSourceFiles;
+            stObjConf.BinPaths.Add( b );
 
             return (stObjConf, forceSetup);
         }

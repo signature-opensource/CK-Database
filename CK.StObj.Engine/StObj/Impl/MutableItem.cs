@@ -457,8 +457,8 @@ namespace CK.Setup
                             // this captures the fact that this level or above needs to track the ambient properties.
                             _needsTrackedAmbientProperties = Generalization._needsTrackedAmbientProperties;
                         }
-                        // Check configuration.
-                        if( _itemKind == DependentItemKind.Unknown )
+                        // Check configuration (avoiding warn for dynamically emitted types).
+                        if( _itemKind == DependentItemKind.Unknown && !Type.Type.Assembly.IsDynamic )
                         {
                             monitor.Warn( $"Since ItemKind is not specified on this base class ('{ToString()}'), it defaults to SimpleItem. It should be explicitly set to either SimpleItem, Group or Container." );
                             _itemKind = DependentItemKind.Item;

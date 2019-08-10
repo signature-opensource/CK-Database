@@ -17,23 +17,28 @@ namespace CK.SqlServer.Setup.Engine.Tests
     public class SecondaryRunTests
     {
         [Test]
-        public void SqlZonePackage_with_SqlActorPackage_SetupFolder()
+        public void SqlZonePackage_with_SqlActorPackage_BinPath()
         {
             var actorGeneratedPath = Path.Combine( TestHelper.BinFolder, "../ForActorOnly" );
             Directory.CreateDirectory( actorGeneratedPath );
             var config = XElement.Parse( $@"
             <C>
-                <GeneratedAssemblyName>SqlActorPackage_SetupFolder</GeneratedAssemblyName>
-                <Assemblies>
-                    <Assembly>SqlActorPackage</Assembly>
-                    <Assembly>SqlZonePackage</Assembly>
-                </Assemblies>
-                <SetupFolder>
-                    <Directory>{actorGeneratedPath}</Directory>
-                    <Assemblies>
-                        <Assembly>SqlActorPackage</Assembly>
-                    </Assemblies>
-                </SetupFolder>
+                <GeneratedAssemblyName>SqlActorPackage_BinPath</GeneratedAssemblyName>
+                <BinPaths>
+                    <BinPath>
+                        <Path>{TestHelper.BinFolder}</Path>
+                        <Assemblies>
+                            <Assembly>SqlActorPackage</Assembly>
+                            <Assembly>SqlZonePackage</Assembly>
+                        </Assemblies>
+                    </BinPath>
+                    <BinPath>
+                        <Path>{actorGeneratedPath}</Path>
+                        <Assemblies>
+                            <Assembly>SqlActorPackage</Assembly>
+                        </Assemblies>
+                    </BinPath>
+                </BinPaths>
                 <Aspect Type=""CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model"" >
                 </Aspect>
                 <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"" >
@@ -43,7 +48,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, config ).Run() )
                 .Should().BeTrue();
-            string generatedFile = Path.Combine( actorGeneratedPath, "SqlActorPackage_SetupFolder.dll" );
+            string generatedFile = Path.Combine( actorGeneratedPath, "SqlActorPackage_BinPath.dll" );
             File.Exists( generatedFile ).Should().BeTrue();
         }
     }

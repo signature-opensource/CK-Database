@@ -42,7 +42,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Registers a type that must be a class or a IPoco interface.
-        /// Aspects can use this instead of adding the assembly qualified name of the type in <see cref="ISetupFolder.Types"/>.
+        /// Aspects can use this instead of adding the assembly qualified name of the type in <see cref="BinPath.Types"/>.
         /// </summary>
         /// <param name="type">Type to register.</param>
         void AddExplicitRegisteredType( Type type );
