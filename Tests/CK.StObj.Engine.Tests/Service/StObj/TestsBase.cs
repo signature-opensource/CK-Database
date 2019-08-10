@@ -59,7 +59,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         public static (StObjCollectorResult, IStObjMap) CheckSuccessAndEmit( StObjCollector c )
         {
             var r = CheckSuccess( c );
-            var assemblyName = DateTime.Now.ToString( "Service_yyMdHmsf" );
+            var assemblyName = DateTime.Now.ToString( "Service_yyMdHmsffff" );
             var assemblyPath = Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" );
             var codeGen = r.GenerateFinalAssembly( TestHelper.Monitor, assemblyPath, true, null, false );
             codeGen.Success.Should().BeTrue( "CodeGeneration should work." );
