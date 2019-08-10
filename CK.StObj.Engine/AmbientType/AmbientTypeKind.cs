@@ -56,7 +56,7 @@ namespace CK.Core
     public static class AmbientTypeKindExtension
     {
         /// <summary>
-        /// Returns a string that correctly handles flags and results to <see cref="GetAmbientKindCombinationError(AmbientTypeKind)"/>
+        /// Returns a string that correctly handles flags and results to <see cref="GetAmbientKindCombinationError(AmbientTypeKind,bool)"/>
         /// if this kind is invalid.
         /// </summary>
         /// <param name="this">This ambnient type kind.</param>
@@ -86,7 +86,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets whether this <see cref="AmbientTypeKind"/> is <see cref="AmbientTypeKind.None"/> or
-        /// is invalid (see <see cref="GetAmbientKindCombinationError(AmbientTypeKind)"/>).
+        /// is invalid (see <see cref="GetAmbientKindCombinationError(AmbientTypeKind,bool)"/>).
         /// </summary>
         /// <param name="this">This ambient kind.</param>
         /// <returns>whether this is invalid.</returns>

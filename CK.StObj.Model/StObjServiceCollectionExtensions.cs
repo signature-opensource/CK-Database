@@ -29,6 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
+        /// <param name="monitor">The monitor to use.</param>
         /// <param name="stobjAssembly">The assembly.</param>
         /// <param name="startupServices">
         /// Optional simple container that may provide startup services. This is not used to build IAmbientObject

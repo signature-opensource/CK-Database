@@ -12,15 +12,15 @@ namespace CK.Core
     {
         /// <summary>
         /// Gets the StObjs map.
-        /// This is for advanced use: <see cref="ConfigureServices(IActivityMonitor, IServiceCollection)"/> handles
-        /// everything that needs to be done before using all the services and objects.
+        /// This is for advanced use: <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)"/>
+        /// handles everything that needs to be done before using all the services and objects.
         /// </summary>
         IStObjObjectMap StObjs { get; }
 
         /// <summary>
         /// Gets the Services map.
-        /// This is for advanced use: <see cref="ConfigureServices(IActivityMonitor, IServiceCollection)"/> handles
-        /// everything that needs to be done before using all the services and objects.
+        /// This is for advanced use: <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)"/>
+        /// handles everything that needs to be done before using all the services and objects.
         /// </summary>
         IStObjServiceMap Services { get; }
 

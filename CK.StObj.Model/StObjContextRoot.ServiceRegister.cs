@@ -10,7 +10,7 @@ namespace CK.Core
     {
         /// <summary>
         /// Small helper that captures the minimal required context to configure a <see cref="IServiceCollection"/>.
-        /// See <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, , SimpleServiceContainer)"/>.
+        /// See <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)"/>.
         /// </summary>
         public readonly struct ServiceRegister
         {
@@ -164,7 +164,7 @@ namespace CK.Core
             /// Registers a factory method.
             /// </summary>
             /// <param name="serviceType">Service type.</param>
-            /// <param name="implementation">Instance factory.</param>
+            /// <param name="factory">Instance factory.</param>
             /// <param name="isScoped">True for scope, false for singletons.</param>
             public void Register( Type serviceType, Func<IServiceProvider, object> factory, bool isScoped )
             {

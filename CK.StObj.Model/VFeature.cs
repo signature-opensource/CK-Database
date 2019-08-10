@@ -63,9 +63,18 @@ namespace CK.Core
         /// <returns>True when equals, false otherwise.</returns>
         public bool Equals( VFeature other ) => StringComparer.OrdinalIgnoreCase.Equals( Name, other.Name ) && Version == other.Version;
 
+        /// <summary>
+        /// Overridden to call <see cref="Equals(VFeature)"/>.
+        /// </summary>
+        /// <param name="obj">The other object.</param>
+        /// <returns>True when equals, false otherwise.</returns>
         public override bool Equals( object obj ) => obj is VFeature a ? Equals( a ) : false;
 
-        public override int GetHashCode() => Version.GetHashCode() ^ Name.GetHashCode();
+        /// <summary>
+        /// Returns a hash based on <see cref="Name"/> and <see cref="Version"/>.
+        /// </summary>
+        /// <returns>The has code.</returns>
+        public override int GetHashCode() => IsValid ? Version.GetHashCode() ^ Name.GetHashCode() : 0;
 
         /// <summary>
         /// Overridden to return <see cref="Name"/>/<see cref="Version"/> or the empty string

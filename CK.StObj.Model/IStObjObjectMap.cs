@@ -49,7 +49,6 @@ namespace CK.Core
         /// an then <see cref="StObjContextRoot.ConfigureServicesMethodName"/> on all the <see cref="Implementations"/> that expose
         /// such methods.
         /// </summary>
-        /// <param name="m">The monitor to use. Must not be null.</param>
         /// <param name="register">The service register.</param>
         void ConfigureServices( in StObjContextRoot.ServiceRegister register );
            
