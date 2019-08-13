@@ -115,9 +115,10 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
-            RootBinPathsAndOutputPaths();
+            if( !RootBinPathsAndOutputPaths() ) return false;
             if( _ckSetupConfig != null && !ApplyCKSetupConfiguration() ) return false;
             var rootBinPath = CreateRootBPathFromBinPaths();
+            if( rootBinPath == null ) return false;
 
             // Groups similar configurations to optimize runs.
             var groups = _config.BinPaths.Append( rootBinPath ).GroupBy( Util.FuncIdentity, BinPathComparer.Default ).ToList();
@@ -177,8 +178,13 @@ namespace CK.Setup
             }
         }
 
-        void RootBinPathsAndOutputPaths()
+        bool RootBinPathsAndOutputPaths()
         {
+            if( _config.BinPaths.Count == 0 )
+            {
+                _monitor.Error( $"No BinPath defined in the configuration. Nothing can be processed." );
+                return false;
+            }
             if( _config.BasePath.IsEmptyPath )
             {
                 _config.BasePath = Environment.CurrentDirectory;
@@ -196,6 +202,7 @@ namespace CK.Setup
                     b.OutputPath = b.OutputPath.ResolveDots();
                 }
             }
+            return true;
         }
 
         bool ApplyCKSetupConfiguration()

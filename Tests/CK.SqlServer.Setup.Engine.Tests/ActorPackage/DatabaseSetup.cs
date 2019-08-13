@@ -45,6 +45,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             b.Path = AppContext.BaseDirectory;
             b.Assemblies.Add( "SqlActorPackage" );
             if( withZone ) b.Assemblies.Add( "SqlZonePackage" );
+            c.BinPaths.Add( b );
             c.GeneratedAssemblyName = dllName;
             c.TraceDependencySorterInput = true;
             c.TraceDependencySorterOutput = true;
@@ -71,7 +72,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                var a = Assembly.Load( new AssemblyName( dllName ) );//Maybe a problem here.
+                var a = Assembly.Load( dllName );
                 IStObjMap m = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
@@ -99,7 +100,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )
             {
-                var a = Assembly.Load( new AssemblyName( dllName + ".Reverted" ) );
+                var a = Assembly.Load( dllName + ".Reverted" );
                 IStObjMap m = StObjContextRoot.Load( a, null, TestHelper.Monitor );
                 if( withZone ) CheckBasicAndZone( db, m );
                 else CheckBasicOnly( db, m );
