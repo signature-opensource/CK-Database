@@ -80,7 +80,7 @@ namespace CK.Setup
             _monitor = monitor;
             _runtimeBuilder = StObjContextRoot.DefaultStObjRuntimeBuilder;
             _config = new StObjEngineConfiguration( config );
-            _ckSetupConfig = config.Element( "CKSetup" );
+            if( config.Attribute( "Engine" ) != null ) _ckSetupConfig = config;
         }
 
         /// <summary>
@@ -115,22 +115,9 @@ namespace CK.Setup
         public bool Run()
         {
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
-            if( !RootBinPathsAndOutputPaths() ) return false;
+            RootBinPathsAndOutputPaths();
             if( _ckSetupConfig != null && !ApplyCKSetupConfiguration() ) return false;
-
-            var rootBinPath = new BinPath();
-            rootBinPath.Path = AppContext.BaseDirectory;
-            rootBinPath.Assemblies.AddRange( _config.BinPaths.SelectMany( b => b.Assemblies ) );
-            rootBinPath.Types.AddRange( _config.BinPaths.SelectMany( b => b.Types ) );
-            rootBinPath.ExcludedTypes.AddRange( _config.GlobalExcludedTypes );
-            foreach( var f in _config.BinPaths ) f.ExcludedTypes.AddRange( rootBinPath.ExcludedTypes );
-            // Unifies External lifetime definition: choose Scope as soon as one BinPath want Scope.
-            // Unifies also all the Singletons but remove any Scoped from them... This is not perfect
-            // but should bo the kob in practice.
-            rootBinPath.ExternalScopedTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalScopedTypes ) );
-            rootBinPath.ExternalSingletonTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalSingletonTypes ).Except( rootBinPath.ExternalScopedTypes ) );
-            rootBinPath.GenerateSourceFiles = false;
-            rootBinPath.SkipCompilation = true;
+            var rootBinPath = CreateRootBPathFromBinPaths();
 
             // Groups similar configurations to optimize runs.
             var groups = _config.BinPaths.Append( rootBinPath ).GroupBy( Util.FuncIdentity, BinPathComparer.Default ).ToList();
@@ -190,16 +177,8 @@ namespace CK.Setup
             }
         }
 
-        private bool RootBinPathsAndOutputPaths()
+        void RootBinPathsAndOutputPaths()
         {
-            if( _ckSetupConfig != null )
-            {
-                if( _config.BasePath.IsEmptyPath )
-                {
-                    _config.BasePath = (string)_ckSetupConfig.Element( StObjEngineConfiguration.XmlNames.BasePath );
-                    if( _config.BasePath.IsEmptyPath ) _monitor.Trace( "No BasePath defined: using CKSetup BasePath." );
-                }
-            }
             if( _config.BasePath.IsEmptyPath )
             {
                 _config.BasePath = Environment.CurrentDirectory;
@@ -207,107 +186,83 @@ namespace CK.Setup
             }
             foreach( var b in _config.BinPaths )
             {
-                if( b == null )
-                {
-                    _monitor.Error( "Null BinPath found." );
-                    return false;
-                }
                 if( !b.Path.IsRooted ) b.Path = _config.BasePath.Combine( b.Path );
                 b.Path = b.Path.ResolveDots();
 
                 if( b.OutputPath.IsEmptyPath ) b.OutputPath = b.Path;
-                else if( !b.OutputPath.IsRooted ) b.OutputPath = _config.BasePath.Combine( b.Path );
-                b.OutputPath = b.OutputPath.ResolveDots();
+                else if( !b.OutputPath.IsRooted )
+                {
+                    b.OutputPath = _config.BasePath.Combine( b.Path );
+                    b.OutputPath = b.OutputPath.ResolveDots();
+                }
             }
-            return true;
         }
 
         bool ApplyCKSetupConfiguration()
         {
             using( _monitor.OpenInfo( "Applying CKSetup configuration." ) )
             {
-                var binPaths = _ckSetupConfig.Element( StObjEngineConfiguration.XmlNames.BinPaths );
-                if( binPaths == null )
+                var binPaths = _ckSetupConfig.Elements( StObjEngineConfiguration.xBinPaths ).SingleOrDefault();
+                if( binPaths == null ) throw new ArgumentException( $"Missing &lt;BinPaths&gt; element in '{_ckSetupConfig}'." );
+                foreach( var xB in binPaths.Elements( StObjEngineConfiguration.xBinPath ) )
                 {
-                    _monitor.Error( "Missing CKSetup/BinPaths element." );
-                    return false;
-                }
-                var matched = _config.BinPaths.Select( b => (M: b, P: new NormalizedPath()) ).ToList();
-                int initialCount = matched.Count;
-                foreach( var ckSetupBinPath in binPaths.Elements( StObjEngineConfiguration.XmlNames.BinPath ) )
-                {
-                    NormalizedPath directory = (string)ckSetupBinPath.Attribute( StObjEngineConfiguration.XmlNames.BinPath );
-                    var assemblies = ckSetupBinPath.Elements()
-                                        .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
-                                        .Select( e => e.Value );
+                    var assemblies = xB.Elements( StObjEngineConfiguration.xAssemblies )
+                                       .Elements()
+                                       .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
+                                       .Select( e => e.Value )
+                                       .Where( s => s != null );
 
-                    var match = matched.Where( b => b.M.Path.StartsWith( directory, false ) ).ToArray();
-                    if( match.Length > 1 )
-                    {
-                        _monitor.Error( $"Ambiguous match for CKSetup BinPath '{directory}': {match.Select( b => b.M.Path.Path ).Concatenate()} " );
-                        return false;
-                    }
-                    if( match.Length == 1 )
-                    {
-                        if( match[0].P.IsEmptyPath )
-                        {
-                            match[0].P = directory;
-                            var a = match[0].M.Assemblies;
-                            int aCount = a.Count;
-                            a.AddRange( assemblies );
-                            _monitor.Info( $"CKStup BinPath '{directory}' matched. Added {a.Count - aCount} assemblies." );
-                        }
-                        else
-                        {
-                            _monitor.Error( $"Ambiguous BinPath match between '{directory}' and '{match[0].P}'." );
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        _monitor.Info( $"CKStup BinPath '{directory}' not matched. Creating new default BinPath." );
-                        var b = new BinPath();
-                        b.Assemblies.AddRange( assemblies );
-                        _config.BinPaths.Add( b );
-                        matched.Add( (b, directory) );
-                    }
+                    var path = (string)xB.Attribute( StObjEngineConfiguration.xPath );
+                    if( path == null ) throw new ArgumentException( $"Missing Path attribute in '{xB}'." );
+                    var c = _config.BinPaths.SingleOrDefault( b => b.Path == path );
+                    if( c == null ) throw new ArgumentException( $"Unable to find one BinPath element with Path '{path}' in: {xB}." );
+                    c.Assemblies.AddRange( assemblies );
+                    _monitor.Info( $"Added assemblies from CKSetup to BinPath '{path}':{Environment.NewLine}{assemblies.Concatenate(Environment.NewLine)}." );
                 }
-                var noMatch = matched.Where( b => b.P.IsEmptyPath );
-                if( noMatch.Any() )
-                {
-                    if( initialCount == matched.Count )
-                    {
-                        _monitor.Warn( $"Missing match for BinPath: {noMatch.Select( b => b.P.Path ).Concatenate()}." );
-                    }
-                    else
-                    {
-                        _monitor.Error( $"BinPath '{noMatch.Select( b => b.P.Path ).Concatenate( "', '" )}' not matched and at the same time CKSetup BinPath '{matched.Skip( initialCount ).Select( b => b.P.Path ).Concatenate( "', '" )}' have been created. This must be corrected." );
-                        return false;
-                    }
-                }
+                return true;
             }
-            return true;
+        }
+
+        BinPath CreateRootBPathFromBinPaths()
+        {
+            var rootBinPath = new BinPath();
+            rootBinPath.Path = rootBinPath.OutputPath = AppContext.BaseDirectory;
+            // The root (the Working directory) doesn't want any output by itself.
+            rootBinPath.GenerateSourceFiles = false;
+            rootBinPath.SkipCompilation = true;
+            // Assemblies and types are the union of the assembblies and types of the bin paths.
+            rootBinPath.Assemblies.AddRange( _config.BinPaths.SelectMany( b => b.Assemblies ) );
+            rootBinPath.Types.AddRange( _config.BinPaths.SelectMany( b => b.Types ) );
+            // Propagates root excluded types to all bin paths.
+            rootBinPath.ExcludedTypes.AddRange( _config.GlobalExcludedTypes );
+            foreach( var f in _config.BinPaths ) f.ExcludedTypes.AddRange( rootBinPath.ExcludedTypes );
+            // Unifies External lifetime definition: choose Scope as soon as one BinPath want Scope.
+            // Unifies also all the Singletons but remove any Scoped from them... This is not perfect
+            // but should do the dob in practice.
+            rootBinPath.ExternalScopedTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalScopedTypes ) );
+            rootBinPath.ExternalSingletonTypes.AddRange( _config.BinPaths.SelectMany( b => b.ExternalSingletonTypes ).Except( rootBinPath.ExternalScopedTypes ) );
+            return rootBinPath;
         }
 
 
-        bool SecondaryCodeGeneration( StObjCollectorResult firstRunResult, string dllName, IGrouping<BinPath,BinPath> binPaths )
+        bool SecondaryCodeGeneration( StObjCollectorResult firstRunResult, string dllName, IGrouping<BinPath,BinPath> bPaths )
         {
-            using( _monitor.OpenInfo( $"Generating assembly for BinPaths '{binPaths.Select( b => b.Path.Path ).Concatenate("', '")}'." ) )
+            using( _monitor.OpenInfo( $"Generating assembly for BinPaths '{bPaths.Select( b => b.Path.Path ).Concatenate("', '")}'." ) )
             {
-                var head = binPaths.Key;
+                var head = bPaths.Key;
                 StObjCollectorResult rFolder = SafeBuildStObj( head, firstRunResult.SecondaryRunAccessor );
                 if( rFolder == null ) return false;
-                return CodeGenerationForPaths( binPaths, rFolder, dllName );
+                return CodeGenerationForPaths( bPaths, rFolder, dllName );
             }
         }
 
-        bool CodeGenerationForPaths( IGrouping<BinPath, BinPath> binPaths, StObjCollectorResult r, string dllName )
+        bool CodeGenerationForPaths( IGrouping<BinPath, BinPath> bPaths, StObjCollectorResult r, string dllName )
         {
-            var head = binPaths.Key;
-            var g = r.GenerateFinalAssembly( _monitor, head.OutputPath.AppendPart( dllName ), binPaths.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, binPaths.All( f => f.SkipCompilation ) );
+            var head = bPaths.Key;
+            var g = r.GenerateFinalAssembly( _monitor, head.OutputPath.AppendPart( dllName ), bPaths.Any( f => f.GenerateSourceFiles ), _config.InformationalVersion, bPaths.All( f => f.SkipCompilation ) );
             if( g.GeneratedFileNames.Count > 0 )
             {
-                foreach( var f in binPaths )
+                foreach( var f in bPaths )
                 {
                     if( !f.GenerateSourceFiles && f.SkipCompilation ) continue;
                     var dir = f.OutputPath;

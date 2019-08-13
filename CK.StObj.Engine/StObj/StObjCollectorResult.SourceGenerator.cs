@@ -89,18 +89,14 @@ namespace CK.Setup
                     }
                     return new CodeGenerateResult( false, generatedFileNames );
                 }
-                if( skipCompilation )
-                {
-                    monitor.OpenInfo( "Compilation is skipped." );
-                    return new CodeGenerateResult( true, generatedFileNames );
-                }
-                using( monitor.OpenInfo( "Compiling source code (using C# v7.3 language version)." ) )
+                using( monitor.OpenInfo( skipCompilation
+                                            ? "Generating source code, parsing using C# v7.3 language version, skipping compilation."
+                                            : "Compiling source code (using C# v7.3 language version)." ) )
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );
                     g.ParseOptions = new CSharpParseOptions( LanguageVersion.CSharp7_3 );
-
                     g.Modules.AddRange( _tempAssembly.SourceModules );
-                    var result = g.Generate( ws, finalFilePath );
+                    var result = g.Generate( ws, finalFilePath, skipCompilation );
                     if( saveSource && result.Sources != null )
                     {
                         for( int i = 0; i < result.Sources.Count; ++i )

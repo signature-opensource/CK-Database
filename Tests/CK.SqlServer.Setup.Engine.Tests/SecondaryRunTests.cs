@@ -21,19 +21,23 @@ namespace CK.SqlServer.Setup.Engine.Tests
         {
             var actorGeneratedPath = Path.Combine( TestHelper.BinFolder, "../ForActorOnly" );
             Directory.CreateDirectory( actorGeneratedPath );
+
+            string file1 = Path.Combine( actorGeneratedPath, "SqlActorPackage_BinPath.dll" );
+            string file2 = Path.Combine( TestHelper.BinFolder, "SqlActorPackage_BinPath.dll" );
+            if( File.Exists( file1 ) ) File.Delete( file1 );
+            if( File.Exists( file2 ) ) File.Delete( file2 );
+
             var config = XElement.Parse( $@"
             <C>
                 <GeneratedAssemblyName>SqlActorPackage_BinPath</GeneratedAssemblyName>
                 <BinPaths>
-                    <BinPath>
-                        <Path>{TestHelper.BinFolder}</Path>
+                    <BinPath Path=""{TestHelper.BinFolder}"" >
                         <Assemblies>
                             <Assembly>SqlActorPackage</Assembly>
                             <Assembly>SqlZonePackage</Assembly>
                         </Assemblies>
                     </BinPath>
-                    <BinPath>
-                        <Path>{actorGeneratedPath}</Path>
+                    <BinPath Path=""{actorGeneratedPath}"" >
                         <Assemblies>
                             <Assembly>SqlActorPackage</Assembly>
                         </Assemblies>
@@ -48,8 +52,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, config ).Run() )
                 .Should().BeTrue();
-            string generatedFile = Path.Combine( actorGeneratedPath, "SqlActorPackage_BinPath.dll" );
-            File.Exists( generatedFile ).Should().BeTrue();
+            File.Exists( file2 ).Should().BeTrue();
+            File.Exists( file1 ).Should().BeTrue();
         }
     }
 }

@@ -86,10 +86,7 @@ namespace CK.Testing
                 {
                     var ev = new StObjSetupRunningEventArgs( stObjConf, forceSetup );
                     _stObjSetupRunning?.Invoke( this, ev );
-
-                    var ckSetupConf = new SetupConfiguration();
-                    ckSetupConf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
-                    stObjConf.SerializeXml( ckSetupConf.Configuration );
+                    var ckSetupConf = new SetupConfiguration( new XDocument( ev.StObjEngineConfiguration.ToXml() ), "CK.Setup.StObjEngine, CK.StObj.Engine" );
                     return _ckSetup.CKSetup.Run( ckSetupConf, forceSetup: ev.ForceSetup );
                 }
                 catch( Exception ex )

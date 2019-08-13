@@ -10,6 +10,7 @@ namespace CK.Core
 {
     /// <summary>
     /// Encapsulates configuration of the StObjEngine.
+    /// This configuration is compatible with CKSetup SetupConfiguration object.
     /// </summary>
     public sealed partial class StObjEngineConfiguration
     {
