@@ -1,0 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CK.Core
+{
+    /// <summary>
+    /// Attribute that marks a type as being a "Definer" of an Ambient type (<see cref="IAmbientObject"/> or <see cref="IAmbientService"/>).
+    /// This defines the decorated object as a "base type" of the ambient type: it is not itself an ambient type but
+    /// its specializations are (unless they also are decorated with this attribute).
+    /// </summary>
+    /// <para>
+    /// This attribute, just like <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>, <see cref="IScopedAmbientService"/>
+    /// and <see cref="ISingletonAmbientService"/> can be created anywhere: as long as the name is AmbientDefinerAttribute 
+    /// (regardless of the namespace), it will be honored.
+    /// </para>
+    [AttributeUsage( AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = false )]
+    public class AmbientDefinerAttribute : Attribute
+    {
+    }
+
+}

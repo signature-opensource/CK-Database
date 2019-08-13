@@ -5,9 +5,6 @@
   </PropertyGroup>
   <Import Project="..\..\Common\Shared.props" />
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
     <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />

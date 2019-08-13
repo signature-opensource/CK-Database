@@ -13,10 +13,12 @@ namespace CK.Setup
     /// </summary>
     internal class MutableParameter : MutableReferenceWithValue, IStObjMutableParameter, IStObjFinalParameter
     {
-        ParameterInfo _param;
+        readonly ParameterInfo _param;
 
         internal MutableParameter( MutableItem owner, ParameterInfo param, bool isContainer )
-            : base( owner, isContainer ? StObjMutableReferenceKind.ConstructParameter|StObjMutableReferenceKind.Container : StObjMutableReferenceKind.ConstructParameter )
+            : base( owner, isContainer
+                            ? StObjMutableReferenceKind.ConstructParameter|StObjMutableReferenceKind.Container
+                            : StObjMutableReferenceKind.ConstructParameter )
         {
             _param = param;
             Type = param.ParameterType;
@@ -34,7 +36,12 @@ namespace CK.Setup
 
         internal override Type UnderlyingType => _param.ParameterType;
 
-        internal bool IsSetupLogger => _param.ParameterType == typeof( IActivityMonitor ) && _param.Name == "monitor";
+        internal bool IsSetupLogger => _param.ParameterType == typeof( IActivityMonitor );
+
+        internal override MutableItem ResolveToStObj( IActivityMonitor monitor, StObjObjectEngineMap collector )
+        {
+            return IsSetupLogger ? null : base.ResolveToStObj( monitor, collector );
+        }
 
         /// <summary>
         /// Stores the index of the runtime value to use. 0 for null, Positive for objects collected in BuildValueCollector, the negative IndexOrdered+1 for StObj

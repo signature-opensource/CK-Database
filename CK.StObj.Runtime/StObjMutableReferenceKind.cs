@@ -62,6 +62,7 @@ namespace CK.Setup
         /// <summary>
         /// Pure reference to another object without any structural constraint.
         /// </summary>
-        AmbientContract = 128
+        AmbientObject = 128,
+
     }
 }

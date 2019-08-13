@@ -13,7 +13,7 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests.SimpleObjects
 {
     [StObj( ItemKind = DependentItemKindSpec.Container )]
-    public class PackageForAB : IAmbientContract
+    public class PackageForAB : IAmbientObject
     {
         public int ConstructCount { get; protected set; }
 

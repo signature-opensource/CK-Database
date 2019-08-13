@@ -38,7 +38,8 @@ namespace CK.Setup
         IStObj Owner { get; }
 
         /// <summary>
-        /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter, AmbientProperty or AmbientContract).
+        /// Gets the kind of reference (Container, Requires, RequiredBy, Group, Child, ConstructParameter,
+        /// AmbientProperty or InjectObject).
         /// </summary>
         StObjMutableReferenceKind Kind { get; }
 

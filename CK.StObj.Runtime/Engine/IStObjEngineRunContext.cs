@@ -33,6 +33,11 @@ namespace CK.Setup
         IReadOnlyList<IStObjResult> OrderedStObjs { get; }
 
         /// <summary>
+        /// Gets the features.
+        /// </summary>
+        IReadOnlyCollection<VFeature> Features { get; }
+
+        /// <summary>
         /// Pushes a defered action.
         /// It will be executed after the Run call on all aspects.
         /// An action can be pushed at any moment and a pushed action can push another action.

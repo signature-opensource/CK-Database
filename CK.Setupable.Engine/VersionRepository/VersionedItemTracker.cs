@@ -35,6 +35,11 @@ namespace CK.Setup
                 return _versions.Count;
             }
 
+            /// <summary>
+            /// Gets the version from a full name.
+            /// </summary>
+            /// <param name="fullName">The full name.</param>
+            /// <returns>The version or null on error.</returns>
             public VersionedTypedName GetOriginalVersion( string fullName )
             {
                 VersionedNameTracked v;
@@ -90,6 +95,16 @@ namespace CK.Setup
             _versionReader = versionRepository;
         }
 
+        /// <summary>
+        /// Gets the features previously registered.
+        /// </summary>
+        public IReadOnlyCollection<VFeature> OriginalFeatures { get; private set; }
+
+        /// <summary>
+        /// Reads the original versions from the store.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>true on success, false on error.</returns>
         public bool Initialize( IActivityMonitor monitor )
         {
             using( monitor.OpenInfo( "Reading original versions." ) )
@@ -97,11 +112,12 @@ namespace CK.Setup
                 try
                 {
                     var originals = _versionReader.GetOriginalVersions( monitor );
-                    if( originals == null ) monitor.Fatal( "VersionedItemRepository must return a non null OriginalVersions." );
+                    if( originals.Items == null ) monitor.Fatal( $"VersionedItemRepository must return an initialized {nameof( OriginalReadInfo )}." );
                     else
                     {
-                        int nbRead = _tracker.Initialize( originals );
-                        monitor.CloseGroup( $"Got {nbRead} versions." );
+                        OriginalFeatures = originals.Features;
+                        int nbRead = _tracker.Initialize( originals.Items );
+                        monitor.CloseGroup( $"Got {nbRead} versioned items." );
                         return true;
                     }
                 }
@@ -119,12 +135,13 @@ namespace CK.Setup
         /// <param name="monitor">The monitor that will be used.</param>
         /// <param name="writer">The version writer.</param>
         /// <param name="deleteUnaccessedItems">True to delete non accessed names.</param>
+        /// <param name="features">The current features.</param>
         /// <returns>True on success, false on error.</returns>
-        internal bool ConcludeWithFatalOnError( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems )
+        internal bool Conclude( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems, IReadOnlyCollection<VFeature> features )
         {
             try
             {
-                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems );
+                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems, OriginalFeatures, features );
                 return true;
             }
             catch( Exception ex )

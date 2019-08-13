@@ -1,12 +1,11 @@
 using CK.Core;
-using CK.Setup;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service.StObj
 {
@@ -17,23 +16,23 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
-        interface IS1 : ISBase
+        public interface IS1 : ISBase
         {
         }
 
-        interface IS2 : ISBase
+        public interface IS2 : ISBase
         {
         }
 
-        class ServiceS1Impl : IS1
+        public class ServiceS1Impl : IS1
         {
         }
 
-        class ServiceS2Impl : IS2
+        public class ServiceS2Impl : IS2
         {
         }
 
-        class ServiceS1S2Impl : IS1, IS2
+        public class ServiceS1S2Impl : IS1, IS2
         {
         }
 
@@ -75,11 +74,11 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( ServiceS1S2Impl )].ClassType.Should().BeSameAs( typeof( ServiceS1S2Impl ) );
         }
 
-        interface ISU : IS1, IS2
+        public interface ISU : IS1, IS2
         {
         }
 
-        class ServiceUnifiedImpl : ISU
+        public class ServiceUnifiedImpl : ISU
         {
         }
 
@@ -101,37 +100,37 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( ISBase )].ClassType.Should().BeSameAs( typeof( ServiceUnifiedImpl ) );
         }
 
-        interface IMultiImplService : IScopedAmbientService
+        public interface IMultiImplService : IScopedAmbientService
         {
         }
 
         // Intermediate class.
-        class ServiceImplBaseBase : IMultiImplService
+        public class ServiceImplBaseBase : IMultiImplService
         {
         }
 
         // Root class with 2 ambiguous specializations (ServiceImpl1 and ServiceImpl3).
-        class ServiceImplRootProblem : ServiceImplBaseBase
+        public class ServiceImplRootProblem : ServiceImplBaseBase
         {
         }
 
         // First ambiguous class.
-        class ServiceImpl1 : ServiceImplRootProblem
+        public class ServiceImpl1 : ServiceImplRootProblem
         {
         }
 
         // Intermediate class.
-        class ServiceImpl2 : ServiceImplRootProblem
+        public class ServiceImpl2 : ServiceImplRootProblem
         {
         }
 
         // Second ambiguous class.
-        class ServiceImpl3 : ServiceImpl2
+        public class ServiceImpl3 : ServiceImpl2
         {
         }
 
         // Solver (uses Class Unification).
-        class ResolveByClassUnification : ServiceImpl3
+        public class ResolveByClassUnification : ServiceImpl3
         {
             public ResolveByClassUnification( ServiceImpl1 s1 )
             {
@@ -174,28 +173,28 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             }
         }
 
-        class S1 : ISBase
+        public class S1 : ISBase
         {
             public S1( S2 s2 )
             {
             }
         }
 
-        class S2 : ISBase
+        public class S2 : ISBase
         {
             public S2( S3 s2 )
             {
             }
         }
 
-        class S3 : ISBase
+        public class S3 : ISBase
         {
             public S3( S4 s2 )
             {
             }
         }
 
-        class S4 : ISBase
+        public class S4 : ISBase
         {
         }
 
@@ -255,8 +254,10 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( AbstractS3 )].ClassType.Should().NotBeSameAs( typeof( AbstractS3 ) );
             r.Services.SimpleMappings[typeof( AbstractS3 )].ClassType.Should().BeAssignableTo( typeof( AbstractS3 ) );
 
-            IServiceProvider p = TestHelper.CreateAndConfigureSimpleContainer( map );
-            var oG = p.GetService<ISBase>();
+            var services = new ServiceCollection();
+            new StObjContextRoot.ServiceRegister( TestHelper.Monitor, services ).AddStObjMap( map );
+            IServiceProvider p = services.BuildServiceProvider();
+            var oG = p.GetService( typeof( ISBase ) );
             oG.GetType().FullName.Should().StartWith( "CK._g.AbstractS1" );
 
         }

@@ -4,6 +4,8 @@ using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
@@ -35,14 +37,14 @@ namespace CK.StObj.Engine.Tests
 
         [DirectPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectDirect : IAmbientContract
+        public class SimpleObjectDirect : IAmbientObject
         {
             public int OneIntValue { get; set; }
         }
 
         [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectAmbient : IAmbientContract
+        public class SimpleObjectAmbient : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -143,14 +145,14 @@ namespace CK.StObj.Engine.Tests
         #region Propagation to container's children.
 
         [StObj( Container = typeof( SimpleObjectDirect ) )]
-        public class SimpleObjectInsideDirect : IAmbientContract
+        public class SimpleObjectInsideDirect : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
         }
 
         [StObj( Container = typeof( SimpleObjectAmbient ) )]
-        public class SimpleObjectInsideAmbiant : IAmbientContract
+        public class SimpleObjectInsideAmbiant : IAmbientObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -181,40 +183,40 @@ namespace CK.StObj.Engine.Tests
 
         #region Potentially recursive resolution with type resolution
 
-        class BaseForObject
+        public class BaseForObject
         {
             [AmbientProperty]
             public TypeToMapBase Ambient { get; set; }
         }
 
-        class TypeToMapBase
+        public class TypeToMapBase
         {
         }
 
-        class TypeToMap : TypeToMapBase, IAmbientContract
+        public class TypeToMap : TypeToMapBase, IAmbientObject
         {
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : BaseForObject, IAmbientContract
+        public class C1 : BaseForObject, IAmbientObject
         {
         }
 
         [StObj( Container = typeof( C1 ) )]
-        class O1InC1 : BaseForObject, IAmbientContract
+        public class O1InC1 : BaseForObject, IAmbientObject
         {
         }
 
-        class C2 : C1
+        public class C2 : C1
         {
         }
 
         [StObj( Container = typeof( C2 ) )]
-        class O2InC2 : O1InC1
+        public class O2InC2 : O1InC1
         {
         }
 
-        class AmbientResolutionTypeSetter : IStObjStructuralConfigurator
+        public class AmbientResolutionTypeSetter : IStObjStructuralConfigurator
         {
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {

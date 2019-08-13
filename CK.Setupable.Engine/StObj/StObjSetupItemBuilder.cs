@@ -67,7 +67,7 @@ namespace CK.Setup
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attributes above if it is the root Ambient Contract.
+                    // the attributes above if it is the root Ambient Object.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;

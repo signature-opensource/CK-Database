@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Engine\StObj\Impl\MutableReference.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,19 +29,17 @@ namespace CK.Setup
             _kind = kind;
             if( _kind == StObjMutableReferenceKind.Requires 
                 || _kind == StObjMutableReferenceKind.Group 
-                || _kind == StObjMutableReferenceKind.AmbientContract 
+                || _kind == StObjMutableReferenceKind.AmbientObject 
                 || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;
             }
-            else if( _kind == StObjMutableReferenceKind.RequiredBy || _kind == StObjMutableReferenceKind.AmbientProperty )
-            {
-                StObjRequirementBehavior = StObjRequirementBehavior.None;
-            }
             else
             {
-                Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0 );
-                StObjRequirementBehavior = StObjRequirementBehavior.WarnIfNotStObj;
+                Debug.Assert( (_kind & StObjMutableReferenceKind.ConstructParameter) != 0
+                                || _kind == StObjMutableReferenceKind.RequiredBy
+                                || _kind == StObjMutableReferenceKind.AmbientProperty );
+                StObjRequirementBehavior = StObjRequirementBehavior.None;
             }
         }
 
@@ -69,15 +60,16 @@ namespace CK.Setup
         public Type Type { get; set; }
 
         internal virtual MutableItem ResolveToStObj( IActivityMonitor monitor, StObjObjectEngineMap collector )
-        {           
+        {
             MutableItem result = null;
-            if( Type == null || StObjRequirementBehavior == Setup.StObjRequirementBehavior.ExternalReference ) return result;
-          
-            result = collector.ToHighestImpl( Type );
-            if( result == null )
+            if( Type != null && StObjRequirementBehavior != StObjRequirementBehavior.ExternalReference )
             {
-                // No warn or errot on value type or string not found.
-                WarnOrErrorIfStObjRequired(monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found");
+                result = collector.ToHighestImpl( Type );
+                if( result == null )
+                {                        // No warn on value type or string not found.
+                    WarnOrErrorIfStObjRequired( monitor, skipWarnOnValueType: true, text: $"{Type.FullName} not found" );
+
+                }
             }
             return result;
         }
@@ -90,9 +82,9 @@ namespace CK.Setup
             }
             else if( StObjRequirementBehavior == Setup.StObjRequirementBehavior.WarnIfNotStObj )
             {
-                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof(string)))
+                if( !skipWarnOnValueType || !(Type.IsValueType || Type == typeof( string )) )
                 {
-                    Warn(monitor, text);
+                    Warn( monitor, text );
                 }
             }
         }

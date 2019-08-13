@@ -11,6 +11,7 @@ using System.IO;
 using CK.CodeGen;
 using CK.Text;
 using CK.CodeGen.Abstractions;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CK.Setup
 {
@@ -19,7 +20,7 @@ namespace CK.Setup
         /// <summary>
         /// Captures code generation result.
         /// </summary>
-        public struct CodeGenerateResult
+        public readonly struct CodeGenerateResult
         {
             /// <summary>
             /// Gets whether the generation succeeded.
@@ -44,17 +45,38 @@ namespace CK.Setup
             List<string> generatedFileNames = new List<string>();
             try
             {
-                // Injects System.Reflection and setup assemblies into the
-                // workspace that will be used to generate source code.
+                // Retrieves CK._g workspace.
                 var ws = _tempAssembly.DefaultGenerationNamespace.Workspace;
-                ws.EnsureAssemblyReference( typeof( BindingFlags ) );
-                ws.EnsureAssemblyReference( AmbientTypeResult.Assemblies );
 
                 IReadOnlyList<ActivityMonitorSimpleCollector.Entry> errorSummary = null;
                 using( monitor.OpenInfo( "Generating source code." ) )
                 using( monitor.CollectEntries( entries => errorSummary = entries ) )
                 {
-                   GenerateContextSource( monitor, _tempAssembly );
+                    // Injects System.Reflection and setup assemblies into the
+                    // workspace that will be used to generate source code.
+                    ws.EnsureAssemblyReference( typeof( BindingFlags ) );
+                    ws.EnsureAssemblyReference( AmbientTypeResult.Assemblies );
+
+                    // Gets the global name space and injects, once for all, basic namespaces that we
+                    // always want available.
+                    var global = ws.Global.EnsureUsing( "CK.Core" )
+                                          .EnsureUsing( "System" )
+                                          .EnsureUsing( "System.Collections.Generic" )
+                                          .EnsureUsing( "System.Linq" )
+                                          .EnsureUsing( "System.Text" )
+                                          .EnsureUsing( "System.Reflection" );
+
+                    // Asks every ImplementableTypeInfo to generate their code. 
+                    // This step MUST always be done, even if SkipCompilation is true and GenerateSourceFiles is false
+                    // since during this step, side effects MAY occur (this is typically the case of the first run where
+                    // the "reality cache" is created).
+                    foreach( var t in AmbientTypeResult.TypesToImplement )
+                    {
+                        t.GenerateType( monitor, _tempAssembly );
+                    }
+
+                    // Generates the StObjContextRoot implementation.
+                    GenerateStObjContextRootSource( monitor, global.FindOrCreateNamespace( "CK.StObj" ) );
                 }
                 if( errorSummary != null )
                 {
@@ -67,16 +89,14 @@ namespace CK.Setup
                     }
                     return new CodeGenerateResult( false, generatedFileNames );
                 }
-                if( skipCompilation )
-                {
-                    monitor.OpenInfo( "Compilation is skipped." );
-                    return new CodeGenerateResult( true, generatedFileNames );
-                }
-                using( monitor.OpenInfo( "Compiling source code." ) )
+                using( monitor.OpenInfo( skipCompilation
+                                            ? "Generating source code, parsing using C# v7.3 language version, skipping compilation."
+                                            : "Compiling source code (using C# v7.3 language version)." ) )
                 {
                     var g = new CodeGenerator( CodeWorkspace.Factory );
+                    g.ParseOptions = new CSharpParseOptions( LanguageVersion.CSharp7_3 );
                     g.Modules.AddRange( _tempAssembly.SourceModules );
-                    var result = g.Generate( ws, finalFilePath );
+                    var result = g.Generate( ws, finalFilePath, skipCompilation );
                     if( saveSource && result.Sources != null )
                     {
                         for( int i = 0; i < result.Sources.Count; ++i )
@@ -99,7 +119,7 @@ namespace CK.Setup
             }
         }
 
-        static readonly string _sourceGStObj = @"
+        const string _sourceGStObj = @"
 class GStObj : IStObj
 {
     public GStObj( IStObjRuntimeBuilder rb, Type t, IStObj g, Type actualType, IStObjMap m )
@@ -128,23 +148,8 @@ class GStObj : IStObj
 
     internal StObjImplementation AsStObjImplementation => new StObjImplementation( this, Instance );
 }";
-        void GenerateContextSource( IActivityMonitor monitor, IDynamicAssembly a )
+        void GenerateStObjContextRootSource( IActivityMonitor monitor, INamespaceScope ns )
         {
-            var global = a.DefaultGenerationNamespace.Workspace.Global
-                          .EnsureUsing( "CK.Core" )
-                          .EnsureUsing( "System" )
-                          .EnsureUsing( "System.Collections.Generic" )
-                          .EnsureUsing( "System.Linq" )
-                          .EnsureUsing( "System.Text" )
-                          .EnsureUsing( "System.Reflection" );
-
-            foreach( var t in AmbientTypeResult.TypesToImplement )
-            {
-                t.GenerateType( monitor, a );
-            }
-
-            var ns = global.FindOrCreateNamespace( "CK.StObj" );
-
             ns.Append( _sourceGStObj ).NewLine();
 
             var rootType = ns.CreateType( "public class " + StObjContextRoot.RootContextTypeName + " : IStObjMap, IStObjObjectMap, IStObjServiceMap" )
@@ -155,16 +160,12 @@ class GStObj : IStObj
             var rootCtor = rootType.CreateFunction( $"public {StObjContextRoot.RootContextTypeName}(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" );
 
             rootCtor.Append( $"_stObjs = new GStObj[{OrderedStObjs.Count}];" ).NewLine()
-                    .Append( $"_implStObjs = new GStObj[{AmbientTypeResult.AmbientContracts.EngineMap.AllSpecializations.Count}];" ).NewLine();
+                    .Append( $"_implStObjs = new GStObj[{AmbientTypeResult.AmbientObjects.EngineMap.AllSpecializations.Count}];" ).NewLine();
             int iStObj = 0;
             int iImplStObj = 0;
             foreach( MutableItem m in OrderedStObjs )
             {
                 string generalization = m.Generalization == null ? "null" : $"_stObjs[{m.Generalization.IndexOrdered}]";
-                //string typeName = m.ObjectType.ToCSharpName();
-                //string actualTypeName = m.Specialization == null 
-                //                            ? "typeof("+m.GetFinalTypeCSharpName( monitor, a )+")"
-                //                            : "null";
                 rootCtor.Append( $"_stObjs[{iStObj++}] = " );
                 if( m.Specialization == null )
                 {
@@ -180,8 +181,8 @@ class GStObj : IStObj
             }
 
             rootCtor.Append( $"_map = new Dictionary<Type,GStObj>();" ).NewLine();
-            var allMappings = AmbientTypeResult.AmbientContracts.EngineMap.RawMappings;
-            // We skip highest implementation Type mappings (ie. AmbientContractInterfaceKey keys) since 
+            var allMappings = AmbientTypeResult.AmbientObjects.EngineMap.RawMappings;
+            // We skip highest implementation Type mappings (ie. AmbientObjectInterfaceKey keys) since 
             // there is no ToStObj mapping (to root generalization) on final (runtime) IStObjMap.
             foreach( var e in allMappings.Where( e => e.Key is Type ) )
             {
@@ -240,13 +241,14 @@ class GStObj : IStObj
                 var mConstruct = m.Type.StObjConstruct;
                 if( mConstruct != null )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
                            .Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, " );
                     if( m.ConstructParameters.Count == 0 ) rootCtor.Append( "Array.Empty<object>()" );
                     else
                     {
                         rootCtor.Append( "new object[] {" );
-                        // Missing Value {get;} on IStObjMutableParameter. We cast for the moment.
+                        // Missing Value {get;} on IStObjMutableParameter and we need the BuilderValueIndex...
+                        // Hideous downcast for the moment.
                         foreach( var p in m.ConstructParameters.Cast<MutableParameter>() )
                         {
                             if( p.BuilderValueIndex < 0 )
@@ -279,10 +281,10 @@ class GStObj : IStObj
             }
             foreach( MutableItem m in OrderedStObjs )
             {
-                MethodInfo init = m.ObjectType.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ); 
+                MethodInfo init = m.Type.StObjInitialize;
                 if( init != null )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
                            .NewLine();
                     rootCtor.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, this }} );" )
                            .NewLine();
@@ -307,6 +309,32 @@ class GStObj : IStObj
 
             var serviceGen = new ServiceSupportCodeGenerator( rootType, rootCtor );
             serviceGen.CreateServiceSupportCode( _liftedMap );
+            serviceGen.CreateConfigureServiceMethod( OrderedStObjs );
+
+            GenerateVFeatures( monitor, rootType, rootCtor, _liftedMap.Features );
+        }
+
+        void GenerateVFeatures( IActivityMonitor monitor, ITypeScope rootType, IFunctionScope rootCtor, IReadOnlyCollection<VFeature> features )
+        {
+            monitor.Info( $"Generating Features: {features.Select( f => f.ToString()).Concatenate()}." );
+
+            rootType.Append( "readonly IReadOnlyCollection<VFeature> _vFeatures;" ).NewLine();
+
+            rootCtor.Append( "_vFeatures = new[]{ " );
+            bool atleastOne = false;
+            foreach( var f in features )
+            {
+                if( atleastOne ) rootCtor.Append( ", " );
+                atleastOne = true;
+                rootCtor.Append( "new VFeature( " )
+                        .AppendSourceString( f.Name )
+                        .Append(',')
+                        .Append( "CSemVer.SVersion.Parse( " )
+                        .AppendSourceString( f.Version.ToNuGetPackageString() )
+                        .Append( " ) )" );
+            }
+            rootCtor.Append( "};" );
+            rootType.Append( "public IReadOnlyCollection<VFeature> Features => _vFeatures;" ).NewLine();
         }
 
         static void GenerateValue( ICodeWriter b, object o )

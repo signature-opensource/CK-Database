@@ -71,13 +71,13 @@ namespace CK.Core
         public IDictionary Memory => _memory;
 
         /// <summary>
-        /// Gets the <see cref="StubModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
+        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
         /// </summary>
         public ModuleBuilder StubModuleBuilder { get; }
 
         /// <summary>
         /// Gets the default name space for this <see cref="IDynamicAssembly"/>
-        /// into which code should be generated.
+        /// into which code should be generated: this is "CK._g".
         /// Note that nothing prevents the <see cref="INamedScope.Workspace"/> to be used and other
         /// namespaces to be created.
         /// </summary>

@@ -1,16 +1,11 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\AutoImplementationTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
 using System.Diagnostics;
 using FluentAssertions;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -30,7 +25,7 @@ namespace CK.StObj.Engine.Tests
             protected abstract int FirstMethod( int i );
         }
 
-        public abstract class A : ABase, IAmbientContract
+        public abstract class A : ABase, IAmbientObject
         {
             [AutoImplementMethod]
             public abstract string SecondMethod( int i );
@@ -44,7 +39,7 @@ namespace CK.StObj.Engine.Tests
 
 
         [Test]
-        public void abstract_auto_impl_is_supported_on_non_IAmbientContract_base_class()
+        public void abstract_auto_impl_is_supported_on_non_IAmbientObject_base_class()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( A2 ) );

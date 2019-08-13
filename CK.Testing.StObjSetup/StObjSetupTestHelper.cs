@@ -65,12 +65,14 @@ namespace CK.Testing
                                         .Any( p => !File.Exists( p ) );
 
             var stObjConf = new StObjEngineConfiguration();
-            stObjConf.GenerateSourceFiles = helper.StObjGenerateSourceFiles;
             stObjConf.RevertOrderingNames = helper.StObjRevertOrderingNames;
             stObjConf.TraceDependencySorterInput = helper.StObjTraceGraphOrdering;
             stObjConf.TraceDependencySorterOutput = helper.StObjTraceGraphOrdering;
             stObjConf.GeneratedAssemblyName = helper.GeneratedAssemblyName;
-            stObjConf.AppContextAssemblyGeneratedDirectoryTarget = helper.BinFolder;
+            var b = new BinPath();
+            b.Path = helper.BinFolder;
+            b.GenerateSourceFiles = helper.StObjGenerateSourceFiles;
+            stObjConf.BinPaths.Add( b );
 
             return (stObjConf, forceSetup);
         }
@@ -84,10 +86,7 @@ namespace CK.Testing
                 {
                     var ev = new StObjSetupRunningEventArgs( stObjConf, forceSetup );
                     _stObjSetupRunning?.Invoke( this, ev );
-
-                    var ckSetupConf = new SetupConfiguration();
-                    ckSetupConf.EngineAssemblyQualifiedName = "CK.Setup.StObjEngine, CK.StObj.Engine";
-                    stObjConf.SerializeXml( ckSetupConf.Configuration );
+                    var ckSetupConf = new SetupConfiguration( new XDocument( ev.StObjEngineConfiguration.ToXml() ), "CK.Setup.StObjEngine, CK.StObj.Engine" );
                     return _ckSetup.CKSetup.Run( ckSetupConf, forceSetup: ev.ForceSetup );
                 }
                 catch( Exception ex )
@@ -118,9 +117,9 @@ namespace CK.Testing
         }
 
         /// <summary>
-        /// Gets the <see cref="IStObjSetupTestHelperCore"/> default implementation.
+        /// Gets the <see cref="IStObjSetupTestHelper"/> default implementation.
         /// </summary>
-        public static IStObjSetupTestHelperCore TestHelper => TestHelperResolver.Default.Resolve<IStObjSetupTestHelperCore>();
+        public static IStObjSetupTestHelper TestHelper => TestHelperResolver.Default.Resolve<IStObjSetupTestHelper>();
 
     }
 }

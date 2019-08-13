@@ -15,9 +15,10 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <returns>
-        /// Should return all the versions for all the <see cref="IDependentItem.FullName"/> previously installed.
+        /// Should return all the versions for all the <see cref="IDependentItem.FullName"/> previously installed
+        /// and the <see cref="VFeature"/> already registered.
         /// </returns>
-        IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor );
+        OriginalReadInfo GetOriginalVersions( IActivityMonitor monitor );
 
         /// <summary>
         /// Called by the engine when the version is not found for the item

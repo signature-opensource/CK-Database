@@ -94,13 +94,13 @@ namespace CK.Setup
         IReadOnlyList<IStObjAmbientProperty> SpecializedAmbientProperties { get; }
 
         /// <summary>
-        /// Gets a list of mutable <see cref="IStObjMutableInjectAmbientContract"/> defined at this level (and above) but potentially specialized.
+        /// Gets a list of mutable <see cref="IStObjMutableInjectObject"/> defined at this level (and above) but potentially specialized.
         /// This guarantees that properties are accessed by their most precise overridden/masked version.
         /// </summary>
-        IReadOnlyList<IStObjMutableInjectAmbientContract> SpecializedAmbientContracts { get; }
+        IReadOnlyList<IStObjMutableInjectObject> SpecializedInjectObjects { get; }
 
         /// <summary>
-        /// Sets a direct property (it must not be an Ambient Property, Contract nor a StObj property) on the Structured Object. 
+        /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 
         /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type 
         /// otherwise an error is logged.
         /// </summary>

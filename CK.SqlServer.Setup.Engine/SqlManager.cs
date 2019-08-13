@@ -28,10 +28,10 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Initializes a new SqlManager.
         /// </summary>
+        /// <param name="monitor">Required non null monitor.</param>
         public SqlManager( IActivityMonitor monitor )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            _monitor = monitor;
+            _monitor = monitor ?? throw new ArgumentNullException( nameof( monitor ) );
             _checkTranCount = true;
         }
 
@@ -139,20 +139,20 @@ namespace CK.SqlServer.Setup
                     if( autoCreate )
                     {
                         _monitor.Warn( ex );
-                        string name;
-                        using( var master = new SqlConnection( GetMasterConnectionString( connectionString, out name ) ) )
+                        try
                         {
-                            try
+                            string name;
+                            using( var master = new SqlConnection( GetMasterConnectionString( connectionString, out name ) ) )
                             {
                                 _monitor.Info( $"Creating database '{name}'." );
                                 master.Open();
-                                using( var cmd = new SqlCommand( $"create database {name}" ) { Connection = master } ) cmd.ExecuteNonQuery();
+                                using( var cmd = new SqlCommand( $"create database [{name.Replace( "[", "[[" ).Replace( "]", "]]" )}]" ) { Connection = master } ) cmd.ExecuteNonQuery();
                             }
-                            catch( Exception exCreate )
-                            {
-                                _monitor.Error( exCreate );
-                                return false;
-                            }
+                        }
+                        catch( Exception exCreate )
+                        {
+                            _monitor.Error( exCreate );
+                            return false;
                         }
                         try
                         {

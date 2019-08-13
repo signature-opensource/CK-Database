@@ -7,8 +7,8 @@ namespace CK.Core
 {
     /// <summary>
     /// Optional attribute for <see cref="IAmbientService"/> implementation that
-    /// declares that this implementation replaces another one, avoiding the replaced implementation
-    /// to appear in the single constructor parameters.
+    /// declares that this implementation replaces another one (the replaced implementation
+    /// is the single constructor parameter).
     /// <para>
     /// Note that this attribute is useless if this implementation specializes the replaced service since
     /// discovering the most precise implementation is one of the key goal of Ambient services handling.
@@ -18,7 +18,7 @@ namespace CK.Core
     /// same type appears in its constructor, this service "covers" (and possibly reuses) the replaced one.
     /// </para>
     /// <para>
-    /// This attribute, just like <see cref="IAmbientService"/>, <see cref="IScopedAmbientService"/>
+    /// This attribute, just like <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>, <see cref="IScopedAmbientService"/>
     /// and <see cref="ISingletonAmbientService"/> can be created anywhere: the name must be ReplaceAmbientServiceAttribute
     /// and a constructor with a Type and/or a constructor with a string must be defined.
     /// </para>

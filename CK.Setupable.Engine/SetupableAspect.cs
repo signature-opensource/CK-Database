@@ -100,7 +100,7 @@ namespace CK.Setup
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
                 bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker, _setupSessionMemory );
-                setupSuccess &= versionTracker.ConcludeWithFatalOnError( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion );
+                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.Features );
                 return setupSuccess;
             }
             return false;

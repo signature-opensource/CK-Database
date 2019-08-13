@@ -25,7 +25,7 @@ namespace CK.DB.Tests
         /// <summary>
         /// Toggles <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.LogToConsole"/>.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void toggle_logging_to_console()
         {
@@ -35,7 +35,7 @@ namespace CK.DB.Tests
         /// <summary>
         /// Toggles <see cref="CK.Testing.CKSetup.ICKSetupDriver.DefaultLaunchDebug"/> value.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void toggle_CKSetup_LaunchDebug()
         {
@@ -50,7 +50,7 @@ namespace CK.DB.Tests
         /// and <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.DeleteGeneratedAssemblies(string)"/>
         /// in all the bin folders (<see cref="IBasicTestHelper.BinFolder"/> and all <see cref="CK.Testing.CKSetup.ICKSetupDriver.DefaultBinPaths"/>).
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void StObjMap_reset()
         {
@@ -67,7 +67,7 @@ namespace CK.DB.Tests
         /// Attempts to load the <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.StObjMap"/>
         /// (simply access the property).
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void StObjMap_load()
         {
@@ -78,7 +78,7 @@ namespace CK.DB.Tests
         /// <summary>
         /// Attaches the debugger to this test context (simply calls <see cref="Debugger.Launch()"/>).
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void attach_debugger()
         {
@@ -91,7 +91,7 @@ namespace CK.DB.Tests
         /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase(string)"/> on the
         /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void drop_database()
         {
@@ -103,7 +103,7 @@ namespace CK.DB.Tests
         /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/>
         /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void db_setup()
         {
@@ -117,7 +117,7 @@ namespace CK.DB.Tests
         /// oredering traces.
         /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
@@ -131,7 +131,7 @@ namespace CK.DB.Tests
         /// oredering traces and reverse names.
         /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace()
         {
@@ -143,7 +143,7 @@ namespace CK.DB.Tests
         /// <summary>
         /// Dumps configuration information, assemblies conflicts and assemblies loaded.
         /// </summary>
-        [Test]
+        [TestCase]
         [Explicit]
         public void display_information()
         {

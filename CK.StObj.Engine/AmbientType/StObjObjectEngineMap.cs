@@ -6,22 +6,24 @@ using System.Diagnostics;
 using System.Collections;
 using System.Reflection;
 using CK.Setup;
+using Microsoft.Extensions.DependencyInjection;
+using CSemVer;
 
 namespace CK.Core
 {
-
     /// <summary>
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
     /// The internal participants have write access to it. I'm not proud of this (there are definitly cleaner
     /// ways to organize this) but it work...
-    /// The map is instanciated by AmbientTypeCollector.GetAmbientContractResult and then
-    /// then internally exposed by the AmbientContractCollectorResult so that AmbientTypeCollector.GetAmbientServiceResult(AmbientContractCollectorResult)
+    /// The map is instanciated by AmbientTypeCollector.GetAmbientObjectResult and then
+    /// then internally exposed by the AmbientObjectCollectorResult so that AmbientTypeCollector.GetAmbientServiceResult(AmbientObjectCollectorResult)
     /// can use (and fill) it.
     /// </summary>
     partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
     {
         readonly Dictionary<object, MutableItem> _map;
         readonly MutableItem[] _allSpecializations;
+        readonly IReadOnlyCollection<Assembly> _assemblies;
 
         /// <summary>
         /// Initializes a new <see cref="StObjObjectEngineMap"/>.
@@ -31,17 +33,25 @@ namespace CK.Core
         /// Predimensioned array that will be filled with actual
         /// mutable items by <see cref="StObjCollector.GetResult()"/>.
         /// </param>
-        internal protected StObjObjectEngineMap( string mapName, MutableItem[] allSpecializations )
+        /// <param name="typeKindDetector">The type kind detector.</param>
+        /// <param name="assemblies">Reference to the set of assemblies used to implement the IStObjMap.Features property.</param>
+        internal protected StObjObjectEngineMap(
+            string mapName,
+            MutableItem[] allSpecializations,
+            AmbientTypeKindDetector typeKindDetector,
+            IReadOnlyCollection<Assembly> assemblies )
         {
             Debug.Assert( mapName != null );
             MapName = mapName;
             _map = new Dictionary<object, MutableItem>();
             _allSpecializations = allSpecializations;
+            _assemblies = assemblies;
             _serviceMap = new Dictionary<Type, AmbientServiceClassInfo>();
             _exposedServiceMap = new ServiceMapTypeAdapter( _serviceMap );
             _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
             _exposedManualServiceMap = new ServiceManualMapTypeAdapter( _serviceManualMap );
             _serviceManualList = new List<IStObjServiceFinalManualMapping>();
+            _typeKindDetector = typeKindDetector;
         }
 
         internal void AddClassMapping( Type t, MutableItem m )
@@ -54,7 +64,7 @@ namespace CK.Core
         {
             Debug.Assert( t.IsInterface );
             _map.Add( t, finalType );
-            _map.Add( new AmbientContractInterfaceKey( t ), m );
+            _map.Add( new AmbientObjecttInterfaceKey( t ), m );
         }
 
         /// <summary>
@@ -91,12 +101,12 @@ namespace CK.Core
 
         /// <summary>
         /// Gets all the specialization. If there is no error, this list corresponds to the
-        /// last items of the <see cref="AmbientContractCollectorResult.ConcreteClasses"/>.
+        /// last items of the <see cref="AmbientObjectCollectorResult.ConcreteClasses"/>.
         /// </summary>
         internal IReadOnlyCollection<MutableItem> AllSpecializations => _allSpecializations;
 
         /// <summary>
-        /// Gets all the mapping from object (including <see cref="AmbientContractInterfaceKey"/>) to
+        /// Gets all the mapping from object (including <see cref="AmbientObjecttInterfaceKey"/>) to
         /// <see cref="MutableItem"/>.
         /// </summary>
         internal IEnumerable<KeyValuePair<object, MutableItem>> RawMappings => _map;
@@ -118,7 +128,7 @@ namespace CK.Core
                 {
                     if( t.IsInterface )
                     {
-                        _map.TryGetValue( new AmbientContractInterfaceKey( t ), out c );
+                        _map.TryGetValue( new AmbientObjecttInterfaceKey( t ), out c );
                     }
                     else
                     {
@@ -177,5 +187,22 @@ namespace CK.Core
         IStObjResult IStObjObjectEngineMap.ToLeaf( Type t ) => ToLeaf( t );
 
         IStObj IStObjObjectMap.ToLeaf( Type t ) => ToLeaf( t );
+
+        void IStObjObjectMap.ConfigureServices( in StObjContextRoot.ServiceRegister register )
+        {
+            throw new NotSupportedException( "ConfigureServices is not supported at build time." );
+        }
+
+        /// <summary>
+        /// Dynamically projects <see cref="AmbientTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
+        /// (ordered by <see cref="VFeature.Name"/> since by design there can not be multiple versions by feature).
+        /// </summary>
+        public IReadOnlyCollection<VFeature> Features => _assemblies.Select( ToVFeature ).OrderBy( Util.FuncIdentity ).ToList();
+
+        static VFeature ToVFeature( Assembly a )
+        {
+            var v = InformationalVersion.ReadFromAssembly( a ).NuGetVersion;
+            return new VFeature( a.GetName().Name, v.IsValid ? v : SVersion.ZeroVersion );
+        }
     }
 }

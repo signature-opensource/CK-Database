@@ -24,16 +24,16 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class ServiceTests : TestsBase
     {
-        interface ISampleService : IAmbientService
+        public interface ISampleService : IAmbientService
         {
         }
 
-        class SampleService : ISampleService
+        public class SampleService : ISampleService
         {
         }
 
-        [ReplaceAmbientService(typeof(SampleService))]
-        class SampleService2 : ISampleService
+        [ReplaceAmbientService( typeof( SampleService ) )]
+        public class SampleService2 : ISampleService
         {
         }
 
@@ -48,8 +48,9 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( ISampleService )].ClassType.Should().Be( typeof( SampleService2 ) );
             r.Services.SimpleMappings[typeof( SampleService )].ClassType.Should().Be( typeof( SampleService ) );
         }
+
         [Local.ReplaceAmbientService( "CK.StObj.Engine.Tests.Service.StObj.ServiceTests+SampleService2, CK.StObj.Engine.Tests" )]
-        class SampleService3 : ISampleService
+        public class SampleService3 : ISampleService
         {
         }
 
@@ -67,7 +68,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
 
-        class UseActivityMonitor : ISingletonAmbientService
+        public class UseActivityMonitor : ISingletonAmbientService
         {
             public UseActivityMonitor( IActivityMonitor m )
             {
@@ -80,6 +81,33 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( UseActivityMonitor ) );
             CheckFailure( collector );
+        }
+
+        public class Obj : IAmbientObject, ISampleService
+        {
+        }
+
+        public interface IInvalidInterface : IAmbientObject, ISampleService
+        {
+        }
+
+        [Test]
+        public void an_AmbientObject_class_can_be_an_IAmbientService_but_an_interface_cannot()
+        {
+            {
+                var collector = CreateStObjCollector();
+                collector.RegisterType( typeof( Obj ) );
+                var r = CheckSuccess( collector );
+                r.Services.SimpleMappings[typeof( ISampleService )].ClassType.Should().Be( typeof( Obj ) );
+                r.Services.SimpleMappings[typeof( ISampleService )].IsScoped.Should().BeFalse();
+                r.StObjs.Obtain<Obj>().Should().BeOfType<Obj>();
+                r.StObjs.Obtain<ISampleService>().Should().BeNull();
+            }
+            {
+                var collector = CreateStObjCollector();
+                collector.RegisterType( typeof( IInvalidInterface ) );
+                CheckFailure( collector );
+            }
         }
 
     }

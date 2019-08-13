@@ -28,7 +28,7 @@ namespace CK.Setup
         /// type compatibility is required for ambient properties).
         /// </summary>
         /// <remarks>
-        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties or Contracts, 
+        /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties or Singletons, 
         /// with <see cref="System.Reflection.ParameterInfo.ParameterType"/> for parameters and with provided type 
         /// for other kind of reference (<see cref="StObjMutableReferenceKind.Requires"/>, <see cref="StObjMutableReferenceKind.RequiredBy"/>, <see cref="StObjMutableReferenceKind.Group"/>, 
         /// <see cref="StObjMutableReferenceKind.Child"/> and <see cref="StObjMutableReferenceKind.Container"/>).
@@ -38,7 +38,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether this reference must be satisfied with an available <see cref="IStObjResult"/> if the <see cref="P:Type"/> is not set to null.
         /// <para>
-        /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.SpecializedAmbientContracts">Ambient Contracts</see>, <see cref="IStObjMutableItem.Requires"/> 
+        /// Defaults to <see cref="StObjRequirementBehavior.ErrorIfNotStObj"/> for <see cref="IStObjMutableItem.SpecializedInjectObjects">Inject Objects</see>, <see cref="IStObjMutableItem.Requires"/> 
         /// and <see cref="IStObjMutableItem.Container"/> (a described dependency is required unless explicitly declared as optional by <see cref="IStObjStructuralConfigurator"/>).
         /// </para>
         /// <para>

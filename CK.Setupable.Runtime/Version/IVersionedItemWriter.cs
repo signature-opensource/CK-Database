@@ -23,6 +23,13 @@ namespace CK.Setup
         /// </param>
         /// <param name="trackedItems">The set of <see cref="VersionedNameTracked"/> objects.</param>
         /// <param name="deleteUnaccessedItems">True to delete unaccessed items.</param>
-        void SetVersions( IActivityMonitor monitor, IVersionedItemReader reader, IEnumerable<VersionedNameTracked> trackedItems, bool deleteUnaccessedItems );
+        /// <param name="originalFeatures">The original features.</param>
+        /// <param name="finalFeatures">The final (current) features.</param>
+        void SetVersions( IActivityMonitor monitor,
+                          IVersionedItemReader reader,
+                          IEnumerable<VersionedNameTracked> trackedItems,
+                          bool deleteUnaccessedItems,
+                          IReadOnlyCollection<VFeature> originalFeatures,
+                          IReadOnlyCollection<VFeature> finalFeatures);
     }
 }

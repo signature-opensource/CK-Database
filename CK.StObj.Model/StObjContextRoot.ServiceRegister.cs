@@ -1,0 +1,192 @@
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+namespace CK.Core
+{
+    public abstract partial class StObjContextRoot
+    {
+        /// <summary>
+        /// Small helper that captures the minimal required context to configure a <see cref="IServiceCollection"/>.
+        /// See <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)"/>.
+        /// </summary>
+        public readonly struct ServiceRegister
+        {
+            readonly Dictionary<Type, bool> _registered;
+
+            /// <summary>
+            /// Initializes a new <see cref="ServiceRegister"/>.
+            /// </summary>
+            /// <param name="monitor">The monitor to use. Must not be null.</param>
+            /// <param name="services">The service collection to configure.</param>
+            /// <param name="startupServices">
+            /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+            /// (they must be independent of any "dynamic" services), however registered services become available to
+            /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
+            /// </param>
+            public ServiceRegister( IActivityMonitor monitor, IServiceCollection services, SimpleServiceContainer startupServices = null )
+            {
+                Monitor = monitor ?? throw new ArgumentNullException( nameof( monitor ) );
+                Services = services ?? throw new ArgumentNullException( nameof( services ) );
+                StartupServices = startupServices ?? new SimpleServiceContainer();
+                _registered = services.ToDictionary( desc => desc.ServiceType, desc => true );
+                AllowOverride = false;
+            }
+
+            /// <summary>
+            /// Gets the monitor to use.
+            /// </summary>
+            public IActivityMonitor Monitor { get; }
+
+            /// <summary>
+            /// Gets the target service collection.
+            /// </summary>
+            public IServiceCollection Services { get; }
+
+            /// <summary>
+            /// Gets the startup services container.
+            /// </summary>
+            public SimpleServiceContainer StartupServices { get; }
+
+            /// <summary>
+            /// Gets whether registration should override any existing registration.
+            /// Defaults to false: services must not already exist.
+            /// </summary>
+            public bool AllowOverride { get; }
+
+            /// <summary>
+            /// Registers the map, the Ambient objects, singleton services and scoped services.
+            /// </summary>
+            /// <param name="map">The map to register. Must not be null.</param>
+            /// <returns>
+            /// True on success, false if any <see cref="LogLevel.Fatal"/> or <see cref="LogLevel.Error"/> has been logged or if an exception has been thrown.
+            /// </returns>
+            public bool AddStObjMap( IStObjMap map )
+            {
+                bool result = true;
+                using( Monitor.OnError( () => result = false ) )
+                using( Monitor.OpenInfo( "Configuring Service collection from StObjMap." ) )
+                {
+                    try
+                    {
+                        if( map == null ) throw new ArgumentNullException( nameof( map ) );
+                        RegisterSingleton( typeof( IStObjMap ), map );
+                        foreach( var kv in map.StObjs.Mappings )
+                        {
+                            RegisterSingleton( kv.Key, kv.Value );
+                        }
+                        map.StObjs.ConfigureServices( this );
+                        foreach( var kv in map.Services.SimpleMappings )
+                        {
+                            Register( kv.Key, kv.Value.ClassType, kv.Value.IsScoped );
+                        }
+                        foreach( var kv in map.Services.ManualMappings )
+                        {
+                            Register( kv.Key, kv.Value.CreateInstance, kv.Value.IsScoped );
+                        }
+                    }
+                    catch( Exception ex )
+                    {
+                        Monitor.Error( "While registering StObjMap.", ex );
+                    }
+                }
+                return result;
+            }
+
+            /// <summary>
+            /// Registers an existing implementation as a singleton.
+            /// </summary>
+            /// <param name="serviceType">Service type.</param>
+            /// <param name="implementation">Resolved singleton instance.</param>
+            public void RegisterSingleton( Type serviceType, object implementation )
+            {
+                if( !_registered.TryGetValue( serviceType, out var externalReg ) )
+                {
+                    Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to provided singleton instance." );
+                    Services.Add( new ServiceDescriptor( serviceType, implementation ) );
+                }
+                else if( externalReg )
+                {
+                    Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. Skipped singleton instance registration." );
+                }
+                else
+                {
+                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (singleton instance registration). Ambient objects and services must be registered once and only once." );
+                }
+                _registered[serviceType] = false;
+            }
+
+            /// <summary>
+            /// Registers a type mapping, ensuring that the <paramref name="implementation"/> itself is
+            /// registered.
+            /// </summary>
+            /// <param name="serviceType">Service type.</param>
+            /// <param name="implementation">Implementation type.</param>
+            /// <param name="isScoped">True for scope, false for singletons.</param>
+            public void Register( Type serviceType, Type implementation, bool isScoped )
+            {
+                ServiceLifetime lt = isScoped ? ServiceLifetime.Scoped : ServiceLifetime.Singleton;
+                // When there is a mapping (the serviceType is not the target implementation), we must register
+                // a factory here: by registering the implementation, a new instance is created but we want the
+                // same instance!
+                if( !_registered.TryGetValue( implementation, out var externalReg ) )
+                {
+                    Monitor.Trace( $"Registering service type '{implementation}' as {lt}." );
+                    Services.Add( new ServiceDescriptor( implementation, implementation, lt ) );
+                }
+                else if( externalReg )
+                {
+                    Monitor.Warn( $"Service type '{implementation}' is already registered in ServiceCollection. {lt} registration skipped." );
+                }
+                _registered[implementation] = false;
+                if( serviceType != implementation )
+                {
+                    if( !_registered.TryGetValue( serviceType, out externalReg ) )
+                    {
+                        Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to type '{implementation}' as {lt}." );
+                        Services.Add( new ServiceDescriptor( serviceType, sp => sp.GetRequiredService( implementation ), lt ) );
+                    }
+                    else if( externalReg )
+                    {
+                        Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. {lt} registration skipped." );
+                    }
+                    else
+                    {
+                        Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (mapped to {implementation}). Ambient objects and services must be registered once and only once." );
+                    }
+                    _registered[serviceType] = false;
+                }
+            }
+
+            /// <summary>
+            /// Registers a factory method.
+            /// </summary>
+            /// <param name="serviceType">Service type.</param>
+            /// <param name="factory">Instance factory.</param>
+            /// <param name="isScoped">True for scope, false for singletons.</param>
+            public void Register( Type serviceType, Func<IServiceProvider, object> factory, bool isScoped )
+            {
+                ServiceLifetime lt = isScoped ? ServiceLifetime.Scoped : ServiceLifetime.Singleton;
+                // When there is a mapping (the serviceType is not the target implementation), we must register
+                // a factory here: by registering the implementation, a new instance is created but we want the
+                // same instance!
+                if( !_registered.TryGetValue( serviceType, out var externalReg ) )
+                {
+                    Monitor.Trace( $"Registering factory method for service '{serviceType.Name}' as {lt}." );
+                    Services.Add( new ServiceDescriptor( serviceType, factory, lt ) );
+                }
+                else if( externalReg )
+                {
+                    Monitor.Warn( $"Service '{serviceType.Name}' is already registered in ServiceCollection. Skipping {lt} factory method registration." );
+                }
+                else
+                {
+                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (factory method). Ambient objects and services must be registered once and only once." );
+                }
+                _registered[serviceType] = false;
+            }
+        }
+    }
+}

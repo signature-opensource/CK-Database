@@ -6,6 +6,8 @@ using NUnit.Framework;
 using CK.StObj.Engine.Tests.Poco;
 using System.Linq;
 
+using static CK.Testing.MonitorTestHelper;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
@@ -32,7 +34,7 @@ namespace CK.StObj.Engine.Tests
 
         static StObjCollectorResult BuildPocoSample()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = typeof(PocoTests).Assembly.GetTypes()
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.Poco" );
 
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );

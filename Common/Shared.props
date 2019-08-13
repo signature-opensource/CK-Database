@@ -8,9 +8,9 @@
     <CKSqlServerParserVersion>11.3.0</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>8.1.1</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.3</CKReflectionVersion>
-    <CKCodeGenVersion>0.7.0</CKCodeGenVersion>
+    <CKCodeGenVersion>0.7.1--0005-develop</CKCodeGenVersion>
     <YodiiScriptVersion>0.7.3</YodiiScriptVersion>
-    <CKSetupVersion>9.3.0</CKSetupVersion>
+    <CKSetupVersion>9.3.1--0009-develop</CKSetupVersion>
     <CKTestingVersion>0.10.0</CKTestingVersion>
     <FluentAssertionsVersion>5.7.0</FluentAssertionsVersion>
   </PropertyGroup>

@@ -5,6 +5,8 @@ namespace CK.Core
 {
     /// <summary>
     /// Exposes Service Types (interfaces and classes) to Service class mappings.
+    /// This is exposed by <see cref="IStObjMap.Services"/> and is the result of the setup: its implementation
+    /// is dynamically generated.
     /// </summary>
     public interface IStObjServiceMap
     {
@@ -20,15 +22,10 @@ namespace CK.Core
         /// an adaptation based on the <see cref="IStObjServiceClassFactoryInfo"/> or
         /// to simply use the existing <see cref="IStObjServiceClassFactory.CreateInstance(IServiceProvider)"/>
         /// helper method.
+        /// Note that a <see cref="IStObjServiceClassFactory"/> is a <see cref="IStObjServiceClassDescriptor"/> (that
+        /// is the descriptor used by <see cref="SimpleMappings"/>).
         /// </summary>
         IReadOnlyDictionary<Type, IStObjServiceClassFactory> ManualMappings { get; }
 
-        /// <summary>
-        /// Gets the set of types that have been explicitly defined as singletons
-        /// or inferred to be singletons.
-        /// Note that this can contain open generic like <see cref="IPocoFactory{T}"/> (ie.
-        /// the typeof(IPocoFactory&lt;&gt;) type) that is registered by default.
-        /// </summary>
-        IReadOnlyCollection<Type> ExternallyDefinedSingletons { get; }
     }
 }
