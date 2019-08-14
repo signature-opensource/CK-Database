@@ -1,9 +1,12 @@
+using CK.CodeGen;
+using CK.CodeGen.Abstractions;
 using CK.Core;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 using static CK.Testing.MonitorTestHelper;
@@ -157,6 +160,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
 
         public interface IB : IAmbientObject
         {
+            int BCanTalkToYou( IActivityMonitor m, string msg );
         }
 
         /// <summary>
@@ -177,6 +181,37 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             {
                 m.Info( "SuperStartupService is talking to you." );
                 if( _mustFail ) m.Error( "But SuperStartupService has been told to fail miserably." );
+            }
+        }
+
+        /// <summary>
+        /// Very stupid attribute that shows how easy it is to participate in code generation.
+        /// Note that in real life, the code generation is implemented in a "Setup dependency" (a Runtime or Engine component)
+        /// and the Attribute itself carries only the definition of the code generation: see <see cref="AmbientContextBoundDelegationAttribute"/>
+        /// to easily implement this.
+        /// </summary>
+        class StupidCodeAttribute : Attribute, IAutoImplementorMethod
+        {
+            public StupidCodeAttribute( string actualCode, bool isLamda = false )
+            {
+                ActualCode = actualCode;
+            }
+
+            public bool IsLambda { get; }
+
+            public string ActualCode { get; }
+
+            public bool Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope b )
+            {
+                b.AppendOverrideSignature( m )
+                    .Should().BeSameAs( b, "Append uses 'fluent syntax': we stay in the Type scpope (but right after the method declaration)." );
+
+                if( IsLambda ) b.Append( "=> " ).Append( ActualCode ).Append( ';' ).NewLine();
+                else b.Append( '{' ).NewLine()
+                        .Append( ActualCode ).NewLine()
+                        .Append( '}' ).NewLine();
+
+                return true;
             }
         }
 
@@ -225,6 +260,32 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                 register.Register( typeof( IAliceOrBobProvider ), impl, isScoped: true );
             }
 
+            [StupidCode( @"m.Info( ""This is from generated code: "" + msg ); return 3172;" )]
+            public abstract int BCanTalkToYou( IActivityMonitor m, string msg );
+
+        }
+
+        [Test]
+        public void code_generation_is_so_easy_on_ambient_objects()
+        {
+            var collector = CreateStObjCollector();
+            collector.RegisterType( typeof( A ) );
+            collector.RegisterType( typeof( B ) );
+            var startupServices = new SimpleServiceContainer();
+            startupServices.Add( new TotallyExternalStartupServiceThatActAsAConfiguratorOfTheWholeSystem() );
+            IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
+            using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
+            {
+                var sp = FullSuccessfulResolution( collector, startupServices ).Services.BuildServiceProvider();
+                sp.GetRequiredService<IB>()
+                    .BCanTalkToYou( TestHelper.Monitor, "Magic!" )
+                    .Should().Be( 3172 );
+
+                sp.GetRequiredService<IB>()
+                    .Should().BeSameAs( sp.GetRequiredService<B>() )
+                    .And.BeSameAs( sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>(), "The Ambient Service/Object must be the same instance!" );
+            }
+            logs.Should().Contain( e => e.Text == "This is from generated code: Magic!" );
         }
 
         [Test]
