@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Calls <see cref="AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)"/> after
-        /// having loded the assembly and <see cref="StObjContextRoot.Load(Assembly, IStObjRuntimeBuilder, IActivityMonitor)"/> the
+        /// having loaded the assembly and <see cref="StObjContextRoot.Load(Assembly, IStObjRuntimeBuilder, IActivityMonitor)"/> the
         /// map.
         /// <para>
         /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
@@ -63,9 +63,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// that may cause runtime errors.
         /// </para>
         /// </summary>
-        /// <remarks>
-        /// On NetCore runtime, Assembly.LoadFrom is used to resolves the assembly from its full path.
-        /// </remarks>
         /// <param name="services">This services.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="assemblyName">The assembly name.</param>
@@ -77,12 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>This services collection.</returns>
         public static IServiceCollection AddStObjMap( this IServiceCollection services, IActivityMonitor monitor, string assemblyName, SimpleServiceContainer startupServices = null )
         {
-#if NET461
-            return AddStObjMap( services, monitor, new AssemblyName( assemblyName ), startupServices );
-#else
-            string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, assemblyName + ".dll" );
-            return AddStObjMap( services, monitor, Assembly.LoadFrom( path ), startupServices );
-#endif
+            return AddStObjMap( services, monitor, Assembly.Load( assemblyName ), startupServices );
         }
 
         /// <summary>
