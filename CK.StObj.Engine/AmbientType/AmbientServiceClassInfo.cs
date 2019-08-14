@@ -13,11 +13,16 @@ namespace CK.Core
     /// </summary>
     public class AmbientServiceClassInfo : AmbientTypeInfo, IStObjServiceClassDescriptor
     {
+        // True when this service is an Ambient object. Such service don't have
+        // to have a public constructor.
+        readonly bool _isAnAmbientObject;
+
         HashSet<AmbientServiceClassInfo> _ctorParmetersClosure;
+        // Memorizes the EnsureCtorBinding call state.
+        bool? _ctorBinding;
         // When not null, this contains the constructor parameters that must be singletons
         // for this service to be a singleton.
         List<ParameterInfo> _requiredParametersToBeSingletons;
-        bool? _ctorBinding;
 
         /// <summary>
         /// Constructor parameter info: either a <see cref="AmbientServiceClassInfo"/>,
@@ -121,13 +126,17 @@ namespace CK.Core
             // as singleton.
             if( lifetime == (AmbientTypeKind.AmbientObject|AmbientTypeKind.AmbientSingleton) )
             {
+                _isAnAmbientObject = true;
                 lifetime = AmbientTypeKind.AmbientSingleton;
             }
             Debug.Assert( lifetime == AmbientTypeKind.IsAmbientService
                           || lifetime == AmbientTypeKind.AmbientSingleton
                           || lifetime == AmbientTypeKind.AmbientScope );
+
             DeclaredLifetime = lifetime;
+            // Let MustBeScopedLifetime be null for singleton here. Singleton impact is handled later.
             if( lifetime == AmbientTypeKind.AmbientScope ) MustBeScopedLifetime = true;
+
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
 
             //if( IsExcluded ) return;
@@ -212,13 +221,16 @@ namespace CK.Core
         internal MutableItem ContainerItem { get; private set; }
 
         /// <summary>
-        /// Gets the constructor. This may be null if any error occurred.
+        /// Gets the constructor. This may be null if any error occurred or
+        /// if this service is implemented by an Ambient object.
         /// </summary>
         public ConstructorInfo ConstructorInfo { get; private set; }
 
         /// <summary>
         /// Gets the constructor parameters that we need to consider.
         /// Parameters that are not <see cref="IAmbientService"/> do not appear here.
+        /// This is empty even for service implemented by Ambient object as soon as <see cref="EnsureCtorBinding(IActivityMonitor, AmbientTypeCollector)"/>
+        /// has been called.
         /// </summary>
         public IReadOnlyList<CtorParameter> ConstructorParameters { get; private set; }
 
@@ -450,21 +462,29 @@ namespace CK.Core
                 // This ensure the "Inheritance Constructor Parameters rule", even if parameters are
                 // not exposed from the inherited constructor (and base parameters are direclty new'ed).
                 _ctorParmetersClosure = new HashSet<AmbientServiceClassInfo>();
-                if( Generalization != null )
+                if( _isAnAmbientObject )
                 {
-                    _ctorParmetersClosure.AddRange( Generalization.GetCtorParametersClassClosure( m, collector, ref initializationError ) );
+                    // Only calls EnsureCtorBinding even if it is useless for coherency.
+                    initializationError |= !EnsureCtorBinding( m, collector );
                 }
-                if( !(initializationError |= !EnsureCtorBinding( m, collector ) ) )
+                else
                 {
-                    var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
-                    foreach( var cS in ConstructorParameters.Select( p => p.ServiceClass )
-                                                           .Where( p => p != null )
-                                                           .Concat( replacedTargets ) )
+                    if( Generalization != null )
                     {
-                        AmbientServiceClassInfo c = cS;
-                        do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
-                        var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initializationError );
-                        _ctorParmetersClosure.UnionWith( cParams );
+                        _ctorParmetersClosure.AddRange( Generalization.GetCtorParametersClassClosure( m, collector, ref initializationError ) );
+                    }
+                    if( !(initializationError |= !EnsureCtorBinding( m, collector )) )
+                    {
+                        var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
+                        foreach( var cS in ConstructorParameters.Select( p => p.ServiceClass )
+                                                               .Where( p => p != null )
+                                                               .Concat( replacedTargets ) )
+                        {
+                            AmbientServiceClassInfo c = cS;
+                            do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
+                            var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initializationError );
+                            _ctorParmetersClosure.UnionWith( cParams );
+                        }
                     }
                 }
             }
@@ -512,6 +532,12 @@ namespace CK.Core
         {
             Debug.Assert( IsIncluded );
             if( _ctorBinding.HasValue ) return _ctorBinding.Value;
+            if( _isAnAmbientObject )
+            {
+                ConstructorParameters = Array.Empty<CtorParameter>();
+                _ctorBinding = true;
+                return true;
+            }
             bool success = false;
             var ctors = Type.GetConstructors();
             if( ctors.Length == 0 ) m.Error( $"No public constructor found for '{Type.FullName}'." );

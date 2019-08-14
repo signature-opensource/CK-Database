@@ -14,7 +14,13 @@ namespace CK.Core
         /// </summary>
         public readonly struct ServiceRegister
         {
-            readonly Dictionary<Type, bool> _registered;
+            enum RegType : byte
+            {
+                AmbienObject,
+                Internal,
+                PreviouslyRegistered,
+            }
+            readonly Dictionary<Type, RegType> _registered;
 
             /// <summary>
             /// Initializes a new <see cref="ServiceRegister"/>.
@@ -31,7 +37,8 @@ namespace CK.Core
                 Monitor = monitor ?? throw new ArgumentNullException( nameof( monitor ) );
                 Services = services ?? throw new ArgumentNullException( nameof( services ) );
                 StartupServices = startupServices ?? new SimpleServiceContainer();
-                _registered = services.ToDictionary( desc => desc.ServiceType, desc => true );
+                _registered = new Dictionary<Type, RegType>();
+                foreach( var r in services ) _registered[r.ServiceType] = RegType.PreviouslyRegistered;
                 AllowOverride = false;
             }
 
@@ -72,10 +79,10 @@ namespace CK.Core
                     try
                     {
                         if( map == null ) throw new ArgumentNullException( nameof( map ) );
-                        RegisterSingleton( typeof( IStObjMap ), map );
+                        DoRegisterSingleton( typeof( IStObjMap ), map, RegType.AmbienObject );
                         foreach( var kv in map.StObjs.Mappings )
                         {
-                            RegisterSingleton( kv.Key, kv.Value );
+                            DoRegisterSingleton( kv.Key, kv.Value, RegType.AmbienObject );
                         }
                         map.StObjs.ConfigureServices( this );
                         foreach( var kv in map.Services.SimpleMappings )
@@ -102,20 +109,25 @@ namespace CK.Core
             /// <param name="implementation">Resolved singleton instance.</param>
             public void RegisterSingleton( Type serviceType, object implementation )
             {
-                if( !_registered.TryGetValue( serviceType, out var externalReg ) )
+                DoRegisterSingleton( serviceType, implementation, RegType.Internal );
+            }
+
+            void DoRegisterSingleton( Type serviceType, object implementation, RegType r )
+            {
+                if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
                     Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to provided singleton instance." );
                     Services.Add( new ServiceDescriptor( serviceType, implementation ) );
+                    _registered.Add( serviceType, r );
                 }
-                else if( externalReg )
+                else if( reg == RegType.PreviouslyRegistered )
                 {
                     Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. Skipped singleton instance registration." );
                 }
                 else
                 {
-                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (singleton instance registration). Ambient objects and services must be registered once and only once." );
+                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (singleton instance registration). ServiceRegister checks that registration occur at most once." );
                 }
-                _registered[serviceType] = false;
             }
 
             /// <summary>
@@ -128,35 +140,39 @@ namespace CK.Core
             public void Register( Type serviceType, Type implementation, bool isScoped )
             {
                 ServiceLifetime lt = isScoped ? ServiceLifetime.Scoped : ServiceLifetime.Singleton;
-                // When there is a mapping (the serviceType is not the target implementation), we must register
-                // a factory here: by registering the implementation, a new instance is created but we want the
-                // same instance!
-                if( !_registered.TryGetValue( implementation, out var externalReg ) )
+                if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering service type '{implementation}' as {lt}." );
-                    Services.Add( new ServiceDescriptor( implementation, implementation, lt ) );
-                }
-                else if( externalReg )
-                {
-                    Monitor.Warn( $"Service type '{implementation}' is already registered in ServiceCollection. {lt} registration skipped." );
-                }
-                _registered[implementation] = false;
-                if( serviceType != implementation )
-                {
-                    if( !_registered.TryGetValue( serviceType, out externalReg ) )
+                    // When there is a mapping (the serviceType is not the target implementation), we must register
+                    // a factory here: by registering the implementation, a new instance is created but we want the
+                    // same instance!
+                    if( serviceType != implementation )
                     {
                         Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to type '{implementation}' as {lt}." );
                         Services.Add( new ServiceDescriptor( serviceType, sp => sp.GetRequiredService( implementation ), lt ) );
+                        _registered.Add( serviceType, RegType.Internal );
                     }
-                    else if( externalReg )
+                    if( !_registered.TryGetValue( implementation, out reg ) )
                     {
-                        Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. {lt} registration skipped." );
+                        Monitor.Trace( $"Registering service type '{implementation}' as {lt}." );
+                        Services.Add( new ServiceDescriptor( implementation, implementation, lt ) );
+                        _registered.Add( implementation, RegType.Internal );
                     }
-                    else
+                    else if( reg == RegType.PreviouslyRegistered )
                     {
-                        Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (mapped to {implementation}). Ambient objects and services must be registered once and only once." );
+                        Monitor.Warn( $"Service type '{implementation}' is already registered in ServiceCollection. {lt} registration skipped." );
                     }
-                    _registered[serviceType] = false;
+                    else if( reg != RegType.AmbienObject )
+                    {
+                        Monitor.Error( $"Duplicate '{implementation}' type registration in ServiceRegister. ServiceRegister checks that registration occur at most once." );
+                    }
+                }
+                else if( reg == RegType.PreviouslyRegistered )
+                {
+                    Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. {lt} registration skipped." );
+                }
+                else if( reg != RegType.AmbienObject )
+                {
+                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceRegister (mapped to {implementation}). ServiceRegister checks that registration occur at most once." );
                 }
             }
 
@@ -172,20 +188,20 @@ namespace CK.Core
                 // When there is a mapping (the serviceType is not the target implementation), we must register
                 // a factory here: by registering the implementation, a new instance is created but we want the
                 // same instance!
-                if( !_registered.TryGetValue( serviceType, out var externalReg ) )
+                if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
                     Monitor.Trace( $"Registering factory method for service '{serviceType.Name}' as {lt}." );
                     Services.Add( new ServiceDescriptor( serviceType, factory, lt ) );
+                    _registered.Add( serviceType, RegType.Internal );
                 }
-                else if( externalReg )
+                else if( reg == RegType.PreviouslyRegistered )
                 {
-                    Monitor.Warn( $"Service '{serviceType.Name}' is already registered in ServiceCollection. Skipping {lt} factory method registration." );
+                    Monitor.Warn( $"Service '{serviceType.Name}' is already registered in ServiceRegister. Skipping {lt} factory method registration." );
                 }
                 else
                 {
-                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (factory method). Ambient objects and services must be registered once and only once." );
+                    Monitor.Error( $"Unable to register mapping of '{serviceType.Name}' to a factory method since the type has already been mapped. ServiceRegister checks that registration occur at most once." );
                 }
-                _registered[serviceType] = false;
             }
         }
     }

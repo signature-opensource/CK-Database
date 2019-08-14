@@ -180,7 +180,14 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             }
         }
 
-        public class B : IB, IAmbientServiceCanBeImplementedByAmbientObject
+        /// <summary>
+        /// Ambient object.
+        /// Note: being abstract makes this type without any constructor (a concrete type with no constructor
+        /// has automatically the generated public default constructor) and this has to be handled since, normally
+        /// a Service MUST have one and only one public constructor.
+        /// An AmbientObject that implements a Service is an exception to this rule.
+        /// </summary>
+        public abstract class B : IB, IAmbientServiceCanBeImplementedByAmbientObject
         {
             void IAmbientServiceCanBeImplementedByAmbientObject.DoSometing( IActivityMonitor m )
             {
