@@ -1,10 +1,4 @@
-﻿using CK.SqlServer.Parser;
-using CK.SqlServer.Setup;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CK.SqlServer.Setup;
 
 namespace Runtime.SqlZonePackage.Zone
 {

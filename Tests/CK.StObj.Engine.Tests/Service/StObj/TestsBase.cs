@@ -1,16 +1,10 @@
 using CK.Core;
 using CK.Setup;
-using CK.Text;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 using static CK.Testing.MonitorTestHelper;
 
@@ -56,7 +50,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             return r;
         }
 
-        public static (StObjCollectorResult, IStObjMap) CheckSuccessAndEmit( StObjCollector c )
+        public static (StObjCollectorResult Result, IStObjMap Map) CheckSuccessAndEmit( StObjCollector c )
         {
             var r = CheckSuccess( c );
             var assemblyName = DateTime.Now.ToString( "Service_yyMdHmsffff" );
@@ -67,13 +61,19 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             return (r, StObjContextRoot.Load( a, null, TestHelper.Monitor ));
         }
 
-        public static StObjContextRoot.ServiceRegister FullSuccessfulResolution( StObjCollector c, SimpleServiceContainer startupServices = null )
+        public static (StObjCollectorResult Result, IStObjMap Map, StObjContextRoot.ServiceRegister ServiceRegisterer) CheckSuccessAndConfigureServices( StObjCollector c, SimpleServiceContainer startupServices = null )
         {
             var r = CheckSuccessAndEmit( c );
-            r.Item2.Should().NotBeNull();
+            r.Map.Should().NotBeNull();
             var reg = new StObjContextRoot.ServiceRegister( TestHelper.Monitor, new ServiceCollection(), startupServices );
-            reg.AddStObjMap( r.Item2 ).Should().BeTrue( "Service configuration succeed." );
-            return reg;
+            reg.AddStObjMap( r.Map ).Should().BeTrue( "Service configuration succeed." );
+            return (r.Result, r.Map, reg);
+        }
+
+        public static (StObjCollectorResult Result, IStObjMap Map, IServiceProvider Services) CheckSuccessAndBuildServices( StObjCollector c, SimpleServiceContainer startupServices = null )
+        {
+            var r = CheckSuccessAndConfigureServices( c, startupServices );
+            return (r.Result, r.Map, r.ServiceRegisterer.Services.BuildServiceProvider());
         }
 
         public static StObjContextRoot.ServiceRegister CheckFailureConfigurationServices( StObjCollector c, SimpleServiceContainer startupServices = null )

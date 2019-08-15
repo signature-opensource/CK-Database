@@ -11,6 +11,12 @@ namespace CK.Core
     public interface IStObjServiceMap
     {
         /// <summary>
+        /// Gets all the <see cref="IAmbientService"/> types that are directly mapped to
+        /// an already available Ambient Object.
+        /// </summary>
+        IReadOnlyDictionary<Type, object> ObjectMappings { get; }
+
+        /// <summary>
         /// Gets all the <see cref="IAmbientService"/> types to the final service class type
         /// that can be directly resolved by any DI container.
         /// </summary>

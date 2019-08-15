@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Implements a cache for attributes associated to a type or to any of its members that

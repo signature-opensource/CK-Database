@@ -4,7 +4,6 @@ using System.Linq;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
-using CK.Text;
 
 namespace CK.Setup
 {

@@ -5,8 +5,6 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.IO;
 using System.Linq;
 using CK.Core;
 using CK.Setup;

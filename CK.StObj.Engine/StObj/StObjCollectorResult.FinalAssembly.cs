@@ -1,8 +1,5 @@
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace CK.Setup

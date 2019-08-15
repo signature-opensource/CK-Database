@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Defines an ambient property: properties tagged with this attribute can be automatically set

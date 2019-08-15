@@ -6,11 +6,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Parameter attribute that can be use to designate the container of the object among 

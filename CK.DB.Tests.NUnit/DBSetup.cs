@@ -1,16 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 using NUnit.Framework;
-using CK.SqlServer.Setup;
 using System.Diagnostics;
 using static CK.Testing.DBSetupTestHelper;
-using System.IO;
 using CKSetup;
-using System.Threading;
 using FluentAssertions;
 using CK.Testing;
 

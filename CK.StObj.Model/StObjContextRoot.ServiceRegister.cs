@@ -1,8 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace CK.Core
 {
@@ -86,6 +84,10 @@ namespace CK.Core
                             DoRegisterSingleton( kv.Key, kv.Value, true );
                         }
                         map.StObjs.ConfigureServices( this );
+                        foreach( var kv in map.Services.ObjectMappings )
+                        {
+                            DoRegisterSingleton( kv.Key, kv.Value, false );
+                        }
                         foreach( var kv in map.Services.SimpleMappings )
                         {
                             Register( kv.Key, kv.Value.ClassType, kv.Value.IsScoped );

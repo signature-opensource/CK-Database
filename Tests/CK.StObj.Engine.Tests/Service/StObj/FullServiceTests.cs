@@ -7,7 +7,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 using static CK.Testing.MonitorTestHelper;
 
@@ -276,7 +275,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
             using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
             {
-                var sp = FullSuccessfulResolution( collector, startupServices ).Services.BuildServiceProvider();
+                var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                 sp.GetRequiredService<IB>()
                     .BCanTalkToYou( TestHelper.Monitor, "Magic!" )
                     .Should().Be( 3172 );
@@ -302,8 +301,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                 IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
                 using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
                 {
-                    var r = FullSuccessfulResolution( collector, startupServices );
-                    var sp = r.Services.BuildServiceProvider();
+                    var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                     sp.GetRequiredService<IA1>().Should().BeSameAs( sp.GetRequiredService<A>() );
                     sp.GetRequiredService<IB>().Should().BeSameAs( sp.GetRequiredService<B>() );
                     using( var scope = sp.CreateScope() )
@@ -341,8 +339,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
             using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
             {
-                var r = FullSuccessfulResolution( collector, startupServices );
-                var sp = r.Services.BuildServiceProvider();
+                var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                 // We are using here the ScopedImplementation.
                 var s = sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>();
                 s.DoSometing( TestHelper.Monitor );
@@ -373,8 +370,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
             using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
             {
-                var r = FullSuccessfulResolution( collector, startupServices );
-                var sp = r.Services.BuildServiceProvider();
+                var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                 // We are using here the ScopedImplementation.
                 var s = sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>();
                 s.Should().BeOfType<ScopedImplementation>();
@@ -400,10 +396,10 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
             using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
             {
-                var r = FullSuccessfulResolution( collector, startupServices );
-                var sp = r.Services.BuildServiceProvider();
+                var r = CheckSuccessAndConfigureServices( collector, startupServices );
+                var sp = r.ServiceRegisterer.Services.BuildServiceProvider();
                 sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().DoSometing( TestHelper.Monitor );
-                r.Services.Should().ContainSingle( s => s.ServiceType == typeof( IAmbientServiceCanBeImplementedByAmbientObject ) && s.Lifetime == ServiceLifetime.Singleton );
+                r.ServiceRegisterer.Services.Should().ContainSingle( s => s.ServiceType == typeof( IAmbientServiceCanBeImplementedByAmbientObject ) && s.Lifetime == ServiceLifetime.Singleton );
             }
             logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
             logs.Should().Contain( e => e.Text == "SuperStartupService is talking to you." );

@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using CK.Testing;
 using CK.Text;
 
 namespace CK.Testing.CKDatabaseLocal

@@ -1,13 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Setup;
 using NUnit.Framework;
 using CK.Text;
-using System.Text.RegularExpressions;
-using CK.Core;
 
 using static CK.Testing.MonitorTestHelper;
 

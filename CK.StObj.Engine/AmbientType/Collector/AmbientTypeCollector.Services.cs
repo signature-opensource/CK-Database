@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using CK.Text;
-using System.Reflection;
+using CK.Setup;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     public partial class AmbientTypeCollector
     {
@@ -17,10 +16,10 @@ namespace CK.Core
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
-        AmbientServiceClassInfo RegisterServiceClass( Type t, AmbientServiceClassInfo parent, AmbientTypeKind lt )
+        AmbientServiceClassInfo RegisterServiceClassInfo( Type t, AmbientServiceClassInfo parent, AmbientTypeKind lt, AmbientObjectClassInfo objectInfo )
         {
-            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt );
-            if( !serviceInfo.IsExcluded )
+            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt, objectInfo );
+            if( !serviceInfo.TypeInfo.IsExcluded )
             {
                 RegisterAssembly( t );
                 if( serviceInfo.Generalization == null ) _serviceRoots.Add( serviceInfo );
@@ -145,7 +144,7 @@ namespace CK.Core
             {
                 bool error = false;
                 var deepestConcretes = new List<AmbientServiceClassInfo>();
-                Debug.Assert( _serviceRoots.All( info => info != null && !info.IsExcluded && info.Generalization == null ),
+                Debug.Assert( _serviceRoots.All( info => info != null && !info.TypeInfo.IsExcluded && info.Generalization == null ),
                     "_serviceRoots contains only not Excluded types." );
                 List<(AmbientServiceClassInfo Root, AmbientServiceClassInfo[] Leaves)> ambiguities = null;
                 // We must wait until all paths have been initialized before ensuring constructor parameters
@@ -237,7 +236,7 @@ namespace CK.Core
 
                 public ClassAmbiguity( AmbientServiceClassInfo c )
                 {
-                    Debug.Assert( c.SpecializationsCount > 0 && c.MostSpecialized == null );
+                    Debug.Assert( c.TypeInfo.SpecializationsCount > 0 && c.MostSpecialized == null );
                     Class = c;
                     Leaves = new List<AmbientServiceClassInfo>();
                 }
@@ -258,7 +257,7 @@ namespace CK.Core
                               && NextUpperAmbiguity( allLeaves[1] ) != null );
                 _root = root;
                 _allLeaves = allLeaves;
-                while( root.SpecializationsCount == 1 )
+                while( root.TypeInfo.SpecializationsCount == 1 )
                 {
                     root = root.Specializations.Single();
                 }
@@ -332,7 +331,7 @@ namespace CK.Core
                     bool thisPathIsResolved = true;
                     var closure = leaf.ComputedCtorParametersClassClosure;
                     bool isLeafUnifier = a.Specializations
-                                            .Where( s => !s.IsAssignableFrom( leaf ) )
+                                            .Where( s => !s.TypeInfo.IsAssignableFrom( leaf.TypeInfo ) )
                                             .All( s => closure.Contains( s ) );
                     if( isLeafUnifier )
                     {
@@ -369,7 +368,7 @@ namespace CK.Core
                 var g = start.Generalization;
                 while( g != null )
                 {
-                    if( g.SpecializationsCount > 1 ) break;
+                    if( g.TypeInfo.SpecializationsCount > 1 ) break;
                     g = g.Generalization;
                 }
                 return g;

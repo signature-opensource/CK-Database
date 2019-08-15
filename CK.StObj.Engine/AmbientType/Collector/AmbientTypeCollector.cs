@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using CK.Text;
 using System.Reflection;
-using CK.Setup;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Discovers types that support <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>
@@ -21,7 +19,7 @@ namespace CK.Core
         readonly IServiceProvider _serviceProvider;
         readonly PocoRegisterer _pocoRegisterer;
         readonly HashSet<Assembly> _assemblies;
-        readonly Dictionary<Type, AmbientObjectClassInfo> _collector;
+        readonly Dictionary<Type, AmbientObjectClassInfo> _objectCollector;
         readonly List<AmbientObjectClassInfo> _roots;
         readonly string _mapName;
         readonly Func<IActivityMonitor, Type, bool> _typeFilter;
@@ -49,7 +47,7 @@ namespace CK.Core
             _tempAssembly = tempAssembly;
             _serviceProvider = serviceProvider;
             _assemblies = new HashSet<Assembly>();
-            _collector = new Dictionary<Type, AmbientObjectClassInfo>();
+            _objectCollector = new Dictionary<Type, AmbientObjectClassInfo>();
             _roots = new List<AmbientObjectClassInfo>();
             _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
             _serviceRoots = new List<AmbientServiceClassInfo>();
@@ -64,7 +62,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the number of registered types.
         /// </summary>
-        public int RegisteredTypeCount => _collector.Count;
+        public int RegisteredTypeCount => _objectCollector.Count;
 
         /// <summary>
         /// Registers multiple types. Only classes and IPoco interfaces are considered.
@@ -122,15 +120,15 @@ namespace CK.Core
             return c != typeof( object ) ? DoRegisterClass( c, out _, out _ ) : false;
         }
 
-        bool DoRegisterClass( Type t, out AmbientObjectClassInfo result, out AmbientServiceClassInfo serviceInfo )
+        bool DoRegisterClass( Type t, out AmbientObjectClassInfo objectInfo, out AmbientServiceClassInfo serviceInfo )
         {
             Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
             // Skips already processed types.
-            // The collector contains null AmbientObjectClassInfo value for already processed types
+            // The object collector contains null AmbientObjectClassInfo value for already processed types
             // that are skipped or on error.
             serviceInfo = null;
-            if( _collector.TryGetValue( t, out result )
+            if( _objectCollector.TryGetValue( t, out objectInfo )
                 || _serviceCollector.TryGetValue( t, out serviceInfo ) )
             {
                 return false;
@@ -151,32 +149,36 @@ namespace CK.Core
             {
                 if( acParent != null || (lt & AmbientTypeKind.AmbientObject) == AmbientTypeKind.AmbientObject )
                 {
-                    result = CreateStObjTypeInfo( t, acParent );
-                    Debug.Assert( result != null );
+                    objectInfo = RegisterObjectClassInfo( t, acParent );
+                    Debug.Assert( objectInfo != null );
                 }
                 if( sParent != null || (lt & AmbientTypeKind.IsAmbientService) != 0 )
                 {
-                    serviceInfo = RegisterServiceClass( t, sParent, lt );
+                    serviceInfo = RegisterServiceClassInfo( t, sParent, lt, objectInfo );
                     Debug.Assert( serviceInfo != null );
                 }
             }
             // Marks the type as a registered one.
-            if( result == null && serviceInfo == null )
+            if( objectInfo == null && serviceInfo == null )
             {
-                _collector.Add( t, null );
+                _objectCollector.Add( t, null );
             }
             return true;
         }
 
-        AmbientObjectClassInfo CreateStObjTypeInfo( Type t, AmbientObjectClassInfo parent )
+        AmbientObjectClassInfo RegisterObjectClassInfo( Type t, AmbientObjectClassInfo parent )
         {
             AmbientObjectClassInfo result = new AmbientObjectClassInfo( _monitor, parent, t, _serviceProvider, _ambientKindDetector, !_typeFilter( _monitor, t ) );
             if( !result.IsExcluded )
             {
                 RegisterAssembly( t );
-                if( parent == null ) _roots.Add( result );
+                if( parent == null )
+                {
+                    Debug.Assert( !_roots.Contains( result ) );
+                    _roots.Add( result );
+                }
             }
-            _collector.Add( t, result );
+            _objectCollector.Add( t, result );
             return result;
         }
 

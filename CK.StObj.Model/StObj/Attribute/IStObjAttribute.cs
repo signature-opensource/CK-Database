@@ -6,12 +6,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Basic support for declarative dependency structure between types.

@@ -3,11 +3,8 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.Text;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Xml.Linq;
 
 namespace SqlActorPackage.Runtime

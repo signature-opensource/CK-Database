@@ -65,10 +65,10 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         [AmbientPropertySet( PropertyName = "Schema", PropertyValue = "CK" )]
         public class BasicPackage : BaseDatabaseObject
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public BasicUser UserHome { get; protected set; }
             
-            [InjectObjectAttribute]
+            [InjectObject]
             public BasicGroup GroupHome { get; protected set; }
         }
 

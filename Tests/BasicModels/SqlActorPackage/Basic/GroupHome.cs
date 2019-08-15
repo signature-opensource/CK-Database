@@ -2,7 +2,6 @@ using System.Data.SqlClient;
 using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.SqlServer;
-using System;
 
 namespace SqlActorPackage.Basic
 {

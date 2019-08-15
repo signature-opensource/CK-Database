@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using CK.SqlServer;
 using SqlCallDemo.ProviderDemo;
 using CK.Core;
 using static CK.Testing.DBSetupTestHelper;

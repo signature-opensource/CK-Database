@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;

@@ -30,6 +30,8 @@ namespace CK.Core
             {
                 throw new NotSupportedException();
             }
+
+            public override string ToString() => "ImplementableTypeInfo:NoImplementationMarker";
         }
 
         /// <summary>
@@ -208,5 +210,8 @@ namespace CK.Core
             }
             return cB.FullName;
         }
+
+        public override string ToString() => $"{AbstractType.Name} => {_stubType?.Name ?? "(no stub type)" }";
+
     }
 }

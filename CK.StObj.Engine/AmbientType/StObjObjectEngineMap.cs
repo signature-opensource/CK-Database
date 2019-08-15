@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using System.Collections;
 using System.Reflection;
-using CK.Setup;
-using Microsoft.Extensions.DependencyInjection;
 using CSemVer;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
@@ -51,6 +48,10 @@ namespace CK.Core
             _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
             _exposedManualServiceMap = new ServiceManualMapTypeAdapter( _serviceManualMap );
             _serviceManualList = new List<IStObjServiceFinalManualMapping>();
+
+            _serviceToObjectMap = new Dictionary<Type, MutableItem>();
+            _serviceToObjectMapExposed = new ServiceObjectMappingTypeAdapter( _serviceToObjectMap );
+
             _typeKindDetector = typeKindDetector;
         }
 

@@ -130,19 +130,19 @@ namespace CK.StObj.Engine.Tests
 
         public class CB : IAmbientObject
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public CA A { get; set; }
         }
 
         public class CB2 : CB
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public new CA2 A { get { return (CA2)base.A; } }
         }
 
         public class CB3 : CB2
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public new CA3 A 
             {
                 get { return (CA3)base.A; }
@@ -170,7 +170,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CMissingSetterOnTopDefiner : IAmbientObject
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public CA2 A { get { return null; } }
         }
 
@@ -187,7 +187,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CPrivateSetter : IAmbientObject
         {
-            [InjectObjectAttribute]
+            [InjectObject]
             public CA2 A { get; private set; }
         }
 

@@ -1,4 +1,3 @@
-using System;
 using CK.Setup;
 
 namespace CK.Testing.SetupableSetup

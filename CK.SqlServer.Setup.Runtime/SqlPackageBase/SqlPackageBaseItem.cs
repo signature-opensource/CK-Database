@@ -1,10 +1,8 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
 using Yodii.Script;
-using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {

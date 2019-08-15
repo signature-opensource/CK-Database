@@ -5,11 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Setup;
 

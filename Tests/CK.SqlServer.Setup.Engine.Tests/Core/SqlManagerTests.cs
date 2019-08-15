@@ -1,5 +1,3 @@
-using CK.Core;
-using CK.Setup;
 using FluentAssertions;
 using NUnit.Framework;
 using System.Data.SqlClient;

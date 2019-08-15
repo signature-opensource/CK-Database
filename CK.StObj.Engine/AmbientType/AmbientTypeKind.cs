@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Defines the "services" kind and life times and invalid combination of

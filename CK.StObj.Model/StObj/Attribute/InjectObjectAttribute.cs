@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Defines that an ambient object must be injected: properties tagged with this attribute must 

@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 
 namespace CK.Setup
 {
+
     /// <summary>
-    /// Marks an assembly as being a a Model.
+    /// Marks an assembly that even if it depends on Models should not participate
+    /// in Setup. 
     /// </summary>
     [AttributeUsage( AttributeTargets.Assembly, AllowMultiple = false )]
-    public class IsModelAttribute : Attribute
+    public class ExcludeFromSetupAttribute : Attribute
     {
     }
 }

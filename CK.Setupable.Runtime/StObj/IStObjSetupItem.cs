@@ -1,11 +1,4 @@
-﻿using CK.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CK.Setup
+﻿namespace CK.Setup
 {
     /// <summary>
     /// A setup item that is bound to a StObj.

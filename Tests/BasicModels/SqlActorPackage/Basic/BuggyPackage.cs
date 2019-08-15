@@ -8,13 +8,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer;
 using CK.SqlServer.Setup;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace SqlActorPackage.Basic
 {

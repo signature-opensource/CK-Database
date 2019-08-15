@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using CK.Setup;
 using System.Diagnostics;
-using CK.SqlServer.Parser;
 
 namespace CK.SqlServer.Setup
 {

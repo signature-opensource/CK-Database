@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using CK.Core;
 using System.Xml.Linq;
-using System.Linq;
-using System.Diagnostics;
 
 namespace CK.Setup
 {

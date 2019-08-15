@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using CK.Core;
-using CK.Testing.Monitoring;
 using CK.Testing.StObjMap;
-using CK.Text;
 
 namespace CK.Testing
 {

@@ -1,6 +1,4 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo( "CK.Setup.SqlServer.Tests, PublicKey = 002400000480000094000000060200000024000052534131000400000" +
                                                                       "10001002badda7c6774254194bd7d7b264aa7be4622e8a0105acfe1b" +

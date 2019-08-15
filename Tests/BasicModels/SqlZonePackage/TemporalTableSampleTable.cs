@@ -1,4 +1,3 @@
-using System.Data.SqlClient;
 using CK.Setup;
 using CK.SqlServer.Setup;
 

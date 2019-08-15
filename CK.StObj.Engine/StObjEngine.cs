@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
-using CK.Setup;
 using System.Diagnostics;
-using System.Reflection;
 using System.Xml.Linq;
 using System.IO;
 using CK.Text;

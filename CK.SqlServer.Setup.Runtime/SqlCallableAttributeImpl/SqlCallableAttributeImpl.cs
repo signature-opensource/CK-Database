@@ -1,6 +1,5 @@
 using CK.SqlServer.Parser;
 using System;
-using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {

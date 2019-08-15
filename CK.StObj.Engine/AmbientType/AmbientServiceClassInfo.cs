@@ -1,22 +1,17 @@
-using CK.Setup;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Represents a service class/implementation.
     /// </summary>
-    public class AmbientServiceClassInfo : AmbientTypeInfo, IStObjServiceClassDescriptor
+    public class AmbientServiceClassInfo : IStObjServiceClassDescriptor
     {
-        // True when this service is an Ambient object. Such service don't have
-        // to have a public constructor.
-        readonly bool _isAnAmbientObject;
-
         HashSet<AmbientServiceClassInfo> _ctorParmetersClosure;
         // Memorizes the EnsureCtorBinding call state.
         bool? _ctorBinding;
@@ -117,26 +112,38 @@ namespace CK.Core
             Type t,
             AmbientTypeCollector collector,
             bool isExcluded,
-            AmbientTypeKind lifetime )
-            : base( m, parent, t, serviceProvider, isExcluded )
+            AmbientTypeKind lifetime,
+            AmbientObjectClassInfo objectInfo )
         {
-            Debug.Assert( Generalization == parent );
-            // Forgets the AmbientObject flag: this enables AmbientObjects
-            // to be valid implementation of IAmbientService or ISingletionAmbientService
-            // as singleton.
+            Debug.Assert( objectInfo == null || objectInfo.ServiceClass == null, "If we are the the asociated Service, we must be the only one." );
+
+            if( objectInfo != null )
+            {
+                TypeInfo = objectInfo;
+                objectInfo.ServiceClass = this;
+            }
+            else TypeInfo = new AmbientTypeInfo( m, parent?.TypeInfo, t, serviceProvider, isExcluded, this );
+
+            Debug.Assert( ReferenceEquals( TypeInfo.Generalization, parent?.TypeInfo ) );
+            Debug.Assert( (lifetime == (AmbientTypeKind.AmbientObject | AmbientTypeKind.AmbientSingleton)) == TypeInfo is AmbientObjectClassInfo );
+
+
+            // Forgets the AmbientObject flag.
             if( lifetime == (AmbientTypeKind.AmbientObject|AmbientTypeKind.AmbientSingleton) )
             {
-                _isAnAmbientObject = true;
                 lifetime = AmbientTypeKind.AmbientSingleton;
+                // See below.
+                MustBeScopedLifetime = false;
             }
             Debug.Assert( lifetime == AmbientTypeKind.IsAmbientService
                           || lifetime == AmbientTypeKind.AmbientSingleton
                           || lifetime == AmbientTypeKind.AmbientScope );
 
             DeclaredLifetime = lifetime;
-            // Let MustBeScopedLifetime be null for singleton here. Singleton impact is handled later.
+            // Let MustBeScopedLifetime be null for singleton here. Singleton impact is handled later
+            // since it may have an impact on its ctor parameter type.
+            // We have shortcut this process above for AmbientObject (since there is no ctor).
             if( lifetime == AmbientTypeKind.AmbientScope ) MustBeScopedLifetime = true;
-
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
 
             //if( IsExcluded ) return;
@@ -159,6 +166,23 @@ namespace CK.Core
         }
 
         /// <summary>
+        /// Gets the <see cref="AmbientTypeInfo"/> that can be an autonomus one (specific to this service), or an
+        /// existing AmbientObjectClassInfo if this service is implemented by an Ambient object (such service don't
+        /// have to have a public constructor).
+        /// </summary>
+        public AmbientTypeInfo TypeInfo { get; }
+
+        /// <summary>
+        /// Get the <see cref="AmbientTypeInfo.Type"/>.
+        /// </summary>
+        public Type Type => TypeInfo.Type;
+
+        /// <summary>
+        /// Gets whether this service implementation is also an Ambient Object.
+        /// </summary>
+        public bool IsAnAmbientObject => TypeInfo is AmbientObjectClassInfo;
+
+        /// <summary>
         /// Gets this Service class life time.
         /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
         /// vs. <see cref="IScopedAmbientService"/> interface marker.
@@ -176,17 +200,17 @@ namespace CK.Core
         public bool? MustBeScopedLifetime { get; private set; }
 
         /// <summary>
-        /// Gets the generalization of this <see cref="Type"/>, it is be null if no base class exists.
+        /// Gets the generalization of this Service class, it is be null if no base class exists.
         /// This property is valid even if this type is excluded (however this AmbientServiceClassInfo does not
         /// appear in generalization's <see cref="Specializations"/>).
         /// </summary>
-        public new AmbientServiceClassInfo Generalization => (AmbientServiceClassInfo)base.Generalization;
+        public AmbientServiceClassInfo Generalization => TypeInfo?.Generalization?.ServiceClass;
 
         /// <summary>
         /// Gets the different specialized <see cref="AmbientServiceClassInfo"/> that are not excluded.
         /// </summary>
         /// <returns>An enumerable of <see cref="AmbientServiceClassInfo"/> that specialize this one.</returns>
-        public new IEnumerable<AmbientServiceClassInfo> Specializations => base.Specializations.Cast<AmbientServiceClassInfo>();
+        public IEnumerable<AmbientServiceClassInfo> Specializations => TypeInfo.Specializations.Select( s => s.ServiceClass );
 
         /// <summary>
         /// Gets the most specialized concrete (or abstract but auto implementable) implementation.
@@ -238,13 +262,13 @@ namespace CK.Core
         /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="AmbientTypeInfo.Type"/>
         /// is abstract, null otherwise.
         /// </summary>
-        public ImplementableTypeInfo ImplementableTypeInfo { get; private set; }
+        public ImplementableTypeInfo ImplementableTypeInfo => TypeInfo.ImplementableTypeInfo;
 
         /// <summary>
         /// Gets the final type that must be used: it is <see cref="ImplementableTypeInfo.StubType"/>
         /// if this type is abstract otherwise it is the associated concrete <see cref="AmbientTypeInfo.Type"/>.
         /// </summary>
-        public Type FinalType => ImplementableTypeInfo?.StubType ?? Type;
+        public Type FinalType => TypeInfo.ImplementableTypeInfo?.StubType ?? Type;
 
         /// <summary>
         /// Gets the specialization depth from the first top AmbientServiceClassInfo.
@@ -286,22 +310,26 @@ namespace CK.Core
                         ref List<Type> abstractTails )
         {
             Debug.Assert( tempAssembly != null );
-            Debug.Assert( !IsExcluded && ImplementableTypeInfo == null );
+            Debug.Assert( !TypeInfo.IsExcluded );
             Debug.Assert( Interfaces == null );
+            // Don't try to reuse the potential AmbientObjectInfo here: even if the TypeInfo is
+            // an AmbientObject, let the regular code be executed (any abstract Specializations
+            // have already been removed anyway) so we'll correctly initialize the Interfaces for
+            // all the chain.
             bool isConcretePath = false;
             foreach( AmbientServiceClassInfo c in Specializations )
             {
-                Debug.Assert( !c.IsExcluded );
+                Debug.Assert( !c.TypeInfo.IsExcluded );
                 isConcretePath |= c.InitializePath( monitor, collector, this, tempAssembly, lastConcretes, ref abstractTails );
             }
             if( !isConcretePath )
             {
                 if( Type.IsAbstract
-                    && (ImplementableTypeInfo = CreateAbstractTypeImplementation( monitor, tempAssembly )) == null )
+                    && TypeInfo.InitializeImplementableTypeInfo( monitor, tempAssembly ) == null )
                 {
                     if( abstractTails == null ) abstractTails = new List<Type>();
                     abstractTails.Add( Type );
-                    Generalization?.RemoveSpecialization( this );
+                    TypeInfo.Generalization?.RemoveSpecialization( TypeInfo );
                 }
                 else
                 {
@@ -336,7 +364,7 @@ namespace CK.Core
             Debug.Assert( IsIncluded );
             Debug.Assert( MostSpecialized == null );
             Debug.Assert( mostSpecialized != null && mostSpecialized.IsIncluded );
-            Debug.Assert( !mostSpecialized.IsSpecialized );
+            Debug.Assert( !mostSpecialized.TypeInfo.IsSpecialized );
 
             bool success = true;
 #if DEBUG
@@ -462,7 +490,7 @@ namespace CK.Core
                 // This ensure the "Inheritance Constructor Parameters rule", even if parameters are
                 // not exposed from the inherited constructor (and base parameters are direclty new'ed).
                 _ctorParmetersClosure = new HashSet<AmbientServiceClassInfo>();
-                if( _isAnAmbientObject )
+                if( IsAnAmbientObject )
                 {
                     // Only calls EnsureCtorBinding even if it is useless for coherency.
                     initializationError |= !EnsureCtorBinding( m, collector );
@@ -532,7 +560,7 @@ namespace CK.Core
         {
             Debug.Assert( IsIncluded );
             if( _ctorBinding.HasValue ) return _ctorBinding.Value;
-            if( _isAnAmbientObject )
+            if( IsAnAmbientObject )
             {
                 ConstructorParameters = Array.Empty<CtorParameter>();
                 _ctorBinding = true;
@@ -686,7 +714,7 @@ namespace CK.Core
                 }
                 if( !sClass.IsIncluded )
                 {
-                    var reason = sClass.IsExcluded
+                    var reason = sClass.TypeInfo.IsExcluded
                                     ? "excluded from registration"
                                     : "abstract (and can not be concretized)";
                     var prefix = $"Service type '{tParam.Name}' is {reason}. Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
@@ -698,13 +726,13 @@ namespace CK.Core
                     m.Info( prefix + "will use its default value." );
                     sClass = null;
                 }
-                else if( IsAssignableFrom( sClass ) )
+                else if( TypeInfo.IsAssignableFrom( sClass.TypeInfo ) )
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be this class or one of its specializations." );
                     return new CtorParameterData( false, null, null, isEnumerable, lifetime );
                 }
-                else if( sClass.IsAssignableFrom( this ) )
+                else if( sClass.TypeInfo.IsAssignableFrom( TypeInfo ) )
                 {
                     var prefix = $"Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     m.Error( prefix + "cannot be one of its base class." );
@@ -714,6 +742,8 @@ namespace CK.Core
             }
             return new CtorParameterData( true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable, lifetime );
         }
+
+        public override string ToString() => TypeInfo.ToString();
 
     }
 }

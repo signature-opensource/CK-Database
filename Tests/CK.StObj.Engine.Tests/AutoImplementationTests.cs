@@ -2,7 +2,6 @@ using System;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
-using System.Diagnostics;
 using FluentAssertions;
 
 using static CK.Testing.MonitorTestHelper;

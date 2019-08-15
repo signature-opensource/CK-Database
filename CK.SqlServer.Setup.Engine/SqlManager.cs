@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
-using System.Text.RegularExpressions;
 using CK.Core;
 
 namespace CK.SqlServer.Setup

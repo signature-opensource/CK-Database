@@ -5,7 +5,6 @@ using NUnit.Framework;
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Reflection;
 using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlTransform.Tests

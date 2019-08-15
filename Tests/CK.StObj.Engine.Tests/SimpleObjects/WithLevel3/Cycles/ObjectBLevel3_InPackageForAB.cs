@@ -5,7 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using CK.Setup;
+using CK.Core;
 using NUnit.Framework;
 
 

@@ -5,7 +5,6 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
 using CK.Setup;
 using CK.SqlServer.Setup;
 

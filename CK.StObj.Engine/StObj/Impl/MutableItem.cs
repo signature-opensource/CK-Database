@@ -8,11 +8,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Reflection;
 using System.Diagnostics;
-using System.Collections;
 
 namespace CK.Setup
 {
@@ -62,7 +60,7 @@ namespace CK.Setup
             /// The ImplementableTypeInfo is not null only if the Type is abstract but
             /// a <see cref="ImplementableTypeInfo.StubType"/> has been successfuly created.
             /// </summary>
-            public ImplementableTypeInfo ImplementableTypeInfo;
+            public ImplementableTypeInfo ImplementableTypeInfo => LeafSpecialization.Type.ImplementableTypeInfo;
 
             /// <summary>
             /// Useless to store it at each level.
@@ -181,7 +179,6 @@ namespace CK.Setup
                     ac[i] = new MutableInjectObject( this, Type.InjectObjects[i] );
                 }
                 _leafData = new LeafData( this, ap, ac );
-                _leafData.ImplementableTypeInfo = implementableTypeInfo;
             }
         }
 

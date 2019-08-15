@@ -1,8 +1,5 @@
 using CK.Core;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection

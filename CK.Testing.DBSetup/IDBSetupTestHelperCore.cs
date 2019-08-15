@@ -1,6 +1,5 @@
 using CK.Testing.SqlServer;
 using CKSetup;
-using System;
 
 namespace CK.Testing.DBSetup
 {

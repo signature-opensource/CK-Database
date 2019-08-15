@@ -3,7 +3,6 @@ using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.SqlServer.Parser;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

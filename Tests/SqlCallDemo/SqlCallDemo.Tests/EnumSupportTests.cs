@@ -1,7 +1,6 @@
 using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
-using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;

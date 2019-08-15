@@ -5,7 +5,6 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using CK.Core;
 using System;
 
 namespace CK.Setup

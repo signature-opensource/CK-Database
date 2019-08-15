@@ -249,7 +249,7 @@ namespace CK.StObj.Engine.Tests
             [StObj( ItemKind = DependentItemKindSpec.Container )]
             public class B : IAmbientObject
             {
-                [InjectObjectAttribute]
+                [InjectObject]
                 public A TheA { get; private set; }
 
                 [InjectObject]

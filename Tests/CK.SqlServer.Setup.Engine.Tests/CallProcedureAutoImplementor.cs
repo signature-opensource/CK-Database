@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using System.Data.SqlClient;
@@ -9,7 +6,6 @@ using System.Data;
 using System.IO;
 using static CK.Testing.DBSetupTestHelper;
 using FluentAssertions;
-using System.Threading.Tasks;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {

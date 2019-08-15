@@ -5,10 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System.Reflection;
 using CK.Core;
-using CK.Setup;
-using NUnit.Framework;
 
 namespace CK.StObj.Engine.Tests.Poco
 {

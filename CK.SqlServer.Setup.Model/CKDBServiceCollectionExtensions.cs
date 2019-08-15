@@ -3,7 +3,6 @@ using System;
 using CK.SqlServer.Setup;
 using System.Reflection;
 using System.Linq;
-using CK.SqlServer;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

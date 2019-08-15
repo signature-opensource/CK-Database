@@ -1,14 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
-using System.Xml;
-using System.Xml.Linq;
 using CK.Setup;
-
-using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setupable.Engine.Tests
 {
@@ -57,7 +50,7 @@ namespace CK.Setupable.Engine.Tests
             var locName = new ContextLocName( "[]db^Name" );
             ParsedFileName result = ParsedFileName.CreateFromSourceCode( locName, "sql" );
             Assert.That( result.FullName, Is.EqualTo( "[]db^Name" ) );
-            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@58.sql" ) );
+            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@51.sql" ) );
             Assert.That( result.Extension, Is.EqualTo( "sql" ) );
         }
 

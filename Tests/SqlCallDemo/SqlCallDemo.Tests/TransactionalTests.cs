@@ -1,9 +1,6 @@
 using NUnit.Framework;
 using CK.Core;
 using CK.SqlServer;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using static CK.Testing.DBSetupTestHelper;
 using FluentAssertions;
 using System.Data;

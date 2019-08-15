@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace CK.Setup
@@ -308,7 +307,7 @@ namespace CK.Setup
                     Class.GetFinalMustBeScopedLifetime( m, typeKindDetector, ref success );
                     if( Assignments.Any() )
                     {
-                        _finalMapping = engineMap.CreateStObjServiceFinalManualMapping( this );
+                        _finalMapping = engineMap.CreateServiceFinalManualMapping( this );
                     }
                 }
                 return _finalMapping;
@@ -382,27 +381,38 @@ namespace CK.Setup
 
             public bool FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
             {
-                bool success = true;
-                foreach( var c in typeResult.RootClasses )
+                using( _monitor.OpenInfo( "Final Service registration." ) )
                 {
-                    RegisterClassMapping( c, ref success );
-                }
-                foreach( var f in families )
-                {
-                    foreach( var i in f.Interfaces )
+                    bool success = true;
+                    foreach( var c in typeResult.RootClasses )
                     {
-                        RegisterMapping( i.Type, f.Resolved, ref success );
+                        RegisterClassMapping( c, ref success );
                     }
+                    foreach( var f in families )
+                    {
+                        foreach( var i in f.Interfaces )
+                        {
+                            RegisterMapping( i.Type, f.Resolved, ref success );
+                        }
+                    }
+                    _monitor.CloseGroup( $"Registered {_engineMap.ObjectMappings.Count} object mappings, {_engineMap.ServiceSimpleMappings.Count} simple mappings and {_engineMap.ServiceManualList.Count} factories for {_engineMap.ServiceManualMappings.Count} manual mappings." );
+                    return success;
                 }
-                return success;
             }
 
             void RegisterClassMapping( AmbientServiceClassInfo c, ref bool success )
             {
-                RegisterMapping( c.Type, c.MostSpecialized, ref success );
-                foreach( var s in c.Specializations )
+                if( !c.IsAnAmbientObject )
                 {
-                    RegisterClassMapping( s, ref success );
+                    RegisterMapping( c.Type, c.MostSpecialized, ref success );
+                    foreach( var s in c.Specializations )
+                    {
+                        RegisterClassMapping( s, ref success );
+                    }
+                }
+                else
+                {
+                    _monitor.Debug( $"Skipping '{c}' Service class mapping since it is an Ambient object." );
                 }
             }
 
@@ -421,9 +431,16 @@ namespace CK.Setup
                 }
                 else
                 {
-                    _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
                     final.GetFinalMustBeScopedLifetime( _monitor, _ambientTypeKindDetector, ref success );
-                    _engineMap.ServiceSimpleMappings.Add( t, final );
+                    _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
+                    if( final.IsAnAmbientObject )
+                    {
+                        _engineMap.RegisterServiceFinalObjectMapping( t, final.TypeInfo );
+                    }
+                    else
+                    {
+                        _engineMap.ServiceSimpleMappings.Add( t, final );
+                    }
                 }
             }
         }

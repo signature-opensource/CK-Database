@@ -1,16 +1,19 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Encapsulate type information for an Ambient Object or Service class.
     /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
     /// Attributes must be retrieved thanks to <see cref="Attributes"/>.
     /// This type information are built top-down (from generalization to most specialized type).
+    /// <para>
+    /// An AmbientTypeInfo can be either a <see cref="AmbientServiceClassInfo"/> or an independent one (this is a concrete class)
+    /// that is associated to a <see cref="AmbientServiceClassInfo"/> (via ServiceClass). 
+    /// </para>
     /// </summary>
     public class AmbientTypeInfo
     {
@@ -18,6 +21,8 @@ namespace CK.Core
         AmbientTypeInfo _nextSibling;
         AmbientTypeInfo _firstChild;
         int _specializationCount;
+        bool _initializeImplementableTypeInfo;
+
 
         /// <summary>
         /// Initializes a new <see cref="AmbientTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
@@ -27,8 +32,11 @@ namespace CK.Core
         /// <param name="parent">Parent AmbientTypeInfo (Generalization). Null if the base type is not an Ambient type.</param>
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="isExcluded">True to actually exclude this type from the registration.</param>
-        public AmbientTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t, IServiceProvider services, bool isExcluded )
+        /// <param name="serviceClass">Service class is mandatory if this is an independent Type info.</param>
+        internal AmbientTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t, IServiceProvider services, bool isExcluded, AmbientServiceClassInfo serviceClass )
         {
+            Debug.Assert( (serviceClass == null) == (this is AmbientObjectClassInfo) );
+            ServiceClass = serviceClass;
             if( (parent?.IsExcluded ?? false) )
             {
                 monitor.Warn( $"Type {t.FullName} is excluded since its parent is excluded." );
@@ -46,6 +54,14 @@ namespace CK.Core
                 ++parent._specializationCount;
             }
         }
+
+
+        /// <summary>
+        /// Gets the service classe information for this type is there is one.
+        /// If this <see cref="AmbientTypeInfo"/> is an independent one, then this is necessarily not null.
+        /// If this is a <see cref="AmbientObjectClassInfo"/> this can be null or not.
+        /// </summary>
+        public AmbientServiceClassInfo ServiceClass { get; internal set; }
 
         /// <summary>
         /// Gets the Type that is decorated.
@@ -65,25 +81,34 @@ namespace CK.Core
         public AmbientTypeInfo Generalization { get; }
 
         /// <summary>
+        /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="Type"/>
+        /// is abstract, null otherwise.
+        /// </summary>
+        public ImplementableTypeInfo ImplementableTypeInfo { get; private set; }
+
+        /// <summary>
         /// Gets whether this Type (that is abstract) must actually be considered as an abstract type or not.
         /// An abstract class may be considered as concrete if there is a way to concretize an instance. 
         /// This must be called only for abstract types and if <paramref name="assembly"/> is not null.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
-        /// <param name="assembly">The dynamic assembly to use for generated types if necessary.</param>
+        /// <param name="assembly">The dynamic assembly to use for generated types.</param>
         /// <returns>Concrete Type builder or null.</returns>
-        internal protected ImplementableTypeInfo CreateAbstractTypeImplementation( IActivityMonitor monitor, IDynamicAssembly assembly )
+        internal protected ImplementableTypeInfo InitializeImplementableTypeInfo( IActivityMonitor monitor, IDynamicAssembly assembly )
         {
             Debug.Assert( Type.IsAbstract && assembly != null && !IsExcluded );
 
-            List<ICKCustomAttributeProvider> combined = new List<ICKCustomAttributeProvider>();
+            if( _initializeImplementableTypeInfo ) return ImplementableTypeInfo;
+            _initializeImplementableTypeInfo = true;
+
+            var combined = new List<ICKCustomAttributeProvider>();
             var p = this;
             do { combined.Add( p.Attributes ); p = p.Generalization; } while( p != null );
 
             ImplementableTypeInfo autoImpl = ImplementableTypeInfo.CreateImplementableTypeInfo( monitor, Type, new CustomAttributeProviderComposite( combined ) );
             if( autoImpl != null && autoImpl.CreateStubType( monitor, assembly ) != null )
             {
-                return autoImpl;
+                return ImplementableTypeInfo = autoImpl;
             }
             return null;
         }
@@ -163,7 +188,16 @@ namespace CK.Core
         /// Overridden to return a readable string.
         /// </summary>
         /// <returns>Readable string.</returns>
-        public override string ToString() => $"{(IsExcluded ? "[Excluded]" : "")}{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
-
+        public override string ToString()
+        {
+            bool isService = ServiceClass != null;
+            bool isObject = this is AmbientObjectClassInfo;
+            var type = (isService && isObject)
+                        ? "Service,Object:"
+                        : isService
+                            ? "Service:"
+                            : "Object:";
+            return $"{type}{(IsExcluded ? "[Excluded]" : "")}{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
+        }
     }
 }

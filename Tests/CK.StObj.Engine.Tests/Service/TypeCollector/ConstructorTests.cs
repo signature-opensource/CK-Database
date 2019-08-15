@@ -1,12 +1,7 @@
 using CK.Core;
-using CK.Setup;
 using FluentAssertions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
@@ -14,12 +9,12 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     public class ConstructorTests : TestsBase
     {
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class PackageA : IAmbientObject
+        public class PackageA : IAmbientObject
         {
         }
 
         //[AmbientService( typeof( PackageA ) )]
-        class ServiceWith2Ctors : IScopedAmbientService
+        public class ServiceWith2Ctors : IScopedAmbientService
         {
             public ServiceWith2Ctors()
             {
@@ -32,7 +27,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
 
 
         //[AmbientService( typeof( PackageA ) )]
-        class ServiceWithOneCtor : IScopedAmbientService
+        public class ServiceWithOneCtor : IScopedAmbientService
         {
             public ServiceWithOneCtor( int a )
             {
@@ -40,7 +35,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
         //[AmbientService( typeof( PackageA ) )]
-        class ServiceWithNonPublicCtor : IScopedAmbientService
+        public class ServiceWithNonPublicCtor : IScopedAmbientService
         {
             internal ServiceWithNonPublicCtor( int a )
             {
@@ -48,7 +43,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
         //[AmbientService( typeof( PackageA ) )]
-        class ServiceWithDefaultCtor : IScopedAmbientService
+        public class ServiceWithDefaultCtor : IScopedAmbientService
         {
         }
 
@@ -87,15 +82,15 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        interface INotAnAmbientService { }
+        public interface INotAnAmbientService { }
 
-        interface ISNotRegistered : IScopedAmbientService { }
+        public interface ISNotRegistered : IScopedAmbientService { }
 
-        interface ISRegistered : IScopedAmbientService { }
+        public interface ISRegistered : IScopedAmbientService { }
 
-        class ServiceForISRegistered : ISRegistered { }
+        public class ServiceForISRegistered : ISRegistered { }
 
-        class Consumer1Service : IScopedAmbientService
+        public class Consumer1Service : IScopedAmbientService
         {
             public Consumer1Service(
                 INotAnAmbientService normal,
@@ -138,7 +133,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        class ConsumerWithClassDependencyService : IScopedAmbientService
+        public class ConsumerWithClassDependencyService : IScopedAmbientService
         {
             public ConsumerWithClassDependencyService(
                 INotAnAmbientService normal,
@@ -148,7 +143,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        class ConsumerWithDefaultService : IScopedAmbientService
+        public class ConsumerWithDefaultService : IScopedAmbientService
         {
             public ConsumerWithDefaultService(
                 INotAnAmbientService normal,
@@ -195,14 +190,14 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
 
         }
 
-        class AutoRef : IScopedAmbientService
+        public class AutoRef : IScopedAmbientService
         {
             public AutoRef( AutoRef a )
             {
             }
         }
 
-        class RefBased : IScopedAmbientService
+        public class RefBased : IScopedAmbientService
         {
         }
 
@@ -213,9 +208,9 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        class RefIntermediate : RefBased { }
+        public class RefIntermediate : RefBased { }
 
-        class RefIntermediate2 : RefIntermediate
+        public class RefIntermediate2 : RefIntermediate
         {
             public RefIntermediate2( RefBased b )
             {
@@ -246,14 +241,14 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
 
         }
 
-        class StupidA : IScopedAmbientService
+        public class StupidA : IScopedAmbientService
         {
             public StupidA( SpecializedStupidA child )
             {
             }
         }
 
-        class SpecializedStupidA : StupidA
+        public class SpecializedStupidA : StupidA
         {
             public SpecializedStupidA()
                 : base( null )

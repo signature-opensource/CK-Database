@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using CK.Text;
 using System.Reflection;
-using CK.Setup;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Result of the <see cref="AmbientTypeCollector"/> work.
@@ -64,16 +62,18 @@ namespace CK.Core
 
         /// <summary>
         /// Gets all the <see cref="ImplementableTypeInfo"/>: Abstract types that require a code generation
-        /// that are either <see cref="IAmbientService"/> or <see cref="IAmbientObject"/>.
+        /// that are either <see cref="IAmbientService"/>, <see cref="IAmbientObject"/> (or both).
         /// </summary>
         public IEnumerable<ImplementableTypeInfo> TypesToImplement
         {
             get
             {
                 var all = AmbientObjects.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
-                            .Concat( AmbientServices.RootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
-                            .Concat( AmbientServices.SubGraphRootClasses.Select( c => c.MostSpecialized.ImplementableTypeInfo ) )
+                            // Filters out the Service implementation that are AmbientObject.
+                            .Concat( AmbientServices.RootClasses.Select( c => c.MostSpecialized.IsAnAmbientObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
+                            .Concat( AmbientServices.SubGraphRootClasses.Select( c => c.MostSpecialized.IsAnAmbientObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
                             .Where( i => i != null );
+
                 Debug.Assert( all.GroupBy( i => i ).Where( g => g.Count() > 1 ).Any() == false, "No duplicates." );
                 return all;
             }

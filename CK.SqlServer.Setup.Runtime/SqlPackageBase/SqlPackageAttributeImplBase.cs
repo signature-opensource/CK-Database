@@ -1,7 +1,6 @@
 using System;
 using CK.Core;
 using CK.Setup;
-using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {

@@ -1,11 +1,9 @@
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using CK.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace CK.Setup
 {
@@ -81,14 +79,25 @@ namespace CK.Setup
             _infoType.Namespace.Append( _sourceServiceSupport );
 
             _rootType.Append( @"
+Dictionary<Type, object> _objectServiceMappings;
 Dictionary<Type, IStObjServiceClassDescriptor> _simpleServiceMappings;
 Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
 
 public IStObjServiceMap Services => this;
+IReadOnlyDictionary<Type, object> IStObjServiceMap.ObjectMappings => _objectServiceMappings;
 IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
 IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
                      .NewLine();
 
+            // Object mappings.
+            _rootCtor.Append( $"_objectServiceMappings = new Dictionary<Type, object>({liftedMap.ObjectMappings.Count});" ).NewLine();
+            foreach( var map in liftedMap.ObjectMappings )
+            {
+                _rootCtor.Append( $"_objectServiceMappings.Add( " )
+                       .AppendTypeOf( map.Key )
+                       .Append( ", _stObjs[" ).Append( map.Value.IndexOrdered ).Append( "].Instance );" )
+                       .NewLine();
+            }
             // Service mappings (Simple).
             _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, IStObjServiceClassDescriptor>({liftedMap.ServiceSimpleMappings.Count});" ).NewLine();
             foreach( var map in liftedMap.ServiceSimpleMappings )

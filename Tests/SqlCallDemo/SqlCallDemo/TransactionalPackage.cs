@@ -1,9 +1,6 @@
 using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.SqlServer;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SqlCallDemo
 {

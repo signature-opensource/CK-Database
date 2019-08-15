@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Reflection;
 using System.Diagnostics;
@@ -128,7 +127,7 @@ namespace CK.Setup
         }
 
         internal AmbientObjectClassInfo( IActivityMonitor monitor, AmbientObjectClassInfo parent, Type t, IServiceProvider provider, AmbientTypeKindDetector ambientTypeKind, bool isExcluded )
-            : base( monitor, parent, t, provider, isExcluded )
+            : base( monitor, parent, t, provider, isExcluded, null )
         {
             Debug.Assert( parent == Generalization );
             if( IsExcluded ) return;
@@ -409,7 +408,7 @@ namespace CK.Setup
             {
                 ImplementableTypeInfo autoImplementor = null;
                 if( Type.IsAbstract
-                    && (autoImplementor = CreateAbstractTypeImplementation( monitor, tempAssembly)) == null )
+                    && (autoImplementor = InitializeImplementableTypeInfo( monitor, tempAssembly )) == null )
                 {
                     abstractTails.Add( Type );
                     Generalization?.RemoveSpecialization( this );

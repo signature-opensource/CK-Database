@@ -1,5 +1,3 @@
-using System.Data.SqlClient;
-using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
 using FluentAssertions;

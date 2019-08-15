@@ -1,12 +1,5 @@
-using CK.Core;
-using CK.Setup;
 using FluentAssertions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
@@ -54,9 +47,9 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             interfaces[0].Type.Should().Be( typeof( IServiceRegistered ) );
             var classes = r.AmbientServices.RootClasses;
             classes.Should().HaveCount( 1 );
-            classes[0].IsExcluded.Should().BeFalse();
+            classes[0].TypeInfo.IsExcluded.Should().BeFalse();
             classes[0].Generalization.Should().BeNull();
-            classes[0].IsSpecialized.Should().BeFalse();
+            classes[0].TypeInfo.IsSpecialized.Should().BeFalse();
             classes[0].Type.Should().Be( typeof( ServiceRegisteredImpl ) );
             classes[0].Interfaces.Should().BeEquivalentTo( interfaces );
         }
@@ -83,7 +76,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             classes.Should().HaveCount( 1 );
             var cBase = classes[0];
             cBase.Type.Should().Be( typeof( ServiceRegisteredImpl ) );
-            cBase.IsSpecialized.Should().BeTrue();
+            cBase.TypeInfo.IsSpecialized.Should().BeTrue();
             var cSpec = cBase.MostSpecialized;
             cBase.Specializations.Should().ContainSingle().And.Contain( cSpec );
             cSpec.Type.Should().Be( typeof( ServiceNotRegisteredImpl ) );
