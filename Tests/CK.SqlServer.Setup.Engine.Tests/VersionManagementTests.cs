@@ -35,7 +35,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
             {
                 _manager.OpenFromConnectionString( TestHelper.GetConnectionString( _db.DatabaseName ) ).Should().BeTrue();
             }
-            _manager.ExecuteOneScript( "delete from CKCore.tItemVersionStore" );
         }
 
         [TearDown]
@@ -107,6 +106,9 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Test]
         public void handling_unaccessed_items_on_same_or_different_database()
         {
+            // This test needs to start without versions.
+            _manager.ExecuteNonQuery( "delete from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" );
+
             var oVersions = new VersionedTypedName[]
             {
                 new VersionedTypedName( "A", "T1", new Version(1,0,0) ),
@@ -154,6 +156,8 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 .Select( v => v.ToString() )
                 .Concatenate()
                 .Should().Be( features );
+            int fromView = (int)_manager.ExecuteScalar( "select count(*) from CKCore.vVFeature" );
+            back.Should().HaveCount( fromView );
         }
 
     }

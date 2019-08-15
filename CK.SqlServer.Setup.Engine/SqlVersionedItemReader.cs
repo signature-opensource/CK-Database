@@ -56,12 +56,10 @@ namespace CK.SqlServer.Setup
                     }
                     while( ver < CurrentVersion )
                     {
-                        using( monitor.OpenInfo( $"Upgrading to Version = {ver}." ) )
-                        {
-                            m.ExecuteNonQuery( _upgradeScripts[ver++] );
-                        }
+                        monitor.Info( $"Upgrading from Version {ver} to {ver + 1}." );
+                        m.ExecuteNonQuery( _upgradeScripts[ver++] );
+                        m.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{ver}' where FullName = N'CK.SqlVersionedItemRepository';" );
                     }
-                    m.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
                 }
             }
         }
