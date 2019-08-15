@@ -189,8 +189,7 @@ end";
         const string _update2 = @"
 create view CKCore.vVFeature
 as
-    select VFeature = FullName, Version = ItemVersion from CKCore.tItemVersionStore where ItemType='VFeature';
-'";
+    select VFeature = FullName, Version = ItemVersion from CKCore.tItemVersionStore where ItemType='VFeature';";
 
         readonly static string[] _upgradeScripts = new[] { _update1, _update2 };
 
