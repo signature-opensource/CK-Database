@@ -186,8 +186,13 @@ begin
 end";
 
         const string _update1 = @"update CKCore.tItemVersionStore set FullName = stuff(FullName,6,8,'Model.') where FullName like '[[]]db^Objects.%'";
+        const string _update2 = @"
+create view CKCore.vVFeature
+as
+    select VFeature = FullName, Version = ItemVersion from CKCore.tItemVersionStore where ItemType='VFeature';
+'";
 
-        readonly static string[] _upgradeScripts = new[] { _update1 };
+        readonly static string[] _upgradeScripts = new[] { _update1, _update2 };
 
     }
 }
