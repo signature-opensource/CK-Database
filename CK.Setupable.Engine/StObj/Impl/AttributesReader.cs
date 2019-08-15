@@ -7,31 +7,15 @@ namespace CK.Setup
 {
     internal class AttributesReader
     {
-        static internal DependentItemGroupList GetGroups( IActivityMonitor monitor, Type t )
+        static internal void CollectItemNames<TAttr>( Type t, Action<string> collector ) where TAttr : BaseItemNamesAttribute
         {
-            Debug.Assert( monitor != null );
-            Debug.Assert( t != null );
-            DependentItemGroupList result = new DependentItemGroupList();
-            var all = (GroupsAttribute[])t.GetCustomAttributes( typeof( GroupsAttribute ), false );
-            foreach( var a in all )
+            Debug.Assert( t != null && collector != null );
+            foreach( var n in t.GetCustomAttributesData()
+                                .Where( d => d.AttributeType is TAttr )
+                                .Select( d => (string)d.ConstructorArguments[0].Value ) )
             {
-                result.AddCommaSeparatedString( a.Groups );
+                collector( n );
             }
-            return result;
-        }
-
-        static internal DependentItemList GetRequirements( IActivityMonitor monitor, Type t, Type attrType )
-        {
-            Debug.Assert( monitor != null );
-            Debug.Assert( t != null );
-            Debug.Assert( attrType != null && typeof( RequiresAttribute ).IsAssignableFrom( attrType ) );
-            DependentItemList result = new DependentItemList();
-            var all = (RequiresAttribute[])t.GetCustomAttributes( attrType, false );
-            foreach( var a in all )
-            {
-                result.AddCommaSeparatedString( a.Requirements );
-            }
-            return result;
         }
 
         static internal SetupAttribute GetSetupAttribute( Type t )

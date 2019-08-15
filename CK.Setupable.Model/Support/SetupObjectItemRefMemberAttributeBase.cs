@@ -5,30 +5,23 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Base class for attributes that define a SetupObjectItem.
+    /// Base class for an attribute applied to a member that is associated to a SetupObjectItem that must be defined 
+    /// by another attribute on the same member (typically a <see cref="SetupObjectItemMemberAttributeBase"/>).
     /// </summary>
-    public abstract class SetupObjectItemMemberAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SetupObjectItemRefMemberAttributeBase : AmbientContextBoundDelegationAttribute
     {
         /// <summary>
-        /// Initializes this attribute with the name of the SetupItem (like "sUserCreate" or "CK.sUserCreate").
+        /// Initializes this attribute with the assembly qualified name of actual implementation.
         /// </summary>
-        /// <param name="objectName">Name of the object.</param>
         /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
-        protected SetupObjectItemMemberAttributeBase( string objectName, string actualAttributeTypeAssemblyQualifiedName )
+        protected SetupObjectItemRefMemberAttributeBase( string actualAttributeTypeAssemblyQualifiedName )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
-            ObjectName = objectName;
         }
-
-        /// <summary>
-        /// Gets the object name (for instance "sUserCreate" or "CK.sUserCreate").
-        /// </summary>
-        public string ObjectName { get; private set; }
 
     }
 }

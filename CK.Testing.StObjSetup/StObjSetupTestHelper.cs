@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using CK.Core;
+using CK.Setup;
 using CK.Testing.StObjSetup;
 using CK.Text;
 using CKSetup;

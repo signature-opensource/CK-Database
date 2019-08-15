@@ -10,7 +10,8 @@ using System.Collections.Generic;
 namespace CK.Setup
 {
     /// <summary>
-    /// Mutable list of <see cref="IDependentItemGroupRef"/> that also manages addig a dependency by name.
+    /// Mutable list of <see cref="IDependentItemGroupRef"/> that can handle named items (ie. <see cref="NamedDependentItemGroupRef"/>) transparently.
+    /// Instances can be created by <see cref="DependentItemListFactory"/>.
     /// </summary>
     public interface IDependentItemGroupList : IList<IDependentItemGroupRef>
     {

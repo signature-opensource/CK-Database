@@ -1,4 +1,4 @@
-﻿//using System;
+//using System;
 //using System.Collections.Generic;
 //using System.Data.SqlClient;
 //using System.Linq;
@@ -7,7 +7,7 @@
 //using System.Threading.Tasks;
 //using CK.Setup;
 //using CK.SqlServer;
-//using CK.SqlServer.Setup;
+//using CK.Core;
 //using CK.Core;
 //using System.Reflection;
 //using Microsoft.SqlServer.Types;

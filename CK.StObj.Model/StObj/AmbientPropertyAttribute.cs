@@ -8,7 +8,7 @@ namespace CK.Core
     /// the same property on the base class or defaults to <see cref="PropertyResolutionSource.FromGeneralizationAndThenContainer"/>.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    public class AmbientPropertyAttribute : Attribute, IAmbientPropertyOrInjectObjectAttribute
+    public class AmbientPropertyAttribute : Attribute, Setup.IAmbientPropertyOrInjectObjectAttribute
     {
         bool? _isOptional;
         PropertyResolutionSource? _source;
@@ -49,8 +49,8 @@ namespace CK.Core
         /// </summary>
         public bool IsResolutionSourceDefined => _source.HasValue; 
 
-        bool IAmbientPropertyOrInjectObjectAttribute.IsOptionalDefined => _isOptional.HasValue; 
+        bool Setup.IAmbientPropertyOrInjectObjectAttribute.IsOptionalDefined => _isOptional.HasValue; 
 
-        bool IAmbientPropertyOrInjectObjectAttribute.IsAmbientProperty =>  true; 
+        bool Setup.IAmbientPropertyOrInjectObjectAttribute.IsAmbientProperty =>  true; 
     }
 }

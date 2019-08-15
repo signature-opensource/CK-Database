@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup
     public class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
-        readonly ISetupableAspectConfiguration _setupConfiguration;
+        readonly ISetupableAspectRunConfiguration _setupConfiguration;
         readonly SqlManagerProvider _databases;
         ISqlServerParser _sqlParser;
         ISqlManagerBase _defaultDatabase;
@@ -44,7 +44,7 @@ namespace CK.SqlServer.Setup
         /// <param name="config">Configuration object.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="setupConfiguration"></param>
-        public SqlSetupAspect( SqlSetupAspectConfiguration config, IActivityMonitor monitor, ConfigureOnly<ISetupableAspectConfiguration> setupConfiguration )
+        public SqlSetupAspect( SqlSetupAspectConfiguration config, IActivityMonitor monitor, ConfigureOnly<ISetupableAspectRunConfiguration> setupConfiguration )
         {
             if( setupConfiguration.Service == null ) throw new ArgumentNullException( nameof(setupConfiguration) );
             if( config == null ) throw new ArgumentNullException( nameof(config) );

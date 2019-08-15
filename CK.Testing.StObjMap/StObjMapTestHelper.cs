@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using CK.Core;
+using CK.Setup;
 using CK.Testing.StObjMap;
 
 namespace CK.Testing

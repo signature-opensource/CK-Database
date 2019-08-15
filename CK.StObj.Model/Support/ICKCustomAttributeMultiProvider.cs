@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Specialized <see cref="ICKCustomAttributeProvider"/> to handle multiple <see cref="MemberInfo"/>.

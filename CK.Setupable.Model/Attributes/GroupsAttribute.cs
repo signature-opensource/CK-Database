@@ -7,29 +7,21 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Simple attributes to define groups to which a class belong by names.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class GroupsAttribute : Attribute
+    public class GroupsAttribute : Setup.BaseItemNamesAttribute
     {
-        readonly string _groups;
-
         /// <summary>
         /// Defines groups by their names.
         /// </summary>
         /// <param name="groups">Comma separated list of group names.</param>
         public GroupsAttribute( string groups )
+            : base( groups )
         {
-            _groups = groups;
         }
-
-        /// <summary>
-        /// Gets a comma separated list of group names.
-        /// </summary>
-        public string Groups { get { return _groups; } }
-
     }
 }

@@ -1,7 +1,8 @@
 using System.Reflection;
 using CK.CodeGen.Abstractions;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Classes that implement this interface are able to implement a property.
@@ -21,7 +22,7 @@ namespace CK.Core
         /// (for instance, whenever the property is not ready to be implemented).
         /// Any error must be logged into the <paramref name="monitor"/>.
         /// </returns>
-        bool Implement(IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ITypeScope b );
+        bool Implement( IActivityMonitor monitor, PropertyInfo p, IDynamicAssembly dynamicAssembly, ITypeScope b );
     }
 
 }

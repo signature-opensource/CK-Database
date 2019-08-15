@@ -1,3 +1,4 @@
+using CK.Core;
 using CK.Reflection;
 using System;
 using System.Collections.Generic;
@@ -5,7 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Registerer for <see cref="IPoco"/> interfaces.

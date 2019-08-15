@@ -7,7 +7,7 @@ namespace CK.Core
     /// be <see cref="IAmbientObject"/> objects and are automatically injected.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    public class InjectObjectAttribute : Attribute, IAmbientPropertyOrInjectObjectAttribute
+    public class InjectObjectAttribute : Attribute, Setup.IAmbientPropertyOrInjectObjectAttribute
     {
         bool? _isOptional;
 
@@ -23,8 +23,8 @@ namespace CK.Core
             set { _isOptional = value; }
         }
 
-        bool IAmbientPropertyOrInjectObjectAttribute.IsOptionalDefined => _isOptional.HasValue; 
+        bool Setup.IAmbientPropertyOrInjectObjectAttribute.IsOptionalDefined => _isOptional.HasValue; 
 
-        bool IAmbientPropertyOrInjectObjectAttribute.IsAmbientProperty => false; 
+        bool Setup.IAmbientPropertyOrInjectObjectAttribute.IsAmbientProperty => false; 
     }
 }

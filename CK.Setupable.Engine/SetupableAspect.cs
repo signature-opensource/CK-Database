@@ -25,7 +25,7 @@ namespace CK.Setup
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        class RunConfiguration : ISetupableAspectConfiguration
+        class RunConfiguration : ISetupableAspectRunConfiguration
         {
             readonly SetupableAspect _a;
 
@@ -57,7 +57,7 @@ namespace CK.Setup
 
         bool IStObjEngineAspect.Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
-            context.AddConfigureOnlyService( new ConfigureOnly<ISetupableAspectConfiguration>( new RunConfiguration( this ) ) );
+            context.AddConfigureOnlyService( new ConfigureOnly<ISetupableAspectRunConfiguration>( new RunConfiguration( this ) ) );
             context.PushPostConfigureAction( PostConfigure );
             return true;
         }

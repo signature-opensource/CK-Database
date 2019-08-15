@@ -7,7 +7,7 @@
 
 using System;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Independent implementation of <see cref="IContextLocNaming"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).

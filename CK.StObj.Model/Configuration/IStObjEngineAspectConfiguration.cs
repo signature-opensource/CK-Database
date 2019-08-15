@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// All configuration of a Engine Aspect must implement this interface.

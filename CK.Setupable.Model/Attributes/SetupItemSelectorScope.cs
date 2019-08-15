@@ -1,7 +1,9 @@
-﻿namespace CK.Setup
+
+
+namespace CK.Core
 {
     /// <summary>
-    /// Defines scope for <see cref="SetupItemSelectorBaseAttribute"/>.
+    /// Defines scope for <see cref="Setup.SetupItemSelectorBaseAttribute"/>.
     /// </summary>
     public enum SetupItemSelectorScope
     {

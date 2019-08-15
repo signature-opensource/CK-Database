@@ -16,10 +16,10 @@ namespace CK.Setup
     public class DynamicContainerItem : IMutableSetupItemContainer, ISetupItem, IDependentItemContainerRef
     {
         ContextLocNameStructImpl _name;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemList _children;
-        DependentItemGroupList _groups;
+        IDependentItemList _requires;
+        IDependentItemList _requiredBy;
+        IDependentItemList _children;
+        IDependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
         DependentItemKind _itemKind;
@@ -120,7 +120,7 @@ namespace CK.Setup
         /// </summary>
         public IDependentItemList Requires
         {
-            get { return _requires ?? (_requires = new DependentItemList()); }
+            get { return _requires ?? (_requires = DependentItemListFactory.CreateItemList()); }
         }
 
         /// <summary>
@@ -128,18 +128,18 @@ namespace CK.Setup
         /// </summary>
         public IDependentItemList RequiredBy
         {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
+            get { return _requiredBy ?? (_requiredBy = DependentItemListFactory.CreateItemList()); }
         }
 
         /// <summary>
         /// Gets a mutable list of groups to which this package belongs.
         /// </summary>
-        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
+        public IDependentItemGroupList Groups => _groups ?? (_groups = DependentItemListFactory.CreateItemGroupList()); 
 
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
-        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
+        public IDependentItemList Children => _children ?? (_children = DependentItemListFactory.CreateItemList()); 
 
         /// <summary>
         /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 

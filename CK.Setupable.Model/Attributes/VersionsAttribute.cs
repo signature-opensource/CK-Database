@@ -1,6 +1,6 @@
 using System;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Defines versions of an object.

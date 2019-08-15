@@ -43,8 +43,8 @@ namespace CK.StObj.Engine.Tests
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( A2 ) );
             StObjCollectorResult result = collector.GetResult();
-            Assert.That( result.HasFatalError, Is.False );
-            Assert.That( result.StObjs.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
+            result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A2>();
         }
 
         public abstract class A3 : A
@@ -59,6 +59,28 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterType( typeof( A3 ) );
             StObjCollectorResult result = collector.GetResult();
             result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A>().And.NotBeAssignableTo<A3>();
+        }
+
+        [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
+        class PreventAutoImplementationAttribute : Attribute { }
+
+        [PreventAutoImplementation]
+        public abstract class A4 : A
+        {
+            [AutoImplementMethod]
+            public abstract A ThirdMethod( int i, string s );
+        }
+
+
+        [Test]
+        public void abstract_auto_implementable_leaf_but_using_PreventAutoImplementationAttribute_are_silently_ignored()
+        {
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterType( typeof( A4 ) );
+            StObjCollectorResult result = collector.GetResult();
+            result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A>().And.NotBeAssignableTo<A4>();
         }
 
     }

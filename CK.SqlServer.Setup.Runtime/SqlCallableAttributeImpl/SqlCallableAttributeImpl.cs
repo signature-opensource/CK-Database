@@ -1,3 +1,4 @@
+using CK.Setup;
 using CK.SqlServer.Parser;
 using System;
 

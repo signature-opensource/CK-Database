@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Implements <see cref="IDynamicAssembly"/>.

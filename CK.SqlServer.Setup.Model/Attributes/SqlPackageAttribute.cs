@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Attribute that must decorate a <see cref="SqlPackage"/> class.

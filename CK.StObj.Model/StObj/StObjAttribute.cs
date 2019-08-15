@@ -10,10 +10,10 @@ using System;
 namespace CK.Core
 {
     /// <summary>
-    /// Default implementation of <see cref="IStObjAttribute"/>.
+    /// Default implementation of <see cref="Setup.IStObjAttribute"/>.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class StObjAttribute : Attribute, IStObjAttribute
+    public class StObjAttribute : Attribute, Setup.IStObjAttribute
     {
         /// <summary>
         /// Gets or sets the container of the object.

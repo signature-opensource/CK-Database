@@ -10,7 +10,7 @@ namespace CK.Testing.StObjMap
     {
         /// <summary>
         /// Gets the generated assembly name from "StObjMap/GeneratedAssemblyName" configuration.
-        /// Defaults to <see cref="StObjEngineConfiguration.DefaultGeneratedAssemblyName"/>.
+        /// Defaults to <see cref="Setup.StObjEngineConfiguration.DefaultGeneratedAssemblyName"/>.
         /// <para>
         /// This is updated each time <see cref="ResetStObjMap"/> is called with a ".Reset.#num" suffix
         /// (where #num is an incremented number starting at 1).

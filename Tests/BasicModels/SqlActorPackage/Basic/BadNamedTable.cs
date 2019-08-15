@@ -5,8 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using CK.Setup;
-using CK.SqlServer.Setup;
+using CK.Core;
 using CK.Text;
 
 namespace SqlActorPackage.Basic

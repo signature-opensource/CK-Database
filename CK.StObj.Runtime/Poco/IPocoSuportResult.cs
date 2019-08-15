@@ -1,7 +1,8 @@
-﻿using System;
+using CK.Core;
+using System;
 using System.Collections.Generic;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Exposes the result of <see cref="IPoco"/> interfaces support.

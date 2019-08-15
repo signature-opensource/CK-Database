@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Defines information for a unified Poco type.

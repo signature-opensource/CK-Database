@@ -1,8 +1,9 @@
+using CK.Core;
 using CK.Text;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Describes a folder to process and for which a <see cref="IStObjMap"/> should be generated,

@@ -7,13 +7,13 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Simple attributes to define reverted requirements of a class by names.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class RequiredByAttribute : RequiresAttribute
+    public class RequiredByAttribute : Setup.BaseItemNamesAttribute
     {
         /// <summary>
         /// Defines reverse requirements by their names.

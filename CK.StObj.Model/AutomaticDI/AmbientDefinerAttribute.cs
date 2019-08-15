@@ -9,7 +9,7 @@ namespace CK.Core
     /// </summary>
     /// <para>
     /// This attribute, just like <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>, <see cref="IScopedAmbientService"/>
-    /// and <see cref="ISingletonAmbientService"/> can be created anywhere: as long as the name is AmbientDefinerAttribute 
+    /// and <see cref="ISingletonAmbientService"/> can be created anywhere: as long as the name is "AmbientDefinerAttribute" 
     /// (regardless of the namespace), it will be honored.
     /// </para>
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = false )]

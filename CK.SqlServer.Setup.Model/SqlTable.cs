@@ -1,6 +1,4 @@
-using CK.Core;
-
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Base class for table objects. 

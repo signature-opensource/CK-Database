@@ -7,8 +7,9 @@ using CK.Reflection;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using System.Reflection.Emit;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Handles abstract Type and <see cref="IAttributeAutoImplemented"/>, <see cref="IAutoImplementorMethod"/>
@@ -30,8 +31,6 @@ namespace CK.Core
             {
                 throw new NotSupportedException();
             }
-
-            public override string ToString() => "ImplementableTypeInfo:NoImplementationMarker";
         }
 
         /// <summary>
@@ -85,8 +84,11 @@ namespace CK.Core
             if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof( abstractType ) );
             if( attributeProvider == null ) throw new ArgumentNullException( nameof( attributeProvider ) );
 
-            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
-
+            if( abstractType.GetCustomAttributesData().Any( d => d.AttributeType.Name == "PreventAutoImplementationAttribute" ) )
+            {
+                monitor.Trace( $"Type {abstractType} is marked with a [PreventAutoImplementationAttribute]. Auto implementation is skipped." );
+                return null;
+            }
             var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
             int nbUncovered = 0;
             List<ImplementableAbstractMethodInfo> methods = new List<ImplementableAbstractMethodInfo>();
@@ -211,6 +213,10 @@ namespace CK.Core
             return cB.FullName;
         }
 
+        /// <summary>
+        /// Overridden to return a readable string with the <see cref="AbstractType"/> name and the <see cref="StubType"/> if there is one.
+        /// </summary>
+        /// <returns>A readable string.</returns>
         public override string ToString() => $"{AbstractType.Name} => {_stubType?.Name ?? "(no stub type)" }";
 
     }

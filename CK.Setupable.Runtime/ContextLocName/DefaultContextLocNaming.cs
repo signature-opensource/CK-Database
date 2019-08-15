@@ -7,7 +7,7 @@
 
 using System;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Exposes multiple methods that manipulate location names.
@@ -496,14 +496,14 @@ namespace CK.Core
 
             if( !DoTryParse( input, startIndex, count, out context, out location, out name, out target ) )
             {
-                if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}'.", input.Substring( startIndex, count ) );
+                if( throwError ) throw new Exception( $"Syntax error in ContextLocName '{input.Substring( startIndex, count )}'." );
                 return null;
             }
             if( target != null )
             {
                 if( target.Length == 0 )
                 {
-                    if( throwError ) throw new CKException( "Syntax error in ContextLocName '{0}': invalid suffix '()'.", input.Substring( startIndex, count ) );
+                    if( throwError ) throw new Exception( $"Syntax error in ContextLocName '{input.Substring( startIndex, count )}': invalid suffix '()'." );
                     return null;
                 }
                 target = Resolve( target, curContext, curLoc, throwError );
@@ -618,7 +618,7 @@ namespace CK.Core
                     idxEnd = curLoc.LastIndexOf( _locPathChar, idxEnd - 1 );
                     if( idxEnd < 0 )
                     {
-                        if( fullNameToThrowError != null ) throw new CKException( $"Invalid relative location in '{fullNameToThrowError()}': '{location}' is above the root given '{curLoc}'." );
+                        if( fullNameToThrowError != null ) throw new Exception( $"Invalid relative location in '{fullNameToThrowError()}': '{location}' is above the root given '{curLoc}'." );
                         return false;
                     }
                     ++iSep;

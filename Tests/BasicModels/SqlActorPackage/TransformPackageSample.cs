@@ -1,4 +1,4 @@
-﻿using CK.SqlServer.Setup;
+using CK.Core;
 
 namespace SqlActorPackage
 {

@@ -7,29 +7,22 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Simple attributes to define requirements of a class by names.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class RequiresAttribute : Attribute
+    public class RequiresAttribute : Setup.BaseItemNamesAttribute
     {
-        readonly string _requires;
-
         /// <summary>
         /// Defines requirements by their names.
         /// </summary>
         /// <param name="requires">Comma separated list of requirement item names.</param>
         public RequiresAttribute( string requires )
+            : base( requires )
         {
-            _requires = requires;
         }
-
-        /// <summary>
-        /// Gets a comma separated list of item names.
-        /// </summary>
-        public string Requirements => _requires;
 
     }
 }

@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Model\SqlDatabase.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -7,21 +7,19 @@
 
 using System;
 using System.Collections.Generic;
-using CK.Core;
-using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Database objects hold the <see cref="ConnectionString"/> and the schemas defined in it.
     /// </summary>
     [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
-    public class SqlDatabase: ISqlConnectionStringProvider
+    public class SqlDatabase: SqlServer.ISqlConnectionStringProvider
     {
         /// <summary>
         /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
         /// </summary>
-        public const string DefaultDatabaseName = SqlSetupAspectConfiguration.DefaultDatabaseName;
+        public const string DefaultDatabaseName = Setup.SqlSetupAspectConfiguration.DefaultDatabaseName;
 
         /// <summary>
         /// Default schema name is "CK": <see cref="SqlDefaultDatabase"/> registers it.

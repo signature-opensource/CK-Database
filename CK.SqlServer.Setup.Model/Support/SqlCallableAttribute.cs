@@ -1,7 +1,8 @@
-using CK.Setup;
+using CK.Core;
+using CK.SqlServer;
 using System;
 
-namespace CK.SqlServer.Setup
+namespace CK.Setup
 {
 
     /// <summary>

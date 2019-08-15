@@ -9,7 +9,7 @@ namespace CK.Setup
     /// </summary>
     public abstract class SetupObjectItemC : SetupObjectItem, IDependentItemContainerTyped, IDependentItemContainerRef
     {
-        DependentItemList _children;
+        IDependentItemList _children;
 
         /// <summary>
         /// Initializes a <see cref="SetupObjectItemC"/> without ContextLocName nor ItemType.
@@ -47,7 +47,7 @@ namespace CK.Setup
             if( !base.OnTransformTargetCreated( monitor ) ) return false;
             // Should the transformed item be the container of the non transformed one?
             // I guess no.
-            // if( _children != null ) TransformTarget._children = new DependentItemList( _children );
+            // if( _children != null ) TransformTarget._children = DependentItemListFactory.CreateDependentItemList( _children );
             _children = null;
             return true;
         }
@@ -55,7 +55,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the mutable list of children.
         /// </summary>
-        public IDependentItemList Children => _children ?? (_children = new DependentItemList());
+        public IDependentItemList Children => _children ?? (_children = DependentItemListFactory.CreateItemList());
 
         /// <summary>
         /// Gets or sets the kind of item. Can be <see cref="DependentItemKind.Unknown"/>.

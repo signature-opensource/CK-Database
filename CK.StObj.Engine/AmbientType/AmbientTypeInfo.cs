@@ -193,11 +193,11 @@ namespace CK.Setup
             bool isService = ServiceClass != null;
             bool isObject = this is AmbientObjectClassInfo;
             var type = (isService && isObject)
-                        ? "Service,Object:"
+                        ? "Service & Object:"
                         : isService
                             ? "Service:"
                             : "Object:";
-            return $"{type}{(IsExcluded ? "[Excluded]" : "")}{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
+            return $"{type}{(IsExcluded ? "[IsExcluded]" : "")}{(IsSpecialized ? "[IsSpecialized]" : "")}{Type.Name}";
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using System;
+using CK.Core;
+using System;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Associates to <see cref="IPoco"/> interface its final, unified, implementation 

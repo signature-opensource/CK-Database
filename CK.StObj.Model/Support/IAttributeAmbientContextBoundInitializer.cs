@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Marker interface that extends <see cref="IAttributeAmbientContextBound"/> in order to 

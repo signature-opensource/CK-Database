@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+using CK.Core;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
 
 namespace SqlCallDemo.ComplexType
 {

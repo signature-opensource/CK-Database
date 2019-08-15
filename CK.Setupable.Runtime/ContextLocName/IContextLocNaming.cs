@@ -6,7 +6,7 @@
 #endregion
 
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Defines the immutable aspect of Context-Location-Name triplet.

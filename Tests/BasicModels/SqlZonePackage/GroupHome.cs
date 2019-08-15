@@ -1,5 +1,5 @@
 using System.Data.SqlClient;
-using CK.Setup;
+using CK.Core;
 using CK.SqlServer.Setup;
 
 namespace SqlZonePackage.Zone

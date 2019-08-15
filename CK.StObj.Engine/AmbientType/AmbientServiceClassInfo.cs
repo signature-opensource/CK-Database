@@ -743,6 +743,11 @@ namespace CK.Setup
             return new CtorParameterData( true, null, collector.FindServiceInterfaceInfo( tParam ), isEnumerable, lifetime );
         }
 
+
+        /// <summary>
+        /// Overridden to return the <see cref="AmbientTypeInfo.ToString()"/>.
+        /// </summary>
+        /// <returns>A readable string.</returns>
         public override string ToString() => TypeInfo.ToString();
 
     }

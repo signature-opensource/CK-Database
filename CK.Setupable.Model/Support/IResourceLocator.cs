@@ -1,7 +1,7 @@
-﻿using System;
+using CK.Core;
+using System;
 
-
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// A locator combines a <see cref="Type"/> and a path to a resource. 

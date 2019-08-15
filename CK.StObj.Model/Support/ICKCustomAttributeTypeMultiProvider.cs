@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Specialized <see cref="ICKCustomAttributeMultiProvider"/> bound to a <see cref="P:Type"/>. 

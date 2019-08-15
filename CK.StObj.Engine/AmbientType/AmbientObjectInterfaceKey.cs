@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Wrapper for keys in Type mapping dictionaries: when wrapped in this class,

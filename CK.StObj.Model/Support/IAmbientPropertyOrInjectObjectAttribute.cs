@@ -1,7 +1,7 @@
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
-    /// Unifies <see cref="AmbientPropertyAttribute"/> and <see cref="InjectObjectAttribute"/>.
+    /// Unifies <see cref="Core.AmbientPropertyAttribute"/> and <see cref="Core.InjectObjectAttribute"/>.
     /// </summary>
     public interface IAmbientPropertyOrInjectObjectAttribute
     {

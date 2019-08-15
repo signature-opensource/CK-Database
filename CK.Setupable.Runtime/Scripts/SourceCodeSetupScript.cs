@@ -6,7 +6,6 @@
 #endregion
 
 using System;
-using CK.Core;
 using System.Runtime.CompilerServices;
 
 namespace CK.Setup

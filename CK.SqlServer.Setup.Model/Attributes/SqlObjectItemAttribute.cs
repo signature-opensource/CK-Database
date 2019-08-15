@@ -1,7 +1,7 @@
 using System;
 using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
 
     /// <summary>

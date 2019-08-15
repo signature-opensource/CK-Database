@@ -9,7 +9,6 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using CK.Core;
 using System.Runtime.CompilerServices;
 
 namespace CK.Setup

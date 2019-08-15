@@ -1,6 +1,6 @@
 using System;
 
-namespace CK.Core
+namespace CK.Setup
 {
 
     /// <summary>

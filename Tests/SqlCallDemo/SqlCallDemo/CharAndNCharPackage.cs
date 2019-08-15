@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
-using CK.Setup;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
+using CK.Core;
 
 namespace SqlCallDemo
 {

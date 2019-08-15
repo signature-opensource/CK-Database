@@ -13,9 +13,9 @@ namespace CK.Setup
     {
         string _itemType;
         ContextLocName _contextLocName;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemGroupList _groups;
+        IDependentItemList _requires;
+        IDependentItemList _requiredBy;
+        IDependentItemGroupList _groups;
         SetupObjectItem _transformTarget;
         List<ISetupObjectTransformerItem> _transformers;
         SetupObjectItem _sourceWhenTransformed;
@@ -132,13 +132,13 @@ namespace CK.Setup
             // This new target requires its source (its cloned origin), therefore it is useless 
             // to duplicate its requires.
             // This is obvious.
-            //if( _requires != null ) _transformTarget._requires = new DependentItemList( _requires );
+            //if( _requires != null ) _transformTarget._requires = DependentItemListFactory.CreateDependentItemList( _requires );
             _transformTarget._requires = null;
 
             // If the source object defines any RequiredBy, it is up to the transformation 
             // to also define them.
             // This is a less obvious choice as the previous one.
-            //if( _requiredBy != null ) _transformTarget._requiredBy = new DependentItemList( _requiredBy );
+            //if( _requiredBy != null ) _transformTarget._requiredBy = DependentItemListFactory.CreateDependentItemList( _requiredBy );
             _transformTarget._requiredBy = null;
 
             // Same consideration here: it is up to the transformation to consider the transformed item
@@ -175,17 +175,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the mutable list of requirements for this item.
         /// </summary>
-        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList());
+        public IDependentItemList Requires => _requires ?? (_requires = DependentItemListFactory.CreateItemList());
 
         /// <summary>
         /// Gets the mutable list or reverse requirements for this item.
         /// </summary>
-        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList());
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = DependentItemListFactory.CreateItemList());
 
         /// <summary>
         /// Gets the mutable list or groups to which this item belongs.
         /// </summary>
-        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList());
+        public IDependentItemGroupList Groups => _groups ?? (_groups = DependentItemListFactory.CreateItemGroupList());
 
         /// <summary>
         /// Gets or sets the type of the object ("Procedure" for instance). 

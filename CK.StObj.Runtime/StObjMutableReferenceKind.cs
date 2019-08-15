@@ -52,7 +52,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Ambient property.
-        /// This kind of reference can depend on the referenced StObj (see <see cref="TrackAmbientPropertiesMode"/>).
+        /// This kind of reference can depend on the referenced StObj (see <see cref="Core.TrackAmbientPropertiesMode"/>).
         /// </summary>
         AmbientProperty = 64,
 

@@ -5,9 +5,10 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Basic support for declarative dependency structure between types.

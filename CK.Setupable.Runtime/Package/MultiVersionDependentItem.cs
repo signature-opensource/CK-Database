@@ -19,9 +19,9 @@ namespace CK.Setup
     {
         ContextLocNameStructImpl _name;
         string _itemType;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemGroupList _groups;
+        IDependentItemList _requires;
+        IDependentItemList _requiredBy;
+        IDependentItemGroupList _groups;
         IDependentItemContainerRef _container;
         IDependentItemRef _generalization;
         DependentItemKind _itemKind;
@@ -103,7 +103,7 @@ namespace CK.Setup
         /// </summary>
         public IDependentItemList Requires
         {
-            get { return _requires ?? (_requires = new DependentItemList()); }
+            get { return _requires ?? (_requires = DependentItemListFactory.CreateItemList()); }
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace CK.Setup
         /// </summary>
         public IDependentItemList RequiredBy
         {
-            get { return _requiredBy ?? (_requiredBy = new DependentItemList()); }
+            get { return _requiredBy ?? (_requiredBy = DependentItemListFactory.CreateItemList()); }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace CK.Setup
         /// </summary>
         public IDependentItemGroupList Groups
         {
-            get { return _groups ?? (_groups = new DependentItemGroupList()); }
+            get { return _groups ?? (_groups = DependentItemListFactory.CreateItemGroupList()); }
         }
 
         /// <summary>

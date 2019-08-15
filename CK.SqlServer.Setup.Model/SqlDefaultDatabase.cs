@@ -1,6 +1,4 @@
-using CK.Core;
-
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Typed <see cref="SqlDatabase"/> for the default <see cref="SqlDatabase"/>.

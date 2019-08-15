@@ -1,6 +1,4 @@
 using CK.Core;
-using CK.Setup;
-using CK.SqlServer.Setup;
 using SqlActorPackage;
 
 namespace SqlZonePackage.Zone

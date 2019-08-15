@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Supports assembly generation.

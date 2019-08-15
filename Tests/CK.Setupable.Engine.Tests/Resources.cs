@@ -8,6 +8,7 @@
 using System.Linq;
 using NUnit.Framework;
 using CK.Core;
+using CK.Setup;
 
 namespace CK.Setupable.Engine.Tests.SubNamespace
 {

@@ -12,20 +12,28 @@ namespace CK.Setup
         Type _driverType;
         string _driverTypeName;
         string _containerFullName;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemList _children;
-        DependentItemGroupList _groups;
+        IDependentItemList _requires;
+        IDependentItemList _requiredBy;
+        IDependentItemList _children;
+        IDependentItemGroupList _groups;
 
         internal StObjSetupDataRootClass( IActivityMonitor monitor, Type t, StObjSetupDataRootClass parent = null )
         {
             _parent = parent as IStObjSetupData;
             bool isInRoot = _parent == null;
 
-            _requires = AttributesReader.GetRequirements( monitor, t, typeof( RequiresAttribute ) );
-            _requiredBy = AttributesReader.GetRequirements( monitor, t, typeof( RequiredByAttribute ) );
-            _children = AttributesReader.GetRequirements( monitor, t, typeof( ChildrenAttribute ) );
-            _groups = AttributesReader.GetGroups( monitor, t );
+            _requires = DependentItemListFactory.CreateItemList();
+            AttributesReader.CollectItemNames<RequiresAttribute>( t, _requires.AddCommaSeparatedString );
+
+            _requiredBy = DependentItemListFactory.CreateItemList();
+            AttributesReader.CollectItemNames<RequiredByAttribute>( t, _requiredBy.AddCommaSeparatedString );
+
+            _children = DependentItemListFactory.CreateItemList();
+             AttributesReader.CollectItemNames<ChildrenAttribute>( t, _children.AddCommaSeparatedString );
+
+            _groups = DependentItemListFactory.CreateItemGroupList();
+            AttributesReader.CollectItemNames<GroupsAttribute>( t, _groups.AddCommaSeparatedString );
+
             SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
             if( setupAttr != null )
             {

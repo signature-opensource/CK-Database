@@ -4,7 +4,7 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Declares a dynamic handler associated to the object.
+    /// Base class to declare a dynamic handler associated to the object.
     /// </summary>
     public abstract class SetupItemSelectorBaseAttribute : AmbientContextBoundDelegationAttribute
     {
@@ -17,7 +17,7 @@ namespace CK.Setup
         protected SetupItemSelectorBaseAttribute( string actualAttributeTypeAssemblyQualifiedName, string commaSeparatedTypeNames, SetupItemSelectorScope scope )
             : base( actualAttributeTypeAssemblyQualifiedName )
         {
-            if( scope == Setup.SetupItemSelectorScope.None ) throw new ArgumentException( nameof(scope) ); 
+            if( scope == SetupItemSelectorScope.None ) throw new ArgumentException( nameof(scope) ); 
             CommaSeparatedTypeNames = commaSeparatedTypeNames;
             SetupItemSelectorScope = scope;
         }

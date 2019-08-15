@@ -1,6 +1,6 @@
-using CK.Core;
+using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Base class for actual packages and <see cref="SqlTable"/>.
@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
     [AmbientDefiner]
-    public class SqlPackage : ISqlConnectionStringProvider, IAmbientObject
+    public class SqlPackage : SqlServer.ISqlConnectionStringProvider, IAmbientObject
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.
@@ -24,6 +24,6 @@ namespace CK.SqlServer.Setup
         [AmbientProperty]
         public string Schema { get; set; }
 
-        string ISqlConnectionStringProvider.ConnectionString => Database?.ConnectionString;
+        string SqlServer.ISqlConnectionStringProvider.ConnectionString => Database?.ConnectionString;
     }
 }

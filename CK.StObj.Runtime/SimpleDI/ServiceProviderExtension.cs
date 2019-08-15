@@ -1,7 +1,8 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Extends <see cref="IServiceProvider"/> with simple DI methods (see <see cref="SimpleObjectActivator"/>).

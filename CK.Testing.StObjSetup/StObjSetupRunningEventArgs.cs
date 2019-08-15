@@ -1,4 +1,4 @@
-using CK.Core;
+using CK.Setup;
 using System;
 
 namespace CK.Testing.StObjSetup

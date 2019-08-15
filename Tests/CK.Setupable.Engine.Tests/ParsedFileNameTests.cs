@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using CK.Core;
 using CK.Setup;
 
 namespace CK.Setupable.Engine.Tests
@@ -50,7 +49,7 @@ namespace CK.Setupable.Engine.Tests
             var locName = new ContextLocName( "[]db^Name" );
             ParsedFileName result = ParsedFileName.CreateFromSourceCode( locName, "sql" );
             Assert.That( result.FullName, Is.EqualTo( "[]db^Name" ) );
-            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@51.sql" ) );
+            Assert.That( result.FileName, Is.EqualTo( "ParsedFileNameTests.cs@50.sql" ) );
             Assert.That( result.Extension, Is.EqualTo( "sql" ) );
         }
 

@@ -7,13 +7,13 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Simple attributes to define children of a class by names.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class ChildrenAttribute : RequiresAttribute
+    public class ChildrenAttribute : Setup.BaseItemNamesAttribute
     {
         /// <summary>
         /// Defines children by their names.

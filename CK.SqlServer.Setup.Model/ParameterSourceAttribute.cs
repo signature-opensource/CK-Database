@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
 
     /// <summary>

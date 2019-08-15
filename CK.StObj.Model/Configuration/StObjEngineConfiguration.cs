@@ -1,8 +1,9 @@
+using CK.Core;
 using CK.Text;
 using System;
 using System.Collections.Generic;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Encapsulates configuration of the StObjEngine.

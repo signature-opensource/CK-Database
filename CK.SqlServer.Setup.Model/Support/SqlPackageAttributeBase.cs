@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using CK.Core;
 
-namespace CK.SqlServer.Setup
+namespace CK.Setup
 {
     /// <summary>
     /// Base attribute for <see cref="SqlTableAttribute"/> and <see cref="SqlPackageAttribute"/>.
