@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using CK.Core;
 using CK.Setup;
+using CK.Text;
 using CSemVer;
 
 namespace CK.SqlServer.Setup
@@ -100,6 +102,7 @@ namespace CK.SqlServer.Setup
                     }
                 }
             }
+            monitor.Trace( $"Existing VFeatures: {fResult.Select( f => f.ToString() ).Concatenate()}" );
             return new OriginalReadInfo( result, fResult );
         }
 

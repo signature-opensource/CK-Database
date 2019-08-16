@@ -133,20 +133,20 @@ namespace CK.SqlServer.Setup
             {
                 if( !f.O.IsValid )
                 {
-                    monitor.Info( $"Created feature: '{f.F}'." );
+                    monitor.Info( $"Created VFeature: '{f.F}'." );
                     Update( f.Name, "VFeature", f.F.Version.ToNuGetPackageString() );
                 }
                 else if( !f.F.IsValid )
                 {
-                    monitor.Info( $"Removed feature: '{f.O}'." );
+                    monitor.Info( $"Removed VFeature: '{f.O}'." );
                     Delete( f.Name, false );
                 }
                 else if( f.O.Version != f.F.Version )
                 {
-                    monitor.Info( $"Updated feature {f.O} to version {f.F.Version}." );
+                    monitor.Info( $"Updated VFeature {f.O} to version {f.F.Version}." );
                     Update( f.Name, "VFeature", f.F.Version.ToNuGetPackageString() );
                 }
-                else monitor.Debug( $"Feature {f.O} unchanged." );
+                else monitor.Debug( $"VFeature {f.O} unchanged." );
             }
 
             if( delete != null )
