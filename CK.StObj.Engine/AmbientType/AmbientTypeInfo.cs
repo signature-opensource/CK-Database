@@ -190,14 +190,12 @@ namespace CK.Setup
         /// <returns>Readable string.</returns>
         public override string ToString()
         {
-            bool isService = ServiceClass != null;
-            bool isObject = this is AmbientObjectClassInfo;
-            var type = (isService && isObject)
-                        ? "Service & Object:"
-                        : isService
-                            ? "Service:"
-                            : "Object:";
-            return $"{type}{(IsExcluded ? "[IsExcluded]" : "")}{(IsSpecialized ? "[IsSpecialized]" : "")}{Type.Name}";
+            var s = Type.FullName;
+            if( ServiceClass != null ) s += "|IsService";
+            if( this is AmbientObjectClassInfo ) s += "|IsObject";
+            if( IsExcluded ) s += "|IsExcluded";
+            if( IsSpecialized ) s += "|IsSpecialized";
+            return s;
         }
     }
 }

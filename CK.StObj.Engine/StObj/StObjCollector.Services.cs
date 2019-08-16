@@ -143,7 +143,19 @@ namespace CK.Setup
                             }
                             else if( heads.Count == 0 )
                             {
-                                m.Error( $"Among '{headCandidates.Select( c => c.ToString() ).Concatenate( "', '" )}' possible implementations, none covers the whole set of other implementations." );
+                                m.Error( $"Among '{headCandidates.Select( c => c.ToString() ).Concatenate( "', '" )}' possible implementations, none covers the whole set of other implementations. Use [ReplaceAmbientService(...)] attribute to disambiguate." );
+                                var couldUseStObjConstruct = headCandidates.Select( c => c.Class.TypeInfo )
+                                                                   .OfType<AmbientObjectClassInfo>()
+                                                                   .Where( c => c.ConstructParameters != null
+                                                                                && c.ConstructParameters
+                                                                                        .Any( p => headCandidates.Select( x => x.Class.Type ).Any( o => p.ParameterType.IsAssignableFrom( o ) ) ) )
+                                                                   .Select( c => $"{c.Type.FullName}.StObjConstruct( {c.ConstructParameters.Select( p => p.ParameterType.Name ).Concatenate() } )" )
+                                                                   .FirstOrDefault();
+
+                                if( couldUseStObjConstruct != null )
+                                {
+                                    m.Error( $"Please note that AmbientObject.StObjConstruct parameters are irrelevant to Service resolution: for instance {couldUseStObjConstruct} is ignored. Use [ReplaceAmbientService(...)] attribute." );
+                                }
                                 success = false;
                             }
                             else if( heads.Count > 1 )

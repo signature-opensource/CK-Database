@@ -490,10 +490,31 @@ namespace CK.Setup
                 // This ensure the "Inheritance Constructor Parameters rule", even if parameters are
                 // not exposed from the inherited constructor (and base parameters are direclty new'ed).
                 _ctorParmetersClosure = new HashSet<AmbientServiceClassInfo>();
+
+                bool AddCoveredParameters( IEnumerable<AmbientServiceClassInfo> classes )
+                {
+                    bool initError = false;
+                    foreach( var cS in classes )
+                    {
+                        AmbientServiceClassInfo c = cS;
+                        do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
+                        var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initError );
+                        _ctorParmetersClosure.UnionWith( cParams );
+                    }
+                    return initError;
+                }
+
                 if( IsAnAmbientObject )
                 {
-                    // Only calls EnsureCtorBinding even if it is useless for coherency.
+                    // Calls EnsureCtorBinding (even if it is useless) for coherency: it is up
+                    // to this finction to handle the IsAnAmbientObject case.
                     initializationError |= !EnsureCtorBinding( m, collector );
+                    // Handles the ReplaceAmbientServiceAttribute that must be used by AmbientObject service implementation.
+                    if( !initializationError )
+                    {
+                        var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
+                        initializationError |= AddCoveredParameters( replacedTargets );
+                    }
                 }
                 else
                 {
@@ -504,15 +525,9 @@ namespace CK.Setup
                     if( !(initializationError |= !EnsureCtorBinding( m, collector )) )
                     {
                         var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
-                        foreach( var cS in ConstructorParameters.Select( p => p.ServiceClass )
-                                                               .Where( p => p != null )
-                                                               .Concat( replacedTargets ) )
-                        {
-                            AmbientServiceClassInfo c = cS;
-                            do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
-                            var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initializationError );
-                            _ctorParmetersClosure.UnionWith( cParams );
-                        }
+                        initializationError |= AddCoveredParameters( ConstructorParameters.Select( p => p.ServiceClass )
+                                                                       .Where( p => p != null )
+                                                                       .Concat( replacedTargets ) );
                     }
                 }
             }

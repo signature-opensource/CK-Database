@@ -90,6 +90,25 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         /// <summary>
+        /// An ambient object that depends on B and wants to substitute its implementation.
+        /// </summary>
+        [ReplaceAmbientService(typeof(B))]
+        public abstract class BDependency : IAmbientObject, IAmbientServiceCanBeImplementedByAmbientObject
+        {
+            B _theB;
+
+            void StObjConstruct( B b )
+            {
+                _theB = b;
+            }
+
+            void IAmbientServiceCanBeImplementedByAmbientObject.DoSometing( IActivityMonitor m )
+            {
+                m.Info( "B is no more doing something." );
+            }
+        }
+
+        /// <summary>
         /// This must be registered in the startupService container since
         /// A.ConfigureServices uses it.
         /// </summary>
@@ -217,7 +236,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
 
         /// <summary>
         /// Ambient object.
-        /// Note: being abstract makes this type without any constructor (a concrete type with no constructor
+        /// Note: being abstract implies that this type has 0 constructor (a concrete type with no constructor
         /// has automatically the generated public default constructor) and this has to be handled since, normally
         /// a Service MUST have one and only one public constructor.
         /// An AmbientObject that implements a Service is an exception to this rule.
@@ -407,6 +426,32 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             logs.Should().Contain( e => e.Text == "I'm wrapping the default B's implementation." );
             logs.Should().Contain( e => e.Text == "I'm doing something from B." );
         }
+
+        [Test]
+        public void superseding_a_IAmbientObject_implemented_service_by_another_IAmbient_Object()
+        {
+            var collector = CreateStObjCollector();
+            collector.RegisterType( typeof( BDependency ) );
+            collector.RegisterType( typeof( A ) );
+            collector.RegisterType( typeof( B ) );
+
+            var startupServices = new SimpleServiceContainer();
+            startupServices.Add( new TotallyExternalStartupServiceThatActAsAConfiguratorOfTheWholeSystem() );
+
+            IReadOnlyList<ActivityMonitorSimpleCollector.Entry> logs = null;
+            using( TestHelper.Monitor.CollectEntries( entries => logs = entries, LogLevelFilter.Trace, 1000 ) )
+            {
+                var r = CheckSuccessAndConfigureServices( collector, startupServices );
+                var sp = r.ServiceRegisterer.Services.BuildServiceProvider();
+                sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().DoSometing( TestHelper.Monitor );
+            }
+            logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
+            logs.Should().Contain( e => e.Text == "SuperStartupService is talking to you." );
+            logs.Should().Contain( e => e.Text == "B is no more doing something." )
+                         .And.NotContain( e => e.Text == "I'm doing something from B." );
+        }
+
+
 
         [Test]
         public void any_error_logged_during_Service_Configuration_make_AddStObjMap_returns_false()
