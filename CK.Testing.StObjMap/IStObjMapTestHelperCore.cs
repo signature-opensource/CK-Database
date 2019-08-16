@@ -22,6 +22,20 @@ namespace CK.Testing.StObjMap
         string GeneratedAssemblyName { get; }
 
         /// <summary>
+        /// Highest entry point possible: this gives a ready to use service provider based on the current <see cref="StObjMap"/>.
+        /// The services can be configured thanks to the <see cref="AutomaticServicesConfigured"/> event.
+        /// Null if an error occured.
+        /// </summary>
+        IServiceProvider AutomaticServices { get; }
+
+        /// <summary>
+        /// Fires after the future <see cref="AutomaticServices"/> have been configured by the <see cref="StObjMap"/>
+        /// but before making it available to others.
+        /// External code can configure/alter the configured services.
+        /// </summary>
+        event EventHandler<AutomaticServicesConfiguredEventArgs> AutomaticServicesConfigured;
+
+        /// <summary>
         /// Gets the <see cref="IStObjMap"/> from the current <see cref="GeneratedAssemblyName"/>.
         /// The assembly, if it exists, is the one in the <see cref="IBasicTestHelper.BinFolder"/>.
         /// </summary>
@@ -29,6 +43,7 @@ namespace CK.Testing.StObjMap
 
         /// <summary>
         /// Fires whenever the <see cref="StObjMap"/> is accessed.
+        /// This allows external code to handle map lifetime: see <see cref="StObjMapAccessedEventArgs"/>.
         /// </summary>
         event EventHandler<StObjMapAccessedEventArgs> StObjMapAccessed;
 
@@ -45,6 +60,7 @@ namespace CK.Testing.StObjMap
         /// <summary>
         /// Fires the first time the <see cref="StObjMap"/> on current <see cref="GeneratedAssemblyName"/>
         /// must be loaded.
+        /// Enables external code to actually generate the assembly if needed.
         /// </summary>
         event EventHandler StObjMapLoading;
 
