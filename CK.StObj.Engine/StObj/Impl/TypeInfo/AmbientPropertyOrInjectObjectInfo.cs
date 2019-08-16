@@ -66,7 +66,7 @@ namespace CK.Setup
                     Type tP = stObjAttr.PropertyType == null ? p.PropertyType : stObjAttr.PropertyType;
                     if( stObjProperties.Find( sp => sp.Name == nP ) != null )
                     {
-                        monitor.Error( $"StObj property named '{p.Name}' for '{p.DeclaringType.FullName}' is defined more than once. It should be declared only once." );
+                        monitor.Error( $"StObj property named '{p.Name}' for '{p.DeclaringType}' is defined more than once. It should be declared only once." );
                         continue;
                     }
                     stObjProperties.Add( new StObjPropertyInfo( t, stObjAttr.ResolutionSource, nP, tP, p ) );
@@ -78,7 +78,7 @@ namespace CK.Setup
                 {
                     if( stObjAttr != null || (ac != null && ap != null) )
                     {
-                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType.FullName}' can not be both an Ambient Singleton, an Ambient Property or a StObj property." );
+                        monitor.Error( $"Property named '{p.Name}' for '{p.DeclaringType}' can not be both an Ambient Singleton, an Ambient Property or a StObj property." );
                         continue;
                     }
                     IAmbientPropertyOrInjectObjectAttribute attr = ac ?? ap;
@@ -87,7 +87,7 @@ namespace CK.Setup
                     var mGet = p.GetGetMethod( true );
                     if( mGet == null || mGet.IsPrivate )
                     {
-                        monitor.Error( $"Property '{p.Name}' of '{p.DeclaringType.FullName}' can not be marked as {kindName}. Did you forget to make it protected or public?" );
+                        monitor.Error( $"Property '{p.Name}' of '{p.DeclaringType}' can not be marked as {kindName}. Did you forget to make it protected or public?" );
                         continue;
                     }
                     if( attr.IsAmbientProperty )

@@ -439,12 +439,12 @@ namespace CK.Setup
                         {
                             if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
                             {
-                                m.Error( $"Lifetime error: Type '{Type.Name}' is {nameof( ISingletonAmbientService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
+                                m.Error( $"Lifetime error: Type '{Type}' is {nameof( ISingletonAmbientService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
                                 success = false;
                             }
                             if( !MustBeScopedLifetime.HasValue )
                             {
-                                m.Info( $"Type '{Type.Name}' must be Scoped since parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
+                                m.Info( $"Type '{Type}' must be Scoped since parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
                             }
                             MustBeScopedLifetime = true;
                         }
@@ -470,7 +470,7 @@ namespace CK.Setup
                         MustBeScopedLifetime = false;
                         if( DeclaredLifetime != AmbientTypeKind.AmbientSingleton )
                         {
-                            m.Info( $"Nothing prevents the class '{Type.Name}' to be a Singleton: this is the most efficient choice." );
+                            m.Info( $"Nothing prevents the class '{Type}' to be a Singleton: this is the most efficient choice." );
                             success &= typeKindDetector.PromoteToSingleton( m, Type ) != null;
                         }
                     }
@@ -531,7 +531,7 @@ namespace CK.Setup
                     replaced = SimpleTypeFinder.WeakResolver( s, false );
                     if( replaced == null )
                     {
-                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
                         continue;
                     }
                 }
@@ -540,14 +540,14 @@ namespace CK.Setup
                     replaced = p.Value as Type;
                     if( replaced == null )
                     {
-                        m.Warn( $"[ReplaceAmbientService] on type '{Type.Name}': the parameter '{p.Value}' is not a Type. It is ignored." );
+                        m.Warn( $"[ReplaceAmbientService] on type '{Type}': the parameter '{p.Value}' is not a Type. It is ignored." );
                         continue;
                     }
                 }
                 var target = collector.FindServiceClassInfo( replaced );
                 if( target == null )
                 {
-                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type.Name}': the Type to replace is not an Ambient Service class implementation. It is ignored." );
+                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type}': the Type to replace is not an Ambient Service class implementation. It is ignored." );
                 }
                 else
                 {
@@ -595,7 +595,7 @@ namespace CK.Setup
                         {
                             if( param.Lifetime == AmbientTypeKind.None )
                             {
-                                m.Warn( $"Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
+                                m.Warn( $"Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
                                 if( collector.AmbientKindDetector.DefineAsSingletonReference( m, p.ParameterType ) == null )
                                 {
                                     success = false;
@@ -614,7 +614,7 @@ namespace CK.Setup
                                     Debug.Assert( param.Lifetime == AmbientTypeKind.IsScoped );
                                     paramReason = $"is registered as an external scoped service";
                                 }
-                                m.Error( $"Lifetime error: Type '{p.Member.DeclaringType.Name}' is marked with {nameof( ISingletonAmbientService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
+                                m.Error( $"Lifetime error: Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAmbientService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
                                 success = false;
                             }
                         }
@@ -622,7 +622,7 @@ namespace CK.Setup
                         {
                             if( (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
                             {
-                                m.Info( $"{nameof( IAmbientService )} '{p.Member.DeclaringType.Name}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
+                                m.Info( $"{nameof( IAmbientService )} '{p.Member.DeclaringType}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
                                 MustBeScopedLifetime = true;
                             }
                             else
@@ -717,7 +717,7 @@ namespace CK.Setup
                     var reason = sClass.TypeInfo.IsExcluded
                                     ? "excluded from registration"
                                     : "abstract (and can not be concretized)";
-                    var prefix = $"Service type '{tParam.Name}' is {reason}. Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
+                    var prefix = $"Service type '{tParam}' is {reason}. Parameter '{p.Name}' in '{p.Member.DeclaringType.FullName}' constructor ";
                     if( !p.HasDefaultValue )
                     {
                         m.Error( prefix + "can not be resolved." );

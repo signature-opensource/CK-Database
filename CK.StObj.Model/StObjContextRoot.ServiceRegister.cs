@@ -119,17 +119,17 @@ namespace CK.Core
             {
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to provided singleton instance." );
+                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to provided singleton instance." );
                     Services.Add( new ServiceDescriptor( serviceType, implementation ) );
                     _registered.Add( serviceType, isAmbient ? RegType.AmbienObject : RegType.InternalMapping );
                 }
                 else if( reg == RegType.PreviouslyRegistered )
                 {
-                    Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. Skipped singleton instance registration." );
+                    Monitor.Warn( $"Service mapping '{serviceType}' is already registered in ServiceCollection. Skipped singleton instance registration." );
                 }
                 else
                 {
-                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceCollection (singleton instance registration). ServiceRegister checks that registration occur at most once." );
+                    Monitor.Error( $"Duplicate '{serviceType}' registration in ServiceCollection (singleton instance registration). ServiceRegister checks that registration occur at most once." );
                 }
             }
 
@@ -150,7 +150,7 @@ namespace CK.Core
                     // same instance!
                     if( serviceType != implementation )
                     {
-                        Monitor.Trace( $"Registering service mapping from '{serviceType.Name}' to type '{implementation}' as {lt}." );
+                        Monitor.Trace( $"Registering service mapping from '{serviceType}' to type '{implementation}' as {lt}." );
                         Services.Add( new ServiceDescriptor( serviceType, sp => sp.GetRequiredService( implementation ), lt ) );
                         _registered.Add( serviceType, RegType.InternalMapping );
                     }
@@ -172,12 +172,12 @@ namespace CK.Core
                 }
                 else if( reg == RegType.PreviouslyRegistered )
                 {
-                    Monitor.Warn( $"Service mapping '{serviceType.Name}' is already registered in ServiceCollection. {lt} registration skipped." );
+                    Monitor.Warn( $"Service mapping '{serviceType}' is already registered in ServiceCollection. {lt} registration skipped." );
                 }
                 else if( reg != RegType.AmbienObject
                          && !(reg == RegType.InternalImplementation && serviceType == implementation) )
                 {
-                    Monitor.Error( $"Duplicate '{serviceType.Name}' registration in ServiceRegister (mapped to {implementation}). ServiceRegister checks that registration occur at most once." );
+                    Monitor.Error( $"Duplicate '{serviceType}' registration in ServiceRegister (mapped to {implementation}). ServiceRegister checks that registration occur at most once." );
                 }
             }
 
@@ -195,17 +195,17 @@ namespace CK.Core
                 // same instance!
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering factory method for service '{serviceType.Name}' as {lt}." );
+                    Monitor.Trace( $"Registering factory method for service '{serviceType}' as {lt}." );
                     Services.Add( new ServiceDescriptor( serviceType, factory, lt ) );
                     _registered.Add( serviceType, RegType.InternalMapping );
                 }
                 else if( reg == RegType.PreviouslyRegistered )
                 {
-                    Monitor.Warn( $"Service '{serviceType.Name}' is already registered in ServiceRegister. Skipping {lt} factory method registration." );
+                    Monitor.Warn( $"Service '{serviceType}' is already registered in ServiceRegister. Skipping {lt} factory method registration." );
                 }
                 else
                 {
-                    Monitor.Error( $"Unable to register mapping of '{serviceType.Name}' to a factory method since the type has already been mapped. ServiceRegister checks that registration occur at most once." );
+                    Monitor.Error( $"Unable to register mapping of '{serviceType}' to a factory method since the type has already been mapped. ServiceRegister checks that registration occur at most once." );
                 }
             }
         }

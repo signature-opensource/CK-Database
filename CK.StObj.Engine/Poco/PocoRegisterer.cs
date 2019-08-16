@@ -251,7 +251,7 @@ namespace CK.Setup
                     {
                         if( implP.PropertyType != p.PropertyType )
                         {
-                            monitor.Error( $"Interface '{i.FullName}' and '{implP.DeclaringType.FullName}' both declare property '{p.Name}' but their type differ ({p.PropertyType.Name} vs. {implP.PropertyType.Name})." );
+                            monitor.Error( $"Interface '{i}' and '{implP.DeclaringType}' both declare property '{p.Name}' but their type differ ({p.PropertyType.Name} vs. {implP.PropertyType.Name})." );
                             return null;
                         }
                     }

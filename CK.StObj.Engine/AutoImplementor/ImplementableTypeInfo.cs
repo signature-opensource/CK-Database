@@ -115,7 +115,7 @@ namespace CK.Setup
                     ++nbUncovered;
                     if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                     {
-                        monitor.Error( $"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
+                        monitor.Error( $"Property {p.DeclaringType}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
                     }
                     else
                     {
@@ -185,13 +185,13 @@ namespace CK.Setup
                 IAutoImplementorMethod m = am.ImplementorToUse;
                 if( m == null || m == UnimplementedMarker )
                 {
-                    monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
+                    monitor.Fatal( $"Method '{AbstractType}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
                 }
                 else
                 {
                     if( !m.Implement( monitor, am.Method, a, cB ) )
                     {
-                        monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
+                        monitor.Fatal( $"Method '{AbstractType}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
                     }
                 }
             }
@@ -200,13 +200,13 @@ namespace CK.Setup
                 IAutoImplementorProperty p = ap.ImplementorToUse;
                 if( p == null || p == UnimplementedMarker )
                 {
-                    monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
+                    monitor.Fatal( $"Property '{AbstractType}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
                 }
                 else
                 {
                     if( !p.Implement( monitor, ap.Property, a, cB ) )
                     {
-                        monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
+                        monitor.Fatal( $"Property '{AbstractType}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
                     }
                 }
             }

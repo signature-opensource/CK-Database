@@ -55,7 +55,7 @@ namespace CK.Setup
         /// Overridden to return a readable string.
         /// </summary>
         /// <returns>Readable string.</returns>
-        public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type.Name}";
+        public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type}";
 
 
         internal AmbientServiceInterfaceInfo( Type t, AmbientTypeKind lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )

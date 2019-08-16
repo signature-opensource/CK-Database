@@ -155,7 +155,7 @@ namespace CK.Setup
                     deepestConcretes.Clear();
                     if( !c.InitializePath( _monitor, this, null, _tempAssembly, deepestConcretes, ref abstractTails ) )
                     {
-                        _monitor.Warn( $"Service '{c.Type.Name}' is abstract. It is ignored." );
+                        _monitor.Warn( $"Service '{c.Type}' is abstract. It is ignored." );
                         _serviceRoots.RemoveAt( i-- );
                         continue;
                     }
@@ -195,13 +195,13 @@ namespace CK.Setup
                         var resolver = new ClassAmbiguityResolver( _monitor, this, engineMap );
                         foreach( var a in ambiguities )
                         {
-                            using( _monitor.OpenTrace( $"Trying to resolve class ambiguities for {a.Root.Type.Name}." ) )
+                            using( _monitor.OpenTrace( $"Trying to resolve class ambiguities for {a.Root.Type}." ) )
                             {
                                 var (success, initError) = resolver.TryClassUnification( a.Root, a.Leaves );
                                 error |= initError;
                                 if( success )
                                 {
-                                    _monitor.CloseGroup( "Succeeds, resolved to: " + a.Root.MostSpecialized.Type.Name );
+                                    _monitor.CloseGroup( "Succeeds, resolved to: " + a.Root.MostSpecialized.Type );
                                 }
                                 else
                                 {
@@ -337,12 +337,12 @@ namespace CK.Setup
                     {
                         if( a.MostSpecialized != null )
                         {
-                            _monitor.Error( $"Class Unification ambiguity: '{a.Type.Name}' is already resolved by '{a.MostSpecialized.Type.FullName}'. It can not be resolved also by '{leaf.Type.FullName}'." );
+                            _monitor.Error( $"Class Unification ambiguity: '{a.Type}' is already resolved by '{a.MostSpecialized.Type}'. It can not be resolved also by '{leaf.Type}'." );
                             thisPathIsResolved = false;
                         }
                         else
                         {
-                            _monitor.Trace( $"Class Unification: '{a.Type.Name}' resolved to '{leaf.Type.FullName}'." );
+                            _monitor.Trace( $"Class Unification: '{a.Type}' resolved to '{leaf.Type}'." );
                             initializationError |= !a.SetMostSpecialized( _monitor, _engineMap, leaf );
                         }
                     }
@@ -358,7 +358,7 @@ namespace CK.Setup
                 }
                 if( !success )
                 {
-                    _monitor.Error( $"Service Class Unification: unable to resolve '{a.Type.Name}' to a unique specialization." );
+                    _monitor.Error( $"Service Class Unification: unable to resolve '{a.Type}' to a unique specialization." );
                 }
                 return (success, initializationError);
             }

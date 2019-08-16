@@ -281,7 +281,7 @@ namespace CK.Setup
                     a = _leafData.AllAmbientProperties.FirstOrDefault( p => p.Name == name );
                     if( a != null && !propertyType.IsAssignableFrom( a.Type ) )
                     {
-                        monitor.Warn( $"Looking for property named '{name}' of type '{propertyType.Name}': found a candidate on '{ToString()}' but type does not match (it is '{a.Type.Name}'). It is ignored." );
+                        monitor.Warn( $"Looking for property named '{name}' of type '{propertyType}': found a candidate on '{ToString()}' but type does not match (it is '{a.Type}'). It is ignored." );
                         return null;
                     }
                 }

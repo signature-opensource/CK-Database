@@ -102,13 +102,13 @@ namespace CK.Setup
             var k = RawGet( m, t );
             if( (k & IsDefiner) != 0 )
             {
-                throw new Exception( $"Type '{t.Name}' is a Definer. It cannot be defined as {ToStringFull( kind )}." );
+                throw new Exception( $"Type '{t}' is a Definer. It cannot be defined as {ToStringFull( kind )}." );
             }
             var kType = k & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton);
             Debug.Assert( kType != (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton) );
             if( kType != AmbientTypeKind.None && kType != (kind & (AmbientTypeKind.IsScoped | AmbientTypeKind.IsSingleton)) )
             {
-                m.Error( $"Type '{t.Name}' is already registered as a '{ToStringFull( k )}'. It can not be defined as {ToStringFull( kind )}." );
+                m.Error( $"Type '{t}' is already registered as a '{ToStringFull( k )}'. It can not be defined as {ToStringFull( kind )}." );
                 return null;
             }
             k |= kind;

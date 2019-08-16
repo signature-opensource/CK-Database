@@ -196,7 +196,7 @@ namespace CK.Setup
                                 {
                                     currentF.MergeWith( f );
                                     families[root] = currentF;
-                                    m.Info( $"Family interfaces merged because of '{baseInterface.Type.Name}'." );
+                                    m.Info( $"Family interfaces merged because of '{baseInterface.Type}'." );
                                     familiesHasBeenMerged = true;
                                 }
                             }
@@ -231,12 +231,12 @@ namespace CK.Setup
 
             public string BaseInterfacesToString()
             {
-                return Interfaces.Where( i => !i.IsSpecialized ).Select( i => i.Type.Name ).Concatenate( "', '" );
+                return Interfaces.Where( i => !i.IsSpecialized ).Select( i => i.Type.FullName ).Concatenate( "', '" );
             }
 
             public string RootInterfacesToString()
             {
-                return Interfaces.Where( i => i.SpecializationDepth == 0 ).Select( i => i.Type.Name ).Concatenate( "', '" );
+                return Interfaces.Where( i => i.SpecializationDepth == 0 ).Select( i => i.Type.FullName ).Concatenate( "', '" );
             }
 
             public override string ToString()
@@ -426,13 +426,13 @@ namespace CK.Setup
                 if( _infos.TryGetValue( final, out var build )
                     && (manual = build.GetFinalMapping( _monitor, _engineMap, _ambientTypeKindDetector, ref success )) != null )
                 {
-                    _monitor.Debug( $"Map '{t.Name}' -> manual '{final}': '{manual}'." );
+                    _monitor.Debug( $"Map '{t}' -> manual '{final}': '{manual}'." );
                     _engineMap.ServiceManualMappings.Add( t, manual );
                 }
                 else
                 {
                     final.GetFinalMustBeScopedLifetime( _monitor, _ambientTypeKindDetector, ref success );
-                    _monitor.Debug( $"Map '{t.Name}' -> '{final}'." );
+                    _monitor.Debug( $"Map '{t}' -> '{final}'." );
                     if( final.IsAnAmbientObject )
                     {
                         _engineMap.RegisterServiceFinalObjectMapping( t, final.TypeInfo );
