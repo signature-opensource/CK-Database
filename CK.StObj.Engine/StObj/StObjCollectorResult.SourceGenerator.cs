@@ -312,7 +312,7 @@ class GStObj : IStObj
 
         void GenerateVFeatures( IActivityMonitor monitor, ITypeScope rootType, IFunctionScope rootCtor, IReadOnlyCollection<VFeature> features )
         {
-            monitor.Info( $"Generating Features: {features.Select( f => f.ToString()).Concatenate()}." );
+            monitor.Info( $"Generating VFeatures: {features.Select( f => f.ToString()).Concatenate()}." );
 
             rootType.Append( "readonly IReadOnlyCollection<VFeature> _vFeatures;" ).NewLine();
 

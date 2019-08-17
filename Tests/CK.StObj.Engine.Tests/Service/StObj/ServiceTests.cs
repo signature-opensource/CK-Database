@@ -181,6 +181,35 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             sp.GetRequiredService<ISampleServiceSpec>().Should().BeSameAs( o );
         }
 
+        public interface IBase : IAmbientService
+        {
+        }
+
+        public interface IDerived : IBase
+        {
+        }
+
+        public abstract class OBase : IAmbientObject, IBase
+        {
+        }
+
+        [ReplaceAmbientService(typeof(OBase))]
+        public abstract class ODep : IAmbientObject, IDerived
+        {
+            void StObjConstruct( OBase o ) { }
+        }
+
+        [Test]
+        public void service_can_be_implemented_by_AmbientObjects()
+        {
+            var collector = CreateStObjCollector();
+            collector.RegisterType( typeof( ODep ) );
+            collector.RegisterType( typeof( OBase ) );
+            var (collectorResult, map, sp) = CheckSuccessAndBuildServices( collector );
+            var oDep = sp.GetRequiredService<ODep>();
+            sp.GetRequiredService<IBase>().Should().BeSameAs( oDep );
+            sp.GetRequiredService<IDerived>().Should().BeSameAs( oDep );
+        }
 
     }
 }
