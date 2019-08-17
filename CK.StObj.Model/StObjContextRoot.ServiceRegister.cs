@@ -119,7 +119,7 @@ namespace CK.Core
             {
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to provided singleton instance." );
+                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to {(isAmbient ? $"ambient object '{implementation.GetType().Name}'" : "provided singleton instance")}." );
                     Services.Add( new ServiceDescriptor( serviceType, implementation ) );
                     _registered.Add( serviceType, isAmbient ? RegType.AmbienObject : RegType.InternalMapping );
                 }
