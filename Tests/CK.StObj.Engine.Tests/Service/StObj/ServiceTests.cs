@@ -193,7 +193,9 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
-        [ReplaceAmbientService(typeof(OBase))]
+        // There is no need for an explicit Replacement here since the IDerived being an IAmbientService,
+        // it has to be satisfied and can be satisfied only by ODep.
+        //[ReplaceAmbientService(typeof(OBase))]
         public abstract class ODep : IAmbientObject, IDerived
         {
             void StObjConstruct( OBase o ) { }
