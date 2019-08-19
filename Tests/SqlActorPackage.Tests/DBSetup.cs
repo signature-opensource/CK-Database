@@ -1,9 +1,9 @@
 using NUnit.Framework;
 
-namespace From.LocalTestHelper
+namespace DBSetup
 {
     [TestFixture]
-    public class DBSetup : global::LocalTestHelper.DBSetup
+    public class DBSetup : LocalTestHelper.DBSetup
     {
     }
 }

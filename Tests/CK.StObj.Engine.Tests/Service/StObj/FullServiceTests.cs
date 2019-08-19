@@ -41,6 +41,8 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         /// We don't even need to specify that this one is scoped because since it depends on
         /// an unknown service IAliceOrBobProvider, it is automatically considered as being a scoped service
         /// (unless IAliceOrBobProvider is explicitly registered as a Singleton).
+        /// Important: AmbientObject.StObjConstruct parameters are irrelevant to Service resolution.
+        /// We may have use it (we almost did) but we don't. 
         /// </summary>
         [ReplaceAmbientService( typeof( B ) )]
         //

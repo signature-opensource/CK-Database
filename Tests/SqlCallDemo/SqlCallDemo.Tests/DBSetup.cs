@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace From.CKDBNUnit
+namespace DBSetup
 {
     [TestFixture]
     public class DBSetup : LocalTestHelper.DBSetup
