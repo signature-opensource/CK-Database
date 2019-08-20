@@ -23,9 +23,11 @@ namespace CK.DB.Tests
             void CheckFile( string commonTestName )
             {
                 var path = root.AppendPart( commonTestName + ".playlist" );
-                if( !System.IO.File.Exists( path ) )
+                if( !System.IO.File.Exists( path )
+                    // Fix 11.0.0-a bug: Why did I add ()!?
+                    || System.IO.File.ReadAllText( path ).Contains( commonTestName + "()" ) )
                 {
-                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""1.0""><Add Test=""DBSetup.DBSetup.{commonTestName}()"" /></Playlist>" );
+                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""1.0""><Add Test=""DBSetup.DBSetup.{commonTestName}"" /></Playlist>" );
                 }
             }
             CheckFile( "db_setup" );
