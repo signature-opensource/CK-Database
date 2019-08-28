@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CK.Core;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace CK.SqlServer
 {
@@ -244,9 +245,9 @@ namespace CK.SqlServer
             return true;
         }
 
-        void LogError( IActivityMonitor monitor, string msg )
+        void LogError( IActivityMonitor monitor, string msg, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string fileName = null )
         {
-            using( monitor.OpenError( msg ) )
+            using( monitor.OpenError( msg, lineNumber, fileName ) )
             {
                 monitor.Trace( _text );
             }
@@ -335,7 +336,7 @@ namespace CK.SqlServer
             }
             if( scriptLevel > 0 )
             {
-                LogError( monitor, $"Unbalanced --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}] found." );
+                LogError( monitor, $"Unbalanced tokens --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}] found." );
                 return false;
             }
             return true;
