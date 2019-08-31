@@ -202,8 +202,8 @@ namespace CK.Setup
 
         static VFeature ToVFeature( Assembly a )
         {
-            var v = InformationalVersion.ReadFromAssembly( a ).NuGetVersion;
-            return new VFeature( a.GetName().Name, v.IsValid ? v : SVersion.ZeroVersion );
+            var v = InformationalVersion.ReadFromAssembly( a ).Version;
+            return new VFeature( a.GetName().Name, v != null && v.IsValid ? v : SVersion.ZeroVersion );
         }
     }
 }

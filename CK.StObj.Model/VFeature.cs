@@ -12,13 +12,16 @@ namespace CK.Core
         /// Initializes a new <see cref="VFeature"/>.
         /// </summary>
         /// <param name="name">The feature name. Can not be null.</param>
-        /// <param name="version">The version. Can not be null and must be <see cref="SVersion.IsValid"/>.</param>
+        /// <param name="version">
+        /// The version. Can not be null and must be <see cref="SVersion.IsValid"/>.
+        /// If it happens to be a <see cref="CSVersion"/>, <see cref="CSVersion.ToNormalizedForm()"/> is called.
+        /// </param>
         public VFeature( string name, SVersion version )
         {
             if(String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must not be null or whitespace.", nameof( name ) );
             Name = name;
             if( version == null || !version.IsValid ) throw new ArgumentException( "Must be a valid SVersion.", nameof( version ) );
-            Version = version;
+            Version = version.AsCSVersion?.ToNormalizedForm() ?? version;
         }
 
 
@@ -29,6 +32,7 @@ namespace CK.Core
 
         /// <summary>
         /// Gets the version that is necessarily valid (except if <see cref="IsValid"/> is false).
+        /// It must be in normalized (short) form.
         /// </summary>
         public SVersion Version { get; }
 

@@ -326,7 +326,7 @@ class GStObj : IStObj
                         .AppendSourceString( f.Name )
                         .Append(',')
                         .Append( "CSemVer.SVersion.Parse( " )
-                        .AppendSourceString( f.Version.ToNuGetPackageString() )
+                        .AppendSourceString( f.Version.ToNormalizedString() )
                         .Append( " ) )" );
             }
             rootCtor.Append( "};" );

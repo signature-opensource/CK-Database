@@ -91,7 +91,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             CheckFeatures( "" );
             _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, noFeatures, new[] { f1, f2 } );
-            CheckFeatures( "F1/1.0.0-alpha, F2/2.0.0" );
+            CheckFeatures( "F1/1.0.0-a, F2/2.0.0" );
 
             _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f2 } );
             CheckFeatures( "F2/2.0.0" );

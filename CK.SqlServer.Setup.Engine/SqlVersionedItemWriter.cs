@@ -134,7 +134,7 @@ namespace CK.SqlServer.Setup
                 if( !f.O.IsValid )
                 {
                     monitor.Info( $"Created VFeature: '{f.F}'." );
-                    Update( f.Name, "VFeature", f.F.Version.ToNuGetPackageString() );
+                    Update( f.Name, "VFeature", f.F.Version.ToNormalizedString() );
                 }
                 else if( !f.F.IsValid )
                 {
@@ -144,7 +144,7 @@ namespace CK.SqlServer.Setup
                 else if( f.O.Version != f.F.Version )
                 {
                     monitor.Info( $"Updated VFeature {f.O} to version {f.F.Version}." );
-                    Update( f.Name, "VFeature", f.F.Version.ToNuGetPackageString() );
+                    Update( f.Name, "VFeature", f.F.Version.ToNormalizedString() );
                 }
                 else monitor.Debug( $"VFeature {f.O} unchanged." );
             }
