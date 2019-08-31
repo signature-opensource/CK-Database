@@ -15,13 +15,14 @@ namespace CK.SqlServer.Setup.Engine.Tests
         {
             var actorGeneratedPath = Path.Combine( TestHelper.BinFolder, "../ForActorOnly" );
             Directory.CreateDirectory( actorGeneratedPath );
+            try
+            {
+                string file1 = Path.Combine( actorGeneratedPath, "SqlActorPackage_BinPath.dll" );
+                string file2 = Path.Combine( TestHelper.BinFolder, "SqlActorPackage_BinPath.dll" );
+                if( File.Exists( file1 ) ) File.Delete( file1 );
+                if( File.Exists( file2 ) ) File.Delete( file2 );
 
-            string file1 = Path.Combine( actorGeneratedPath, "SqlActorPackage_BinPath.dll" );
-            string file2 = Path.Combine( TestHelper.BinFolder, "SqlActorPackage_BinPath.dll" );
-            if( File.Exists( file1 ) ) File.Delete( file1 );
-            if( File.Exists( file2 ) ) File.Delete( file2 );
-
-            var config = XElement.Parse( $@"
+                var config = XElement.Parse( $@"
             <C>
                 <GeneratedAssemblyName>SqlActorPackage_BinPath</GeneratedAssemblyName>
                 <BinPaths>
@@ -44,10 +45,16 @@ namespace CK.SqlServer.Setup.Engine.Tests
                 </Aspect>
             </C>" );
 
-            TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, config ).Run() )
-                .Should().BeTrue();
-            File.Exists( file2 ).Should().BeTrue();
-            File.Exists( file1 ).Should().BeTrue();
+                TestHelper.WithWeakAssemblyResolver( () => new StObjEngine( TestHelper.Monitor, config ).Run() )
+                    .Should().BeTrue();
+                File.Exists( file2 ).Should().BeTrue();
+                File.Exists( file1 ).Should().BeTrue();
+            }
+            finally
+            {
+                TestHelper.CleanupFolder( actorGeneratedPath );
+                Directory.Delete( actorGeneratedPath );
+            }
         }
     }
 }
