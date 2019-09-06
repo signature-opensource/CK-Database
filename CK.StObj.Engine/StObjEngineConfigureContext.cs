@@ -21,7 +21,7 @@ namespace CK.Setup
 
             public void ConfigureDone( IActivityMonitor monitor )
             {
-                ISimpleObjectActivator defaultActivator = _baseForConfig.GetService<ISimpleObjectActivator>();
+                ISimpleObjectActivator defaultActivator = _baseForConfig.GetService<ISimpleObjectActivator>( false );
                 BaseProvider = null;
                 if( GetService( typeof(ISimpleObjectActivator) ) == null )
                 {
