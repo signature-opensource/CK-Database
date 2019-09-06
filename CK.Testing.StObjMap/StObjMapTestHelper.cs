@@ -161,15 +161,11 @@ namespace CK.Testing
 
         IStObjMap DoLoadStObjMap( string assemblyName )
         {
-            using( _monitor.Monitor.OpenInfo( $"Loading StObj map from {assemblyName}." ) )
+            using( _monitor.Monitor.OpenInfo( $"Loading StObj map from '{assemblyName}'." ) )
             {
                 try
                 {
-#if NET461
                     var a = Assembly.Load( new AssemblyName( assemblyName ) );
-#else
-                    var a = Assembly.LoadFrom( Path.Combine( AppContext.BaseDirectory, assemblyName + ".dll" ) );
-#endif
                     return StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, _monitor.Monitor );
                 }
                 catch( Exception ex )

@@ -40,7 +40,7 @@ namespace SqlCallDemo.Tests
                 Assert.That( t3, Is.EqualTo( FunctionPackage.Power.Med ) );
             }
         }
-#if !NET461
+
         /// This capacity is NOT supported in IL.
         [Test]
         public void call_with_nullable_enum_values_by_ref()
@@ -66,7 +66,6 @@ namespace SqlCallDemo.Tests
                 Assert.That( io, Is.Null );
             }
         }
-#endif
 
         [Test]
         public async Task async_call_with_nullable_enum_values()
