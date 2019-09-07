@@ -23,7 +23,7 @@ namespace CK.Setup
         public static object SimpleObjectCreate( this IServiceProvider @this, IActivityMonitor monitor, Type t, IEnumerable<object> requiredParameters )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
-            ISimpleObjectActivator activator = @this.GetService<ISimpleObjectActivator>();
+            ISimpleObjectActivator activator = @this.GetService<ISimpleObjectActivator>( false );
             if( activator == null )
             {
                 monitor.Info( "No registered ISimpleObjectActivator found. Using transient new SimpleObjectActivator()." );

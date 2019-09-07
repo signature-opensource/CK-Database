@@ -5,6 +5,9 @@
     <LangVersion>7.2</LangVersion>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CK.Text" Version="8.0.3" />
+  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <PackageReference Include="NuGet.Protocol" Version="5.2.0" />
