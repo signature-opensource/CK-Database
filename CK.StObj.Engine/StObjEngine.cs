@@ -190,17 +190,19 @@ namespace CK.Setup
             }
             foreach( var b in _config.BinPaths )
             {
-                if( !b.Path.IsRooted ) b.Path = _config.BasePath.Combine( b.Path );
-                b.Path = b.Path.ResolveDots();
+                b.Path = MakeAbsolutePath( b.Path );
 
                 if( b.OutputPath.IsEmptyPath ) b.OutputPath = b.Path;
-                else if( !b.OutputPath.IsRooted )
-                {
-                    b.OutputPath = _config.BasePath.Combine( b.Path );
-                    b.OutputPath = b.OutputPath.ResolveDots();
-                }
+                else b.OutputPath = MakeAbsolutePath( b.OutputPath );
             }
             return true;
+        }
+
+        NormalizedPath MakeAbsolutePath( NormalizedPath pp )
+        {
+            if( !pp.IsRooted ) pp = _config.BasePath.Combine( pp );
+            pp = pp.ResolveDots();
+            return pp;
         }
 
         bool ApplyCKSetupConfiguration()
@@ -209,7 +211,7 @@ namespace CK.Setup
             {
                 var binPaths = _ckSetupConfig.Elements( StObjEngineConfiguration.xBinPaths ).SingleOrDefault();
                 if( binPaths == null ) throw new ArgumentException( $"Missing &lt;BinPaths&gt; element in '{_ckSetupConfig}'." );
-                foreach( var xB in binPaths.Elements( StObjEngineConfiguration.xBinPath ) )
+                foreach( XElement xB in binPaths.Elements( StObjEngineConfiguration.xBinPath ) )
                 {
                     var assemblies = xB.Elements( StObjEngineConfiguration.xAssemblies )
                                        .Elements()
@@ -219,10 +221,13 @@ namespace CK.Setup
 
                     var path = (string)xB.Attribute( StObjEngineConfiguration.xPath );
                     if( path == null ) throw new ArgumentException( $"Missing Path attribute in '{xB}'." );
-                    var c = _config.BinPaths.SingleOrDefault( b => b.Path == path );
-                    if( c == null ) throw new ArgumentException( $"Unable to find one BinPath element with Path '{path}' in: {xB}." );
+
+                    var rootedPath = MakeAbsolutePath( path );
+                    var c = _config.BinPaths.SingleOrDefault( b => b.Path == rootedPath );
+                    if( c == null ) throw new ArgumentException( $"Unable to find one BinPath element with Path '{rootedPath}' in: {_config.ToXml()}." );
+
                     c.Assemblies.AddRange( assemblies );
-                    _monitor.Info( $"Added assemblies from CKSetup to BinPath '{path}':{Environment.NewLine}{assemblies.Concatenate(Environment.NewLine)}." );
+                    _monitor.Info( $"Added assemblies from CKSetup to BinPath '{rootedPath}':{Environment.NewLine}{assemblies.Concatenate(Environment.NewLine)}." );
                 }
                 return true;
             }
