@@ -77,6 +77,7 @@ namespace CK.Setup
             _monitor = monitor;
             _runtimeBuilder = StObjContextRoot.DefaultStObjRuntimeBuilder;
             _config = new StObjEngineConfiguration( config );
+            // We are coming from CKSetup: the configuation element has a Engine attribute.
             if( config.Attribute( "Engine" ) != null ) _ckSetupConfig = config;
         }
 

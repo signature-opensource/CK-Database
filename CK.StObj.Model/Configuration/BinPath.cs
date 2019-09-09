@@ -35,8 +35,7 @@ namespace CK.Setup
         /// </summary>
         public BinPath( XElement e )
         {
-            Path = (string)e.Attribute( StObjEngineConfiguration.xPath )
-                    ?? (string)e.Attribute( StObjEngineConfiguration.xBinPath );
+            Path = (string)e.Attribute( StObjEngineConfiguration.xPath );
             OutputPath = (string)e.Element( StObjEngineConfiguration.xOutputPath );
             SkipCompilation = (bool?)e.Element( StObjEngineConfiguration.xSkipCompilation ) ?? false;
             GenerateSourceFiles = (bool?)e.Element( StObjEngineConfiguration.xGenerateSourceFiles ) ?? true;
