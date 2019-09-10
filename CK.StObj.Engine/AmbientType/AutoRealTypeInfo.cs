@@ -29,7 +29,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type itself. Can not be null.</param>
-        /// <param name="parent">Parent AmbientTypeInfo (Generalization). Null if the base type is not an Ambient type.</param>
+        /// <param name="parent">Parent AmbientTypeInfo (Generalization). Null if the base type is not a IAutoService or IRealObject type.</param>
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="isExcluded">True to actually exclude this type from the registration.</param>
         /// <param name="serviceClass">Service class is mandatory if this is an independent Type info.</param>

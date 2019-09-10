@@ -163,13 +163,13 @@ namespace CK.Setup
                         k |= RawGet( m, i ) & ~IsDefiner;
                     }
                 }
-                bool isDefiner = t.GetCustomAttributesData().Any( a => a.AttributeType.Name == typeof(AmbientDefinerAttribute).Name );
+                bool isDefiner = t.GetCustomAttributesData().Any( a => a.AttributeType.Name == typeof(AutoRealDefinerAttribute).Name );
                 if( isDefiner )
                 {
                     if( k != AutoRealTypeKind.None ) k |= IsDefiner;
                     else
                     {
-                        m.Error( $"Attribute [AmbientDefiner] is defined on type '{t}' that is not an ambient type." );
+                        m.Error( $"Attribute [AutoRealDefiner] is defined on type '{t}' that is not a IAutoService or IRealObject type." );
                     }
                 }
                 if( k != AutoRealTypeKind.None && !t.Assembly.IsDynamic && !(t.IsPublic || t.IsNestedPublic) )

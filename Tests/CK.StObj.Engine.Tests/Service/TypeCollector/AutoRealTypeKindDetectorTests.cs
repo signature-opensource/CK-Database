@@ -8,7 +8,7 @@ using static CK.Testing.MonitorTestHelper;
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
     [TestFixture]
-    public class AmbientTypeKindDetectorTests
+    public class AutoRealTypeKindDetectorTests
     {
         class Nop { }
 
@@ -46,13 +46,13 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             a.GetKind( TestHelper.Monitor, typeof( SpecSingleton ) ).Should().Be( AutoRealTypeKind.AutoSingleton );
         }
 
-        [AmbientDefiner] class ObjDefiner : IRealObject { }
-        [AmbientDefiner] class ServDefiner : IAutoService { }
-        [AmbientDefiner] class ScopedDefiner : IScopedAutoService { }
-        [AmbientDefiner] class SingletonDefiner : ISingletonAutoService { }
+        [AutoRealDefiner] class ObjDefiner : IRealObject { }
+        [AutoRealDefiner] class ServDefiner : IAutoService { }
+        [AutoRealDefiner] class ScopedDefiner : IScopedAutoService { }
+        [AutoRealDefiner] class SingletonDefiner : ISingletonAutoService { }
 
         [Test]
-        public void Definers_are_marked_with_IAmbientDefiner_and_are_not_ambient()
+        public void Definers_are_marked_with_IAutoRealDefiner_and_are_not_ambient()
         {
             var a = new AutoRealTypeKindDetector();
             a.GetKind( TestHelper.Monitor, typeof( ObjDefiner ) ).Should().Be( AutoRealTypeKind.None );
@@ -77,10 +77,10 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
 
-        [AmbientDefiner] class ObjDefinerLevel2 : ObjDefiner { }
-        [AmbientDefiner] class ServDefinerLevel2 : ServDefiner { }
-        [AmbientDefiner] class ScopedDefinerLevel2 : ScopedDefiner { }
-        [AmbientDefiner] class SingletonDefinerLevel2 : SingletonDefiner { }
+        [AutoRealDefiner] class ObjDefinerLevel2 : ObjDefiner { }
+        [AutoRealDefiner] class ServDefinerLevel2 : ServDefiner { }
+        [AutoRealDefiner] class ScopedDefinerLevel2 : ScopedDefiner { }
+        [AutoRealDefiner] class SingletonDefinerLevel2 : SingletonDefiner { }
 
         [Test]
         public void Definers_can_be_specialized_as_another_layer_of_Definers_and_are_still_not_ambient()
