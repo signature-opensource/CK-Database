@@ -11,13 +11,13 @@ namespace CK.StObj.Engine.Tests
     public class DifferentKindOfProperties
     {
 
-        public class ObjA : IAmbientObject
+        public class ObjA : IRealObject
         {
             [AmbientProperty]
             public ObjB NoProblem { get; set; }
         }
 
-        public class ObjB : IAmbientObject
+        public class ObjB : IRealObject
         {
             [StObjProperty]
             [AmbientProperty]
@@ -60,17 +60,17 @@ namespace CK.StObj.Engine.Tests
 
         // A null property type triggers an error: it must be explicitly typeof(object).
         [StObjProperty( PropertyName = "AProperty", PropertyType = null )]
-        public class MissingStObjPropertyType : IAmbientObject
+        public class MissingStObjPropertyType : IRealObject
         {
         }
 
         [StObjProperty( PropertyName = "  " )]
-        public class MissingStObjPropertyName : IAmbientObject
+        public class MissingStObjPropertyName : IRealObject
         {
         }
 
         [StObjProperty( PropertyName = "Albert", PropertyType = typeof(object) )]
-        public class DuplicateStObjProperty : IAmbientObject
+        public class DuplicateStObjProperty : IRealObject
         {
             [StObjProperty]
             public object Albert { get; set; }
@@ -96,12 +96,12 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        public class ScopedService : IScopedAmbientService { }
+        public class ScopedService : IScopedAutoService { }
 
-        public class InvalidAmbientObjectProperty : IAmbientObject
+        public class InvalidRealObjectProperty : IRealObject
         {
             [InjectObject]
-            public ScopedService NotAnAmbientObjectPropertyType { get; protected set; }
+            public ScopedService NotAnRealObjectPropertyType { get; protected set; }
         }
 
         [Test]
@@ -109,14 +109,14 @@ namespace CK.StObj.Engine.Tests
         {
             {
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
-                collector.RegisterType( typeof( InvalidAmbientObjectProperty ) );
+                collector.RegisterType( typeof( InvalidRealObjectProperty ) );
                 collector.GetResult().HasFatalError.Should().BeTrue();
             }
         }
 
         #region Covariance support
 
-        public class CA : IAmbientObject
+        public class CA : IRealObject
         {
         }
 
@@ -128,7 +128,7 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        public class CB : IAmbientObject
+        public class CB : IRealObject
         {
             [InjectObject]
             public CA A { get; set; }
@@ -168,7 +168,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        public class CMissingSetterOnTopDefiner : IAmbientObject
+        public class CMissingSetterOnTopDefiner : IRealObject
         {
             [InjectObject]
             public CA2 A { get { return null; } }
@@ -185,7 +185,7 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
-        public class CPrivateSetter : IAmbientObject
+        public class CPrivateSetter : IRealObject
         {
             [InjectObject]
             public CA2 A { get; private set; }

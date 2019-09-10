@@ -25,7 +25,7 @@ namespace CK.StObj.Engine.Tests
 
         [StObjPropertySetAttribute( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleContainer : IAmbientObject
+        public class SimpleContainer : IRealObject
         {
         }
 
@@ -48,7 +48,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [StObj( Container = typeof( SpecializedContainer ), ItemKind = DependentItemKindSpec.Item )]
-        public class BaseObject : IAmbientObject
+        public class BaseObject : IRealObject
         {
         }
 

@@ -6,26 +6,26 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulate type information for an Ambient Object or Service class.
-    /// Offers persistent access to attributes that support <see cref="IAttributeAmbientContextBound"/> interface.
+    /// Encapsulate type information for a Real Object or Auto Service class.
+    /// Offers persistent access to attributes that support <see cref="IAttributeContextBound"/> interface.
     /// Attributes must be retrieved thanks to <see cref="Attributes"/>.
     /// This type information are built top-down (from generalization to most specialized type).
     /// <para>
-    /// An AmbientTypeInfo can be either a <see cref="AmbientServiceClassInfo"/> or an independent one (this is a concrete class)
-    /// that is associated to a <see cref="AmbientServiceClassInfo"/> (via ServiceClass). 
+    /// An AmbientTypeInfo can be either a <see cref="AutoServiceClassInfo"/> or an independent one (this is a concrete class)
+    /// that is associated to a <see cref="AutoServiceClassInfo"/> (via ServiceClass). 
     /// </para>
     /// </summary>
-    public class AmbientTypeInfo
+    public class AutoRealTypeInfo
     {
         readonly TypeAttributesCache _attributes;
-        AmbientTypeInfo _nextSibling;
-        AmbientTypeInfo _firstChild;
+        AutoRealTypeInfo _nextSibling;
+        AutoRealTypeInfo _firstChild;
         int _specializationCount;
         bool _initializeImplementableTypeInfo;
 
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
+        /// Initializes a new <see cref="AutoRealTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type itself. Can not be null.</param>
@@ -33,9 +33,9 @@ namespace CK.Setup
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="isExcluded">True to actually exclude this type from the registration.</param>
         /// <param name="serviceClass">Service class is mandatory if this is an independent Type info.</param>
-        internal AmbientTypeInfo( IActivityMonitor monitor, AmbientTypeInfo parent, Type t, IServiceProvider services, bool isExcluded, AmbientServiceClassInfo serviceClass )
+        internal AutoRealTypeInfo( IActivityMonitor monitor, AutoRealTypeInfo parent, Type t, IServiceProvider services, bool isExcluded, AutoServiceClassInfo serviceClass )
         {
-            Debug.Assert( (serviceClass == null) == (this is AmbientObjectClassInfo) );
+            Debug.Assert( (serviceClass == null) == (this is RealObjectClassInfo) );
             ServiceClass = serviceClass;
             if( (parent?.IsExcluded ?? false) )
             {
@@ -58,10 +58,10 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the service classe information for this type is there is one.
-        /// If this <see cref="AmbientTypeInfo"/> is an independent one, then this is necessarily not null.
-        /// If this is a <see cref="AmbientObjectClassInfo"/> this can be null or not.
+        /// If this <see cref="AutoRealTypeInfo"/> is an independent one, then this is necessarily not null.
+        /// If this is a <see cref="RealObjectClassInfo"/> this can be null or not.
         /// </summary>
-        public AmbientServiceClassInfo ServiceClass { get; internal set; }
+        public AutoServiceClassInfo ServiceClass { get; internal set; }
 
         /// <summary>
         /// Gets the Type that is decorated.
@@ -78,7 +78,7 @@ namespace CK.Setup
         /// This property is valid even if this type is excluded (however this AmbientTypeInfo does not
         /// appear in generalization's <see cref="Specializations"/>).
         /// </summary>
-        public AmbientTypeInfo Generalization { get; }
+        public AutoRealTypeInfo Generalization { get; }
 
         /// <summary>
         /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="Type"/>
@@ -114,7 +114,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
+        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// This is null if <see cref="IsExcluded"/> is true.
         /// </summary>
@@ -137,14 +137,14 @@ namespace CK.Setup
         public int SpecializationsCount => _specializationCount;
 
         /// <summary>
-        /// Gets the different specialized <see cref="AmbientTypeInfo"/> that are not excluded.
+        /// Gets the different specialized <see cref="AutoRealTypeInfo"/> that are not excluded.
         /// </summary>
-        /// <returns>An enumerable of <see cref="AmbientTypeInfo"/> that specialize this one.</returns>
-        public IEnumerable<AmbientTypeInfo> Specializations
+        /// <returns>An enumerable of <see cref="AutoRealTypeInfo"/> that specialize this one.</returns>
+        public IEnumerable<AutoRealTypeInfo> Specializations
         {
             get
             {
-                AmbientTypeInfo c = _firstChild;
+                AutoRealTypeInfo c = _firstChild;
                 while( c != null )
                 {
                     yield return c;
@@ -153,7 +153,7 @@ namespace CK.Setup
             }
         }
 
-        internal bool IsAssignableFrom( AmbientTypeInfo child )
+        internal bool IsAssignableFrom( AutoRealTypeInfo child )
         {
             Debug.Assert( child != null );
             do
@@ -164,7 +164,7 @@ namespace CK.Setup
             return false;
         }
 
-        internal void RemoveSpecialization( AmbientTypeInfo child )
+        internal void RemoveSpecialization( AutoRealTypeInfo child )
         {
             Debug.Assert( child.Generalization == this );
             if( _firstChild == child )
@@ -174,7 +174,7 @@ namespace CK.Setup
             }
             else
             {
-                AmbientTypeInfo c = _firstChild;
+                AutoRealTypeInfo c = _firstChild;
                 while( c != null && c._nextSibling != child ) c = c._nextSibling;
                 if( c != null )
                 {
@@ -192,7 +192,7 @@ namespace CK.Setup
         {
             var s = Type.FullName;
             if( ServiceClass != null ) s += "|IsService";
-            if( this is AmbientObjectClassInfo ) s += "|IsObject";
+            if( this is RealObjectClassInfo ) s += "|IsObject";
             if( IsExcluded ) s += "|IsExcluded";
             if( IsSpecialized ) s += "|IsSpecialized";
             return s;

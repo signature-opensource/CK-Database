@@ -6,7 +6,7 @@ namespace CK.Core
     /// Poco factory.
     /// These interfaces are automatically implemented.
     /// </summary>
-    public interface IPocoFactory<out T> : IAmbientObject where T : IPoco
+    public interface IPocoFactory<out T> : IRealObject where T : IPoco
     {
         /// <summary>
         /// Creates a new Poco instance.

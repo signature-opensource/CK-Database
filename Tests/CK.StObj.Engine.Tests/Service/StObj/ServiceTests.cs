@@ -9,9 +9,9 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     namespace Local
     {
         [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-        class ReplaceAmbientServiceAttribute : Attribute
+        class ReplaceAutoServiceAttribute : Attribute
         {
-            public ReplaceAmbientServiceAttribute( string replacedAssemblyQualifiedName )
+            public ReplaceAutoServiceAttribute( string replacedAssemblyQualifiedName )
             {
             }
         }
@@ -20,7 +20,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class ServiceTests : TestsBase
     {
-        public interface ISampleService : IAmbientService
+        public interface ISampleService : IAutoService
         {
         }
 
@@ -28,14 +28,14 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
-        [ReplaceAmbientService( typeof( SampleService ) )]
+        [ReplaceAutoService( typeof( SampleService ) )]
         public class SampleService2 : ISampleService
         {
         }
 
 
         [Test]
-        public void ReplaceAmbientService_works_with_type()
+        public void ReplaceAutoService_works_with_type()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( SampleService ) );
@@ -45,13 +45,13 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( SampleService )].ClassType.Should().Be( typeof( SampleService ) );
         }
 
-        [Local.ReplaceAmbientService( "CK.StObj.Engine.Tests.Service.StObj.ServiceTests+SampleService2, CK.StObj.Engine.Tests" )]
+        [Local.ReplaceAutoService( "CK.StObj.Engine.Tests.Service.StObj.ServiceTests+SampleService2, CK.StObj.Engine.Tests" )]
         public class SampleService3 : ISampleService
         {
         }
 
         [Test]
-        public void ReplaceAmbientService_works_with_assembly_qualified_name_and_locally_defined_attribute()
+        public void ReplaceAutoService_works_with_assembly_qualified_name_and_locally_defined_attribute()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( SampleService ) );
@@ -64,7 +64,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
 
-        public class UseActivityMonitor : ISingletonAmbientService
+        public class UseActivityMonitor : ISingletonAutoService
         {
             public UseActivityMonitor( IActivityMonitor m )
             {
@@ -79,17 +79,17 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             CheckFailure( collector );
         }
 
-        public class Obj : IAmbientObject, ISampleService
+        public class Obj : IRealObject, ISampleService
         {
         }
 
 
-        public interface IInvalidInterface : IAmbientObject, ISampleService
+        public interface IInvalidInterface : IRealObject, ISampleService
         {
         }
 
         [Test]
-        public void an_AmbientObject_class_can_be_an_IAmbientService_but_an_interface_cannot()
+        public void a_RealObject_class_can_be_an_IAutoService_but_an_interface_cannot()
         {
             {
                 var collector = CreateStObjCollector();
@@ -118,7 +118,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         [Test]
-        public void an_AmbientObject_class_and_IAmbientService_with_specialization()
+        public void a_RealObject_class_and_IAutoService_with_specialization()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( ObjSpec ) );
@@ -152,7 +152,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         [Test]
-        public void an_AmbientObject_class_and_IAmbientService_with_deep_specializations()
+        public void a_RealObject_class_and_IAutoService_with_deep_specializations()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( ObjSpecFinal ) );
@@ -181,7 +181,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             sp.GetRequiredService<ISampleServiceSpec>().Should().BeSameAs( o );
         }
 
-        public interface IBase : IAmbientService
+        public interface IBase : IAutoService
         {
         }
 
@@ -189,20 +189,20 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
-        public abstract class OBase : IAmbientObject, IBase
+        public abstract class OBase : IRealObject, IBase
         {
         }
 
-        // There is no need for an explicit Replacement here since the IDerived being an IAmbientService,
+        // There is no need for an explicit Replacement here since the IDerived being an IAutoService,
         // it has to be satisfied and can be satisfied only by ODep.
-        //[ReplaceAmbientService(typeof(OBase))]
-        public abstract class ODep : IAmbientObject, IDerived
+        //[ReplaceAutoService(typeof(OBase))]
+        public abstract class ODep : IRealObject, IDerived
         {
             void StObjConstruct( OBase o ) { }
         }
 
         [Test]
-        public void service_can_be_implemented_by_AmbientObjects()
+        public void service_can_be_implemented_by_RealObjects()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( ODep ) );

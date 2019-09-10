@@ -8,21 +8,21 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Result of the <see cref="AmbientTypeCollector"/> work.
+    /// Result of the <see cref="AutoRealTypeCollector"/> work.
     /// </summary>
-    public class AmbientTypeCollectorResult
+    public class AutoRealTypeCollectorResult
     {
-        internal AmbientTypeCollectorResult(
+        internal AutoRealTypeCollectorResult(
             ISet<Assembly> assemblies,
             IPocoSupportResult pocoSupport,
-            AmbientObjectCollectorResult c,
-            AmbientServiceCollectorResult s,
-            AmbientTypeKindDetector typeKindDetector )
+            RealObjectCollectorResult c,
+            AutoServiceCollectorResult s,
+            AutoRealTypeKindDetector typeKindDetector )
         {
             PocoSupport = pocoSupport;
             Assemblies = assemblies;
-            AmbientObjects = c;
-            AmbientServices = s;
+            RealObjects = c;
+            AutoServices = s;
             TypeKindDetector = typeKindDetector;
         }
 
@@ -37,19 +37,19 @@ namespace CK.Setup
         public ISet<Assembly> Assemblies { get; }
 
         /// <summary>
-        /// Gets the reults for <see cref="IAmbientObject"/> objects.
+        /// Gets the reults for <see cref="IRealObject"/> objects.
         /// </summary>
-        public AmbientObjectCollectorResult AmbientObjects { get; }
+        public RealObjectCollectorResult RealObjects { get; }
 
         /// <summary>
-        /// Gets the reults for <see cref="IScopedAmbientService"/> objects.
+        /// Gets the reults for <see cref="IScopedAutoService"/> objects.
         /// </summary>
-        public AmbientServiceCollectorResult AmbientServices { get; }
+        public AutoServiceCollectorResult AutoServices { get; }
 
         /// <summary>
         /// Gets the ambient type detector.
         /// </summary>
-        public AmbientTypeKindDetector TypeKindDetector { get; }
+        public AutoRealTypeKindDetector TypeKindDetector { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.
@@ -58,20 +58,20 @@ namespace CK.Setup
         /// False to continue the process (only warnings - or error considered as 
         /// warning - occured), true to stop remaining processes.
         /// </returns>
-        public bool HasFatalError => PocoSupport == null || AmbientObjects.HasFatalError || AmbientServices.HasFatalError;
+        public bool HasFatalError => PocoSupport == null || RealObjects.HasFatalError || AutoServices.HasFatalError;
 
         /// <summary>
         /// Gets all the <see cref="ImplementableTypeInfo"/>: Abstract types that require a code generation
-        /// that are either <see cref="IAmbientService"/>, <see cref="IAmbientObject"/> (or both).
+        /// that are either <see cref="IAutoService"/>, <see cref="IRealObject"/> (or both).
         /// </summary>
         public IEnumerable<ImplementableTypeInfo> TypesToImplement
         {
             get
             {
-                var all = AmbientObjects.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
-                            // Filters out the Service implementation that are AmbientObject.
-                            .Concat( AmbientServices.RootClasses.Select( c => c.MostSpecialized.IsAnAmbientObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
-                            .Concat( AmbientServices.SubGraphRootClasses.Select( c => c.MostSpecialized.IsAnAmbientObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
+                var all = RealObjects.EngineMap.AllSpecializations.Select( m => m.ImplementableTypeInfo )
+                            // Filters out the Service implementation that are RealObject.
+                            .Concat( AutoServices.RootClasses.Select( c => c.MostSpecialized.IsRealObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
+                            .Concat( AutoServices.SubGraphRootClasses.Select( c => c.MostSpecialized.IsRealObject ? null : c.MostSpecialized.ImplementableTypeInfo ) )
                             .Where( i => i != null );
 
                 Debug.Assert( all.GroupBy( i => i ).Where( g => g.Count() > 1 ).Any() == false, "No duplicates." );
@@ -92,8 +92,8 @@ namespace CK.Setup
                 {
                     monitor.Fatal( $"Poco support failed!" );
                 }
-                AmbientObjects.LogErrorAndWarnings( monitor );
-                AmbientServices.LogErrorAndWarnings( monitor );
+                RealObjects.LogErrorAndWarnings( monitor );
+                AutoServices.LogErrorAndWarnings( monitor );
             }
         }
 

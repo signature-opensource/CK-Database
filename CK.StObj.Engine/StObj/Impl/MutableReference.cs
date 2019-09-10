@@ -25,7 +25,7 @@ namespace CK.Setup
             _kind = kind;
             if( _kind == StObjMutableReferenceKind.Requires 
                 || _kind == StObjMutableReferenceKind.Group 
-                || _kind == StObjMutableReferenceKind.AmbientObject 
+                || _kind == StObjMutableReferenceKind.RealObject 
                 || (_kind & StObjMutableReferenceKind.Container) != 0 )
             {
                 StObjRequirementBehavior = StObjRequirementBehavior.ErrorIfNotStObj;

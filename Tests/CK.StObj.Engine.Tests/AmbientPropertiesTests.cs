@@ -19,7 +19,7 @@ namespace CK.StObj.Engine.Tests
 
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetAmbiantPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+                o.SetAmbientPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
             }
         }
 
@@ -37,14 +37,14 @@ namespace CK.StObj.Engine.Tests
 
         [DirectPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectDirect : IAmbientObject
+        public class SimpleObjectDirect : IRealObject
         {
             public int OneIntValue { get; set; }
         }
 
         [AmbientPropertySet( PropertyName = "OneIntValue", PropertyValue = 3712 )]
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class SimpleObjectAmbient : IAmbientObject
+        public class SimpleObjectAmbient : IRealObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -60,7 +60,7 @@ namespace CK.StObj.Engine.Tests
                 }
                 if( o.ObjectType == typeof( SimpleObjectAmbient ) )
                 {
-                    o.SetAmbiantPropertyValue( monitor, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
+                    o.SetAmbientPropertyValue( monitor, "OneIntValue", 42, "ConfiguratorOneIntValueSetTo42" );
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void OneObjectAmbiantProperty()
+        public void OneObjectAmbientProperty()
         {
             var container = new SimpleServiceContainer();
             {
@@ -123,7 +123,7 @@ namespace CK.StObj.Engine.Tests
 
 
         [Test]
-        public void AmbiantOrDirectPropertyDeclaredInBaseClassCanBeSet()
+        public void AmbientOrDirectPropertyDeclaredInBaseClassCanBeSet()
         {
             var container = new SimpleServiceContainer();
             {
@@ -145,14 +145,14 @@ namespace CK.StObj.Engine.Tests
         #region Propagation to container's children.
 
         [StObj( Container = typeof( SimpleObjectDirect ) )]
-        public class SimpleObjectInsideDirect : IAmbientObject
+        public class SimpleObjectInsideDirect : IRealObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
         }
 
         [StObj( Container = typeof( SimpleObjectAmbient ) )]
-        public class SimpleObjectInsideAmbiant : IAmbientObject
+        public class SimpleObjectInsideAmbient : IRealObject
         {
             [AmbientProperty]
             public int OneIntValue { get; set; }
@@ -174,9 +174,9 @@ namespace CK.StObj.Engine.Tests
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer(), configurator: new ConfiguratorOneIntValueSetTo42() );
             collector.RegisterType( typeof( SimpleObjectAmbient ) );
-            collector.RegisterType( typeof( SimpleObjectInsideAmbiant ) );
+            collector.RegisterType( typeof( SimpleObjectInsideAmbient ) );
             StObjCollectorResult result = collector.GetResult();
-            Assert.That( result.StObjs.Obtain<SimpleObjectInsideAmbiant>().OneIntValue, Is.EqualTo( 42 ), "Of course, ambient properties propagate their values." );
+            Assert.That( result.StObjs.Obtain<SimpleObjectInsideAmbient>().OneIntValue, Is.EqualTo( 42 ), "Of course, ambient properties propagate their values." );
         }
 
         #endregion
@@ -193,17 +193,17 @@ namespace CK.StObj.Engine.Tests
         {
         }
 
-        public class TypeToMap : TypeToMapBase, IAmbientObject
+        public class TypeToMap : TypeToMapBase, IRealObject
         {
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class C1 : BaseForObject, IAmbientObject
+        public class C1 : BaseForObject, IRealObject
         {
         }
 
         [StObj( Container = typeof( C1 ) )]
-        public class O1InC1 : BaseForObject, IAmbientObject
+        public class O1InC1 : BaseForObject, IRealObject
         {
         }
 
@@ -220,7 +220,7 @@ namespace CK.StObj.Engine.Tests
         {
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                if( o.ObjectType == typeof( C1 ) ) o.SetAmbiantPropertyConfiguration( monitor, "Ambient", typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
+                if( o.ObjectType == typeof( C1 ) ) o.SetAmbientPropertyConfiguration( monitor, "Ambient", typeof(TypeToMap), StObjRequirementBehavior.ErrorIfNotStObj );
             }
         }
 

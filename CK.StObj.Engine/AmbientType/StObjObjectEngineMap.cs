@@ -12,8 +12,8 @@ namespace CK.Setup
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
     /// The internal participants have write access to it. I'm not proud of this (there are definitly cleaner
     /// ways to organize this) but it work...
-    /// The map is instanciated by AmbientTypeCollector.GetAmbientObjectResult and then
-    /// then internally exposed by the AmbientObjectCollectorResult so that AmbientTypeCollector.GetAmbientServiceResult(AmbientObjectCollectorResult)
+    /// The map is instanciated by AutoRealTypeCollector.GetRealObjectResult and then
+    /// then internally exposed by the RealObjectCollectorResult so that AutoRealTypeCollector.GetAutoServiceResult(RealObjectCollectorResult)
     /// can use (and fill) it.
     /// </summary>
     partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
@@ -35,7 +35,7 @@ namespace CK.Setup
         internal protected StObjObjectEngineMap(
             string mapName,
             MutableItem[] allSpecializations,
-            AmbientTypeKindDetector typeKindDetector,
+            AutoRealTypeKindDetector typeKindDetector,
             IReadOnlyCollection<Assembly> assemblies )
         {
             Debug.Assert( mapName != null );
@@ -43,7 +43,7 @@ namespace CK.Setup
             _map = new Dictionary<object, MutableItem>();
             _allSpecializations = allSpecializations;
             _assemblies = assemblies;
-            _serviceMap = new Dictionary<Type, AmbientServiceClassInfo>();
+            _serviceMap = new Dictionary<Type, AutoServiceClassInfo>();
             _exposedServiceMap = new ServiceMapTypeAdapter( _serviceMap );
             _serviceManualMap = new Dictionary<Type, IStObjServiceFinalManualMapping>();
             _exposedManualServiceMap = new ServiceManualMapTypeAdapter( _serviceManualMap );
@@ -65,7 +65,7 @@ namespace CK.Setup
         {
             Debug.Assert( t.IsInterface );
             _map.Add( t, finalType );
-            _map.Add( new AmbientObjecttInterfaceKey( t ), m );
+            _map.Add( new RealObjectInterfaceKey( t ), m );
         }
 
         /// <summary>
@@ -102,12 +102,12 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets all the specialization. If there is no error, this list corresponds to the
-        /// last items of the <see cref="AmbientObjectCollectorResult.ConcreteClasses"/>.
+        /// last items of the <see cref="RealObjectCollectorResult.ConcreteClasses"/>.
         /// </summary>
         internal IReadOnlyCollection<MutableItem> AllSpecializations => _allSpecializations;
 
         /// <summary>
-        /// Gets all the mapping from object (including <see cref="AmbientObjecttInterfaceKey"/>) to
+        /// Gets all the mapping from object (including <see cref="RealObjectInterfaceKey"/>) to
         /// <see cref="MutableItem"/>.
         /// </summary>
         internal IEnumerable<KeyValuePair<object, MutableItem>> RawMappings => _map;
@@ -129,7 +129,7 @@ namespace CK.Setup
                 {
                     if( t.IsInterface )
                     {
-                        _map.TryGetValue( new AmbientObjecttInterfaceKey( t ), out c );
+                        _map.TryGetValue( new RealObjectInterfaceKey( t ), out c );
                     }
                     else
                     {
@@ -195,7 +195,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Dynamically projects <see cref="AmbientTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
+        /// Dynamically projects <see cref="AutoRealTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
         /// (ordered by <see cref="VFeature.Name"/> since by design there can not be multiple versions by feature).
         /// </summary>
         public IReadOnlyCollection<VFeature> Features => _assemblies.Select( ToVFeature ).OrderBy( Util.FuncIdentity ).ToList();

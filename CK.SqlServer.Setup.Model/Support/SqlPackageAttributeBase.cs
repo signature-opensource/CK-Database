@@ -6,7 +6,7 @@ namespace CK.Setup
     /// <summary>
     /// Base attribute for <see cref="SqlTableAttribute"/> and <see cref="SqlPackageAttribute"/>.
     /// </summary>
-    public abstract class SqlPackageAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SqlPackageAttributeBase : ContextBoundDelegationAttribute
     {
         /// <summary>
         /// Initializes a new <see cref="SqlPackageAttributeBase"/>.
@@ -45,7 +45,7 @@ namespace CK.Setup
         /// </summary>
         /// <remarks>
         /// The type must be a specialization of <see cref="SqlDatabase"/>. 
-        /// If it supports <see cref="IAmbientObject"/>, the property is bound to the corresponding ambient contract instance. 
+        /// If it supports <see cref="IRealObject"/>, the property is bound to the corresponding real object instance. 
         /// </remarks>
         public Type Database { get; set; }
     }

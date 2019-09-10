@@ -7,15 +7,15 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// One of the <see cref="AmbientTypeCollector"/> work's result: handles <see cref="IAmbientObject"/>
-    /// types. This and <see cref="AmbientServiceCollectorResult"/> are exposed by
-    /// the <see cref="AmbientTypeCollectorResult"/>.
+    /// One of the <see cref="AutoRealTypeCollector"/> work's result: handles <see cref="IRealObject"/>
+    /// types. This and <see cref="AutoServiceCollectorResult"/> are exposed by
+    /// the <see cref="AutoRealTypeCollectorResult"/>.
     /// </summary>
-    public class AmbientObjectCollectorResult
+    public class RealObjectCollectorResult
     {
         IReadOnlyList<IReadOnlyList<MutableItem>> _concreteClassesPath;
 
-        internal AmbientObjectCollectorResult(
+        internal RealObjectCollectorResult(
             StObjObjectEngineMap mappings,
             IReadOnlyList<IReadOnlyList<MutableItem>> concreteClasses,
             IReadOnlyList<IReadOnlyList<Type>> classAmbiguities,
@@ -35,7 +35,7 @@ namespace CK.Setup
         internal StObjObjectEngineMap EngineMap { get; }
 
         /// <summary>
-        /// Gets all the paths from <see cref="IAmbientObject"/> base classes to their most
+        /// Gets all the paths from <see cref="IRealObject"/> base classes to their most
         /// specialized concrete classes that this context contains.
         /// </summary>
         public IReadOnlyList<IReadOnlyList<IStObjMutableItem>> ConcreteClasses => _concreteClassesPath;
@@ -69,13 +69,13 @@ namespace CK.Setup
         public bool HasFatalError => ClassAmbiguities.Count != 0 || InterfaceAmbiguities.Count != 0;
 
         /// <summary>
-        /// Logs detailed information about discovered ambient contracts.
+        /// Logs detailed information about discovered real objects.
         /// </summary>
         /// <param name="monitor">Logger (must not be null).</param>
         public void LogErrorAndWarnings( IActivityMonitor monitor )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
-            using( monitor.OpenTrace( $"Ambient Objects: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
+            using( monitor.OpenTrace( $"Real Objects: {EngineMap.MappedTypeCount} mappings for {_concreteClassesPath.Count} concrete paths." ) )
             {
                 foreach( var a in InterfaceAmbiguities )
                 {

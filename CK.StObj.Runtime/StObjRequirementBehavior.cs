@@ -15,7 +15,7 @@ namespace CK.Setup
     public enum StObjRequirementBehavior
     {
         /// <summary>
-        /// The reference is not necessarily an existing <see cref="IAmbientObject"/> (a <see cref="IStObjResult"/>).
+        /// The reference is not necessarily an existing <see cref="IRealObject"/> (a <see cref="IStObjResult"/>).
         /// if an existing IStObj can not be found, the <see cref="IStObjValueResolver"/> is automatically sollicited.
         /// </summary>
         None = 0,
@@ -27,13 +27,13 @@ namespace CK.Setup
         WarnIfNotStObj,
 
         /// <summary>
-        /// The reference must be an existing <see cref="IAmbientObject"/> (a <see cref="IStObjResult"/>).
+        /// The reference must be an existing <see cref="IRealObject"/> (a <see cref="IStObjResult"/>).
         /// </summary>
         ErrorIfNotStObj,
 
         /// <summary>
         /// The reference must be satisfied only by <see cref="IStObjValueResolver"/>. 
-        /// Any existing <see cref="IAmbientObject"/> (a <see cref="IStObjResult"/>) that could do the job are ignored.
+        /// Any existing <see cref="IRealObject"/> (a <see cref="IStObjResult"/>) that could do the job are ignored.
         /// </summary>
         ExternalReference
     }

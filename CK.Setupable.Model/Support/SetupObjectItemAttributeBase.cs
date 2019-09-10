@@ -6,7 +6,7 @@ namespace CK.Setup
     /// Multiples object names like "sUserCreate, sUserDestroy, AnotherSchema.sUserUpgrade, CK.sUserRun" may be defined:
     /// this is up to the specialized attribute and its implementation to actually set the maximum number of allowed names.
     /// </summary>
-    public abstract class SetupObjectItemAttributeBase : Setup.AmbientContextBoundDelegationAttribute
+    public abstract class SetupObjectItemAttributeBase : Setup.ContextBoundDelegationAttribute
     {
         /// <summary>
         /// Initializes a new <see cref="SetupObjectItemAttributeBase"/> with (potentially) multiple object names.

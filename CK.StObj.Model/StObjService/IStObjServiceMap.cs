@@ -11,19 +11,19 @@ namespace CK.Core
     public interface IStObjServiceMap
     {
         /// <summary>
-        /// Gets all the <see cref="IAmbientService"/> types that are directly mapped to
-        /// an already available Ambient Object.
+        /// Gets all the <see cref="IAutoService"/> types that are directly mapped to
+        /// an already available Real Object.
         /// </summary>
         IReadOnlyDictionary<Type, object> ObjectMappings { get; }
 
         /// <summary>
-        /// Gets all the <see cref="IAmbientService"/> types to the final service class type
+        /// Gets all the <see cref="IAutoService"/> types to the final service class type
         /// that can be directly resolved by any DI container.
         /// </summary>
         IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> SimpleMappings { get; }
 
         /// <summary>
-        /// Gets all the <see cref="IAmbientService"/> types to Service class mappings
+        /// Gets all the <see cref="IAutoService"/> types to Service class mappings
         /// that cannot be directly resolved by a DI container and require either
         /// an adaptation based on the <see cref="IStObjServiceClassFactoryInfo"/> or
         /// to simply use the existing <see cref="IStObjServiceClassFactory.CreateInstance(IServiceProvider)"/>

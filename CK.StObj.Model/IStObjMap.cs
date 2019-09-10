@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace CK.Core
 {
     /// <summary>
-    /// Main interface that offers access to type mapping, Ambient Object instances and
+    /// Main interface that offers access to type mapping, Real Object instances and
     /// simple feature model.
     /// </summary>
     public interface IStObjMap

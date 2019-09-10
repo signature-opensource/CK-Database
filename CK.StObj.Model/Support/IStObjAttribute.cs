@@ -17,19 +17,19 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets the container of the object.
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         Type Container { get; }
 
         /// <summary>
         /// Gets the kind of object (simple item, group or container).
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         DependentItemKindSpec ItemKind { get; }
 
         /// <summary>
         /// Gets how Ambient Properties that reference the object must be tracked.
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         TrackAmbientPropertiesMode TrackAmbientProperties { get; }
 

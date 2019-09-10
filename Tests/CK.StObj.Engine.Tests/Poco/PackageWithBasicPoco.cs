@@ -10,7 +10,7 @@ using CK.Core;
 namespace CK.StObj.Engine.Tests.Poco
 {
     [StObj( ItemKind = DependentItemKindSpec.Container )]
-    public class PackageWithBasicPoco : IAmbientObject
+    public class PackageWithBasicPoco : IRealObject
     {
         void StObjConstruct( IPocoFactory<IBasicPoco> f )
         {

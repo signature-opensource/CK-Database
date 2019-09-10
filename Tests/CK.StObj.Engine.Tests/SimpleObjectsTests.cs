@@ -34,23 +34,23 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
-        public class Ambient : IAmbientService { }
+        public class Auto : IAutoService { }
 
-        public class AmbientConstruct : IAmbientObject
+        public class RealThatReferenceAutoIsError : IRealObject
         {
-            void StObjConstruct( Ambient s ) { }
+            void StObjConstruct( Auto s ) { }
         }
 
-        public class AmbientInject : IAmbientObject
+        public class AmbientInject : IRealObject
         {
             [InjectObject]
-            public Ambient Service { get; private set; }
+            public Auto Service { get; private set; }
         }
 
         [Test]
-        public void an_AmbientObject_that_references_an_ambient_from_its_StObjConstruct_is_an_error()
+        public void a_RealObject_that_references_an_auto_service_from_its_StObjConstruct_is_an_error()
         {
-            var types = new[] { typeof( AmbientConstruct ) };
+            var types = new[] { typeof( RealThatReferenceAutoIsError ) };
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
             var result = collector.GetResult();
@@ -58,7 +58,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void an_AmbientObject_that_references_an_ambient_from_an_InjectSingleton_is_an_error()
+        public void a_RealObject_that_references_an_auto_service_from_an_InjectObject_is_an_error()
         {
             var types = new[] { typeof( AmbientInject ) };
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
@@ -209,12 +209,12 @@ namespace CK.StObj.Engine.Tests
         #region Buggy & Valid Model
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class C1 : IAmbientObject
+        public class C1 : IRealObject
         {
         }
 
         [StObj( Container = typeof( C1 ), ItemKind = DependentItemKindSpec.Container )]
-        public class C2InC1 : IAmbientObject
+        public class C2InC1 : IRealObject
         {
         }
 
@@ -247,7 +247,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( C2InC1 ), Children = new Type[] { typeof( C1 ) } )]
-        public class C3ContainsC1 : IAmbientObject
+        public class C3ContainsC1 : IRealObject
         {
         }
 

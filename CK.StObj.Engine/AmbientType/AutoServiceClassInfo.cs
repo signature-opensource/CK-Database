@@ -10,9 +10,9 @@ namespace CK.Setup
     /// <summary>
     /// Represents a service class/implementation.
     /// </summary>
-    public class AmbientServiceClassInfo : IStObjServiceClassDescriptor
+    public class AutoServiceClassInfo : IStObjServiceClassDescriptor
     {
-        HashSet<AmbientServiceClassInfo> _ctorParmetersClosure;
+        HashSet<AutoServiceClassInfo> _ctorParmetersClosure;
         // Memorizes the EnsureCtorBinding call state.
         bool? _ctorBinding;
         // When not null, this contains the constructor parameters that must be singletons
@@ -20,8 +20,8 @@ namespace CK.Setup
         List<ParameterInfo> _requiredParametersToBeSingletons;
 
         /// <summary>
-        /// Constructor parameter info: either a <see cref="AmbientServiceClassInfo"/>,
-        /// <see cref="AmbientServiceInterfaceInfo"/> or a enumeration of one of them.
+        /// Constructor parameter info: either a <see cref="AutoServiceClassInfo"/>,
+        /// <see cref="AutoServiceInterfaceInfo"/> or a enumeration of one of them.
         /// </summary>
         public class CtorParameter
         {
@@ -33,22 +33,22 @@ namespace CK.Setup
             /// <summary>
             /// Not null if this parameter is a service class (ie. an implementation).
             /// </summary>
-            public readonly AmbientServiceClassInfo ServiceClass;
+            public readonly AutoServiceClassInfo ServiceClass;
 
             /// <summary>
             /// Not null if this parameter is a service interface.
             /// </summary>
-            public readonly AmbientServiceInterfaceInfo ServiceInterface;
+            public readonly AutoServiceInterfaceInfo ServiceInterface;
 
             /// <summary>
             /// Currently unused.
             /// </summary>
-            public readonly AmbientServiceClassInfo EnumeratedServiceClass;
+            public readonly AutoServiceClassInfo EnumeratedServiceClass;
 
             /// <summary>
             /// Currently unused.
             /// </summary>
-            public readonly AmbientServiceInterfaceInfo EnumeratedServiceInterface;
+            public readonly AutoServiceInterfaceInfo EnumeratedServiceInterface;
 
             /// <summary>
             /// Gets the (unwrapped) Type of this parameter.
@@ -74,8 +74,8 @@ namespace CK.Setup
 
             internal CtorParameter(
                 ParameterInfo p,
-                AmbientServiceClassInfo cS,
-                AmbientServiceInterfaceInfo iS,
+                AutoServiceClassInfo cS,
+                AutoServiceInterfaceInfo iS,
                 bool isEnumerable )
             {
                 Debug.Assert( (cS != null) ^ (iS != null) );
@@ -105,15 +105,15 @@ namespace CK.Setup
             }
         }
 
-        internal AmbientServiceClassInfo(
+        internal AutoServiceClassInfo(
             IActivityMonitor m,
             IServiceProvider serviceProvider,
-            AmbientServiceClassInfo parent,
+            AutoServiceClassInfo parent,
             Type t,
-            AmbientTypeCollector collector,
+            AutoRealTypeCollector collector,
             bool isExcluded,
-            AmbientTypeKind lifetime,
-            AmbientObjectClassInfo objectInfo )
+            AutoRealTypeKind lifetime,
+            RealObjectClassInfo objectInfo )
         {
             Debug.Assert( objectInfo == null || objectInfo.ServiceClass == null, "If we are the the asociated Service, we must be the only one." );
 
@@ -122,78 +122,78 @@ namespace CK.Setup
                 TypeInfo = objectInfo;
                 objectInfo.ServiceClass = this;
             }
-            else TypeInfo = new AmbientTypeInfo( m, parent?.TypeInfo, t, serviceProvider, isExcluded, this );
+            else TypeInfo = new AutoRealTypeInfo( m, parent?.TypeInfo, t, serviceProvider, isExcluded, this );
 
             Debug.Assert( ReferenceEquals( TypeInfo.Generalization, parent?.TypeInfo ) );
-            Debug.Assert( (lifetime == (AmbientTypeKind.AmbientObject | AmbientTypeKind.AmbientSingleton)) == TypeInfo is AmbientObjectClassInfo );
+            Debug.Assert( (lifetime == (AutoRealTypeKind.RealObject | AutoRealTypeKind.AutoSingleton)) == TypeInfo is RealObjectClassInfo );
 
 
-            // Forgets the AmbientObject flag.
-            if( lifetime == (AmbientTypeKind.AmbientObject|AmbientTypeKind.AmbientSingleton) )
+            // Forgets the RealObject flag.
+            if( lifetime == (AutoRealTypeKind.RealObject|AutoRealTypeKind.AutoSingleton) )
             {
-                lifetime = AmbientTypeKind.AmbientSingleton;
+                lifetime = AutoRealTypeKind.AutoSingleton;
                 // See below.
                 MustBeScopedLifetime = false;
             }
-            Debug.Assert( lifetime == AmbientTypeKind.IsAmbientService
-                          || lifetime == AmbientTypeKind.AmbientSingleton
-                          || lifetime == AmbientTypeKind.AmbientScope );
+            Debug.Assert( lifetime == AutoRealTypeKind.IsAutoService
+                          || lifetime == AutoRealTypeKind.AutoSingleton
+                          || lifetime == AutoRealTypeKind.AutoScoped );
 
             DeclaredLifetime = lifetime;
             // Let MustBeScopedLifetime be null for singleton here. Singleton impact is handled later
             // since it may have an impact on its ctor parameter type.
-            // We have shortcut this process above for AmbientObject (since there is no ctor).
-            if( lifetime == AmbientTypeKind.AmbientScope ) MustBeScopedLifetime = true;
+            // We have shortcut this process above for RealObject (since there is no ctor).
+            if( lifetime == AutoRealTypeKind.AutoScoped ) MustBeScopedLifetime = true;
             if( parent != null ) SpecializationDepth = parent.SpecializationDepth + 1;
 
             //if( IsExcluded ) return;
             //
-            // AmbientServiceAttribute is currently not used. This is to associate a service
+            // AutoServiceAttribute is currently not used. This is to associate a service
             // to a StObj package and may be useful for Service Unification support.
-            //var aC = t.GetCustomAttribute<AmbientServiceAttribute>();
+            //var aC = t.GetCustomAttribute<AutoServiceAttribute>();
             //if( aC == null )
             //{
-            //    m.Warn( $"Missing {nameof( AmbientServiceAttribute )} on '{t.FullName}'." );
+            //    m.Warn( $"Missing {nameof( AutoServiceAttribute )} on '{t.FullName}'." );
             //}
             //else
             //{
             //    ContainerType = aC.Container;
             //    if( ContainerType == null )
             //    {
-            //        m.Info( $"{nameof( AmbientServiceAttribute )} on '{t.FullName}' indicates no container." );
+            //        m.Info( $"{nameof( AutoServiceAttribute )} on '{t.FullName}' indicates no container." );
             //    }
             //}
         }
 
         /// <summary>
-        /// Gets the <see cref="AmbientTypeInfo"/> that can be an autonomus one (specific to this service), or an
-        /// existing AmbientObjectClassInfo if this service is implemented by an Ambient object (such service don't
+        /// Gets the <see cref="AutoRealTypeInfo"/> that can be an autonomus one (specific to this service), or an
+        /// existing RealObjectClassInfo if this service is implemented by an Real object (such service don't
         /// have to have a public constructor).
         /// </summary>
-        public AmbientTypeInfo TypeInfo { get; }
+        public AutoRealTypeInfo TypeInfo { get; }
 
         /// <summary>
-        /// Get the <see cref="AmbientTypeInfo.Type"/>.
+        /// Get the <see cref="AutoRealTypeInfo.Type"/>.
         /// </summary>
         public Type Type => TypeInfo.Type;
 
         /// <summary>
-        /// Gets whether this service implementation is also an Ambient Object.
+        /// Gets whether this service implementation is also a Real Object.
         /// </summary>
-        public bool IsAnAmbientObject => TypeInfo is AmbientObjectClassInfo;
+        public bool IsRealObject => TypeInfo is RealObjectClassInfo;
 
         /// <summary>
         /// Gets this Service class life time.
-        /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
-        /// vs. <see cref="IScopedAmbientService"/> interface marker.
-        /// This can never be <see cref="AmbientTypeKindExtension.IsNoneOrInvalid(AmbientTypeKind)"/> since
-        /// in such cases, the AmbientServiceClassInfo is not instanciated.
+        /// This reflects the <see cref="IAutoService"/> or <see cref="ISingletonAutoService"/>
+        /// vs. <see cref="IScopedAutoService"/> interface marker.
+        /// This can never be <see cref="AutoRealTypeKindExtension.IsNoneOrInvalid(AutoRealTypeKind)"/> since
+        /// in such cases, the AutoServiceClassInfo is not instanciated.
         /// </summary>
-        public AmbientTypeKind DeclaredLifetime { get; }
+        public AutoRealTypeKind DeclaredLifetime { get; }
 
         /// <summary>
-        /// Gets whether this class must be <see cref="AmbientTypeKind.IsScoped"/> because of its dependencies.
-        /// If its <see cref="DeclaredLifetime"/> is <see cref="AmbientTypeKind.IsSingleton"/> an error is detected
+        /// Gets whether this class must be <see cref="AutoRealTypeKind.IsScoped"/> because of its dependencies.
+        /// If its <see cref="DeclaredLifetime"/> is <see cref="AutoRealTypeKind.IsSingleton"/> an error is detected
         /// either at the very beginning of the process based on the static parameter type information or at the
         /// end of the process when class and interface mappings are about to be resolved.
         /// </summary>
@@ -201,32 +201,32 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the generalization of this Service class, it is be null if no base class exists.
-        /// This property is valid even if this type is excluded (however this AmbientServiceClassInfo does not
+        /// This property is valid even if this type is excluded (however this AutoServiceClassInfo does not
         /// appear in generalization's <see cref="Specializations"/>).
         /// </summary>
-        public AmbientServiceClassInfo Generalization => TypeInfo?.Generalization?.ServiceClass;
+        public AutoServiceClassInfo Generalization => TypeInfo?.Generalization?.ServiceClass;
 
         /// <summary>
-        /// Gets the different specialized <see cref="AmbientServiceClassInfo"/> that are not excluded.
+        /// Gets the different specialized <see cref="AutoServiceClassInfo"/> that are not excluded.
         /// </summary>
-        /// <returns>An enumerable of <see cref="AmbientServiceClassInfo"/> that specialize this one.</returns>
-        public IEnumerable<AmbientServiceClassInfo> Specializations => TypeInfo.Specializations.Select( s => s.ServiceClass );
+        /// <returns>An enumerable of <see cref="AutoServiceClassInfo"/> that specialize this one.</returns>
+        public IEnumerable<AutoServiceClassInfo> Specializations => TypeInfo.Specializations.Select( s => s.ServiceClass );
 
         /// <summary>
         /// Gets the most specialized concrete (or abstract but auto implementable) implementation.
-        /// This is available only once <see cref="AmbientTypeCollector.GetResult"/> has been called.
-        /// As long as <see cref="AmbientServiceCollectorResult.HasFatalError"/> is false, this is never null
+        /// This is available only once <see cref="AutoRealTypeCollector.GetResult"/> has been called.
+        /// As long as <see cref="AutoServiceCollectorResult.HasFatalError"/> is false, this is never null
         /// since it can be this instance itself.
         /// </summary>
-        public AmbientServiceClassInfo MostSpecialized { get; private set; }
+        public AutoServiceClassInfo MostSpecialized { get; private set; }
 
         /// <summary>
         /// Gets the supported service interfaces.
         /// This is not null only if <see cref="IsIncluded"/> is true (ie. this class is not excluded
         /// and is on a concrete path) and may be empty if there is no service interface (the
-        /// implementation itself is marked with any <see cref="IScopedAmbientService"/> marker).
+        /// implementation itself is marked with any <see cref="IScopedAutoService"/> marker).
         /// </summary>
-        public IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces { get; private set; }
+        public IReadOnlyList<AutoServiceInterfaceInfo> Interfaces { get; private set; }
 
         /// <summary>
         /// Gets the container type to which this service is associated.
@@ -246,33 +246,33 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the constructor. This may be null if any error occurred or
-        /// if this service is implemented by an Ambient object.
+        /// if this service is implemented by an Real object.
         /// </summary>
         public ConstructorInfo ConstructorInfo { get; private set; }
 
         /// <summary>
         /// Gets the constructor parameters that we need to consider.
-        /// Parameters that are not <see cref="IAmbientService"/> do not appear here.
-        /// This is empty even for service implemented by Ambient object as soon as <see cref="EnsureCtorBinding(IActivityMonitor, AmbientTypeCollector)"/>
+        /// Parameters that are not <see cref="IAutoService"/> do not appear here.
+        /// This is empty even for service implemented by Real object as soon as <see cref="EnsureCtorBinding(IActivityMonitor, AutoRealTypeCollector)"/>
         /// has been called.
         /// </summary>
         public IReadOnlyList<CtorParameter> ConstructorParameters { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="AmbientTypeInfo.Type"/>
+        /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="AutoRealTypeInfo.Type"/>
         /// is abstract, null otherwise.
         /// </summary>
         public ImplementableTypeInfo ImplementableTypeInfo => TypeInfo.ImplementableTypeInfo;
 
         /// <summary>
         /// Gets the final type that must be used: it is <see cref="ImplementableTypeInfo.StubType"/>
-        /// if this type is abstract otherwise it is the associated concrete <see cref="AmbientTypeInfo.Type"/>.
+        /// if this type is abstract otherwise it is the associated concrete <see cref="AutoRealTypeInfo.Type"/>.
         /// </summary>
         public Type FinalType => TypeInfo.ImplementableTypeInfo?.StubType ?? Type;
 
         /// <summary>
-        /// Gets the specialization depth from the first top AmbientServiceClassInfo.
-        /// This is not the same as <see cref="AmbientObjectClassInfo.SpecializationDepth"/> that
+        /// Gets the specialization depth from the first top AutoServiceClassInfo.
+        /// This is not the same as <see cref="RealObjectClassInfo.SpecializationDepth"/> that
         /// is relative to <see cref="Object"/> type.
         /// </summary>
         public int SpecializationDepth { get; }
@@ -284,7 +284,7 @@ namespace CK.Setup
         /// </summary>
         public bool IsIncluded => Interfaces != null;
 
-        internal void FinalizeMostSpecializedAndCollectSubGraphs( List<AmbientServiceClassInfo> subGraphCollector )
+        internal void FinalizeMostSpecializedAndCollectSubGraphs( List<AutoServiceClassInfo> subGraphCollector )
         {
             Debug.Assert( IsIncluded );
             if( MostSpecialized == null ) MostSpecialized = this;
@@ -296,28 +296,28 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// This mimics the <see cref="AmbientObjectClassInfo.CreateMutableItemsPath"/> method
+        /// This mimics the <see cref="RealObjectClassInfo.CreateMutableItemsPath"/> method
         /// to reproduce the exact same Type handling between Services and StObj (ignoring agstract tails
         /// for instance).
         /// This is simpler here since there is no split in type info (no MutableItem layer).
         /// </summary>
         internal bool InitializePath(
                         IActivityMonitor monitor,
-                        AmbientTypeCollector collector,
-                        AmbientServiceClassInfo generalization,
+                        AutoRealTypeCollector collector,
+                        AutoServiceClassInfo generalization,
                         IDynamicAssembly tempAssembly,
-                        List<AmbientServiceClassInfo> lastConcretes,
+                        List<AutoServiceClassInfo> lastConcretes,
                         ref List<Type> abstractTails )
         {
             Debug.Assert( tempAssembly != null );
             Debug.Assert( !TypeInfo.IsExcluded );
             Debug.Assert( Interfaces == null );
-            // Don't try to reuse the potential AmbientObjectInfo here: even if the TypeInfo is
-            // an AmbientObject, let the regular code be executed (any abstract Specializations
+            // Don't try to reuse the potential RealObjectInfo here: even if the TypeInfo is
+            // an RealObject, let the regular code be executed (any abstract Specializations
             // have already been removed anyway) so we'll correctly initialize the Interfaces for
             // all the chain.
             bool isConcretePath = false;
-            foreach( AmbientServiceClassInfo c in Specializations )
+            foreach( AutoServiceClassInfo c in Specializations )
             {
                 Debug.Assert( !c.TypeInfo.IsExcluded );
                 isConcretePath |= c.InitializePath( monitor, collector, this, tempAssembly, lastConcretes, ref abstractTails );
@@ -341,7 +341,7 @@ namespace CK.Setup
             {
                 // Only if this class IsIncluded: assigns the set of interfaces.
                 // This way only interfaces that are actually used are registered in the collector.
-                // An unused Ambient Service interface (ie. that has no implementation in the context)
+                // An unused Auto Service interface (ie. that has no implementation in the context)
                 // is like any other interface.
                 Interfaces = collector.RegisterServiceInterfaces( Type.GetInterfaces() ).ToArray();
             }
@@ -359,7 +359,7 @@ namespace CK.Setup
         internal bool SetMostSpecialized(
             IActivityMonitor monitor,
             StObjObjectEngineMap engineMap,
-            AmbientServiceClassInfo mostSpecialized )
+            AutoServiceClassInfo mostSpecialized )
         {
             Debug.Assert( IsIncluded );
             Debug.Assert( MostSpecialized == null );
@@ -403,7 +403,7 @@ namespace CK.Setup
         /// Gets the parameters closure (including "Inheritance Constructor Parameters rule" and
         /// external intermediate classes).
         /// </summary>
-        public HashSet<AmbientServiceClassInfo> ComputedCtorParametersClassClosure
+        public HashSet<AutoServiceClassInfo> ComputedCtorParametersClassClosure
         {
             get
             {
@@ -422,14 +422,14 @@ namespace CK.Setup
         /// Returns the MustBeScopedLifetime (true if this Service implementation must be scoped and false for singleton).
         /// </summary>
         /// <param name="m">The monitor to use.</param>
-        /// <param name="typeKindDetector">The type detector (used to check singleton life times and promote mere IAmbientService to singletons).</param>
+        /// <param name="typeKindDetector">The type detector (used to check singleton life times and promote mere IAutoService to singletons).</param>
         /// <param name="success">Success reference token.</param>
         /// <returns>True for scoped, false for singleton.</returns>
-        internal bool GetFinalMustBeScopedLifetime( IActivityMonitor m, AmbientTypeKindDetector typeKindDetector, ref bool success )
+        internal bool GetFinalMustBeScopedLifetime( IActivityMonitor m, AutoRealTypeKindDetector typeKindDetector, ref bool success )
         {
             if( !MustBeScopedLifetime.HasValue )
             {
-                Debug.Assert( (DeclaredLifetime & AmbientTypeKind.IsAmbientService) != 0 );
+                Debug.Assert( (DeclaredLifetime & AutoRealTypeKind.IsAutoService) != 0 );
                 foreach( var p in ConstructorParameters )
                 {
                     var c = p.ServiceClass?.MostSpecialized ?? p.ServiceInterface?.FinalResolved;
@@ -437,9 +437,9 @@ namespace CK.Setup
                     {
                         if( c.GetFinalMustBeScopedLifetime( m, typeKindDetector, ref success ) )
                         {
-                            if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
+                            if( DeclaredLifetime == AutoRealTypeKind.AutoSingleton )
                             {
-                                m.Error( $"Lifetime error: Type '{Type}' is {nameof( ISingletonAmbientService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
+                                m.Error( $"Lifetime error: Type '{Type}' is {nameof( ISingletonAutoService )} but parameter '{p.Name}' of type '{p.ParameterInfo.ParameterType.Name}' in constructor is Scoped." );
                                 success = false;
                             }
                             if( !MustBeScopedLifetime.HasValue )
@@ -454,7 +454,7 @@ namespace CK.Setup
                 {
                     if( _requiredParametersToBeSingletons != null )
                     {
-                        Debug.Assert( DeclaredLifetime == AmbientTypeKind.IsAmbientService );
+                        Debug.Assert( DeclaredLifetime == AutoRealTypeKind.IsAutoService );
                         foreach( var external in _requiredParametersToBeSingletons )
                         {
                             if( !typeKindDetector.IsSingleton( external.ParameterType ) )
@@ -468,7 +468,7 @@ namespace CK.Setup
                     if( !MustBeScopedLifetime.HasValue )
                     {
                         MustBeScopedLifetime = false;
-                        if( DeclaredLifetime != AmbientTypeKind.AmbientSingleton )
+                        if( DeclaredLifetime != AutoRealTypeKind.AutoSingleton )
                         {
                             m.Info( $"Nothing prevents the class '{Type}' to be a Singleton: this is the most efficient choice." );
                             success &= typeKindDetector.PromoteToSingleton( m, Type ) != null;
@@ -479,9 +479,9 @@ namespace CK.Setup
             return MustBeScopedLifetime.Value;
         }
 
-        internal HashSet<AmbientServiceClassInfo> GetCtorParametersClassClosure(
+        internal HashSet<AutoServiceClassInfo> GetCtorParametersClassClosure(
             IActivityMonitor m,
-            AmbientTypeCollector collector,
+            AutoRealTypeCollector collector,
             ref bool initializationError )
         {
             if( _ctorParmetersClosure == null )
@@ -489,14 +489,14 @@ namespace CK.Setup
                 // Parameters of base classes are by design added to parameters of this instance.
                 // This ensure the "Inheritance Constructor Parameters rule", even if parameters are
                 // not exposed from the inherited constructor (and base parameters are direclty new'ed).
-                _ctorParmetersClosure = new HashSet<AmbientServiceClassInfo>();
+                _ctorParmetersClosure = new HashSet<AutoServiceClassInfo>();
 
-                bool AddCoveredParameters( IEnumerable<AmbientServiceClassInfo> classes )
+                bool AddCoveredParameters( IEnumerable<AutoServiceClassInfo> classes )
                 {
                     bool initError = false;
                     foreach( var cS in classes )
                     {
-                        AmbientServiceClassInfo c = cS;
+                        AutoServiceClassInfo c = cS;
                         do { _ctorParmetersClosure.Add( c ); } while( (c = c.Generalization) != null );
                         var cParams = cS.GetCtorParametersClassClosure( m, collector, ref initError );
                         _ctorParmetersClosure.UnionWith( cParams );
@@ -504,12 +504,12 @@ namespace CK.Setup
                     return initError;
                 }
 
-                if( IsAnAmbientObject )
+                if( IsRealObject )
                 {
                     // Calls EnsureCtorBinding (even if it is useless) for coherency: it is up
-                    // to this finction to handle the IsAnAmbientObject case.
+                    // to this function to handle the IsRealObject case.
                     initializationError |= !EnsureCtorBinding( m, collector );
-                    // Handles the ReplaceAmbientServiceAttribute that must be used by AmbientObject service implementation.
+                    // Handles the ReplaceAutoServiceAttribute that must be used by RealObject service implementation.
                     if( !initializationError )
                     {
                         var replacedTargets = GetReplacedTargetsFromReplaceServiceAttribute( m, collector );
@@ -534,10 +534,10 @@ namespace CK.Setup
             return _ctorParmetersClosure;
         }
 
-        IEnumerable<AmbientServiceClassInfo> GetReplacedTargetsFromReplaceServiceAttribute( IActivityMonitor m, AmbientTypeCollector collector )
+        IEnumerable<AutoServiceClassInfo> GetReplacedTargetsFromReplaceServiceAttribute( IActivityMonitor m, AutoRealTypeCollector collector )
         {
             foreach( var p in Type.GetCustomAttributesData()
-                                  .Where( a => a.AttributeType.Name == nameof( ReplaceAmbientServiceAttribute ) )
+                                  .Where( a => a.AttributeType.Name == nameof( ReplaceAutoServiceAttribute ) )
                                   .SelectMany( a => a.ConstructorArguments ) )
             {
                 Type replaced;
@@ -546,7 +546,7 @@ namespace CK.Setup
                     replaced = SimpleTypeFinder.WeakResolver( s, false );
                     if( replaced == null )
                     {
-                        m.Warn( $"[ReplaceAmbientService] on type '{Type}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
+                        m.Warn( $"[ReplaceAutoService] on type '{Type}': the assembly qualified name '{s}' cannot be resolved. It is ignored." );
                         continue;
                     }
                 }
@@ -555,14 +555,14 @@ namespace CK.Setup
                     replaced = p.Value as Type;
                     if( replaced == null )
                     {
-                        m.Warn( $"[ReplaceAmbientService] on type '{Type}': the parameter '{p.Value}' is not a Type. It is ignored." );
+                        m.Warn( $"[ReplaceAutoService] on type '{Type}': the parameter '{p.Value}' is not a Type. It is ignored." );
                         continue;
                     }
                 }
                 var target = collector.FindServiceClassInfo( replaced );
                 if( target == null )
                 {
-                    m.Warn( $"[ReplaceAmbientService({replaced.Name})] on type '{Type}': the Type to replace is not an Ambient Service class implementation. It is ignored." );
+                    m.Warn( $"[ReplaceAutoService({replaced.Name})] on type '{Type}': the Type to replace is not an Auto Service class implementation. It is ignored." );
                 }
                 else
                 {
@@ -571,11 +571,11 @@ namespace CK.Setup
             }
         }
 
-        internal bool EnsureCtorBinding( IActivityMonitor m, AmbientTypeCollector collector )
+        internal bool EnsureCtorBinding( IActivityMonitor m, AutoRealTypeCollector collector )
         {
             Debug.Assert( IsIncluded );
             if( _ctorBinding.HasValue ) return _ctorBinding.Value;
-            if( IsAnAmbientObject )
+            if( IsRealObject )
             {
                 ConstructorParameters = Array.Empty<CtorParameter>();
                 _ctorBinding = true;
@@ -602,15 +602,15 @@ namespace CK.Setup
                     // This must be done here since CtorParameters are not created for types that are external (those
                     // are considered as Scoped) or for ambient interfaces that have no implementation classes.
                     // If the parameter knwn to be singleton, we have nothing to do.
-                    if( param.Lifetime == AmbientTypeKind.None || (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
+                    if( param.Lifetime == AutoRealTypeKind.None || (param.Lifetime & AutoRealTypeKind.IsScoped) != 0 )
                     {
-                        // Note: if this DeclaredLifetime is AmbientScoped nothing is done here: as a
+                        // Note: if this DeclaredLifetime is AutoScopedd nothing is done here: as a
                         //       scoped service there is nothing to say about its constructor parameters' lifetime.
-                        if( DeclaredLifetime == AmbientTypeKind.AmbientSingleton )
+                        if( DeclaredLifetime == AutoRealTypeKind.AutoSingleton )
                         {
-                            if( param.Lifetime == AmbientTypeKind.None )
+                            if( param.Lifetime == AutoRealTypeKind.None )
                             {
-                                m.Warn( $"Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAmbientService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
+                                m.Warn( $"Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAutoService )}. Parameter '{p.Name}' of type '{p.ParameterType.Name}' that has no associated lifetime will be considered as a Singleton." );
                                 if( collector.AmbientKindDetector.DefineAsSingletonReference( m, p.ParameterType ) == null )
                                 {
                                     success = false;
@@ -620,29 +620,29 @@ namespace CK.Setup
                             {
                                 MustBeScopedLifetime = true;
                                 string paramReason;
-                                if( param.Lifetime == AmbientTypeKind.AmbientScope )
+                                if( param.Lifetime == AutoRealTypeKind.AutoScoped )
                                 {
-                                    paramReason = $"is marked with {nameof( IScopedAmbientService )}";
+                                    paramReason = $"is marked with {nameof( IScopedAutoService )}";
                                 }
                                 else
                                 {
-                                    Debug.Assert( param.Lifetime == AmbientTypeKind.IsScoped );
+                                    Debug.Assert( param.Lifetime == AutoRealTypeKind.IsScoped );
                                     paramReason = $"is registered as an external scoped service";
                                 }
-                                m.Error( $"Lifetime error: Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAmbientService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
+                                m.Error( $"Lifetime error: Type '{p.Member.DeclaringType}' is marked with {nameof( ISingletonAutoService )}  but parameter '{p.Name}' of type '{p.ParameterType.Name}' {paramReason}." );
                                 success = false;
                             }
                         }
-                        else if( DeclaredLifetime == AmbientTypeKind.IsAmbientService )
+                        else if( DeclaredLifetime == AutoRealTypeKind.IsAutoService )
                         {
-                            if( (param.Lifetime & AmbientTypeKind.IsScoped) != 0 )
+                            if( (param.Lifetime & AutoRealTypeKind.IsScoped) != 0 )
                             {
-                                m.Info( $"{nameof( IAmbientService )} '{p.Member.DeclaringType}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
+                                m.Info( $"{nameof( IAutoService )} '{p.Member.DeclaringType}' is Scoped because of parameter '{p.Name}' of type '{p.ParameterType.Name}'." );
                                 MustBeScopedLifetime = true;
                             }
                             else
                             {
-                                Debug.Assert( param.Lifetime == AmbientTypeKind.None );
+                                Debug.Assert( param.Lifetime == AutoRealTypeKind.None );
                                 if( _requiredParametersToBeSingletons == null ) _requiredParametersToBeSingletons = new List<ParameterInfo>();
                                 _requiredParametersToBeSingletons.Add( p );
                             }
@@ -651,7 +651,7 @@ namespace CK.Setup
                     // Temporary: Enumeration is not implemented yet.
                     if( success && param.IsEnumerable )
                     {
-                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is marked with IScopedAmbientService or ISingletonAmbientService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
+                        m.Error( $"IEnumerable<T> or IReadOnlyList<T> where T is marked with IScopedAutoService or ISingletonAutoService is not supported yet: '{Type.FullName}' constructor cannot be handled." );
                         success = false;
                     }
                 }
@@ -665,12 +665,12 @@ namespace CK.Setup
         readonly struct CtorParameterData
         {
             public readonly bool Success;
-            public readonly AmbientServiceClassInfo Class;
-            public readonly AmbientServiceInterfaceInfo Interface;
+            public readonly AutoServiceClassInfo Class;
+            public readonly AutoServiceInterfaceInfo Interface;
             public readonly bool IsEnumerable;
-            public readonly AmbientTypeKind Lifetime;
+            public readonly AutoRealTypeKind Lifetime;
 
-            public CtorParameterData( bool success, AmbientServiceClassInfo c, AmbientServiceInterfaceInfo i, bool isEnumerable, AmbientTypeKind lt )
+            public CtorParameterData( bool success, AutoServiceClassInfo c, AutoServiceInterfaceInfo i, bool isEnumerable, AutoRealTypeKind lt )
             {
                 Success = success;
                 Class = c;
@@ -682,7 +682,7 @@ namespace CK.Setup
 
         CtorParameterData CreateCtorParameter(
             IActivityMonitor m,
-            AmbientTypeCollector collector,
+            AutoRealTypeCollector collector,
             ParameterInfo p )
         {
             var tParam = p.ParameterType;
@@ -700,15 +700,15 @@ namespace CK.Setup
                 else 
                 {
                     var genLifetime = collector.AmbientKindDetector.GetKind( m, tGen );
-                    if( genLifetime != AmbientTypeKind.None )
+                    if( genLifetime != AutoRealTypeKind.None )
                     {
                         return new CtorParameterData( true, null, null, false, genLifetime );
                     }
                 }
             }
-            // We only consider I(Scoped/Singleton)AmbientService marked type parameters.
+            // We only consider I(Scoped/Singleton)AutoService marked type parameters.
             var lifetime = collector.AmbientKindDetector.GetKind( m, tParam );
-            if( (lifetime&AmbientTypeKind.IsAmbientService) == 0 )
+            if( (lifetime&AutoRealTypeKind.IsAutoService) == 0 )
             {
                 return new CtorParameterData( true, null, null, false, lifetime );
             }
@@ -760,7 +760,7 @@ namespace CK.Setup
 
 
         /// <summary>
-        /// Overridden to return the <see cref="AmbientTypeInfo.ToString()"/>.
+        /// Overridden to return the <see cref="AutoRealTypeInfo.ToString()"/>.
         /// </summary>
         /// <returns>A readable string.</returns>
         public override string ToString() => TypeInfo.ToString();

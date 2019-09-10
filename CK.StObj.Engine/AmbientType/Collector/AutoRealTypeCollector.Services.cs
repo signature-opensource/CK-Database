@@ -7,18 +7,18 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public partial class AmbientTypeCollector
+    public partial class AutoRealTypeCollector
     {
-        readonly Dictionary<Type, AmbientServiceClassInfo> _serviceCollector;
-        readonly List<AmbientServiceClassInfo> _serviceRoots;
-        readonly Dictionary<Type, AmbientServiceInterfaceInfo> _serviceInterfaces;
-        readonly AmbientTypeKindDetector _ambientKindDetector;
+        readonly Dictionary<Type, AutoServiceClassInfo> _serviceCollector;
+        readonly List<AutoServiceClassInfo> _serviceRoots;
+        readonly Dictionary<Type, AutoServiceInterfaceInfo> _serviceInterfaces;
+        readonly AutoRealTypeKindDetector _kindDetector;
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
-        AmbientServiceClassInfo RegisterServiceClassInfo( Type t, AmbientServiceClassInfo parent, AmbientTypeKind lt, AmbientObjectClassInfo objectInfo )
+        AutoServiceClassInfo RegisterServiceClassInfo( Type t, AutoServiceClassInfo parent, AutoRealTypeKind lt, RealObjectClassInfo objectInfo )
         {
-            var serviceInfo = new AmbientServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt, objectInfo );
+            var serviceInfo = new AutoServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt, objectInfo );
             if( !serviceInfo.TypeInfo.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -29,22 +29,22 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Exposes the <see cref="AmbientTypeKindDetector"/>.
+        /// Exposes the <see cref="AutoRealTypeKindDetector"/>.
         /// </summary>
-        public AmbientTypeKindDetector AmbientKindDetector => _ambientKindDetector;
+        public AutoRealTypeKindDetector AmbientKindDetector => _kindDetector;
 
-        bool IsAmbientService( Type t ) => (_ambientKindDetector.GetKind( _monitor, t ) & AmbientTypeKind.IsAmbientService) != 0;
+        bool IsAutoService( Type t ) => (_kindDetector.GetKind( _monitor, t ) & AutoRealTypeKind.IsAutoService) != 0;
 
-        internal AmbientServiceClassInfo FindServiceClassInfo( Type t )
+        internal AutoServiceClassInfo FindServiceClassInfo( Type t )
         {
-            Debug.Assert( IsAmbientService( t ) && t.IsClass );
+            Debug.Assert( IsAutoService( t ) && t.IsClass );
             _serviceCollector.TryGetValue( t, out var info );
             return info;
         }
 
-        internal AmbientServiceInterfaceInfo FindServiceInterfaceInfo( Type t )
+        internal AutoServiceInterfaceInfo FindServiceInterfaceInfo( Type t )
         {
-            Debug.Assert( IsAmbientService( t ) && t.IsInterface );
+            Debug.Assert( IsAutoService( t ) && t.IsInterface );
             _serviceInterfaces.TryGetValue( t, out var info );
             return info;
         }
@@ -52,18 +52,18 @@ namespace CK.Setup
         /// <summary>
         /// Returns null if and only if the interface type is excluded.
         /// </summary>
-        AmbientServiceInterfaceInfo RegisterServiceInterface( Type t, AmbientTypeKind lt )
+        AutoServiceInterfaceInfo RegisterServiceInterface( Type t, AutoRealTypeKind lt )
         {
             Debug.Assert( t.IsInterface
-                            && lt == _ambientKindDetector.GetKind( _monitor, t )
-                            && (lt == AmbientTypeKind.IsAmbientService
-                                || lt == AmbientTypeKind.AmbientSingleton
-                                || lt == AmbientTypeKind.AmbientScope) );
+                            && lt == _kindDetector.GetKind( _monitor, t )
+                            && (lt == AutoRealTypeKind.IsAutoService
+                                || lt == AutoRealTypeKind.AutoSingleton
+                                || lt == AutoRealTypeKind.AutoScoped) );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
             {
                 if( _typeFilter( _monitor, t ) )
                 {
-                    info = new AmbientServiceInterfaceInfo( t, lt, RegisterServiceInterfaces( t.GetInterfaces() ) );
+                    info = new AutoServiceInterfaceInfo( t, lt, RegisterServiceInterfaces( t.GetInterfaces() ) );
                     ++_serviceInterfaceCount;
                     if( info.Interfaces.Count == 0 ) ++_serviceRootInterfaceCount;
                 }
@@ -73,17 +73,17 @@ namespace CK.Setup
             return info;
         }
 
-        internal IEnumerable<AmbientServiceInterfaceInfo> RegisterServiceInterfaces( IEnumerable<Type> interfaces )
+        internal IEnumerable<AutoServiceInterfaceInfo> RegisterServiceInterfaces( IEnumerable<Type> interfaces )
         {
             foreach( var iT in interfaces )
             {
-                AmbientTypeKind lt = _ambientKindDetector.GetKind( _monitor, iT );
+                AutoRealTypeKind lt = _kindDetector.GetKind( _monitor, iT );
                 var conflictMsg = lt.GetAmbientKindCombinationError();
                 if( conflictMsg != null )
                 {
                     _monitor.Error( $"Interface '{iT.FullName}': {conflictMsg}" );
                 }
-                else if( (lt&AmbientTypeKind.IsAmbientService) != 0 )
+                else if( (lt&AutoRealTypeKind.IsAutoService) != 0 )
                 {
                     var r = RegisterServiceInterface( iT, lt );
                     if( r != null ) yield return r;
@@ -91,12 +91,12 @@ namespace CK.Setup
             }
         }
 
-        AmbientServiceCollectorResult GetAmbientServiceResult( AmbientObjectCollectorResult contracts )
+        AutoServiceCollectorResult GetAutoServiceResult( RealObjectCollectorResult contracts )
         {
             bool success = true;
             List<Type> abstractTails = null;
             success &= InitializeRootServices( contracts.EngineMap, out var classAmbiguities, ref abstractTails );
-            List<AmbientServiceClassInfo> subGraphs = new List<AmbientServiceClassInfo>();
+            List<AutoServiceClassInfo> subGraphs = new List<AutoServiceClassInfo>();
             if( success && classAmbiguities == null )
             {
                 foreach( var s in _serviceRoots )
@@ -107,9 +107,9 @@ namespace CK.Setup
                 Debug.Assert( subGraphs.All( c => c.MostSpecialized != null ) );
             }
             // Collecting all, roots and leaves interfaces.
-            var leafInterfaces = new List<AmbientServiceInterfaceInfo>();
-            var allInterfaces = new AmbientServiceInterfaceInfo[_serviceInterfaceCount];
-            var rootInterfaces = new AmbientServiceInterfaceInfo[_serviceRootInterfaceCount];
+            var leafInterfaces = new List<AutoServiceInterfaceInfo>();
+            var allInterfaces = new AutoServiceInterfaceInfo[_serviceInterfaceCount];
+            var rootInterfaces = new AutoServiceInterfaceInfo[_serviceRootInterfaceCount];
             int idxAll = 0;
             int idxRoot = 0;
             foreach( var it in _serviceInterfaces.Values )
@@ -124,7 +124,7 @@ namespace CK.Setup
             Debug.Assert( idxAll == allInterfaces.Length );
             Debug.Assert( idxRoot == rootInterfaces.Length );
             _monitor.Info( $"{allInterfaces.Length} Service interfaces with {rootInterfaces.Length} roots and {leafInterfaces.Count} interface leaves." );
-            return new AmbientServiceCollectorResult(
+            return new AutoServiceCollectorResult(
                 success,
                 allInterfaces,
                 leafInterfaces,
@@ -137,18 +137,18 @@ namespace CK.Setup
 
         bool InitializeRootServices(
             StObjObjectEngineMap engineMap,
-            out IReadOnlyList<IReadOnlyList<AmbientServiceClassInfo>> classAmbiguities,
+            out IReadOnlyList<IReadOnlyList<AutoServiceClassInfo>> classAmbiguities,
             ref List<Type> abstractTails )
         {
             using( _monitor.OpenInfo( $"Analysing {_serviceRoots.Count} Service class hierarchies." ) )
             {
                 bool error = false;
-                var deepestConcretes = new List<AmbientServiceClassInfo>();
+                var deepestConcretes = new List<AutoServiceClassInfo>();
                 Debug.Assert( _serviceRoots.All( info => info != null && !info.TypeInfo.IsExcluded && info.Generalization == null ),
                     "_serviceRoots contains only not Excluded types." );
-                List<(AmbientServiceClassInfo Root, AmbientServiceClassInfo[] Leaves)> ambiguities = null;
+                List<(AutoServiceClassInfo Root, AutoServiceClassInfo[] Leaves)> ambiguities = null;
                 // We must wait until all paths have been initialized before ensuring constructor parameters
-                AmbientServiceClassInfo[] resolvedLeaves = new AmbientServiceClassInfo[_serviceRoots.Count];
+                AutoServiceClassInfo[] resolvedLeaves = new AutoServiceClassInfo[_serviceRoots.Count];
                 for( int i = 0; i < _serviceRoots.Count; ++i )
                 {
                     var c = _serviceRoots[i];
@@ -168,7 +168,7 @@ namespace CK.Setup
                     }
                     else if( deepestConcretes.Count > 1 )
                     {
-                        if( ambiguities == null ) ambiguities = new List<(AmbientServiceClassInfo, AmbientServiceClassInfo[])>();
+                        if( ambiguities == null ) ambiguities = new List<(AutoServiceClassInfo, AutoServiceClassInfo[])>();
                         ambiguities.Add( (c, deepestConcretes.ToArray()) );
                     }
                 }
@@ -187,7 +187,7 @@ namespace CK.Setup
                 }
                 // Every non ambiguous paths have been initialized.
                 // Now, if there is no initialization error, tries to resolve class ambiguities.
-                List<IReadOnlyList<AmbientServiceClassInfo>> remainingAmbiguities = null;
+                List<IReadOnlyList<AutoServiceClassInfo>> remainingAmbiguities = null;
                 if( !error && ambiguities != null )
                 {
                     using( _monitor.OpenInfo( $"Trying to resolve {ambiguities.Count} ambiguities." ) )
@@ -206,7 +206,7 @@ namespace CK.Setup
                                 else
                                 {
                                     _monitor.CloseGroup( "Failed." );
-                                    if( remainingAmbiguities == null ) remainingAmbiguities = new List<IReadOnlyList<AmbientServiceClassInfo>>();
+                                    if( remainingAmbiguities == null ) remainingAmbiguities = new List<IReadOnlyList<AutoServiceClassInfo>>();
                                     resolver.CollectRemainingAmbiguities( remainingAmbiguities );
                                 }
                             }
@@ -220,37 +220,37 @@ namespace CK.Setup
 
         class ClassAmbiguityResolver
         {
-            readonly Dictionary<AmbientServiceClassInfo, ClassAmbiguity> _ambiguities;
+            readonly Dictionary<AutoServiceClassInfo, ClassAmbiguity> _ambiguities;
             readonly IActivityMonitor _monitor;
-            readonly AmbientTypeCollector _collector;
+            readonly AutoRealTypeCollector _collector;
             readonly StObjObjectEngineMap _engineMap;
 
-            AmbientServiceClassInfo _root;
-            AmbientServiceClassInfo _rootAmbiguity;
-            AmbientServiceClassInfo[] _allLeaves;
+            AutoServiceClassInfo _root;
+            AutoServiceClassInfo _rootAmbiguity;
+            AutoServiceClassInfo[] _allLeaves;
 
             readonly struct ClassAmbiguity
             {
-                public readonly AmbientServiceClassInfo Class;
-                public readonly List<AmbientServiceClassInfo> Leaves;
+                public readonly AutoServiceClassInfo Class;
+                public readonly List<AutoServiceClassInfo> Leaves;
 
-                public ClassAmbiguity( AmbientServiceClassInfo c )
+                public ClassAmbiguity( AutoServiceClassInfo c )
                 {
                     Debug.Assert( c.TypeInfo.SpecializationsCount > 0 && c.MostSpecialized == null );
                     Class = c;
-                    Leaves = new List<AmbientServiceClassInfo>();
+                    Leaves = new List<AutoServiceClassInfo>();
                 }
             }
 
-            public ClassAmbiguityResolver( IActivityMonitor monitor, AmbientTypeCollector collector, StObjObjectEngineMap engineMap )
+            public ClassAmbiguityResolver( IActivityMonitor monitor, AutoRealTypeCollector collector, StObjObjectEngineMap engineMap )
             {
-                _ambiguities = new Dictionary<AmbientServiceClassInfo, ClassAmbiguity>();
+                _ambiguities = new Dictionary<AutoServiceClassInfo, ClassAmbiguity>();
                 _monitor = monitor;
                 _collector = collector;
                 _engineMap = engineMap;
             }
 
-            public (bool Success, bool InitializationError) TryClassUnification( AmbientServiceClassInfo root, AmbientServiceClassInfo[] allLeaves  )
+            public (bool Success, bool InitializationError) TryClassUnification( AutoServiceClassInfo root, AutoServiceClassInfo[] allLeaves  )
             {
                 Debug.Assert( allLeaves.Length > 1
                               && NextUpperAmbiguity( allLeaves[0] ) != null
@@ -281,7 +281,7 @@ namespace CK.Setup
                 return (allSuccess,initializationError);
             }
 
-            public void CollectRemainingAmbiguities( List<IReadOnlyList<AmbientServiceClassInfo>> ambiguities )
+            public void CollectRemainingAmbiguities( List<IReadOnlyList<AutoServiceClassInfo>> ambiguities )
             {
                 Debug.Assert( _ambiguities.Count > 0 );
                 foreach( var ca in _ambiguities.Values )
@@ -363,7 +363,7 @@ namespace CK.Setup
                 return (success, initializationError);
             }
 
-            static AmbientServiceClassInfo NextUpperAmbiguity( AmbientServiceClassInfo start )
+            static AutoServiceClassInfo NextUpperAmbiguity( AutoServiceClassInfo start )
             {
                 var g = start.Generalization;
                 while( g != null )

@@ -20,13 +20,13 @@ namespace CK.Setup
         readonly StObjObjectEngineMap _liftedMap;
 
         internal StObjCollectorResult(
-            AmbientTypeCollectorResult typeResult,
+            AutoRealTypeCollectorResult typeResult,
             DynamicAssembly tempAssembly,
             Dictionary<string,object> primaryRunCache,
             IReadOnlyList<MutableItem> orderedStObjs )
         {
             AmbientTypeResult = typeResult;
-            _liftedMap = AmbientTypeResult?.AmbientObjects?.EngineMap;
+            _liftedMap = AmbientTypeResult?.RealObjects?.EngineMap;
             _tempAssembly = tempAssembly;
             if( primaryRunCache != null ) SecondaryRunAccessor = key => primaryRunCache[key];
             OrderedStObjs = orderedStObjs;
@@ -46,7 +46,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the result of the types discovery and analysis.
         /// </summary>
-        public AmbientTypeCollectorResult AmbientTypeResult { get; }
+        public AutoRealTypeCollectorResult AmbientTypeResult { get; }
 
         /// <summary>
         /// Gets the <see cref="IStObjObjectEngineMap"/> that extends runtime <see cref="IStObjObjectMap"/>.

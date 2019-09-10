@@ -9,7 +9,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     [TestFixture]
     public class ClassUnificationTests : TestsBase
     {
-        class A : IScopedAmbientService { }
+        class A : IScopedAutoService { }
         class AS1 : A { }
         class AS2 : A { }
         class UnifiedA : A { public UnifiedA( AS1 a1, AS2 a2 ) { } }
@@ -18,27 +18,27 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void basic_direct_unification_between_3_specializations()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( UnifiedA ) );
             collector.RegisterClass( typeof( AS1 ) );
             collector.RegisterClass( typeof( AS2 ) );
             var r = CheckSuccess( collector );
-            r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-            r.AmbientServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( UnifiedA ) );
+            r.AutoServices.RootClasses.Should().HaveCount( 1 );
+            r.AutoServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( UnifiedA ) );
         }
 
         [Test]
         public void basic_direct_unification_between_2_specializations()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( UnifiedAWithoutS2 ) );
             collector.RegisterClass( typeof( AS1 ) );
             var r = CheckSuccess( collector );
-            r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-            r.AmbientServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( UnifiedAWithoutS2 ) );
+            r.AutoServices.RootClasses.Should().HaveCount( 1 );
+            r.AutoServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( UnifiedAWithoutS2 ) );
         }
 
-        class _A : IScopedAmbientService { }
+        class _A : IScopedAutoService { }
         class _AS1 : _A { }
         class _AS2 : _A { }
         class _AS3 : _A { }
@@ -48,41 +48,41 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void unification_with_intermediate_unifier()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( _UnifiedA1 ) );
             collector.RegisterClass( typeof( _UnifiedA2 ) );
             collector.RegisterClass( typeof( _AS1 ) );
             collector.RegisterClass( typeof( _AS2 ) );
             collector.RegisterClass( typeof( _AS3 ) );
             var r = CheckSuccess( collector );
-            r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-            r.AmbientServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( _UnifiedA2 ) );
+            r.AutoServices.RootClasses.Should().HaveCount( 1 );
+            r.AutoServices.RootClasses[0].MostSpecialized.Type.Should().BeSameAs( typeof( _UnifiedA2 ) );
         }
 
-        class e_A : IScopedAmbientService { }
+        class e_A : IScopedAutoService { }
         class e_AS1 : e_A { }
         class e_AS2 : e_A { }
         class e_AS3 : e_A { }
-        class ExternalUnifier : IScopedAmbientService { public ExternalUnifier( e_AS1 a1, e_AS2 a2 ) { } }
+        class ExternalUnifier : IScopedAutoService { public ExternalUnifier( e_AS1 a1, e_AS2 a2 ) { } }
         class e_UnifiedA2 : e_A { public e_UnifiedA2( ExternalUnifier u, e_AS3 a3 ) { } }
 
         [Test]
         public void unification_with_intermediate_external_unifier()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( ExternalUnifier ) );
             collector.RegisterClass( typeof( e_UnifiedA2 ) );
             collector.RegisterClass( typeof( e_AS1 ) );
             collector.RegisterClass( typeof( e_AS2 ) );
             collector.RegisterClass( typeof( e_AS3 ) );
             var r = CheckSuccess( collector );
-            r.AmbientServices.RootClasses.Should().HaveCount( 2 );
-            r.AmbientServices.RootClasses.Single( c => c.Type == typeof( e_A ) ).MostSpecialized.Type
+            r.AutoServices.RootClasses.Should().HaveCount( 2 );
+            r.AutoServices.RootClasses.Single( c => c.Type == typeof( e_A ) ).MostSpecialized.Type
                 .Should().BeSameAs( typeof( e_UnifiedA2 ) );
         }
 
 
-        class u_A : IScopedAmbientService { }
+        class u_A : IScopedAutoService { }
         class u_AS1 : u_A { }
         class u_AS2Base : u_A { }
         class u_AS2 : u_AS2Base { }
@@ -93,23 +93,23 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void unification_to_base_class()
         {
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClass( typeof( u_AS1 ) );
                 collector.RegisterClass( typeof( u_AS2 ) );
                 collector.RegisterClass( typeof( u_UnifiedD ) );
                 var r = CheckSuccess( collector );
-                r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-                r.AmbientServices.RootClasses.Single( c => c.Type == typeof( u_A ) ).MostSpecialized.Type
+                r.AutoServices.RootClasses.Should().HaveCount( 1 );
+                r.AutoServices.RootClasses.Single( c => c.Type == typeof( u_A ) ).MostSpecialized.Type
                     .Should().BeSameAs( typeof( u_UnifiedD ) );
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClass( typeof( u_AS1 ) );
                 collector.RegisterClass( typeof( u_AS2 ) );
                 collector.RegisterClass( typeof( u_UnifiedA ) );
                 var r = CheckSuccess( collector );
-                r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-                r.AmbientServices.RootClasses.Single( c => c.Type == typeof( u_A ) ).MostSpecialized.Type
+                r.AutoServices.RootClasses.Should().HaveCount( 1 );
+                r.AutoServices.RootClasses.Single( c => c.Type == typeof( u_A ) ).MostSpecialized.Type
                     .Should().BeSameAs( typeof( u_UnifiedA ) );
             }
         }
@@ -117,7 +117,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void unification_failure_on_two_potential_unifiers()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( u_AS1 ) );
             collector.RegisterClass( typeof( u_AS2 ) );
             collector.RegisterClass( typeof( u_UnifiedD ) );
@@ -125,7 +125,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             var r = CheckFailure( collector );
         }
 
-        class s_A : IScopedAmbientService { }
+        class s_A : IScopedAutoService { }
         class s_AS1 : s_A { }
         class s_AS2Base : s_A { }
         class s_AS2aBase : s_AS2Base { }
@@ -150,13 +150,13 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [TestCase( typeof( s_UnifiedAb ) )]
         public void subgraph_requires_unification( Type unifier )
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
             collector.RegisterClass( unifier );
             var r = CheckFailure( collector );
-            var ambiguities = r.AmbientServices.ClassAmbiguities;
+            var ambiguities = r.AutoServices.ClassAmbiguities;
             ambiguities.Should().HaveCount( 1 );
             var a = ambiguities[0];
             a.Should().HaveCount( 1 + 2 );
@@ -169,13 +169,13 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [TestCase( typeof( s_SubUnifier3 ) )]
         public void supergraph_requires_unification( Type unifier )
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
             collector.RegisterClass( unifier );
             var r = CheckFailure( collector );
-            var ambiguities = r.AmbientServices.ClassAmbiguities;
+            var ambiguities = r.AutoServices.ClassAmbiguities;
             ambiguities.Should().HaveCount( 1 );
             var a = ambiguities[0];
             a.Should().HaveCount( 1 + 4 );
@@ -186,12 +186,12 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void graph_with_two_ambiguities()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
             var r = CheckFailure( collector );
-            var ambiguities = r.AmbientServices.ClassAmbiguities;
+            var ambiguities = r.AutoServices.ClassAmbiguities;
             ambiguities.Should().HaveCount( 2 );
         }
 
@@ -202,7 +202,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             {
                 foreach( var sub in new[] { typeof( s_SubUnifier1 ), typeof( s_SubUnifier2 ), typeof( s_SubUnifier3 ) } )
                 {
-                    var collector = CreateAmbientTypeCollector();
+                    var collector = CreateAutoRealTypeCollector();
                     collector.RegisterClass( typeof( s_AS1 ) );
                     collector.RegisterClass( typeof( s_AS2a ) );
                     collector.RegisterClass( typeof( s_AS2b ) );

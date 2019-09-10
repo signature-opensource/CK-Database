@@ -33,12 +33,12 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
 
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetAmbiantPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+                o.SetAmbientPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
             }
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren )]
-        public class SqlDatabaseDefault : IAmbientObject
+        public class SqlDatabaseDefault : IRealObject
         {
             void StObjConstruct( string connectionString )
             {
@@ -49,7 +49,7 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
         }
 
         [AmbientDefiner]
-        public class BaseDatabaseObject : IAmbientObject
+        public class BaseDatabaseObject : IRealObject
         {
             [AmbientProperty]
             public SqlDatabaseDefault Database { get; set; }

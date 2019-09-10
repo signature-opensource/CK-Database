@@ -30,7 +30,7 @@ namespace CK.StObj.Engine.Tests
                 }
             }
 
-            public class A : IAmbientObject
+            public class A : IRealObject
             {
             }
 
@@ -52,7 +52,7 @@ namespace CK.StObj.Engine.Tests
                 public abstract int Auto( int i );
             }
 
-            public interface IC : IAmbientObject
+            public interface IC : IRealObject
             {
                 A TheA { get; }
             }
@@ -112,7 +112,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CConstructCalledAndStObjProperties
         {
-            public class A : IAmbientObject
+            public class A : IRealObject
             {
                 [StObjProperty]
                 public string StObjPower { get; set; }
@@ -137,7 +137,7 @@ namespace CK.StObj.Engine.Tests
                 public B TheB { get; private set; }
             }
 
-            public class B : IAmbientObject
+            public class B : IRealObject
             {
                 void StObjConstruct( A a )
                 {
@@ -200,7 +200,7 @@ namespace CK.StObj.Engine.Tests
 
         public class PostBuildSet
         {
-            public class A : IAmbientObject
+            public class A : IRealObject
             {
                 [StObjProperty]
                 public string StObjPower { get; private set; }
@@ -217,7 +217,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
                 }
 
@@ -239,7 +239,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientObject>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );
                     StObjInitializeOnASpecCalled = true;
                 }
@@ -247,7 +247,7 @@ namespace CK.StObj.Engine.Tests
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class B : IAmbientObject
+            public class B : IRealObject
             {
                 [InjectObject]
                 public A TheA { get; private set; }

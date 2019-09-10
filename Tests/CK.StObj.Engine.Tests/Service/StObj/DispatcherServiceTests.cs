@@ -8,7 +8,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     [TestFixture]
     public class DispatcherServiceTests : TestsBase
     {
-        public interface IServiceBase : IScopedAmbientService
+        public interface IServiceBase : IScopedAutoService
         {
             int CountOfThings { get; }
         }
@@ -44,7 +44,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisterType( typeof( S2 ) );
             collector.RegisterType( typeof( SDispatcher ) );
             CheckFailure( collector );
-            Assume.That( false, "IEnumerable<T> or IReadOnlyList<T> where T is IScoped/SingletonAmbientService is not supported yet." );
+            Assume.That( false, "IEnumerable<T> or IReadOnlyList<T> where T is IScoped/SingletonAutoService is not supported yet." );
         }
 
 

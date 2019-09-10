@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3.Cycles
 {
 
-    public class ObjectYNeedsX : IAmbientObject
+    public class ObjectYNeedsX : IRealObject
     {
         void StObjConstruct( ObjectXNeedsY other )
         {

@@ -14,7 +14,7 @@ namespace CK.Setup
     /// </summary>
     public partial class StObjCollector
     {
-        readonly AmbientTypeCollector _cc;
+        readonly AutoRealTypeCollector _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
@@ -60,7 +60,7 @@ namespace CK.Setup
             }
             Func<IActivityMonitor,Type,bool> tFilter = null;
             if( typeFilter != null ) tFilter = typeFilter.TypeFilter;
-            _cc = new AmbientTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
+            _cc = new AutoRealTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
@@ -211,10 +211,10 @@ namespace CK.Setup
 
         void DoRegisterTypes( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Ambient Objects or Service classes", types, count, ( m, cc, t ) => cc.RegisterClassOrPoco( t ) );
+            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Real Objects or Service classes", types, count, ( m, cc, t ) => cc.RegisterClassOrPoco( t ) );
         }
 
-        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<IActivityMonitor,AmbientTypeCollector,Type> a )
+        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<IActivityMonitor,AutoRealTypeCollector,Type> a )
         {
             Debug.Assert( types != null );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
@@ -263,15 +263,15 @@ namespace CK.Setup
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }
 
-        (AmbientTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
+        (AutoRealTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
         {
             bool error = false;
             using( _monitor.OnError( () => error = true ) )
             {
-                AmbientTypeCollectorResult typeResult;
+                AutoRealTypeCollectorResult typeResult;
                 using( _monitor.OpenInfo( "Initializing object graph." ) )
                 {
-                    using( _monitor.OpenInfo( "Collecting Ambient Objects, Services, Type structure and Poco." ) )
+                    using( _monitor.OpenInfo( "Collecting Real Objects, Services, Type structure and Poco." ) )
                     {
                         typeResult = _cc.GetResult();
                         typeResult.LogErrorAndWarnings( _monitor );
@@ -279,13 +279,13 @@ namespace CK.Setup
                     if( error || typeResult.HasFatalError ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Creating final objects and configuring items." ) )
                     {
-                        int nbItems = ConfigureMutableItems( typeResult.AmbientObjects );
+                        int nbItems = ConfigureMutableItems( typeResult.RealObjects );
                         _monitor.CloseGroup( $"{nbItems} items configured." );
                     }
                 }
                 if( error ) return (typeResult, null); 
 
-                StObjObjectEngineMap engineMap = typeResult.AmbientObjects.EngineMap;
+                StObjObjectEngineMap engineMap = typeResult.RealObjects.EngineMap;
                 IDependencySorterResult sortResult = null;
                 BuildValueCollector valueCollector = new BuildValueCollector();
                 using( _monitor.OpenInfo( "Topological graph ordering." ) )
@@ -305,10 +305,10 @@ namespace CK.Setup
                     using( _monitor.OpenInfo( "Resolving PreConstruct and PostBuild properties." ) )
                     {
                         // This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
-                        // except that we must first resolve AmbiantProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
+                        // except that we must first resolve AmbientProperties: computes TrackedAmbientProperties (and depending of the TrackAmbientPropertiesMode impact
                         // the requirements before sorting). This also gives IStObjValueResolver.ResolveExternalPropertyValue 
                         // a chance to configure unresolved properties. (Since this external resolution may provide a StObj, this may also impact the sort order).
-                        // During this step, DirectProperties and AmbientObjects are also collected: all these properties are added to PreConstruct collectors
+                        // During this step, DirectProperties and RealObjects are also collected: all these properties are added to PreConstruct collectors
                         // or to PostBuild collector in order to always set a correctly constructed object to a property.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
@@ -375,7 +375,7 @@ namespace CK.Setup
                     if( error ) return (typeResult, null);
                     using( _monitor.OpenInfo( "Setting PostBuild properties and injected Objects." ) )
                     {
-                        // Finalize construction by injecting Ambient Objects
+                        // Finalize construction by injecting Real Objects
                         // and PostBuild Ambient Properties on specializations.
                         foreach( MutableItem item in engineMap.AllSpecializations )
                         {
@@ -394,7 +394,7 @@ namespace CK.Setup
         /// (see <see cref="MutableItem.ConfigureTopDown(IActivityMonitor, MutableItem)"/>).
         /// This is the very first step.
         /// </summary>
-        int ConfigureMutableItems( AmbientObjectCollectorResult typeResult )
+        int ConfigureMutableItems( RealObjectCollectorResult typeResult )
         {
             var concreteClasses = typeResult.ConcreteClasses;
             int nbItems = 0;

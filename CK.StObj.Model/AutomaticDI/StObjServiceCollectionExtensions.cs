@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="stobjAssembly">The assembly.</param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="assemblyName">The assembly name (without .ddl suffix).</param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="monitor">The monitor to use. Must not be null.</param>
         /// <param name="map">StObj map to register. Can not be null.</param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>

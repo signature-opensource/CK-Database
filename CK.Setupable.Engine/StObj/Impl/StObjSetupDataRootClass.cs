@@ -53,7 +53,7 @@ namespace CK.Setup
                 if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
             }
 
-            // If we are the root of the ambient contract, we consider that base classes
+            // If we are the root of the real object, we consider that base classes
             // preinitialize our value.
             if( isInRoot && parent != null )
             {

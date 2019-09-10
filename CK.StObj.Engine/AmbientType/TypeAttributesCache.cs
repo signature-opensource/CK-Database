@@ -8,7 +8,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Implements a cache for attributes associated to a type or to any of its members that
-    /// support <see cref="IAttributeAmbientContextBound"/>.
+    /// support <see cref="IAttributeContextBound"/>.
     /// Attribute inheritance is ignored: only attributes applied to the member are considered. 
     /// When used with another type or a member of another type from the one provided 
     /// in the constructor, an exception is thrown.
@@ -54,7 +54,7 @@ namespace CK.Setup
             {
                 foreach( Entry e in _all )
                 {
-                    if( e.Attr is IAttributeAmbientContextBoundInitializer aM )
+                    if( e.Attr is IAttributeContextBoundInitializer aM )
                     {
                         aM.Initialize( this, e.M );
                         if( --initializerCount == 0 ) break;
@@ -66,18 +66,18 @@ namespace CK.Setup
         static int Register( IActivityMonitor monitor, IServiceProvider services, List<Entry> all, MemberInfo m, bool inherit = false )
         {
             int initializerCount = 0;
-            var attr = (IAttributeAmbientContextBound[])m.GetCustomAttributes( typeof( IAttributeAmbientContextBound ), inherit );
+            var attr = (IAttributeContextBound[])m.GetCustomAttributes( typeof( IAttributeContextBound ), inherit );
             foreach( var a in attr )
             {
                 object finalAttributeToUse = a;
-                if( a is AmbientContextBoundDelegationAttribute delegated )
+                if( a is ContextBoundDelegationAttribute delegated )
                 {
                     Type dT = SimpleTypeFinder.WeakResolver( delegated.ActualAttributeTypeAssemblyQualifiedName, true );
                     finalAttributeToUse = services.SimpleObjectCreate( monitor, dT, a );
                     if( finalAttributeToUse == null ) continue;
                 }
                 all.Add( new Entry( m, finalAttributeToUse ) );
-                if( finalAttributeToUse is IAttributeAmbientContextBoundInitializer ) ++initializerCount;
+                if( finalAttributeToUse is IAttributeContextBoundInitializer ) ++initializerCount;
             }
             return initializerCount;
         }
@@ -106,7 +106,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets attributes on a <see cref="MemberInfo"/> that are assignable to <paramref name="attributeType"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
+        /// Instances of attributes that support <see cref="IAttributeContextBound"/> are always the same. 
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes(Type,bool)"/>).
         /// </summary>
         /// <param name="m">Method of <see cref="P:Type"/>.</param>
@@ -120,14 +120,14 @@ namespace CK.Setup
             if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
             {
                 return fromCache
-                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
+                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
             }
             return fromCache;
         }
 
         /// <summary>
         /// Gets attributes on a <see cref="MemberInfo"/> that are assignable to <typeparamref name="T"/>.
-        /// Instances of attributes that support <see cref="IAttributeAmbientContextBound"/> are always the same. 
+        /// Instances of attributes that support <see cref="IAttributeContextBound"/> are always the same. 
         /// Other attributes are instanciated (by calling <see cref="MemberInfo.GetCustomAttributes(Type,bool)"/>).
         /// </summary>
         /// <typeparam name="T">Type that must be supported by the attributes.</typeparam>
@@ -140,7 +140,7 @@ namespace CK.Setup
             if( m.DeclaringType == Type || (_includeBaseClasses && m.DeclaringType.IsAssignableFrom( Type )) )
             {
                 return fromCache
-                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && a is T).Select( a => (T)(object)a ) );
+                        .Concat( m.GetCustomAttributes( false ).Where( a => !(a is IAttributeContextBound) && a is T).Select( a => (T)(object)a ) );
             }
             return fromCache;
         }
@@ -160,9 +160,9 @@ namespace CK.Setup
         public IEnumerable<object> GetAllCustomAttributes( Type attributeType, bool memberOnly = false )
         {
             var fromCache = _all.Where( e => (!memberOnly || e.M != Type) && attributeType.IsAssignableFrom( e.Attr.GetType() ) ).Select( e => e.Attr );
-            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( false ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
+            var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( false ).Where( a => !(a is IAttributeContextBound) && attributeType.IsAssignableFrom( a.GetType() ) ) );
             if( memberOnly ) return fromCache.Concat( fromMembers );
-            var fromType = Type.GetCustomAttributes( _includeBaseClasses ).Where( a => !(a is IAttributeAmbientContextBound) && attributeType.IsAssignableFrom( a.GetType() ) );
+            var fromType = Type.GetCustomAttributes( _includeBaseClasses ).Where( a => !(a is IAttributeContextBound) && attributeType.IsAssignableFrom( a.GetType() ) );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 
@@ -179,11 +179,11 @@ namespace CK.Setup
         {
             var fromCache = _all.Where( e => e.Attr is T && (!memberOnly || e.M != Type) ).Select( e => (T)e.Attr );
             var fromMembers = _typeMembers.SelectMany( m => m.GetCustomAttributes( false ) )
-                                            .Where( a => !(a is IAttributeAmbientContextBound) && a is T )
+                                            .Where( a => !(a is IAttributeContextBound) && a is T )
                                             .Select( a => (T)(object)a );
             if( memberOnly ) return fromCache.Concat( fromMembers );
             var fromType = Type.GetCustomAttributes( _includeBaseClasses )
-                                .Where( a => !(a is IAttributeAmbientContextBound) && a is T ).Select( a => (T)(object)a );
+                                .Where( a => !(a is IAttributeContextBound) && a is T ).Select( a => (T)(object)a );
             return fromCache.Concat( fromType ).Concat( fromMembers );
         }
 

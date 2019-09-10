@@ -17,7 +17,7 @@ namespace CK.Setup
     {
         /// <summary>
         /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
-        /// Null if this object corresponds to the first (root) <see cref="IAmbientObject"/> of the inheritance chain.
+        /// Null if this object corresponds to the first (root) <see cref="IRealObject"/> of the inheritance chain.
         /// </summary>
         IStObjSetupData Generalization { get; }
 

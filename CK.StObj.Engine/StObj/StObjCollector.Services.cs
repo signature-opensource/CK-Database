@@ -12,7 +12,7 @@ namespace CK.Setup
     {
         class SCRClass
         {
-            public readonly AmbientServiceClassInfo Class;
+            public readonly AutoServiceClassInfo Class;
             public readonly InterfaceFamily Family;
 
             List<CtorParameter> _params;
@@ -21,7 +21,7 @@ namespace CK.Setup
 
             public class CtorParameter
             {
-                public readonly AmbientServiceClassInfo.CtorParameter Parameter;
+                public readonly AutoServiceClassInfo.CtorParameter Parameter;
                 bool _canUseDefault;
 
                 public bool HasDefault => Parameter.ParameterInfo.HasDefaultValue;
@@ -36,7 +36,7 @@ namespace CK.Setup
                     }
                 }
 
-                public CtorParameter( AmbientServiceClassInfo.CtorParameter p )
+                public CtorParameter( AutoServiceClassInfo.CtorParameter p )
                 {
                     Parameter = p;
                 }
@@ -44,7 +44,7 @@ namespace CK.Setup
                 public override string ToString() => Parameter.ToString();
             }
 
-            public SCRClass( InterfaceFamily f, AmbientServiceClassInfo c )
+            public SCRClass( InterfaceFamily f, AutoServiceClassInfo c )
             {
                 Family = f;
                 Class = c;
@@ -62,7 +62,7 @@ namespace CK.Setup
                     {
                         if( !p.IsEnumerated )
                         {
-                            m.Error( $"Invalid parameter {p}: it can not be an Ambient Service of its own family." );
+                            m.Error( $"Invalid parameter {p}: it can not be an Auto Service of its own family." );
                             success = false;
                         }
                     }
@@ -94,19 +94,19 @@ namespace CK.Setup
 
         class InterfaceFamily
         {
-            readonly HashSet<AmbientServiceInterfaceInfo> _interfaces;
-            readonly Dictionary<AmbientServiceClassInfo,SCRClass> _classes;
+            readonly HashSet<AutoServiceInterfaceInfo> _interfaces;
+            readonly Dictionary<AutoServiceClassInfo,SCRClass> _classes;
 
-            public IReadOnlyCollection<AmbientServiceInterfaceInfo> Interfaces => _interfaces;
+            public IReadOnlyCollection<AutoServiceInterfaceInfo> Interfaces => _interfaces;
 
             public IReadOnlyCollection<SCRClass> Classes => _classes.Values;
 
-            public AmbientServiceClassInfo Resolved { get; private set; }
+            public AutoServiceClassInfo Resolved { get; private set; }
 
             InterfaceFamily()
             {
-                _interfaces = new HashSet<AmbientServiceInterfaceInfo>();
-                _classes = new Dictionary<AmbientServiceClassInfo, SCRClass>();
+                _interfaces = new HashSet<AutoServiceInterfaceInfo>();
+                _classes = new Dictionary<AutoServiceClassInfo, SCRClass>();
             }
 
             bool InitializeClasses( IActivityMonitor m )
@@ -143,9 +143,9 @@ namespace CK.Setup
                             }
                             else if( heads.Count == 0 )
                             {
-                                m.Error( $"Among '{headCandidates.Select( c => c.ToString() ).Concatenate( "', '" )}' possible implementations, none covers the whole set of other implementations. Use [ReplaceAmbientService(...)] attribute to disambiguate." );
+                                m.Error( $"Among '{headCandidates.Select( c => c.ToString() ).Concatenate( "', '" )}' possible implementations, none covers the whole set of other implementations. Use [ReplaceAutoService(...)] attribute to disambiguate." );
                                 var couldUseStObjConstruct = headCandidates.Select( c => c.Class.TypeInfo )
-                                                                   .OfType<AmbientObjectClassInfo>()
+                                                                   .OfType<RealObjectClassInfo>()
                                                                    .Where( c => c.ConstructParameters != null
                                                                                 && c.ConstructParameters
                                                                                         .Any( p => headCandidates.Select( x => x.Class.Type ).Any( o => p.ParameterType.IsAssignableFrom( o ) ) ) )
@@ -154,7 +154,7 @@ namespace CK.Setup
 
                                 if( couldUseStObjConstruct != null )
                                 {
-                                    m.Error( $"Please note that AmbientObject.StObjConstruct parameters are irrelevant to Service resolution: for instance {couldUseStObjConstruct} is ignored. Use [ReplaceAmbientService(...)] attribute." );
+                                    m.Error( $"Please note that RealObject.StObjConstruct parameters are irrelevant to Service resolution: for instance {couldUseStObjConstruct} is ignored. Use [ReplaceAutoService(...)] attribute." );
                                 }
                                 success = false;
                             }
@@ -185,9 +185,9 @@ namespace CK.Setup
             public static IReadOnlyCollection<InterfaceFamily> Build(
                 IActivityMonitor m,
                 StObjObjectEngineMap engineMap,
-                IEnumerable<AmbientServiceClassInfo> classes )
+                IEnumerable<AutoServiceClassInfo> classes )
             {
-                var families = new Dictionary<AmbientServiceInterfaceInfo, InterfaceFamily>();
+                var families = new Dictionary<AutoServiceInterfaceInfo, InterfaceFamily>();
                 bool familiesHasBeenMerged = false;
                 foreach( var c in classes )
                 {
@@ -283,11 +283,11 @@ namespace CK.Setup
             IStObjServiceFinalManualMapping _finalMapping;
             bool _finalMappingDone;
 
-            public AmbientServiceClassInfo Class { get; }
+            public AutoServiceClassInfo Class { get; }
 
             public IReadOnlyList<ParameterAssignment> Assignments { get; }
 
-            public BuildClassInfo( AmbientServiceClassInfo c, IReadOnlyList<ParameterAssignment> a )
+            public BuildClassInfo( AutoServiceClassInfo c, IReadOnlyList<ParameterAssignment> a )
             {
                 Class = c;
                 Assignments = a;
@@ -310,7 +310,7 @@ namespace CK.Setup
             public IStObjServiceFinalManualMapping GetFinalMapping(
                 IActivityMonitor m,
                 StObjObjectEngineMap engineMap,
-                AmbientTypeKindDetector typeKindDetector,
+                AutoRealTypeKindDetector typeKindDetector,
                 ref bool success )
             {
                 if( !_finalMappingDone )
@@ -364,17 +364,17 @@ namespace CK.Setup
         {
             readonly IActivityMonitor _monitor;
             readonly StObjObjectEngineMap _engineMap;
-            readonly AmbientTypeKindDetector _ambientTypeKindDetector;
-            readonly Dictionary<AmbientServiceClassInfo, BuildClassInfo> _infos;
+            readonly AutoRealTypeKindDetector _ambientTypeKindDetector;
+            readonly Dictionary<AutoServiceClassInfo, BuildClassInfo> _infos;
 
             public FinalRegisterer(
                 IActivityMonitor monitor,
                 StObjObjectEngineMap engineMap,
-                AmbientTypeKindDetector typeKindDetector )
+                AutoRealTypeKindDetector typeKindDetector )
             {
                 _monitor = monitor;
                 _engineMap = engineMap;
-                _infos = new Dictionary<AmbientServiceClassInfo, BuildClassInfo>();
+                _infos = new Dictionary<AutoServiceClassInfo, BuildClassInfo>();
                 _ambientTypeKindDetector = typeKindDetector;
             }
 
@@ -391,7 +391,7 @@ namespace CK.Setup
                 else _infos.Add( c.Class, c );
             }
 
-            public bool FinalRegistration( AmbientServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
+            public bool FinalRegistration( AutoServiceCollectorResult typeResult, IEnumerable<InterfaceFamily> families )
             {
                 using( _monitor.OpenInfo( "Final Service registration." ) )
                 {
@@ -412,9 +412,9 @@ namespace CK.Setup
                 }
             }
 
-            void RegisterClassMapping( AmbientServiceClassInfo c, ref bool success )
+            void RegisterClassMapping( AutoServiceClassInfo c, ref bool success )
             {
-                if( !c.IsAnAmbientObject )
+                if( !c.IsRealObject )
                 {
                     RegisterMapping( c.Type, c.MostSpecialized, ref success );
                     foreach( var s in c.Specializations )
@@ -424,13 +424,13 @@ namespace CK.Setup
                 }
                 else
                 {
-                    _monitor.Debug( $"Skipping '{c}' Service class mapping since it is an Ambient object." );
+                    _monitor.Debug( $"Skipping '{c}' Service class mapping since it is an Real object." );
                 }
             }
 
             void RegisterMapping(
                 Type t,
-                AmbientServiceClassInfo final,
+                AutoServiceClassInfo final,
                 ref bool success )
             {
                 Debug.Assert( _infos.Count == 0, "Currently, no manual instanciation is available since IEnumerable is not yet handled." );
@@ -445,7 +445,7 @@ namespace CK.Setup
                 {
                     final.GetFinalMustBeScopedLifetime( _monitor, _ambientTypeKindDetector, ref success );
                     _monitor.Debug( $"Map '{t}' -> '{final}'." );
-                    if( final.IsAnAmbientObject )
+                    if( final.IsRealObject )
                     {
                         _engineMap.RegisterServiceFinalObjectMapping( t, final.TypeInfo );
                     }
@@ -462,22 +462,22 @@ namespace CK.Setup
         /// </summary>
         /// <param name="typeResult">The Ambient types discovery result.</param>
         /// <returns>True on success, false on error.</returns>
-        bool RegisterServices( AmbientTypeCollectorResult typeResult )
+        bool RegisterServices( AutoRealTypeCollectorResult typeResult )
         {
-            var engineMap = typeResult.AmbientObjects.EngineMap;
+            var engineMap = typeResult.RealObjects.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )
             {
                 try
                 {
                     // Registering Interfaces: Families creation from all most specialized classes' supported interfaces.
-                    var allClasses = typeResult.AmbientServices.RootClasses
-                                        .Concat( typeResult.AmbientServices.SubGraphRootClasses )
+                    var allClasses = typeResult.AutoServices.RootClasses
+                                        .Concat( typeResult.AutoServices.SubGraphRootClasses )
                                         .Select( c => c.MostSpecialized );
                     Debug.Assert( allClasses.GroupBy( c => c ).All( g => g.Count() == 1 ) );
                     IReadOnlyCollection<InterfaceFamily> families = InterfaceFamily.Build( _monitor, engineMap, allClasses );
                     if( families.Count == 0 )
                     {
-                        _monitor.Warn( "No IAmbient Service interface found. Nothing can be mapped at the Service Interface level." );
+                        _monitor.Warn( "No IAuto Service interface found. Nothing can be mapped at the Service Interface level." );
                     }
                     else _monitor.Trace( $"{families.Count} Service families found." );
                     bool success = true;
@@ -488,7 +488,7 @@ namespace CK.Setup
                     }
                     if( success )
                     {
-                        success &= manuals.FinalRegistration( typeResult.AmbientServices, families );
+                        success &= manuals.FinalRegistration( typeResult.AutoServices, families );
                     }
                     return success;
                 }

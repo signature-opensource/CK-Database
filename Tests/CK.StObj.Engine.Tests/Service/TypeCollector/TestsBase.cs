@@ -11,18 +11,18 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     public class TestsBase
     {
 
-        public static AmbientTypeCollector CreateAmbientTypeCollector( Func<Type, bool> typeFilter = null )
+        public static AutoRealTypeCollector CreateAutoRealTypeCollector( Func<Type, bool> typeFilter = null )
         {
             Func<IActivityMonitor, Type, bool> f = null;
             if( typeFilter != null ) f = ( m, t ) => typeFilter( t );
-            return new AmbientTypeCollector(
+            return new AutoRealTypeCollector(
                         TestHelper.Monitor,
                         new SimpleServiceContainer(),
                         new DynamicAssembly( new Dictionary<string, object>() ),
                         f );
         }
 
-        public static AmbientTypeCollectorResult CheckSuccess( AmbientTypeCollector c )
+        public static AutoRealTypeCollectorResult CheckSuccess( AutoRealTypeCollector c )
         {
             var r = c.GetResult();
             r.LogErrorAndWarnings( TestHelper.Monitor );
@@ -30,7 +30,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             return r;
         }
 
-        public static AmbientTypeCollectorResult CheckFailure( AmbientTypeCollector c )
+        public static AutoRealTypeCollectorResult CheckFailure( AutoRealTypeCollector c )
         {
             var r = c.GetResult();
             r.LogErrorAndWarnings( TestHelper.Monitor );

@@ -30,7 +30,7 @@ namespace CK.Setup
         Type ObjectType { get; }
 
         /// <summary>
-        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
+        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// </summary>
         /// <remarks>
@@ -88,8 +88,8 @@ namespace CK.Setup
         /// <summary>
         /// Gets a list of Ambient properties defined at this level (and above) but potentially specialized.
         /// This guarantees that properties are accessed by their most precise overridden/masked version.
-        /// To explicitly set a value for an ambient property or alter its configuration, use <see cref="SetAmbiantPropertyValue"/>
-        /// or <see cref="SetAmbiantPropertyConfiguration"/>.
+        /// To explicitly set a value for an ambient property or alter its configuration, use <see cref="SetAmbientPropertyValue"/>
+        /// or <see cref="SetAmbientPropertyConfiguration"/>.
         /// </summary>
         IReadOnlyList<IStObjAmbientProperty> SpecializedAmbientProperties { get; }
 
@@ -135,7 +135,7 @@ namespace CK.Setup
         /// <param name="value">Value to set.</param>
         /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetAmbiantPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
+        bool SetAmbientPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
 
         /// <summary>
         /// Sets how an ambient property on the Structured Object must be resolved (the property must exist, 
@@ -147,7 +147,7 @@ namespace CK.Setup
         /// <param name="behavior">See <see cref="IStObjMutableReference.StObjRequirementBehavior"/>.</param>
         /// <param name="sourceDescription">Optional description of the origin of the call to help troubleshooting.</param>
         /// <returns>True on success, false if any error occurs.</returns>
-        bool SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
+        bool SetAmbientPropertyConfiguration( IActivityMonitor monitor, string propertyName, Type type, StObjRequirementBehavior behavior, string sourceDescription = null );
 
     }
 }

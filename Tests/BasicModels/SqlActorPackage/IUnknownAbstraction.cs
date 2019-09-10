@@ -3,11 +3,11 @@ using CK.Core;
 namespace SqlActorPackage
 {
     /// <summary>
-    /// This ambient contract is not implemented.
+    /// This real object is not implemented.
     /// It can be used as a parameter of StObjConstruct with a null default
     /// (see <see cref="SqlActorPackage.Basic.Package.StObjConstruct(IUnknownAbstraction)"/>).
     /// </summary>
-    public interface IUnknownAbstraction : IAmbientObject
+    public interface IUnknownAbstraction : IRealObject
     {
         bool IAmHere();
     }

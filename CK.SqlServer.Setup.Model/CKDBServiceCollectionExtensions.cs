@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -111,4 +111,5 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
     }
+
 }

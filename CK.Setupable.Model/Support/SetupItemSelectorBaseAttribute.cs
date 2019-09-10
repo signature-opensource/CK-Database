@@ -6,7 +6,7 @@ namespace CK.Setup
     /// <summary>
     /// Base class to declare a dynamic handler associated to the object.
     /// </summary>
-    public abstract class SetupItemSelectorBaseAttribute : AmbientContextBoundDelegationAttribute
+    public abstract class SetupItemSelectorBaseAttribute : ContextBoundDelegationAttribute
     {
         /// <summary>
         /// Initializes a new <see cref="SetupItemSelectorBaseAttribute"/> with (potentially) multiple item names.

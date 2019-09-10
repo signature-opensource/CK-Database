@@ -25,13 +25,13 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         /// <summary>
-        /// This is a IAmbientService that is, by default, implemented by B: it is
-        /// then a ISingletonAmbientService.
+        /// This is a IAutoService that is, by default, implemented by B: it is
+        /// then a ISingletonAutoService.
         /// However, it may be implemented by a dedicated class that can perfectly be scoped as
-        /// long as the new implementation either use <see cref="ReplaceAmbientServiceAttribute"/> or
-        /// its constructor to supersed the initial Ambient Object implementation.
+        /// long as the new implementation either use <see cref="ReplaceAutoServiceAttribute"/> or
+        /// its constructor to supersed the initial Real Object implementation.
         /// </summary>
-        public interface IAmbientServiceCanBeImplementedByAmbientObject : IAmbientService
+        public interface IAutoServiceCanBeImplementedByRealObject : IAutoService
         {
             void DoSometing( IActivityMonitor m );
         }
@@ -41,18 +41,18 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         /// We don't even need to specify that this one is scoped because since it depends on
         /// an unknown service IAliceOrBobProvider, it is automatically considered as being a scoped service
         /// (unless IAliceOrBobProvider is explicitly registered as a Singleton).
-        /// Important: AmbientObject.StObjConstruct parameters are irrelevant to Service resolution.
+        /// Important: RealObject.StObjConstruct parameters are irrelevant to Service resolution.
         /// We may have use it (we almost did) but we don't. 
         /// </summary>
-        [ReplaceAmbientService( typeof( B ) )]
+        [ReplaceAutoService( typeof( B ) )]
         //
         // Note that using the qualified name is valid:
-        // [ReplaceAmbientService( "CK.StObj.Engine.Tests.Service.StObj.FullServiceTests+B, CK.StObj.Engine.Tests" )]
+        // [ReplaceAutoService( "CK.StObj.Engine.Tests.Service.StObj.FullServiceTests+B, CK.StObj.Engine.Tests" )]
         //
         // Thanks to this you may replace implementation IF they exist in the context: the replaced target is
         // actually optional.
         //
-        public class ScopedImplementation : IAmbientServiceCanBeImplementedByAmbientObject
+        public class ScopedImplementation : IAutoServiceCanBeImplementedByRealObject
         {
             readonly IAliceOrBobProvider _objectProvider;
 
@@ -70,14 +70,14 @@ namespace CK.StObj.Engine.Tests.Service.StObj
 
         /// <summary>
         /// This implementation, when registered, replaces the B's one, not because of
-        /// any <see cref="ReplaceAmbientServiceAttribute"/> but because B appears in the
+        /// any <see cref="ReplaceAutoServiceAttribute"/> but because B appears in the
         /// constructor's parameters.
         /// Since B is singleton, nothing prevents this implementation to be singleton (this doesn't
         /// have to be spoecified).
         /// </summary>
-        public class SingletonImplementation : IAmbientServiceCanBeImplementedByAmbientObject
+        public class SingletonImplementation : IAutoServiceCanBeImplementedByRealObject
         {
-            readonly IAmbientServiceCanBeImplementedByAmbientObject _defaultImpl;
+            readonly IAutoServiceCanBeImplementedByRealObject _defaultImpl;
 
             public SingletonImplementation( B defaultImpl )
             {
@@ -92,10 +92,10 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         /// <summary>
-        /// An ambient object that depends on B and wants to substitute its implementation.
+        /// A real object that depends on B and wants to substitute its implementation.
         /// </summary>
-        [ReplaceAmbientService(typeof(B))]
-        public abstract class BDependency : IAmbientObject, IAmbientServiceCanBeImplementedByAmbientObject
+        [ReplaceAutoService(typeof(B))]
+        public abstract class BDependency : IRealObject, IAutoServiceCanBeImplementedByRealObject
         {
             B _theB;
 
@@ -104,7 +104,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                 _theB = b;
             }
 
-            void IAmbientServiceCanBeImplementedByAmbientObject.DoSometing( IActivityMonitor m )
+            void IAutoServiceCanBeImplementedByRealObject.DoSometing( IActivityMonitor m )
             {
                 m.Info( "B is no more doing something." );
             }
@@ -127,17 +127,17 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         public interface IOptionalStartupService { }
 
         /// <summary>
-        /// This interface is not an IAmbientObject: it will not be mapped.
+        /// This interface is not an IRealObject: it will not be mapped.
         /// </summary>
         public interface IA0 { }
 
         /// <summary>
-        /// This is an Ambient object (that extends the mere interface IA0).
+        /// This is an Real object (that extends the mere interface IA0).
         /// </summary>
-        public interface IA1 : IA0, IAmbientObject { }
+        public interface IA1 : IA0, IRealObject { }
 
         /// <summary>
-        /// This class implements IA1: it is an IAmbientObject and as such can participate to
+        /// This class implements IA1: it is an IRealObject and as such can participate to
         /// service configuration.
         /// </summary>
         public class A : IA1
@@ -148,7 +148,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                     .Should().BeNull( "B depends on A: B.RegisterStartupServices is called after this one." );
 
                 startupServices.GetService( typeof( IStObjObjectMap ) )
-                    .Should().NotBeNull( "The StObj side of the map (that handles the Ambient objects) is available." );
+                    .Should().NotBeNull( "The StObj side of the map (that handles the Real objects) is available." );
             }
 
             /// <summary>
@@ -157,7 +157,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             /// </summary>
             /// <param name="register">This one is the only required parameter. It may be marked as 'in' parameter or not.</param>
             /// <param name="ambientObjects">
-            /// IStObjObjectMap is available: configuring services can rely on any IAmbientObject since they are already initialized (this
+            /// IStObjObjectMap is available: configuring services can rely on any IRealObject since they are already initialized (this
             /// is even available in the RegisterStartupServices).
             /// </param>
             /// <param name="superService">This is injected.</param>
@@ -179,7 +179,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             }
         }
 
-        public interface IB : IAmbientObject
+        public interface IB : IRealObject
         {
             int BCanTalkToYou( IActivityMonitor m, string msg );
         }
@@ -208,7 +208,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         /// <summary>
         /// Very stupid attribute that shows how easy it is to participate in code generation.
         /// Note that in real life, the code generation is implemented in a "Setup dependency" (a Runtime or Engine component)
-        /// and the Attribute itself carries only the definition of the code generation: see <see cref="AmbientContextBoundDelegationAttribute"/>
+        /// and the Attribute itself carries only the definition of the code generation: see <see cref="ContextBoundDelegationAttribute"/>
         /// to easily implement this.
         /// </summary>
         class StupidCodeAttribute : Attribute, IAutoImplementorMethod
@@ -237,15 +237,15 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         /// <summary>
-        /// Ambient object.
+        /// Real object.
         /// Note: being abstract implies that this type has 0 constructor (a concrete type with no constructor
         /// has automatically the generated public default constructor) and this has to be handled since, normally
         /// a Service MUST have one and only one public constructor.
-        /// An AmbientObject that implements a Service is an exception to this rule.
+        /// An RealObject that implements a Service is an exception to this rule.
         /// </summary>
-        public abstract class B : IB, IAmbientServiceCanBeImplementedByAmbientObject
+        public abstract class B : IB, IAutoServiceCanBeImplementedByRealObject
         {
-            void IAmbientServiceCanBeImplementedByAmbientObject.DoSometing( IActivityMonitor m )
+            void IAutoServiceCanBeImplementedByRealObject.DoSometing( IActivityMonitor m )
             {
                 m.Info( "I'm doing something from B." );
             }
@@ -253,7 +253,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             /// <summary>
             /// B depends on A. (Its RegisterStartupServices is called after A's one.)
             /// </summary>
-            /// <param name="a">The dependency to the IA ambient object.</param>
+            /// <param name="a">The dependency to the IA real object.</param>
             void StObjConstruct( IA1 a )
             {
             }
@@ -304,7 +304,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
 
                 sp.GetRequiredService<IB>()
                     .Should().BeSameAs( sp.GetRequiredService<B>() )
-                    .And.BeSameAs( sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>(), "The Ambient Service/Object must be the same instance!" );
+                    .And.BeSameAs( sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>(), "The Auto Service/Object must be the same instance!" );
             }
             logs.Should().Contain( e => e.Text == "This is from generated code: Magic!" );
         }
@@ -328,11 +328,11 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                     sp.GetRequiredService<IB>().Should().BeSameAs( sp.GetRequiredService<B>() );
                     using( var scope = sp.CreateScope() )
                     {
-                        sp.GetRequiredService<IA1>().Should().BeSameAs( scope.ServiceProvider.GetRequiredService<IA1>(), "Ambient object is Singleton." );
-                        sp.GetRequiredService<IB>().Should().BeSameAs( scope.ServiceProvider.GetRequiredService<IB>(), "Ambient object is Singleton." );
+                        sp.GetRequiredService<IA1>().Should().BeSameAs( scope.ServiceProvider.GetRequiredService<IA1>(), "Real object is Singleton." );
+                        sp.GetRequiredService<IB>().Should().BeSameAs( scope.ServiceProvider.GetRequiredService<IB>(), "Real object is Singleton." );
                     }
                     // We are using here the default B's implementation.
-                    sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().DoSometing( TestHelper.Monitor );
+                    sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>().DoSometing( TestHelper.Monitor );
                 }
                 logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
                 logs.Should().Contain( e => e.Text == "SuperStartupService is talking to you." );
@@ -363,12 +363,12 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             {
                 var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                 // We are using here the ScopedImplementation.
-                var s = sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>();
+                var s = sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>();
                 s.DoSometing( TestHelper.Monitor );
                 // Just to be sure it's actually a Scoped service.
                 using( var scoped = sp.CreateScope() )
                 {
-                    scoped.ServiceProvider.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().Should().NotBeSameAs( s );
+                    scoped.ServiceProvider.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>().Should().NotBeSameAs( s );
                 }
             }
             logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
@@ -394,7 +394,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             {
                 var sp = CheckSuccessAndBuildServices( collector, startupServices ).Services;
                 // We are using here the ScopedImplementation.
-                var s = sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>();
+                var s = sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>();
                 s.Should().BeOfType<ScopedImplementation>();
                 s.DoSometing( TestHelper.Monitor );
             }
@@ -405,7 +405,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         [Test]
-        public void superseding_a_IAmbientObject_implemented_service_by_a_wrapper()
+        public void superseding_a_IRealObject_implemented_service_by_a_wrapper()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( SingletonImplementation ) );
@@ -420,8 +420,8 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             {
                 var r = CheckSuccessAndConfigureServices( collector, startupServices );
                 var sp = r.ServiceRegisterer.Services.BuildServiceProvider();
-                sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().DoSometing( TestHelper.Monitor );
-                r.ServiceRegisterer.Services.Should().ContainSingle( s => s.ServiceType == typeof( IAmbientServiceCanBeImplementedByAmbientObject ) && s.Lifetime == ServiceLifetime.Singleton );
+                sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>().DoSometing( TestHelper.Monitor );
+                r.ServiceRegisterer.Services.Should().ContainSingle( s => s.ServiceType == typeof( IAutoServiceCanBeImplementedByRealObject ) && s.Lifetime == ServiceLifetime.Singleton );
             }
             logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
             logs.Should().Contain( e => e.Text == "SuperStartupService is talking to you." );
@@ -430,7 +430,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         }
 
         [Test]
-        public void superseding_a_IAmbientObject_implemented_service_by_another_IAmbient_Object()
+        public void superseding_a_IRealObject_implemented_service_by_another_IAmbient_Object()
         {
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( BDependency ) );
@@ -445,7 +445,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             {
                 var r = CheckSuccessAndConfigureServices( collector, startupServices );
                 var sp = r.ServiceRegisterer.Services.BuildServiceProvider();
-                sp.GetRequiredService<IAmbientServiceCanBeImplementedByAmbientObject>().DoSometing( TestHelper.Monitor );
+                sp.GetRequiredService<IAutoServiceCanBeImplementedByRealObject>().DoSometing( TestHelper.Monitor );
             }
             logs.Should().NotContain( e => e.MaskedLevel >= LogLevel.Error );
             logs.Should().Contain( e => e.Text == "SuperStartupService is talking to you." );

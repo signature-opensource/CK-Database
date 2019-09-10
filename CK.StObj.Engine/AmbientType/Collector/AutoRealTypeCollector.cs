@@ -8,31 +8,31 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Discovers types that support <see cref="IAmbientObject"/>, <see cref="IAmbientService"/>
+    /// Discovers types that support <see cref="IRealObject"/>, <see cref="IAutoService"/>
     /// and <see cref="IPoco"/> marker interfaces.
     /// The <see cref="GetResult"/> method encapsulates the whole work.
     /// </summary>
-    public partial class AmbientTypeCollector
+    public partial class AutoRealTypeCollector
     {
         readonly IActivityMonitor _monitor;
         readonly IDynamicAssembly _tempAssembly;
         readonly IServiceProvider _serviceProvider;
         readonly PocoRegisterer _pocoRegisterer;
         readonly HashSet<Assembly> _assemblies;
-        readonly Dictionary<Type, AmbientObjectClassInfo> _objectCollector;
-        readonly List<AmbientObjectClassInfo> _roots;
+        readonly Dictionary<Type, RealObjectClassInfo> _objectCollector;
+        readonly List<RealObjectClassInfo> _roots;
         readonly string _mapName;
         readonly Func<IActivityMonitor, Type, bool> _typeFilter;
 
         /// <summary>
-        /// Initializes a new <see cref="AmbientTypeCollector"/> instance.
+        /// Initializes a new <see cref="AutoRealTypeCollector"/> instance.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
         /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
         /// <param name="mapName">Optional map name. Defaults to the empty string.</param>
         /// <param name="typeFilter">Optional type filter.</param>
-        public AmbientTypeCollector(
+        public AutoRealTypeCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
             IDynamicAssembly tempAssembly,
@@ -47,15 +47,15 @@ namespace CK.Setup
             _tempAssembly = tempAssembly;
             _serviceProvider = serviceProvider;
             _assemblies = new HashSet<Assembly>();
-            _objectCollector = new Dictionary<Type, AmbientObjectClassInfo>();
-            _roots = new List<AmbientObjectClassInfo>();
-            _serviceCollector = new Dictionary<Type, AmbientServiceClassInfo>();
-            _serviceRoots = new List<AmbientServiceClassInfo>();
-            _serviceInterfaces = new Dictionary<Type, AmbientServiceInterfaceInfo>();
+            _objectCollector = new Dictionary<Type, RealObjectClassInfo>();
+            _roots = new List<RealObjectClassInfo>();
+            _serviceCollector = new Dictionary<Type, AutoServiceClassInfo>();
+            _serviceRoots = new List<AutoServiceClassInfo>();
+            _serviceInterfaces = new Dictionary<Type, AutoServiceInterfaceInfo>();
             _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
-            _ambientKindDetector = new AmbientTypeKindDetector();
-            _ambientKindDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
-            _ambientKindDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
+            _kindDetector = new AutoRealTypeKindDetector();
+            _kindDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
+            _kindDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
         }
 
@@ -120,12 +120,12 @@ namespace CK.Setup
             return c != typeof( object ) ? DoRegisterClass( c, out _, out _ ) : false;
         }
 
-        bool DoRegisterClass( Type t, out AmbientObjectClassInfo objectInfo, out AmbientServiceClassInfo serviceInfo )
+        bool DoRegisterClass( Type t, out RealObjectClassInfo objectInfo, out AutoServiceClassInfo serviceInfo )
         {
             Debug.Assert( t != null && t != typeof( object ) && t.IsClass );
 
             // Skips already processed types.
-            // The object collector contains null AmbientObjectClassInfo value for already processed types
+            // The object collector contains null RealObjectClassInfo value for already processed types
             // that are skipped or on error.
             serviceInfo = null;
             if( _objectCollector.TryGetValue( t, out objectInfo )
@@ -135,11 +135,11 @@ namespace CK.Setup
             }
 
             // Registers parent types whatever they are.
-            AmbientObjectClassInfo acParent = null;
-            AmbientServiceClassInfo sParent = null;
+            RealObjectClassInfo acParent = null;
+            AutoServiceClassInfo sParent = null;
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
 
-            AmbientTypeKind lt = _ambientKindDetector.GetKind( _monitor, t );
+            AutoRealTypeKind lt = _kindDetector.GetKind( _monitor, t );
             var conflictMsg = lt.GetAmbientKindCombinationError( true );
             if( conflictMsg != null )
             {
@@ -147,12 +147,12 @@ namespace CK.Setup
             }
             else
             {
-                if( acParent != null || (lt & AmbientTypeKind.AmbientObject) == AmbientTypeKind.AmbientObject )
+                if( acParent != null || (lt & AutoRealTypeKind.RealObject) == AutoRealTypeKind.RealObject )
                 {
                     objectInfo = RegisterObjectClassInfo( t, acParent );
                     Debug.Assert( objectInfo != null );
                 }
-                if( sParent != null || (lt & AmbientTypeKind.IsAmbientService) != 0 )
+                if( sParent != null || (lt & AutoRealTypeKind.IsAutoService) != 0 )
                 {
                     serviceInfo = RegisterServiceClassInfo( t, sParent, lt, objectInfo );
                     Debug.Assert( serviceInfo != null );
@@ -166,9 +166,9 @@ namespace CK.Setup
             return true;
         }
 
-        AmbientObjectClassInfo RegisterObjectClassInfo( Type t, AmbientObjectClassInfo parent )
+        RealObjectClassInfo RegisterObjectClassInfo( Type t, RealObjectClassInfo parent )
         {
-            AmbientObjectClassInfo result = new AmbientObjectClassInfo( _monitor, parent, t, _serviceProvider, _ambientKindDetector, !_typeFilter( _monitor, t ) );
+            RealObjectClassInfo result = new RealObjectClassInfo( _monitor, parent, t, _serviceProvider, _kindDetector, !_typeFilter( _monitor, t ) );
             if( !result.IsExcluded )
             {
                 RegisterAssembly( t );
@@ -198,7 +198,7 @@ namespace CK.Setup
         /// This is the root of type analysis: the whole system relies on it.
         /// </summary>
         /// <returns>The result object.</returns>
-        public AmbientTypeCollectorResult GetResult()
+        public AutoRealTypeCollectorResult GetResult()
         {
             using( _monitor.OpenInfo( "Static Type analysis." ) )
             {
@@ -213,25 +213,25 @@ namespace CK.Setup
                         RegisterClass( pocoSupport.FinalFactory );
                     }
                 }
-                AmbientObjectCollectorResult contracts;
-                using( _monitor.OpenInfo( "Ambient objects handling." ) )
+                RealObjectCollectorResult contracts;
+                using( _monitor.OpenInfo( "Real objects handling." ) )
                 {
-                    contracts = GetAmbientObjectResult();
+                    contracts = GetRealObjectResult();
                     Debug.Assert( contracts != null );
                 }
-                AmbientServiceCollectorResult services;
-                using( _monitor.OpenInfo( "Ambient services handling." ) )
+                AutoServiceCollectorResult services;
+                using( _monitor.OpenInfo( "Auto services handling." ) )
                 {
-                    services = GetAmbientServiceResult( contracts );
+                    services = GetAutoServiceResult( contracts );
                 }
-                return new AmbientTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _ambientKindDetector );
+                return new AutoRealTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _kindDetector );
             }
         }
 
-        AmbientObjectCollectorResult GetAmbientObjectResult()
+        RealObjectCollectorResult GetRealObjectResult()
         {
             MutableItem[] allSpecializations = new MutableItem[_roots.Count];
-            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations, _ambientKindDetector, _assemblies );
+            StObjObjectEngineMap engineMap = new StObjObjectEngineMap( _mapName, allSpecializations, _kindDetector, _assemblies );
             List<List<MutableItem>> concreteClasses = new List<List<MutableItem>>();
             List<IReadOnlyList<Type>> classAmbiguities = null;
             List<Type> abstractTails = new List<Type>();
@@ -240,7 +240,7 @@ namespace CK.Setup
 
             Debug.Assert( _roots.All( info => info != null && !info.IsExcluded && info.Generalization == null),
                 "_roots contains only not Excluded types." );
-            foreach( AmbientObjectClassInfo newOne in _roots )
+            foreach( RealObjectClassInfo newOne in _roots )
             {
                 deepestConcretes.Clear();
                 newOne.CreateMutableItemsPath( _monitor, _serviceProvider, engineMap, null, _tempAssembly, deepestConcretes, abstractTails );
@@ -278,7 +278,7 @@ namespace CK.Setup
                 MutableItem finalType = path[path.Count - 1];
                 foreach( var item in path )
                 {
-                    foreach( Type itf in item.Type.EnsureThisAmbientInterfaces( _monitor, _ambientKindDetector ) )
+                    foreach( Type itf in item.Type.EnsureThisAmbientInterfaces( _monitor, _kindDetector ) )
                     {
                         MutableItem alreadyMapped;
                         if( (alreadyMapped = engineMap.ToLeaf( itf )) != null )
@@ -301,7 +301,7 @@ namespace CK.Setup
                     }
                 }
             }
-            return new AmbientObjectCollectorResult(
+            return new RealObjectCollectorResult(
                 engineMap,
                 concreteClasses,
                 classAmbiguities != null

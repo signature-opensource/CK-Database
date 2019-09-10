@@ -47,7 +47,7 @@ namespace CK.Setup
         /// Gets the type of the reference. Can be null: container and requirements are ignored and 
         /// construct parameters are resolved to their default (<see cref="IStObjMutableParameter.IsOptional"/> must be true).
         /// Of course, for construct parameters the type must be compatible with the formal parameter's type (similar
-        /// type compatibility is required for ambient properties or ambient contracts).
+        /// type compatibility is required for ambient properties or real objects).
         /// </summary>
         /// <remarks>
         /// Initialized with the <see cref="System.Reflection.PropertyInfo.PropertyType"/> for Ambient Properties or Ambient Contracts, 

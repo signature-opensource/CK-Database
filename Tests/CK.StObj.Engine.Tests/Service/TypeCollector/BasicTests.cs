@@ -7,11 +7,11 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     [TestFixture]
     public class BasicTests : TestsBase
     {
-        // Test with an alternate IScopedAmbientService that is not the
-        // "official" CK.Core.IScopedAmbientService from CK.StObj.Model.
-        interface IScopedAmbientService { }
+        // Test with an alternate IScopedAutoService that is not the
+        // "official" CK.Core.IScopedAutoService from CK.StObj.Model.
+        interface IScopedAutoService { }
 
-        interface IServiceRegistered : IScopedAmbientService
+        interface IServiceRegistered : IScopedAutoService
         {
         }
 
@@ -32,8 +32,8 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void service_interface_without_at_least_one_impl_are_ignored( string mode )
         {
             var collector = mode == "ExcludingSpecializedType"
-                            ? CreateAmbientTypeCollector(  t => t != typeof( ServiceNotRegisteredImpl ) )
-                            : CreateAmbientTypeCollector();
+                            ? CreateAutoRealTypeCollector(  t => t != typeof( ServiceNotRegisteredImpl ) )
+                            : CreateAutoRealTypeCollector();
 
             collector.RegisterClassOrPoco( typeof( ServiceRegisteredImpl ) );
             if( mode == "ExcludingSpecializedType" )
@@ -42,10 +42,10 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
             
             var r = CheckSuccess( collector );
-            var interfaces = r.AmbientServices.LeafInterfaces;
+            var interfaces = r.AutoServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
             interfaces[0].Type.Should().Be( typeof( IServiceRegistered ) );
-            var classes = r.AmbientServices.RootClasses;
+            var classes = r.AutoServices.RootClasses;
             classes.Should().HaveCount( 1 );
             classes[0].TypeInfo.IsExcluded.Should().BeFalse();
             classes[0].Generalization.Should().BeNull();
@@ -57,10 +57,10 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void registering_service_registers_specialized_interfaces_and_base_impl_but_mask_them()
         {
-            var collector = CreateAmbientTypeCollector();
+            var collector = CreateAutoRealTypeCollector();
             collector.RegisterClassOrPoco( typeof( ServiceNotRegisteredImpl ) );
             var r = CheckSuccess( collector );
-            var interfaces = r.AmbientServices.LeafInterfaces;
+            var interfaces = r.AutoServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
             var iSpec = interfaces[0];
             var iBase = iSpec.Interfaces[0];
@@ -72,7 +72,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             iSpec.SpecializationDepth.Should().Be( 1 );
             iSpec.IsSpecialized.Should().BeFalse();
             iSpec.Interfaces.Should().ContainSingle().And.Contain( iBase );
-            var classes = r.AmbientServices.RootClasses;
+            var classes = r.AutoServices.RootClasses;
             classes.Should().HaveCount( 1 );
             var cBase = classes[0];
             cBase.Type.Should().Be( typeof( ServiceRegisteredImpl ) );

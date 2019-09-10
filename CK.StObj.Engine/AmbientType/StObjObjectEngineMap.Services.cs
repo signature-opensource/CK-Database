@@ -9,7 +9,7 @@ namespace CK.Setup
 {
     partial class StObjObjectEngineMap
     {
-        readonly AmbientTypeKindDetector _typeKindDetector;
+        readonly AutoRealTypeKindDetector _typeKindDetector;
 
         IStObjServiceMap IStObjMap.Services => this;
 
@@ -135,9 +135,9 @@ namespace CK.Setup
         readonly Dictionary<Type,MutableItem> _serviceToObjectMap;
         readonly ServiceObjectMappingTypeAdapter _serviceToObjectMapExposed;
 
-        internal void RegisterServiceFinalObjectMapping( Type t, AmbientTypeInfo typeInfo )
+        internal void RegisterServiceFinalObjectMapping( Type t, AutoRealTypeInfo typeInfo )
         {
-            Debug.Assert( typeInfo is AmbientObjectClassInfo );
+            Debug.Assert( typeInfo is RealObjectClassInfo );
             _serviceToObjectMap.Add( t, _map[typeInfo.Type] );
         }
 
@@ -188,14 +188,14 @@ namespace CK.Setup
 
         #region Service to Type mappings (Simple).
 
-        readonly Dictionary<Type, AmbientServiceClassInfo> _serviceMap;
+        readonly Dictionary<Type, AutoServiceClassInfo> _serviceMap;
         readonly ServiceMapTypeAdapter _exposedServiceMap;
 
         class ServiceMapTypeAdapter : IReadOnlyDictionary<Type, IStObjServiceClassDescriptor>
         {
-            readonly Dictionary<Type, AmbientServiceClassInfo> _map;
+            readonly Dictionary<Type, AutoServiceClassInfo> _map;
 
-            public ServiceMapTypeAdapter( Dictionary<Type, AmbientServiceClassInfo> map )
+            public ServiceMapTypeAdapter( Dictionary<Type, AutoServiceClassInfo> map )
             {
                 _map = map;
             }
@@ -235,7 +235,7 @@ namespace CK.Setup
         /// <summary>
         /// Direct access to the mutable service mapping.
         /// </summary>
-        internal Dictionary<Type, AmbientServiceClassInfo> ServiceSimpleMappings => _serviceMap;
+        internal Dictionary<Type, AutoServiceClassInfo> ServiceSimpleMappings => _serviceMap;
 
         IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _exposedServiceMap;
 

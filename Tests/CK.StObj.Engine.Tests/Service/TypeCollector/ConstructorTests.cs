@@ -9,12 +9,12 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
     public class ConstructorTests : TestsBase
     {
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        public class PackageA : IAmbientObject
+        public class PackageA : IRealObject
         {
         }
 
-        //[AmbientService( typeof( PackageA ) )]
-        public class ServiceWith2Ctors : IScopedAmbientService
+        //[AutoService( typeof( PackageA ) )]
+        public class ServiceWith2Ctors : IScopedAutoService
         {
             public ServiceWith2Ctors()
             {
@@ -26,24 +26,24 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         }
 
 
-        //[AmbientService( typeof( PackageA ) )]
-        public class ServiceWithOneCtor : IScopedAmbientService
+        //[AutoService( typeof( PackageA ) )]
+        public class ServiceWithOneCtor : IScopedAutoService
         {
             public ServiceWithOneCtor( int a )
             {
             }
         }
 
-        //[AmbientService( typeof( PackageA ) )]
-        public class ServiceWithNonPublicCtor : IScopedAmbientService
+        //[AutoService( typeof( PackageA ) )]
+        public class ServiceWithNonPublicCtor : IScopedAutoService
         {
             internal ServiceWithNonPublicCtor( int a )
             {
             }
         }
 
-        //[AmbientService( typeof( PackageA ) )]
-        public class ServiceWithDefaultCtor : IScopedAmbientService
+        //[AutoService( typeof( PackageA ) )]
+        public class ServiceWithDefaultCtor : IScopedAutoService
         {
         }
 
@@ -51,49 +51,49 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void services_must_have_one_and_only_one_public_ctor()
         {
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( PackageA ) );
                 collector.RegisterClassOrPoco( typeof( ServiceWith2Ctors ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( PackageA ) );
                 collector.RegisterClassOrPoco( typeof( ServiceWithNonPublicCtor ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( PackageA ) );
                 collector.RegisterClassOrPoco( typeof( ServiceWithOneCtor ) );
                 var r = CheckSuccess( collector );
-                var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ServiceWithOneCtor ) );
+                var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ServiceWithOneCtor ) );
                 c.ConstructorInfo.Should().NotBeNull();
                 var p = c.ConstructorParameters.Should().BeEmpty();
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( PackageA ) );
                 collector.RegisterClassOrPoco( typeof( ServiceWithDefaultCtor ) );
                 var r = CheckSuccess( collector );
-                var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ServiceWithDefaultCtor ) );
+                var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ServiceWithDefaultCtor ) );
                 c.ConstructorInfo.Should().NotBeNull();
                 c.ConstructorParameters.Should().BeEmpty();
             }
         }
 
-        public interface INotAnAmbientService { }
+        public interface INotAnAutoService { }
 
-        public interface ISNotRegistered : IScopedAmbientService { }
+        public interface ISNotRegistered : IScopedAutoService { }
 
-        public interface ISRegistered : IScopedAmbientService { }
+        public interface ISRegistered : IScopedAutoService { }
 
         public class ServiceForISRegistered : ISRegistered { }
 
-        public class Consumer1Service : IScopedAmbientService
+        public class Consumer1Service : IScopedAutoService
         {
             public Consumer1Service(
-                INotAnAmbientService normal,
+                INotAnAutoService normal,
                 ISNotRegistered notReg,
                 ISRegistered reg )
             {
@@ -106,19 +106,19 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void ctor_parameters_can_be_unregistered_services_interfaces_since_they_may_be_registered_at_runtime( string mode )
         {
             var collector = mode == "RegisteredDependentServiceButExcluded"
-                            ? CreateAmbientTypeCollector( t => t != typeof( ServiceForISRegistered ) )
-                            : CreateAmbientTypeCollector();
+                            ? CreateAutoRealTypeCollector( t => t != typeof( ServiceForISRegistered ) )
+                            : CreateAutoRealTypeCollector();
 
             if( mode != "NotRegistered" ) collector.RegisterClass( typeof( ServiceForISRegistered ) );
             collector.RegisterClass( typeof( Consumer1Service ) );
             var r = CheckSuccess( collector );
-            var iRegistered = r.AmbientServices.LeafInterfaces.SingleOrDefault( x => x.Type == typeof( ISRegistered ) );
+            var iRegistered = r.AutoServices.LeafInterfaces.SingleOrDefault( x => x.Type == typeof( ISRegistered ) );
             if( mode == "RegisteredDependentService" )
             {
                 iRegistered.Should().NotBeNull();
             }
-            r.AmbientServices.RootClasses.Should().HaveCount( mode == "RegisteredDependentService" ? 2 : 1 );
-            var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( Consumer1Service ) );
+            r.AutoServices.RootClasses.Should().HaveCount( mode == "RegisteredDependentService" ? 2 : 1 );
+            var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( Consumer1Service ) );
             c.ConstructorInfo.Should().NotBeNull();
             if( mode == "RegisteredDependentService" )
             {
@@ -133,20 +133,20 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             }
         }
 
-        public class ConsumerWithClassDependencyService : IScopedAmbientService
+        public class ConsumerWithClassDependencyService : IScopedAutoService
         {
             public ConsumerWithClassDependencyService(
-                INotAnAmbientService normal,
+                INotAnAutoService normal,
                 ISNotRegistered notReg,
                 ServiceForISRegistered classDependency )
             {
             }
         }
 
-        public class ConsumerWithDefaultService : IScopedAmbientService
+        public class ConsumerWithDefaultService : IScopedAutoService
         {
             public ConsumerWithDefaultService(
-                INotAnAmbientService normal,
+                INotAnAutoService normal,
                 ISNotRegistered notReg,
                 ServiceForISRegistered classDependency = null )
             {
@@ -157,47 +157,47 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void ctor_parameters_cannot_be_unregistered_service_classe_unless_it_is_excluded_and_parameter_has_a_default_null()
         {
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClass( typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ConsumerWithClassDependencyService ) );
                 var r = CheckSuccess( collector );
-                var dep = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ServiceForISRegistered ) );
-                var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithClassDependencyService ) );
-                c.ConstructorParameters.Should().HaveCount( 1, "'INotAnAmbientService normal' and 'ISNotRegistered notReg' are ignored." );
+                var dep = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ServiceForISRegistered ) );
+                var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithClassDependencyService ) );
+                c.ConstructorParameters.Should().HaveCount( 1, "'INotAnAutoService normal' and 'ISNotRegistered notReg' are ignored." );
                 c.ConstructorParameters[0].Position.Should().Be( 2 );
                 c.ConstructorParameters[0].Name.Should().Be( "classDependency" );
                 c.ConstructorParameters[0].ServiceClass.Should().BeSameAs( dep );
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClass( typeof( ConsumerWithClassDependencyService ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClass( typeof( ConsumerWithDefaultService ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAmbientTypeCollector( t => t != typeof( ServiceForISRegistered ) );
+                var collector = CreateAutoRealTypeCollector( t => t != typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ConsumerWithDefaultService ) );
                 var r = CheckSuccess( collector );
-                r.AmbientServices.RootClasses.Should().HaveCount( 1 );
-                var c = r.AmbientServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithDefaultService ) );
+                r.AutoServices.RootClasses.Should().HaveCount( 1 );
+                var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ConsumerWithDefaultService ) );
                 c.ConstructorParameters.Should().BeEmpty();
             }
 
         }
 
-        public class AutoRef : IScopedAmbientService
+        public class AutoRef : IScopedAutoService
         {
             public AutoRef( AutoRef a )
             {
             }
         }
 
-        public class RefBased : IScopedAmbientService
+        public class RefBased : IScopedAutoService
         {
         }
 
@@ -222,26 +222,26 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void no_constructor_parameter_super_type_rule()
         {
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( AutoRef ) );
                 CheckFailure( collector );
             }
 
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( BaseReferencer ) );
                 CheckFailure( collector );
             }
 
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( RefIntermediate2 ) );
                 CheckFailure( collector );
             }
 
         }
 
-        public class StupidA : IScopedAmbientService
+        public class StupidA : IScopedAutoService
         {
             public StupidA( SpecializedStupidA child )
             {
@@ -260,7 +260,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void stupid_loop()
         {
             {
-                var collector = CreateAmbientTypeCollector();
+                var collector = CreateAutoRealTypeCollector();
                 collector.RegisterClassOrPoco( typeof( SpecializedStupidA ) );
                 CheckFailure( collector );
             }

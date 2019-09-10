@@ -3,7 +3,7 @@ using FluentAssertions;
 
 namespace CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection
 {
-    public class LoggerInjected : IAmbientObject
+    public class LoggerInjected : IRealObject
     {
         void StObjConstruct( IActivityMonitor monitor, IActivityMonitor anotherLogger = null )
         {

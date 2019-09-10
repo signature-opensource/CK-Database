@@ -5,9 +5,9 @@ namespace CK.Core
     /// must be a unique Service in a scope.
     /// <para>
     /// It is not required to be this exact type: any empty interface (no members)
-    /// named "IScopedAmbientService" defined in any namespace will be considered as
+    /// named "IScopedAutoService" defined in any namespace will be considered as
     /// a valid marker, regardless of the fact that it specializes any interface
-    /// named "IAmbientService".
+    /// named "IAutoService".
     /// </para>
     /// </summary>
     /// <remarks>
@@ -16,14 +16,14 @@ namespace CK.Core
     /// this interface forces the service to be scoped.
     /// </para>
     /// <para>
-    /// If there is no specific constraint, the <see cref="IAmbientService"/> marker
+    /// If there is no specific constraint, the <see cref="IAutoService"/> marker
     /// should be used for abstractions so that its scoped vs. singleton lifetime is
     /// either determined by the final, actual, implementation that can be automatically
     /// detected based on its constructor dependencies and/or by the way this Service is
     /// used referenced by the other participants.
     /// </para>
     /// </remarks>
-    public interface IScopedAmbientService : IAmbientService
+    public interface IScopedAutoService : IAutoService
     {
     }
 

@@ -7,10 +7,10 @@ namespace CK.Setup
 {
     /// <summary>
     /// Service type descriptor exists only if the type is not excluded (excluding a
-    /// service type is like removing the <see cref="IAmbientService"/> interface marker from
-    /// its interfaces) and has at least one implementation that <see cref="AmbientServiceClassInfo.IsIncluded"/>.
+    /// service type is like removing the <see cref="IAutoService"/> interface marker from
+    /// its interfaces) and has at least one implementation that <see cref="AutoServiceClassInfo.IsIncluded"/>.
     /// </summary>
-    public class AmbientServiceInterfaceInfo
+    public class AutoServiceInterfaceInfo
     {
         /// <summary>
         /// The interface type.
@@ -19,12 +19,12 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets this Service interface life time.
-        /// This reflects the <see cref="IAmbientService"/> or <see cref="ISingletonAmbientService"/>
-        /// vs. <see cref="IScopedAmbientService"/> interface marker.
-        /// This can never be <see cref="AmbientTypeKindExtension.IsNoneOrInvalid(AmbientTypeKind)"/> since
-        /// in such cases, the AmbientServiceInterfaceInfo is not instanciated.
+        /// This reflects the <see cref="IAutoService"/> or <see cref="ISingletonAutoService"/>
+        /// vs. <see cref="IScopedAutoService"/> interface marker.
+        /// This can never be <see cref="AutoRealTypeKindExtension.IsNoneOrInvalid(AutoRealTypeKind)"/> since
+        /// in such cases, the AutoServiceInterfaceInfo is not instanciated.
         /// </summary>
-        public AmbientTypeKind DeclaredLifetime { get; }
+        public AutoRealTypeKind DeclaredLifetime { get; }
 
         /// <summary>
         /// The interface type.
@@ -43,13 +43,13 @@ namespace CK.Setup
         /// is used to handle actual lifetime checks without requiring another
         /// dictionary index.
         /// </summary>
-        public AmbientServiceClassInfo FinalResolved { get; internal set; }
+        public AutoServiceClassInfo FinalResolved { get; internal set; }
 
         /// <summary>
         /// Gets the base service interfaces that are specialized by this one.
         /// Never null and often empty.
         /// </summary>
-        public readonly IReadOnlyList<AmbientServiceInterfaceInfo> Interfaces;
+        public readonly IReadOnlyList<AutoServiceInterfaceInfo> Interfaces;
 
         /// <summary>
         /// Overridden to return a readable string.
@@ -58,12 +58,12 @@ namespace CK.Setup
         public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type}";
 
 
-        internal AmbientServiceInterfaceInfo( Type t, AmbientTypeKind lt, IEnumerable<AmbientServiceInterfaceInfo> baseInterfaces )
+        internal AutoServiceInterfaceInfo( Type t, AutoRealTypeKind lt, IEnumerable<AutoServiceInterfaceInfo> baseInterfaces )
         {
-            Debug.Assert( lt == AmbientTypeKind.IsAmbientService || lt == AmbientTypeKind.AmbientSingleton || lt == AmbientTypeKind.AmbientScope );
+            Debug.Assert( lt == AutoRealTypeKind.IsAutoService || lt == AutoRealTypeKind.AutoSingleton || lt == AutoRealTypeKind.AutoScoped );
             Type = t;
             DeclaredLifetime = lt;
-            AmbientServiceInterfaceInfo[] bases = Array.Empty<AmbientServiceInterfaceInfo>();
+            AutoServiceInterfaceInfo[] bases = Array.Empty<AutoServiceInterfaceInfo>();
             int depth = 0;
             foreach( var iT in baseInterfaces )
             {

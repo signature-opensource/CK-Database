@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
         protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
         {
             if( Attribute.TableName != null ) o.SetDirectPropertyValue( monitor, "TableName", Attribute.TableName );
-            if( Attribute.Schema != null ) o.SetAmbiantPropertyValue( monitor, "Schema", Attribute.Schema );
+            if( Attribute.Schema != null ) o.SetAmbientPropertyValue( monitor, "Schema", Attribute.Schema );
         }
 
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )

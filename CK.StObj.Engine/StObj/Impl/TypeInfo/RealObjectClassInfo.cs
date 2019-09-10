@@ -8,9 +8,9 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Specialized <see cref="AmbientTypeInfo"/> for <see cref="IAmbientObject"/> classes.
+    /// Specialized <see cref="AutoRealTypeInfo"/> for <see cref="IRealObject"/> classes.
     /// </summary>
-    internal class AmbientObjectClassInfo : AmbientTypeInfo, IStObjTypeInfoFromParent
+    internal class RealObjectClassInfo : AutoRealTypeInfo, IStObjTypeInfoFromParent
     {
         Type[] _ambientInterfaces;
         Type[] _thisAmbientInterfaces;
@@ -33,7 +33,7 @@ namespace CK.Setup
             static object _lock = new object();
             static Dictionary<Type,TypeInfoForBaseClasses> _cache;
 
-            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, AmbientTypeKindDetector ambientTypeKind )
+            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, AutoRealTypeKindDetector ambientTypeKind )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -96,13 +96,13 @@ namespace CK.Setup
             }
 
             /// <summary>
-            /// Recursive function to collect/merge Ambient Properties, InjectObject and StObj Properties on base (non IAmbientObject) types.
+            /// Recursive function to collect/merge Ambient Properties, InjectObject and StObj Properties on base (non IRealObject) types.
             /// </summary>
             static void CreateAllAmbientPropertyList(
                 IActivityMonitor monitor,
                 Type type,
                 int specializationLevel,
-                AmbientTypeKindDetector ambientTypeKind,
+                AutoRealTypeKindDetector ambientTypeKind,
                 List<StObjPropertyInfo> stObjProperties,
                 out IReadOnlyList<AmbientPropertyInfo> apListResult,
                 out IReadOnlyList<InjectObjectInfo> acListResult )
@@ -126,7 +126,7 @@ namespace CK.Setup
             }
         }
 
-        internal AmbientObjectClassInfo( IActivityMonitor monitor, AmbientObjectClassInfo parent, Type t, IServiceProvider provider, AmbientTypeKindDetector ambientTypeKind, bool isExcluded )
+        internal RealObjectClassInfo( IActivityMonitor monitor, RealObjectClassInfo parent, Type t, IServiceProvider provider, AutoRealTypeKindDetector ambientTypeKind, bool isExcluded )
             : base( monitor, parent, t, provider, isExcluded, null )
         {
             Debug.Assert( parent == Generalization );
@@ -135,7 +135,7 @@ namespace CK.Setup
             IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType, ambientTypeKind );
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
-            // StObj properties are initialized with inherited (non Ambient Object ones).
+            // StObj properties are initialized with inherited (non Real Object ones).
             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
             if( Generalization == null ) stObjProperties.AddRange( infoFromParent.StObjProperties );
             // StObj properties are then read from StObjPropertyAttribute on class
@@ -164,7 +164,7 @@ namespace CK.Setup
             IList<InjectObjectInfo> acCollector;
             AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
             // For type that have no Generalization: we must handle [AmbientProperty], [InjectObject] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
-            // since they are not necessarily IAmbientObject, we use infoFromParent abstraction).
+            // since they are not necessarily IRealObject, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
             InjectObjects = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.InjectObjects, acCollector );
             StObjProperties = stObjProperties;
@@ -200,7 +200,7 @@ namespace CK.Setup
                 Children = a.Children;
                 Groups = a.Groups;
             }
-            // We inherit only from non Ambient Object base classes, not from Generalization if it exists.
+            // We inherit only from non Real Object base classes, not from Generalization if it exists.
             // This is to let the inheritance of these 3 properties take dynamic configuration (IStObjStructuralConfigurator) 
             // changes into account: inheritance will take place after configuration so that a change on a base class
             // will be inherited if not explicitly defined at the class level.
@@ -329,7 +329,7 @@ namespace CK.Setup
             #endregion
         }
 
-        public new AmbientObjectClassInfo Generalization => (AmbientObjectClassInfo)base.Generalization;
+        public new RealObjectClassInfo Generalization => (RealObjectClassInfo)base.Generalization;
 
         public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
 
@@ -373,13 +373,13 @@ namespace CK.Setup
         public readonly ParameterInfo[] ConfigureServicesParameters;
 
 
-        Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, AmbientTypeKindDetector d )
+        Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, AutoRealTypeKindDetector d )
         {
             return _ambientInterfaces
-                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&AmbientTypeKind.AmbientObject) == AmbientTypeKind.AmbientObject ).ToArray());
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&AutoRealTypeKind.RealObject) == AutoRealTypeKind.RealObject ).ToArray());
         }
 
-        internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, AmbientTypeKindDetector d )
+        internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, AutoRealTypeKindDetector d )
         {
             return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = Generalization != null
                                                         ? EnsureAllAmbientInterfaces( m, d ).Except( Generalization.EnsureAllAmbientInterfaces( m, d ) ).ToArray()
@@ -399,7 +399,7 @@ namespace CK.Setup
             Debug.Assert( tempAssembly != null );
             var item = new MutableItem( this, generalization, engineMap );
             bool concreteBelow = false;
-            foreach( AmbientObjectClassInfo c in Specializations )
+            foreach( RealObjectClassInfo c in Specializations )
             {
                 Debug.Assert( !c.IsExcluded );
                 concreteBelow |= c.CreateMutableItemsPath( monitor, services, engineMap, item, tempAssembly, lastConcretes, abstractTails );

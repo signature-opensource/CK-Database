@@ -10,7 +10,7 @@ namespace CK.Setup
         internal readonly InjectObjectInfo InjecttInfo;
 
         internal MutableInjectObject( MutableItem owner, InjectObjectInfo info )
-            : base( owner, StObjMutableReferenceKind.AmbientObject )
+            : base( owner, StObjMutableReferenceKind.RealObject )
         {
             InjecttInfo = info;
             Type = InjecttInfo.PropertyType;

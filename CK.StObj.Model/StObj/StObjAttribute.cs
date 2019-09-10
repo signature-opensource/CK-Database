@@ -17,7 +17,7 @@ namespace CK.Core
     {
         /// <summary>
         /// Gets or sets the container of the object.
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         public Type Container { get; set; }
 
@@ -26,13 +26,13 @@ namespace CK.Core
         /// a <see cref="DependentItemKindSpec.Group"/> or a <see cref="DependentItemKindSpec.Container"/>.
         /// When let to the default <see cref="DependentItemKindSpec.Unknown"/>, this property is inherited (it is eventually 
         /// considered as <see cref="DependentItemKindSpec.Container"/> when not set).
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         public DependentItemKindSpec ItemKind { get; set; }
 
         /// <summary>
         /// Gets or sets how Ambient Properties that reference the object must be tracked.
-        /// This property is inherited from base classes that are not Ambient Objects.
+        /// This property is inherited from base classes that are not Real Objects.
         /// </summary>
         public TrackAmbientPropertiesMode TrackAmbientProperties { get; set; }
 

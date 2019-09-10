@@ -27,7 +27,7 @@ namespace CK.Core
             /// <param name="monitor">The monitor to use. Must not be null.</param>
             /// <param name="services">The service collection to configure.</param>
             /// <param name="startupServices">
-            /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+            /// Optional simple container that may provide startup services. This is not used to build IRealObject
             /// (they must be independent of any "dynamic" services), however registered services become available to
             /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
             /// </param>
@@ -63,7 +63,7 @@ namespace CK.Core
             public bool AllowOverride { get; }
 
             /// <summary>
-            /// Registers the map, the Ambient objects, singleton services and scoped services.
+            /// Registers the map, the Real objects, singleton services and scoped services.
             /// </summary>
             /// <param name="map">The map to register. Must not be null.</param>
             /// <returns>
@@ -119,7 +119,7 @@ namespace CK.Core
             {
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to {(isAmbient ? $"ambient object '{implementation.GetType().Name}'" : "provided singleton instance")}." );
+                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to {(isAmbient ? $"real object '{implementation.GetType().Name}'" : "provided singleton instance")}." );
                     Services.Add( new ServiceDescriptor( serviceType, implementation ) );
                     _registered.Add( serviceType, isAmbient ? RegType.AmbienObject : RegType.InternalMapping );
                 }

@@ -44,7 +44,7 @@ namespace CK.Setup
             /// Like Ambient Properties above, Inject Objects are shared by the inheritance chain (it is
             /// not null only at the specialization level), but can use here an array instead of a dynamic list
             /// since there is no caching needed. Each MutableInjectSingleton here is bound to its InjectSingletonInfo
-            /// in the AmbientObjectClassInfo.InjectSingletons.
+            /// in the RealObjectClassInfo.InjectSingletons.
             /// </summary>
             public readonly MutableInjectObject[] AllInjectObjects;
 
@@ -84,7 +84,7 @@ namespace CK.Setup
         // This is available at any level thanks to the ordering of ambient properties
         // and the ListAmbientProperty that exposes only the start of the list: only the 
         // properties that are available at the level appear in the list.
-        // (This is the same for the injected ambient objects.)
+        // (This is the same for the injected real objects.)
         readonly IReadOnlyList<MutableAmbientProperty> _ambientPropertiesEx;
         readonly IReadOnlyList<MutableInjectObject> _ambientInjectObjectsEx;
 
@@ -145,7 +145,7 @@ namespace CK.Setup
         /// <summary>
         /// Called from Generalization to Specialization.
         /// </summary>
-        internal MutableItem( AmbientObjectClassInfo type, MutableItem generalization, StObjObjectEngineMap engineMap )
+        internal MutableItem( RealObjectClassInfo type, MutableItem generalization, StObjObjectEngineMap engineMap )
         {
             EngineMap = engineMap;
             Type = type;
@@ -275,7 +275,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the StObjTypeInfo basic and immutable information.
         /// </summary>
-        public AmbientObjectClassInfo Type { get; }
+        public RealObjectClassInfo Type { get; }
 
         /// <summary>
         /// The ImplementableTypeInfo is not null only if the Type is abstract but
@@ -296,7 +296,7 @@ namespace CK.Setup
         public MutableItem Specialization { get; private set; }
 
         /// <summary>
-        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
+        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// </summary>
         /// <remarks>
@@ -357,7 +357,7 @@ namespace CK.Setup
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error( $"Unable to set direct property '{Type.Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
+                monitor.Error( $"Unable to set direct property '{Type.Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbientPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 
@@ -374,7 +374,7 @@ namespace CK.Setup
             return true;
         }
 
-        bool IStObjMutableItem.SetAmbiantPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
+        bool IStObjMutableItem.SetAmbientPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
@@ -391,7 +391,7 @@ namespace CK.Setup
             return false;
         }
 
-        bool IStObjMutableItem.SetAmbiantPropertyConfiguration( IActivityMonitor monitor, string propertyName, Type type, StObjRequirementBehavior behavior, string sourceDescription )
+        bool IStObjMutableItem.SetAmbientPropertyConfiguration( IActivityMonitor monitor, string propertyName, Type type, StObjRequirementBehavior behavior, string sourceDescription )
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor", "Source:" + sourceDescription );
             if( String.IsNullOrEmpty( propertyName ) ) throw new ArgumentException( "Can not be null nor empty. Source:" + sourceDescription, "propertyName" );
@@ -414,7 +414,7 @@ namespace CK.Setup
             MutableAmbientProperty mp = _leafData.AllAmbientProperties.FirstOrDefault( a => a.Name == propertyName );
             if( mp != null )
             {
-                monitor.Error( $"Unable to set StObj property '{Type.Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbiantPropertyValue to set it. (Source:{sourceDescription})" );
+                monitor.Error( $"Unable to set StObj property '{Type.Type.FullName}.{propertyName}' since it is defined as an Ambient property. Use SetAmbientPropertyValue to set it. (Source:{sourceDescription})" );
                 return false;
             }
 

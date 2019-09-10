@@ -59,7 +59,7 @@ namespace CK.Setup
         /// <summary>
         /// Pure reference to another object without any structural constraint.
         /// </summary>
-        AmbientObject = 128,
+        RealObject = 128,
 
     }
 }

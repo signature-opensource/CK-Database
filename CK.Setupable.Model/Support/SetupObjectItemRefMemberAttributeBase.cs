@@ -12,7 +12,7 @@ namespace CK.Setup
     /// Base class for an attribute applied to a member that is associated to a SetupObjectItem that must be defined 
     /// by another attribute on the same member (typically a <see cref="SetupObjectItemMemberAttributeBase"/>).
     /// </summary>
-    public abstract class SetupObjectItemRefMemberAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SetupObjectItemRefMemberAttributeBase : ContextBoundDelegationAttribute
     {
         /// <summary>
         /// Initializes this attribute with the assembly qualified name of actual implementation.
