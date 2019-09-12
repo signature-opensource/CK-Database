@@ -8,16 +8,16 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// Result of the <see cref="AutoRealTypeCollector"/> work.
+    /// Result of the <see cref="CKTypeCollector"/> work.
     /// </summary>
-    public class AutoRealTypeCollectorResult
+    public class CKTypeCollectorResult
     {
-        internal AutoRealTypeCollectorResult(
+        internal CKTypeCollectorResult(
             ISet<Assembly> assemblies,
             IPocoSupportResult pocoSupport,
             RealObjectCollectorResult c,
             AutoServiceCollectorResult s,
-            AutoRealTypeKindDetector typeKindDetector )
+            CKTypeKindDetector typeKindDetector )
         {
             PocoSupport = pocoSupport;
             Assemblies = assemblies;
@@ -49,7 +49,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the ambient type detector.
         /// </summary>
-        public AutoRealTypeKindDetector TypeKindDetector { get; }
+        public CKTypeKindDetector TypeKindDetector { get; }
 
         /// <summary>
         /// Gets whether an error exists that prevents the process to continue.

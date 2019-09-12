@@ -7,16 +7,16 @@ using CK.Core;
 
 namespace CK.Setup
 {
-    public partial class AutoRealTypeCollector
+    public partial class CKTypeCollector
     {
         readonly Dictionary<Type, AutoServiceClassInfo> _serviceCollector;
         readonly List<AutoServiceClassInfo> _serviceRoots;
         readonly Dictionary<Type, AutoServiceInterfaceInfo> _serviceInterfaces;
-        readonly AutoRealTypeKindDetector _kindDetector;
+        readonly CKTypeKindDetector _kindDetector;
         int _serviceInterfaceCount;
         int _serviceRootInterfaceCount;
 
-        AutoServiceClassInfo RegisterServiceClassInfo( Type t, AutoServiceClassInfo parent, AutoRealTypeKind lt, RealObjectClassInfo objectInfo )
+        AutoServiceClassInfo RegisterServiceClassInfo( Type t, AutoServiceClassInfo parent, CKTypeKind lt, RealObjectClassInfo objectInfo )
         {
             var serviceInfo = new AutoServiceClassInfo( _monitor, _serviceProvider, parent, t, this, !_typeFilter( _monitor, t ), lt, objectInfo );
             if( !serviceInfo.TypeInfo.IsExcluded )
@@ -29,11 +29,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Exposes the <see cref="AutoRealTypeKindDetector"/>.
+        /// Exposes the <see cref="CKTypeKindDetector"/>.
         /// </summary>
-        public AutoRealTypeKindDetector AmbientKindDetector => _kindDetector;
+        public CKTypeKindDetector AmbientKindDetector => _kindDetector;
 
-        bool IsAutoService( Type t ) => (_kindDetector.GetKind( _monitor, t ) & AutoRealTypeKind.IsAutoService) != 0;
+        bool IsAutoService( Type t ) => (_kindDetector.GetKind( _monitor, t ) & CKTypeKind.IsAutoService) != 0;
 
         internal AutoServiceClassInfo FindServiceClassInfo( Type t )
         {
@@ -52,13 +52,13 @@ namespace CK.Setup
         /// <summary>
         /// Returns null if and only if the interface type is excluded.
         /// </summary>
-        AutoServiceInterfaceInfo RegisterServiceInterface( Type t, AutoRealTypeKind lt )
+        AutoServiceInterfaceInfo RegisterServiceInterface( Type t, CKTypeKind lt )
         {
             Debug.Assert( t.IsInterface
                             && lt == _kindDetector.GetKind( _monitor, t )
-                            && (lt == AutoRealTypeKind.IsAutoService
-                                || lt == AutoRealTypeKind.AutoSingleton
-                                || lt == AutoRealTypeKind.AutoScoped) );
+                            && (lt == CKTypeKind.IsAutoService
+                                || lt == CKTypeKind.AutoSingleton
+                                || lt == CKTypeKind.AutoScoped) );
             if( !_serviceInterfaces.TryGetValue( t, out var info ) )
             {
                 if( _typeFilter( _monitor, t ) )
@@ -77,13 +77,13 @@ namespace CK.Setup
         {
             foreach( var iT in interfaces )
             {
-                AutoRealTypeKind lt = _kindDetector.GetKind( _monitor, iT );
-                var conflictMsg = lt.GetAmbientKindCombinationError();
+                CKTypeKind lt = _kindDetector.GetKind( _monitor, iT );
+                var conflictMsg = lt.GetCKTypeKindCombinationError();
                 if( conflictMsg != null )
                 {
                     _monitor.Error( $"Interface '{iT.FullName}': {conflictMsg}" );
                 }
-                else if( (lt&AutoRealTypeKind.IsAutoService) != 0 )
+                else if( (lt&CKTypeKind.IsAutoService) != 0 )
                 {
                     var r = RegisterServiceInterface( iT, lt );
                     if( r != null ) yield return r;
@@ -222,7 +222,7 @@ namespace CK.Setup
         {
             readonly Dictionary<AutoServiceClassInfo, ClassAmbiguity> _ambiguities;
             readonly IActivityMonitor _monitor;
-            readonly AutoRealTypeCollector _collector;
+            readonly CKTypeCollector _collector;
             readonly StObjObjectEngineMap _engineMap;
 
             AutoServiceClassInfo _root;
@@ -242,7 +242,7 @@ namespace CK.Setup
                 }
             }
 
-            public ClassAmbiguityResolver( IActivityMonitor monitor, AutoRealTypeCollector collector, StObjObjectEngineMap engineMap )
+            public ClassAmbiguityResolver( IActivityMonitor monitor, CKTypeCollector collector, StObjObjectEngineMap engineMap )
             {
                 _ambiguities = new Dictionary<AutoServiceClassInfo, ClassAmbiguity>();
                 _monitor = monitor;

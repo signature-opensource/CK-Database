@@ -8,9 +8,9 @@ using System.Reflection;
 
 using static CK.Testing.MonitorTestHelper;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
-    public class TestsBase
+    public class ServiceTestsBase
     {
         class TypeFilter : IStObjTypeFilter
         {
@@ -44,7 +44,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
 
         public static StObjCollectorResult CheckSuccess( StObjCollector c )
         {
-            c.RegisteringFatalOrErrorCount.Should().Be( 0, "There must be no registration error (AutoRealTypeCollector must be successful)." );
+            c.RegisteringFatalOrErrorCount.Should().Be( 0, "There must be no registration error (CKTypeCollector must be successful)." );
             var r = c.GetResult();
             r.HasFatalError.Should().Be( false, "There must be no error." );
             return r;

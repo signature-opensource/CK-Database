@@ -6,6 +6,7 @@ using CK.StObj.Engine.Tests.Poco;
 using System.Linq;
 
 using static CK.Testing.MonitorTestHelper;
+using FluentAssertions;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -42,6 +43,33 @@ namespace CK.StObj.Engine.Tests
             var result = collector.GetResult();
             Assert.That( result.HasFatalError, Is.False );
             return result;
+        }
+
+        [CKTypeDefiner]
+        public interface IThingBase : IPoco
+        {
+            int BaseId { get; set; }
+        }
+
+        public interface IThing : IThingBase
+        {
+            int SpecId { get; set; }
+        }
+
+        [Test]
+        public void poco_marked_with_CKTypeDefiner_are_not_registered()
+        {
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterType( typeof( IThing ) );
+            collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
+            var poco = collector.GetResult().CKTypeResult.PocoSupport;
+            poco.Roots.Should().HaveCount( 1 );
+            poco.AllInterfaces.Should().HaveCount( 1 );
+            poco.Find( typeof( IThingBase ) ).Should().BeNull();
+            var factory = Activator.CreateInstance( poco.FinalFactory );
+            var thing = ((IPocoFactory<IThing>)factory).Create();
+            thing.BaseId = 37;
+            thing.SpecId = 12;
         }
 
         [Test]

@@ -9,7 +9,7 @@ namespace CK.Setup
 {
     partial class StObjObjectEngineMap
     {
-        readonly AutoRealTypeKindDetector _typeKindDetector;
+        readonly CKTypeKindDetector _typeKindDetector;
 
         IStObjServiceMap IStObjMap.Services => this;
 
@@ -135,7 +135,7 @@ namespace CK.Setup
         readonly Dictionary<Type,MutableItem> _serviceToObjectMap;
         readonly ServiceObjectMappingTypeAdapter _serviceToObjectMapExposed;
 
-        internal void RegisterServiceFinalObjectMapping( Type t, AutoRealTypeInfo typeInfo )
+        internal void RegisterServiceFinalObjectMapping( Type t, CKTypeInfo typeInfo )
         {
             Debug.Assert( typeInfo is RealObjectClassInfo );
             _serviceToObjectMap.Add( t, _map[typeInfo.Type] );

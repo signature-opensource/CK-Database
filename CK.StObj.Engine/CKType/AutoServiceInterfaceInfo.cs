@@ -21,10 +21,10 @@ namespace CK.Setup
         /// Gets this Service interface life time.
         /// This reflects the <see cref="IAutoService"/> or <see cref="ISingletonAutoService"/>
         /// vs. <see cref="IScopedAutoService"/> interface marker.
-        /// This can never be <see cref="AutoRealTypeKindExtension.IsNoneOrInvalid(AutoRealTypeKind)"/> since
+        /// This can never be <see cref="CKTypeKindExtension.IsNoneOrInvalid(CKTypeKind)"/> since
         /// in such cases, the AutoServiceInterfaceInfo is not instanciated.
         /// </summary>
-        public AutoRealTypeKind DeclaredLifetime { get; }
+        public CKTypeKind DeclaredLifetime { get; }
 
         /// <summary>
         /// The interface type.
@@ -58,9 +58,9 @@ namespace CK.Setup
         public override string ToString() => $"{(IsSpecialized ? "[Specialized]" : "")}{Type}";
 
 
-        internal AutoServiceInterfaceInfo( Type t, AutoRealTypeKind lt, IEnumerable<AutoServiceInterfaceInfo> baseInterfaces )
+        internal AutoServiceInterfaceInfo( Type t, CKTypeKind lt, IEnumerable<AutoServiceInterfaceInfo> baseInterfaces )
         {
-            Debug.Assert( lt == AutoRealTypeKind.IsAutoService || lt == AutoRealTypeKind.AutoSingleton || lt == AutoRealTypeKind.AutoScoped );
+            Debug.Assert( lt == CKTypeKind.IsAutoService || lt == CKTypeKind.AutoSingleton || lt == CKTypeKind.AutoScoped );
             Type = t;
             DeclaredLifetime = lt;
             AutoServiceInterfaceInfo[] bases = Array.Empty<AutoServiceInterfaceInfo>();

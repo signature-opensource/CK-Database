@@ -6,7 +6,7 @@ using System.Linq;
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
     [TestFixture]
-    public class ConstructorTests : TestsBase
+    public class ConstructorTests : TypeCollectorTestsBase
     {
         [StObj( ItemKind = DependentItemKindSpec.Container )]
         public class PackageA : IRealObject
@@ -51,30 +51,30 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void services_must_have_one_and_only_one_public_ctor()
         {
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( PackageA ) );
-                collector.RegisterClassOrPoco( typeof( ServiceWith2Ctors ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( PackageA ) );
+                collector.RegisterType( typeof( ServiceWith2Ctors ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( PackageA ) );
-                collector.RegisterClassOrPoco( typeof( ServiceWithNonPublicCtor ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( PackageA ) );
+                collector.RegisterType( typeof( ServiceWithNonPublicCtor ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( PackageA ) );
-                collector.RegisterClassOrPoco( typeof( ServiceWithOneCtor ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( PackageA ) );
+                collector.RegisterType( typeof( ServiceWithOneCtor ) );
                 var r = CheckSuccess( collector );
                 var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ServiceWithOneCtor ) );
                 c.ConstructorInfo.Should().NotBeNull();
                 var p = c.ConstructorParameters.Should().BeEmpty();
             }
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( PackageA ) );
-                collector.RegisterClassOrPoco( typeof( ServiceWithDefaultCtor ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( PackageA ) );
+                collector.RegisterType( typeof( ServiceWithDefaultCtor ) );
                 var r = CheckSuccess( collector );
                 var c = r.AutoServices.RootClasses.Single( x => x.Type == typeof( ServiceWithDefaultCtor ) );
                 c.ConstructorInfo.Should().NotBeNull();
@@ -106,8 +106,8 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void ctor_parameters_can_be_unregistered_services_interfaces_since_they_may_be_registered_at_runtime( string mode )
         {
             var collector = mode == "RegisteredDependentServiceButExcluded"
-                            ? CreateAutoRealTypeCollector( t => t != typeof( ServiceForISRegistered ) )
-                            : CreateAutoRealTypeCollector();
+                            ? CreateCKTypeCollector( t => t != typeof( ServiceForISRegistered ) )
+                            : CreateCKTypeCollector();
 
             if( mode != "NotRegistered" ) collector.RegisterClass( typeof( ServiceForISRegistered ) );
             collector.RegisterClass( typeof( Consumer1Service ) );
@@ -157,7 +157,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void ctor_parameters_cannot_be_unregistered_service_classe_unless_it_is_excluded_and_parameter_has_a_default_null()
         {
             {
-                var collector = CreateAutoRealTypeCollector();
+                var collector = CreateCKTypeCollector();
                 collector.RegisterClass( typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ConsumerWithClassDependencyService ) );
                 var r = CheckSuccess( collector );
@@ -169,17 +169,17 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
                 c.ConstructorParameters[0].ServiceClass.Should().BeSameAs( dep );
             }
             {
-                var collector = CreateAutoRealTypeCollector();
+                var collector = CreateCKTypeCollector();
                 collector.RegisterClass( typeof( ConsumerWithClassDependencyService ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAutoRealTypeCollector();
+                var collector = CreateCKTypeCollector();
                 collector.RegisterClass( typeof( ConsumerWithDefaultService ) );
                 CheckFailure( collector );
             }
             {
-                var collector = CreateAutoRealTypeCollector( t => t != typeof( ServiceForISRegistered ) );
+                var collector = CreateCKTypeCollector( t => t != typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ServiceForISRegistered ) );
                 collector.RegisterClass( typeof( ConsumerWithDefaultService ) );
                 var r = CheckSuccess( collector );
@@ -222,20 +222,20 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void no_constructor_parameter_super_type_rule()
         {
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( AutoRef ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( AutoRef ) );
                 CheckFailure( collector );
             }
 
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( BaseReferencer ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( BaseReferencer ) );
                 CheckFailure( collector );
             }
 
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( RefIntermediate2 ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( RefIntermediate2 ) );
                 CheckFailure( collector );
             }
 
@@ -260,8 +260,8 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void stupid_loop()
         {
             {
-                var collector = CreateAutoRealTypeCollector();
-                collector.RegisterClassOrPoco( typeof( SpecializedStupidA ) );
+                var collector = CreateCKTypeCollector();
+                collector.RegisterType( typeof( SpecializedStupidA ) );
                 CheckFailure( collector );
             }
         }

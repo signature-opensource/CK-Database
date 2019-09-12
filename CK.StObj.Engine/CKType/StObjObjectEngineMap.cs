@@ -12,8 +12,8 @@ namespace CK.Setup
     /// Internal mutable implementation of <see cref="IStObjObjectEngineMap"/> that handles <see cref="MutableItem"/>.
     /// The internal participants have write access to it. I'm not proud of this (there are definitly cleaner
     /// ways to organize this) but it work...
-    /// The map is instanciated by AutoRealTypeCollector.GetRealObjectResult and then
-    /// then internally exposed by the RealObjectCollectorResult so that AutoRealTypeCollector.GetAutoServiceResult(RealObjectCollectorResult)
+    /// The map is instanciated by CKTypeCollector.GetRealObjectResult and then
+    /// then internally exposed by the RealObjectCollectorResult so that CKTypeCollector.GetAutoServiceResult(RealObjectCollectorResult)
     /// can use (and fill) it.
     /// </summary>
     partial class StObjObjectEngineMap : IStObjObjectEngineMap, IStObjMap, IStObjServiceMap
@@ -35,7 +35,7 @@ namespace CK.Setup
         internal protected StObjObjectEngineMap(
             string mapName,
             MutableItem[] allSpecializations,
-            AutoRealTypeKindDetector typeKindDetector,
+            CKTypeKindDetector typeKindDetector,
             IReadOnlyCollection<Assembly> assemblies )
         {
             Debug.Assert( mapName != null );
@@ -195,7 +195,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Dynamically projects <see cref="AutoRealTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
+        /// Dynamically projects <see cref="CKTypeCollectorResult.Assemblies"/> to their <see cref="VFeature"/>
         /// (ordered by <see cref="VFeature.Name"/> since by design there can not be multiple versions by feature).
         /// </summary>
         public IReadOnlyCollection<VFeature> Features => _assemblies.Select( ToVFeature ).OrderBy( Util.FuncIdentity ).ToList();

@@ -7,9 +7,9 @@ using CK.Core;
 namespace CK.Setup
 {
     /// <summary>
-    /// One of the <see cref="AutoRealTypeCollector"/> work's result: handles <see cref="IRealObject"/>
+    /// One of the <see cref="CKTypeCollector"/> work's result: handles <see cref="IRealObject"/>
     /// types. This and <see cref="AutoServiceCollectorResult"/> are exposed by
-    /// the <see cref="AutoRealTypeCollectorResult"/>.
+    /// the <see cref="CKTypeCollectorResult"/>.
     /// </summary>
     public class RealObjectCollectorResult
     {

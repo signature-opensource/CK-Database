@@ -48,7 +48,7 @@ namespace CK.StObj.Engine.Tests.ActorZoneTests
             public string ConnectionString { get; private set; }
         }
 
-        [AutoRealDefiner]
+        [CKTypeDefiner]
         public class BaseDatabaseObject : IRealObject
         {
             [AmbientProperty]

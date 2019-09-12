@@ -1,8 +1,10 @@
 using CK.Core;
 using CK.Reflection;
+using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -35,19 +37,26 @@ namespace CK.Setup
                 }
             }
         }
+
         readonly Dictionary<Type, PocoType> _all;
         readonly List<List<Type>> _result;
         readonly string _namespace;
         readonly Func<IActivityMonitor, Type, bool> _typeFilter;
+        readonly Func<IActivityMonitor, Type, bool> _actualPocoPredicate;
         int _uniqueNumber;
 
         /// <summary>
         /// Initializes a new <see cref="PocoRegisterer"/>.
         /// </summary>
+        /// <param name="actualPocoPredicate">
+        /// This must be true for actual IPoco interfaces: when false, "base interface" are not directly registered.
+        /// This implements the <see cref="CKTypeDefinerAttribute"/> behavior.
+        /// </param>
         /// <param name="namespace">Namespace into which dynamic types will be created.</param>
         /// <param name="typeFilter">Optional type filter.</param>
-        public PocoRegisterer( string @namespace = "CK._g.poco", Func<IActivityMonitor, Type, bool> typeFilter = null )
+        public PocoRegisterer( Func<IActivityMonitor, Type, bool> actualPocoPredicate, string @namespace = "CK._g.poco", Func<IActivityMonitor, Type, bool> typeFilter = null )
         {
+            _actualPocoPredicate = actualPocoPredicate ?? throw new ArgumentNullException( nameof( actualPocoPredicate ) );
             _namespace = @namespace ?? "CK._g.poco";
             _all = new Dictionary<Type, PocoType>();
             _result = new List<List<Type>>();
@@ -55,21 +64,22 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Registers a <see cref="IPoco"/> interface.
+        /// Registers a type that may be a <see cref="IPoco"/> interface.
         /// </summary>
         /// <param name="monitor">Monitor that will be used to signal errors.</param>
-        /// <param name="t">Poco type to register (must extend IPoco interface).</param>
-        /// <returns>True on success, false on error.</returns>
+        /// <param name="t">Type to register (must not be null).</param>
+        /// <returns>True if the type has been registered, false otherwise.</returns>
         public bool Register( IActivityMonitor monitor, Type t )
         {
-            if( t == null) throw new ArgumentNullException( nameof( t ) );
-            if( !t.IsInterface || !typeof( IPoco ).IsAssignableFrom( t ) ) throw new ArgumentException( "Must be a IPoco interface.", nameof( t ) );
-            return DoRegister( monitor, t ) != null;
+            if( t == null ) throw new ArgumentNullException( nameof( t ) );
+            return t.IsInterface && _actualPocoPredicate( monitor, t )
+                    ? DoRegister( monitor, t ) != null
+                    : false;
         }
 
         PocoType DoRegister( IActivityMonitor monitor, Type t )
         {
-            Debug.Assert( t.IsInterface && typeof( IPoco ).IsAssignableFrom( t ) );
+            Debug.Assert( t.IsInterface && _actualPocoPredicate( monitor, t ) );
             if( !_all.TryGetValue( t, out var p ) )
             {
                 p = CreatePocoType( monitor, t );
@@ -89,15 +99,17 @@ namespace CK.Setup
             PocoType theOnlyRoot = null;
             foreach( Type b in t.GetInterfaces() )
             {
-                if( b != typeof( IPoco ) )
+                if( b == typeof( IPoco ) || b == typeof( IClosedPoco ) ) continue;
+                // Base interface must be a IPoco. This is a security to avoid "normal" interfaces to appear
+                // by mistake in a Poco.
+                if( !typeof( IPoco ).IsAssignableFrom( b ) )
                 {
-                    // Base interface must be a IPoco.
-                    if( !typeof( IPoco ).IsAssignableFrom( b ) )
-                    {
-                        monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
-                        return null;
-                    }
-                    // Attempts to register the base.
+                    monitor.Fatal( $"Poco interface '{t.AssemblyQualifiedName}' extends '{b.Name}'. '{b.Name}' must be marked with CK.Core.IPoco interface." );
+                    return null;
+                }
+                // Attempts to register the base if and only if it is not a "definer".
+                if( _actualPocoPredicate( monitor, b ) )
+                {
                     var baseType = DoRegister( monitor, b );
                     if( baseType == null ) return null;
                     // Detect multiple root Poco.
@@ -131,10 +143,7 @@ namespace CK.Setup
 
             IReadOnlyList<IPocoRootInfo> IPocoSupportResult.Roots => Roots;
 
-            IPocoInterfaceInfo IPocoSupportResult.Find( Type pocoInterface )
-            {
-                return Interfaces.GetValueWithDefault( pocoInterface, null );
-            }
+            IPocoInterfaceInfo IPocoSupportResult.Find( Type pocoInterface ) => Interfaces.GetValueWithDefault( pocoInterface, null );
 
             IReadOnlyCollection<IPocoInterfaceInfo> IPocoSupportResult.AllInterfaces => _exportedInterfaces;
 
@@ -241,7 +250,41 @@ namespace CK.Setup
         {
             var tB = moduleB.DefineType( $"{_namespace}.Poco{_uniqueNumber++}" );
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+
+            // This is required to handle "non actual Poco" (CKTypeDefiner "base type"): interfaces
+            // contains only actual IPoco, this set contains the closure of all the interfaces.
+            // This work is the perfect opportunity to handle the "closed poco" feature without overhead:
+            // by identifying the "biggest" interface in terms of base interfaces, we can check that it
+            // actually close the whole IPoco.
+            var expanded = new HashSet<Type>( interfaces );
+            Type maxOne = null;
+            int maxICount = 0;
+            bool mustBeClosed = false;
             foreach( var i in interfaces )
+            {
+                mustBeClosed |= typeof( IClosedPoco ).IsAssignableFrom( i ); 
+                var bases = i.GetInterfaces();
+                if( maxOne == null || maxICount < bases.Length )
+                {
+                    maxICount = bases.Length;
+                    maxOne = i;
+                }
+                expanded.AddRange( bases );
+            }
+            if( mustBeClosed )
+            {
+                Debug.Assert( maxICount < expanded.Count );
+                if( maxICount < expanded.Count - 1 )
+                {
+                    monitor.Error( $"Poco family '{interfaces.Select( b => b.FullName ).Concatenate("', '")}' must be closed but none of these interfaces covers the other ones." );
+                    return null;
+                }
+                else
+                {
+                    monitor.Debug( $"{maxOne.FullName}: IClosedPoco for {interfaces.Select( b => b.FullName ).Concatenate()}." );
+                }
+            }
+            foreach( var i in expanded )
             {
                 tB.AddInterfaceImplementation( i );
                 foreach( var p in i.GetProperties() )

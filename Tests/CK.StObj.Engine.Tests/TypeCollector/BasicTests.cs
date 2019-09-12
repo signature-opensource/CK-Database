@@ -5,7 +5,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
 
     [TestFixture]
-    public class BasicTests : TestsBase
+    public class BasicTests : TypeCollectorTestsBase
     {
         // Test with an alternate IScopedAutoService that is not the
         // "official" CK.Core.IScopedAutoService from CK.StObj.Model.
@@ -32,13 +32,13 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void service_interface_without_at_least_one_impl_are_ignored( string mode )
         {
             var collector = mode == "ExcludingSpecializedType"
-                            ? CreateAutoRealTypeCollector(  t => t != typeof( ServiceNotRegisteredImpl ) )
-                            : CreateAutoRealTypeCollector();
+                            ? CreateCKTypeCollector(  t => t != typeof( ServiceNotRegisteredImpl ) )
+                            : CreateCKTypeCollector();
 
-            collector.RegisterClassOrPoco( typeof( ServiceRegisteredImpl ) );
+            collector.RegisterType( typeof( ServiceRegisteredImpl ) );
             if( mode == "ExcludingSpecializedType" )
             {
-                collector.RegisterClassOrPoco( typeof( ServiceNotRegisteredImpl ) );
+                collector.RegisterType( typeof( ServiceNotRegisteredImpl ) );
             }
             
             var r = CheckSuccess( collector );
@@ -57,8 +57,8 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void registering_service_registers_specialized_interfaces_and_base_impl_but_mask_them()
         {
-            var collector = CreateAutoRealTypeCollector();
-            collector.RegisterClassOrPoco( typeof( ServiceNotRegisteredImpl ) );
+            var collector = CreateCKTypeCollector();
+            collector.RegisterType( typeof( ServiceNotRegisteredImpl ) );
             var r = CheckSuccess( collector );
             var interfaces = r.AutoServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );

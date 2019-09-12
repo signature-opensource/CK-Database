@@ -14,7 +14,7 @@ namespace CK.Setup
     /// </summary>
     public partial class StObjCollector
     {
-        readonly AutoRealTypeCollector _cc;
+        readonly CKTypeCollector _cc;
         readonly IStObjStructuralConfigurator _configurator;
         readonly IStObjValueResolver _valueResolver;
         readonly IActivityMonitor _monitor;
@@ -27,7 +27,7 @@ namespace CK.Setup
         /// Initializes a new <see cref="StObjCollector"/>.
         /// </summary>
         /// <param name="monitor">Logger to use. Can not be null.</param>
-        /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
+        /// <param name="serviceProvider">Service provider used for attribute constructor injection. Must not be null.</param>
         /// <param name="traceDepencySorterInput">True to trace in <paramref name="monitor"/> the input of dependency graph.</param>
         /// <param name="traceDepencySorterOutput">True to trace in <paramref name="monitor"/> the sorted dependency graph.</param>
         /// <param name="runtimeBuilder">Optional runtime builder to use.</param>
@@ -60,7 +60,7 @@ namespace CK.Setup
             }
             Func<IActivityMonitor,Type,bool> tFilter = null;
             if( typeFilter != null ) tFilter = typeFilter.TypeFilter;
-            _cc = new AutoRealTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
+            _cc = new CKTypeCollector( _monitor, serviceProvider, _tempAssembly, tFilter );
             _configurator = configurator;
             _valueResolver = valueResolver;
             if( traceDepencySorterInput ) DependencySorterHookInput = i => i.Trace( monitor );
@@ -105,7 +105,7 @@ namespace CK.Setup
                             _monitor.Error( $"Error while loading assembly '{one}'.", ex );
                         }
                         int nbAlready = _cc.RegisteredTypeCount;
-                        _cc.SafeRegister( a.GetTypes() );
+                        _cc.RegisterTypes( a.GetTypes() );
                         int delta = _cc.RegisteredTypeCount - nbAlready;
                         _monitor.CloseGroup( $"{delta} types(s) registered." );
                         totalRegistered += delta;
@@ -116,19 +116,16 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitly registers a class or a IPoco interface.
+        /// Registers a type that may be a CK type (<see cref="IPoco"/>, <see cref="IAutoService"/> or <see cref="IRealObject"/>).
         /// </summary>
-        /// <param name="t">Type to register.</param>
-        /// <returns>True if it is a new class for this collector, false if it has already been registered.</returns>
+        /// <param name="t">Type to register. Must not be null/</param>
         public void RegisterType( Type t )
         {
-            if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            _monitor.Info( $"Explicitly registering '{t.AssemblyQualifiedName}'." );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
             {
                 try
                 {
-                    _cc.RegisterClassOrPoco( t );
+                    _cc.RegisterType( t );
                 }
                 catch( Exception ex )
                 {
@@ -138,7 +135,7 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitly registers a set of classes or a IPoco interfaces.
+        /// Explicitly registers a set of CK types (<see cref="IPoco"/>, <see cref="IAutoService"/> or <see cref="IRealObject"/>).
         /// </summary>
         /// <param name="types">Types to register.</param>
         public void RegisterTypes( IReadOnlyCollection<Type> types )
@@ -148,9 +145,11 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Explicitly registers a set of classes or a IPoco interfaces by their assembly qualified names.
+        /// Explicitly registers a set of CK types (<see cref="IPoco"/>, <see cref="IAutoService"/> or <see cref="IRealObject"/>) by their
+        /// assembly qualified names.
         /// </summary>
         /// <param name="typeNames">Assembly qualified names of the types to register.</param>
+        /// <param name="throwOnError">False to silently ignore invalid types and return false.</param>
         public void RegisterTypes( IReadOnlyCollection<string> typeNames )
         {
             if( typeNames == null ) throw new ArgumentNullException( nameof( typeNames ) );
@@ -211,10 +210,10 @@ namespace CK.Setup
 
         void DoRegisterTypes( IEnumerable<Type> types, int count )
         {
-            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Real Objects or Service classes", types, count, ( m, cc, t ) => cc.RegisterClassOrPoco( t ) );
+            SafeTypesHandler( "Explicitly registering IPoco interfaces, or Real Objects or Service classes", types, count, ( m, cc, t ) => cc.RegisterType( t ) );
         }
 
-        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<IActivityMonitor,AutoRealTypeCollector,Type> a )
+        void SafeTypesHandler( string registrationType, IEnumerable<Type> types, int count, Action<IActivityMonitor,CKTypeCollector,Type> a )
         {
             Debug.Assert( types != null );
             using( _monitor.OnError( () => ++_registerFatalOrErrorCount ) )
@@ -263,12 +262,12 @@ namespace CK.Setup
             return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
         }
 
-        (AutoRealTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
+        (CKTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
         {
             bool error = false;
             using( _monitor.OnError( () => error = true ) )
             {
-                AutoRealTypeCollectorResult typeResult;
+                CKTypeCollectorResult typeResult;
                 using( _monitor.OpenInfo( "Initializing object graph." ) )
                 {
                     using( _monitor.OpenInfo( "Collecting Real Objects, Services, Type structure and Poco." ) )

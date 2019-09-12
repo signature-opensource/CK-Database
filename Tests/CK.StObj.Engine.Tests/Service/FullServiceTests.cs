@@ -11,9 +11,9 @@ using System.Reflection;
 
 using static CK.Testing.MonitorTestHelper;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
-    public class FullServiceTests : TestsBase
+    public class FullServiceTests : ServiceTestsBase
     {
         /// <summary>
         /// This service is scoped: its implementation automatically injected

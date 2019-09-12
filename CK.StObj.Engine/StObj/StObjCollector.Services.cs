@@ -310,7 +310,7 @@ namespace CK.Setup
             public IStObjServiceFinalManualMapping GetFinalMapping(
                 IActivityMonitor m,
                 StObjObjectEngineMap engineMap,
-                AutoRealTypeKindDetector typeKindDetector,
+                CKTypeKindDetector typeKindDetector,
                 ref bool success )
             {
                 if( !_finalMappingDone )
@@ -364,13 +364,13 @@ namespace CK.Setup
         {
             readonly IActivityMonitor _monitor;
             readonly StObjObjectEngineMap _engineMap;
-            readonly AutoRealTypeKindDetector _ambientTypeKindDetector;
+            readonly CKTypeKindDetector _ambientTypeKindDetector;
             readonly Dictionary<AutoServiceClassInfo, BuildClassInfo> _infos;
 
             public FinalRegisterer(
                 IActivityMonitor monitor,
                 StObjObjectEngineMap engineMap,
-                AutoRealTypeKindDetector typeKindDetector )
+                CKTypeKindDetector typeKindDetector )
             {
                 _monitor = monitor;
                 _engineMap = engineMap;
@@ -462,7 +462,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="typeResult">The Ambient types discovery result.</param>
         /// <returns>True on success, false on error.</returns>
-        bool RegisterServices( AutoRealTypeCollectorResult typeResult )
+        bool RegisterServices( CKTypeCollectorResult typeResult )
         {
             var engineMap = typeResult.RealObjects.EngineMap;
             using( _monitor.OpenInfo( $"Service handling." ) )

@@ -3,10 +3,10 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class DispatcherServiceTests : TestsBase
+    public class DispatcherServiceTests : ServiceTestsBase
     {
         public interface IServiceBase : IScopedAutoService
         {

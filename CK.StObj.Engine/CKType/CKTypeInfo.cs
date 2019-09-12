@@ -11,29 +11,28 @@ namespace CK.Setup
     /// Attributes must be retrieved thanks to <see cref="Attributes"/>.
     /// This type information are built top-down (from generalization to most specialized type).
     /// <para>
-    /// An AmbientTypeInfo can be either a <see cref="AutoServiceClassInfo"/> or an independent one (this is a concrete class)
+    /// An CKTypeInfo can be either a <see cref="AutoServiceClassInfo"/> or an independent one (this is a concrete class)
     /// that is associated to a <see cref="AutoServiceClassInfo"/> (via ServiceClass). 
     /// </para>
     /// </summary>
-    public class AutoRealTypeInfo
+    public class CKTypeInfo
     {
         readonly TypeAttributesCache _attributes;
-        AutoRealTypeInfo _nextSibling;
-        AutoRealTypeInfo _firstChild;
+        CKTypeInfo _nextSibling;
+        CKTypeInfo _firstChild;
         int _specializationCount;
         bool _initializeImplementableTypeInfo;
 
-
         /// <summary>
-        /// Initializes a new <see cref="AutoRealTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
+        /// Initializes a new <see cref="CKTypeInfo"/> from a base one (its <see cref="Generalization"/>) if it exists and a type.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="t">Type itself. Can not be null.</param>
-        /// <param name="parent">Parent AmbientTypeInfo (Generalization). Null if the base type is not a IAutoService or IRealObject type.</param>
+        /// <param name="parent">Parent CKTypeInfo (Generalization). Null if the base type is not a IAutoService or IRealObject type.</param>
         /// <param name="services">Available services that will be used for delegated attribute constructor injection.</param>
         /// <param name="isExcluded">True to actually exclude this type from the registration.</param>
         /// <param name="serviceClass">Service class is mandatory if this is an independent Type info.</param>
-        internal AutoRealTypeInfo( IActivityMonitor monitor, AutoRealTypeInfo parent, Type t, IServiceProvider services, bool isExcluded, AutoServiceClassInfo serviceClass )
+        internal CKTypeInfo( IActivityMonitor monitor, CKTypeInfo parent, Type t, IServiceProvider services, bool isExcluded, AutoServiceClassInfo serviceClass )
         {
             Debug.Assert( (serviceClass == null) == (this is RealObjectClassInfo) );
             ServiceClass = serviceClass;
@@ -58,7 +57,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the service classe information for this type is there is one.
-        /// If this <see cref="AutoRealTypeInfo"/> is an independent one, then this is necessarily not null.
+        /// If this <see cref="CKTypeInfo"/> is an independent one, then this is necessarily not null.
         /// If this is a <see cref="RealObjectClassInfo"/> this can be null or not.
         /// </summary>
         public AutoServiceClassInfo ServiceClass { get; internal set; }
@@ -75,10 +74,10 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets the generalization of this <see cref="Type"/>, it is be null if no base class exists.
-        /// This property is valid even if this type is excluded (however this AmbientTypeInfo does not
+        /// This property is valid even if this type is excluded (however this CKTypeInfo does not
         /// appear in generalization's <see cref="Specializations"/>).
         /// </summary>
-        public AutoRealTypeInfo Generalization { get; }
+        public CKTypeInfo Generalization { get; }
 
         /// <summary>
         /// Gets the <see cref="ImplementableTypeInfo"/> if this <see cref="Type"/>
@@ -137,14 +136,14 @@ namespace CK.Setup
         public int SpecializationsCount => _specializationCount;
 
         /// <summary>
-        /// Gets the different specialized <see cref="AutoRealTypeInfo"/> that are not excluded.
+        /// Gets the different specialized <see cref="CKTypeInfo"/> that are not excluded.
         /// </summary>
-        /// <returns>An enumerable of <see cref="AutoRealTypeInfo"/> that specialize this one.</returns>
-        public IEnumerable<AutoRealTypeInfo> Specializations
+        /// <returns>An enumerable of <see cref="CKTypeInfo"/> that specialize this one.</returns>
+        public IEnumerable<CKTypeInfo> Specializations
         {
             get
             {
-                AutoRealTypeInfo c = _firstChild;
+                CKTypeInfo c = _firstChild;
                 while( c != null )
                 {
                     yield return c;
@@ -153,7 +152,7 @@ namespace CK.Setup
             }
         }
 
-        internal bool IsAssignableFrom( AutoRealTypeInfo child )
+        internal bool IsAssignableFrom( CKTypeInfo child )
         {
             Debug.Assert( child != null );
             do
@@ -164,7 +163,7 @@ namespace CK.Setup
             return false;
         }
 
-        internal void RemoveSpecialization( AutoRealTypeInfo child )
+        internal void RemoveSpecialization( CKTypeInfo child )
         {
             Debug.Assert( child.Generalization == this );
             if( _firstChild == child )
@@ -174,7 +173,7 @@ namespace CK.Setup
             }
             else
             {
-                AutoRealTypeInfo c = _firstChild;
+                CKTypeInfo c = _firstChild;
                 while( c != null && c._nextSibling != child ) c = c._nextSibling;
                 if( c != null )
                 {

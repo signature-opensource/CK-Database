@@ -7,7 +7,7 @@ namespace CK.Core
     /// </summary>
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
-    [AutoRealDefiner]
+    [CKTypeDefiner]
     public class SqlPackage : SqlServer.ISqlConnectionStringProvider, IRealObject
     {
         /// <summary>

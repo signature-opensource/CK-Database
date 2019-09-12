@@ -8,21 +8,21 @@ using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
-    public class TestsBase
+    public class TypeCollectorTestsBase
     {
 
-        public static AutoRealTypeCollector CreateAutoRealTypeCollector( Func<Type, bool> typeFilter = null )
+        public static CKTypeCollector CreateCKTypeCollector( Func<Type, bool> typeFilter = null )
         {
             Func<IActivityMonitor, Type, bool> f = null;
             if( typeFilter != null ) f = ( m, t ) => typeFilter( t );
-            return new AutoRealTypeCollector(
+            return new CKTypeCollector(
                         TestHelper.Monitor,
                         new SimpleServiceContainer(),
                         new DynamicAssembly( new Dictionary<string, object>() ),
                         f );
         }
 
-        public static AutoRealTypeCollectorResult CheckSuccess( AutoRealTypeCollector c )
+        public static CKTypeCollectorResult CheckSuccess( CKTypeCollector c )
         {
             var r = c.GetResult();
             r.LogErrorAndWarnings( TestHelper.Monitor );
@@ -30,7 +30,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             return r;
         }
 
-        public static AutoRealTypeCollectorResult CheckFailure( AutoRealTypeCollector c )
+        public static CKTypeCollectorResult CheckFailure( CKTypeCollector c )
         {
             var r = c.GetResult();
             r.LogErrorAndWarnings( TestHelper.Monitor );

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
     namespace Local
     {
@@ -18,7 +18,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
     }
 
     [TestFixture]
-    public class ServiceTests : TestsBase
+    public class ServiceTests : ServiceTestsBase
     {
         public interface ISampleService : IAutoService
         {
@@ -45,7 +45,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             r.Services.SimpleMappings[typeof( SampleService )].ClassType.Should().Be( typeof( SampleService ) );
         }
 
-        [Local.ReplaceAutoService( "CK.StObj.Engine.Tests.Service.StObj.ServiceTests+SampleService2, CK.StObj.Engine.Tests" )]
+        [Local.ReplaceAutoService( "CK.StObj.Engine.Tests.Service.ServiceTests+SampleService2, CK.StObj.Engine.Tests" )]
         public class SampleService3 : ISampleService
         {
         }
@@ -88,6 +88,11 @@ namespace CK.StObj.Engine.Tests.Service.StObj
         {
         }
 
+        public class ObjInvalid : IInvalidInterface
+        {
+        }
+
+
         [Test]
         public void a_RealObject_class_can_be_an_IAutoService_but_an_interface_cannot()
         {
@@ -108,7 +113,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             }
             {
                 var collector = CreateStObjCollector();
-                collector.RegisterType( typeof( IInvalidInterface ) );
+                collector.RegisterType( typeof( ObjInvalid ) );
                 CheckFailure( collector );
             }
         }

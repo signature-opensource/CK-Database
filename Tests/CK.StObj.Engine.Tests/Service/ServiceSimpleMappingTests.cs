@@ -7,10 +7,10 @@ using System.Linq;
 
 using static CK.Testing.MonitorTestHelper;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class ServiceSimpleMappingTests : TestsBase
+    public class ServiceSimpleMappingTests : ServiceTestsBase
     {
         public interface ISBase : IScopedAutoService
         {
@@ -45,7 +45,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
                 collector.RegisterType( typeof( ServiceS1Impl ) );
                 collector.RegisterType( typeof( ServiceS2Impl ) );
                 var r = CheckFailure( collector );
-                r.AmbientTypeResult.AutoServices.RootClasses.Should().HaveCount( 2 );
+                r.CKTypeResult.AutoServices.RootClasses.Should().HaveCount( 2 );
             }
             // Same tests as above but excluding ISBase type: success since
             // ISBase is no more considered a IScopedAutoService.
@@ -88,12 +88,12 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             var collector = CreateStObjCollector();
             collector.RegisterType( typeof( ServiceUnifiedImpl ) );
             var r = CheckSuccess( collector );
-            var interfaces = r.AmbientTypeResult.AutoServices.LeafInterfaces;
+            var interfaces = r.CKTypeResult.AutoServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
             var iSU = interfaces[0];
             iSU.Type.Should().Be( typeof( ISU ) );
             iSU.Interfaces.Select( i => i.Type ).Should().BeEquivalentTo( typeof(ISBase), typeof(IS1), typeof(IS2) );
-            r.AmbientTypeResult.AutoServices.RootClasses.Should().ContainSingle().And.Contain( c => c.Type == typeof( ServiceUnifiedImpl ) );
+            r.CKTypeResult.AutoServices.RootClasses.Should().ContainSingle().And.Contain( c => c.Type == typeof( ServiceUnifiedImpl ) );
             r.Services.SimpleMappings[typeof( ISU )].ClassType.Should().BeSameAs( typeof( ServiceUnifiedImpl ) );
             r.Services.SimpleMappings[typeof( IS1 )].ClassType.Should().BeSameAs( typeof( ServiceUnifiedImpl ) );
             r.Services.SimpleMappings[typeof( IS2 )].ClassType.Should().BeSameAs( typeof( ServiceUnifiedImpl ) );
@@ -162,12 +162,12 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             else
             {
                 var r = CheckFailure( collector );
-                var interfaces = r.AmbientTypeResult.AutoServices.LeafInterfaces;
+                var interfaces = r.CKTypeResult.AutoServices.LeafInterfaces;
                 interfaces.Should().HaveCount( 1 );
-                var classes = r.AmbientTypeResult.AutoServices.RootClasses;
+                var classes = r.CKTypeResult.AutoServices.RootClasses;
                 classes.Select( c => c.Type ).Should().BeEquivalentTo( typeof( ServiceImplBaseBase ) );
-                r.AmbientTypeResult.AutoServices.ClassAmbiguities.Should().HaveCount( 1 );
-                r.AmbientTypeResult.AutoServices.ClassAmbiguities[0]
+                r.CKTypeResult.AutoServices.ClassAmbiguities.Should().HaveCount( 1 );
+                r.CKTypeResult.AutoServices.ClassAmbiguities[0]
                     .Select( c => c.Type )
                     .Should().BeEquivalentTo( typeof( ServiceImplRootProblem ), typeof( ServiceImpl1 ), typeof( ServiceImpl3 ) );
             }

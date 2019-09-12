@@ -7,7 +7,7 @@ using System.Linq;
 namespace CK.StObj.Engine.Tests.Service.TypeCollector
 {
     [TestFixture]
-    public class ClassUnificationTests : TestsBase
+    public class ClassUnificationTests : TypeCollectorTestsBase
     {
         class A : IScopedAutoService { }
         class AS1 : A { }
@@ -18,7 +18,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void basic_direct_unification_between_3_specializations()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( UnifiedA ) );
             collector.RegisterClass( typeof( AS1 ) );
             collector.RegisterClass( typeof( AS2 ) );
@@ -30,7 +30,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void basic_direct_unification_between_2_specializations()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( UnifiedAWithoutS2 ) );
             collector.RegisterClass( typeof( AS1 ) );
             var r = CheckSuccess( collector );
@@ -48,7 +48,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void unification_with_intermediate_unifier()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( _UnifiedA1 ) );
             collector.RegisterClass( typeof( _UnifiedA2 ) );
             collector.RegisterClass( typeof( _AS1 ) );
@@ -69,7 +69,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void unification_with_intermediate_external_unifier()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( ExternalUnifier ) );
             collector.RegisterClass( typeof( e_UnifiedA2 ) );
             collector.RegisterClass( typeof( e_AS1 ) );
@@ -93,7 +93,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         public void unification_to_base_class()
         {
             {
-                var collector = CreateAutoRealTypeCollector();
+                var collector = CreateCKTypeCollector();
                 collector.RegisterClass( typeof( u_AS1 ) );
                 collector.RegisterClass( typeof( u_AS2 ) );
                 collector.RegisterClass( typeof( u_UnifiedD ) );
@@ -103,7 +103,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
                     .Should().BeSameAs( typeof( u_UnifiedD ) );
             }
             {
-                var collector = CreateAutoRealTypeCollector();
+                var collector = CreateCKTypeCollector();
                 collector.RegisterClass( typeof( u_AS1 ) );
                 collector.RegisterClass( typeof( u_AS2 ) );
                 collector.RegisterClass( typeof( u_UnifiedA ) );
@@ -117,7 +117,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void unification_failure_on_two_potential_unifiers()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( u_AS1 ) );
             collector.RegisterClass( typeof( u_AS2 ) );
             collector.RegisterClass( typeof( u_UnifiedD ) );
@@ -150,7 +150,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [TestCase( typeof( s_UnifiedAb ) )]
         public void subgraph_requires_unification( Type unifier )
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
@@ -169,7 +169,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [TestCase( typeof( s_SubUnifier3 ) )]
         public void supergraph_requires_unification( Type unifier )
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
@@ -186,7 +186,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [Test]
         public void graph_with_two_ambiguities()
         {
-            var collector = CreateAutoRealTypeCollector();
+            var collector = CreateCKTypeCollector();
             collector.RegisterClass( typeof( s_AS1 ) );
             collector.RegisterClass( typeof( s_AS2a ) );
             collector.RegisterClass( typeof( s_AS2b ) );
@@ -202,7 +202,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
             {
                 foreach( var sub in new[] { typeof( s_SubUnifier1 ), typeof( s_SubUnifier2 ), typeof( s_SubUnifier3 ) } )
                 {
-                    var collector = CreateAutoRealTypeCollector();
+                    var collector = CreateCKTypeCollector();
                     collector.RegisterClass( typeof( s_AS1 ) );
                     collector.RegisterClass( typeof( s_AS2a ) );
                     collector.RegisterClass( typeof( s_AS2b ) );

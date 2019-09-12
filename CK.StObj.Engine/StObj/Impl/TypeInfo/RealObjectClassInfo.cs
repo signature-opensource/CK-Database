@@ -8,9 +8,9 @@ using System.Diagnostics;
 namespace CK.Setup
 {
     /// <summary>
-    /// Specialized <see cref="AutoRealTypeInfo"/> for <see cref="IRealObject"/> classes.
+    /// Specialized <see cref="CKTypeInfo"/> for <see cref="IRealObject"/> classes.
     /// </summary>
-    internal class RealObjectClassInfo : AutoRealTypeInfo, IStObjTypeInfoFromParent
+    internal class RealObjectClassInfo : CKTypeInfo, IStObjTypeInfoFromParent
     {
         Type[] _ambientInterfaces;
         Type[] _thisAmbientInterfaces;
@@ -33,7 +33,7 @@ namespace CK.Setup
             static object _lock = new object();
             static Dictionary<Type,TypeInfoForBaseClasses> _cache;
 
-            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, AutoRealTypeKindDetector ambientTypeKind )
+            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, CKTypeKindDetector ambientTypeKind )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -102,7 +102,7 @@ namespace CK.Setup
                 IActivityMonitor monitor,
                 Type type,
                 int specializationLevel,
-                AutoRealTypeKindDetector ambientTypeKind,
+                CKTypeKindDetector ambientTypeKind,
                 List<StObjPropertyInfo> stObjProperties,
                 out IReadOnlyList<AmbientPropertyInfo> apListResult,
                 out IReadOnlyList<InjectObjectInfo> acListResult )
@@ -126,7 +126,7 @@ namespace CK.Setup
             }
         }
 
-        internal RealObjectClassInfo( IActivityMonitor monitor, RealObjectClassInfo parent, Type t, IServiceProvider provider, AutoRealTypeKindDetector ambientTypeKind, bool isExcluded )
+        internal RealObjectClassInfo( IActivityMonitor monitor, RealObjectClassInfo parent, Type t, IServiceProvider provider, CKTypeKindDetector ambientTypeKind, bool isExcluded )
             : base( monitor, parent, t, provider, isExcluded, null )
         {
             Debug.Assert( parent == Generalization );
@@ -163,7 +163,7 @@ namespace CK.Setup
             IList<AmbientPropertyInfo> apCollector;
             IList<InjectObjectInfo> acCollector;
             AmbientPropertyInfo.CreateAmbientPropertyListForExactType( monitor, Type, SpecializationDepth, ambientTypeKind, stObjProperties, out apCollector, out acCollector );
-            // For type that have no Generalization: we must handle [AmbientProperty], [InjectObject] and [StObjProperty] on base classes (we may not have AmbientTypeInfo object 
+            // For type that have no Generalization: we must handle [AmbientProperty], [InjectObject] and [StObjProperty] on base classes (we may not have CKTypeInfo object 
             // since they are not necessarily IRealObject, we use infoFromParent abstraction).
             AmbientProperties = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.AmbientProperties, apCollector );
             InjectObjects = AmbientPropertyInfo.MergeWithAboveProperties( monitor, infoFromParent.InjectObjects, acCollector );
@@ -373,13 +373,13 @@ namespace CK.Setup
         public readonly ParameterInfo[] ConfigureServicesParameters;
 
 
-        Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, AutoRealTypeKindDetector d )
+        Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, CKTypeKindDetector d )
         {
             return _ambientInterfaces
-                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&AutoRealTypeKind.RealObject) == AutoRealTypeKind.RealObject ).ToArray());
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&CKTypeKind.RealObject) == CKTypeKind.RealObject ).ToArray());
         }
 
-        internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, AutoRealTypeKindDetector d )
+        internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, CKTypeKindDetector d )
         {
             return _thisAmbientInterfaces ?? (_thisAmbientInterfaces = Generalization != null
                                                         ? EnsureAllAmbientInterfaces( m, d ).Except( Generalization.EnsureAllAmbientInterfaces( m, d ) ).ToArray()

@@ -51,8 +51,14 @@ namespace CK.Setup
                     // Injects System.Reflection and setup assemblies into the
                     // workspace that will be used to generate source code.
                     ws.EnsureAssemblyReference( typeof( BindingFlags ) );
-                    ws.EnsureAssemblyReference( AmbientTypeResult.Assemblies );
-
+                    if( CKTypeResult.Assemblies.Count > 0 )
+                    {
+                        ws.EnsureAssemblyReference( CKTypeResult.Assemblies );
+                    }
+                    else
+                    {
+                        ws.EnsureAssemblyReference( typeof(StObjContextRoot).Assembly );
+                    }
                     // Gets the global name space and injects, once for all, basic namespaces that we
                     // always want available.
                     var global = ws.Global.EnsureUsing( "CK.Core" )
@@ -66,7 +72,7 @@ namespace CK.Setup
                     // This step MUST always be done, even if SkipCompilation is true and GenerateSourceFiles is false
                     // since during this step, side effects MAY occur (this is typically the case of the first run where
                     // the "reality cache" is created).
-                    foreach( var t in AmbientTypeResult.TypesToImplement )
+                    foreach( var t in CKTypeResult.TypesToImplement )
                     {
                         t.GenerateType( monitor, _tempAssembly );
                     }
@@ -156,7 +162,7 @@ class GStObj : IStObj
             var rootCtor = rootType.CreateFunction( $"public {StObjContextRoot.RootContextTypeName}(IActivityMonitor monitor, IStObjRuntimeBuilder rb)" );
 
             rootCtor.Append( $"_stObjs = new GStObj[{OrderedStObjs.Count}];" ).NewLine()
-                    .Append( $"_implStObjs = new GStObj[{AmbientTypeResult.RealObjects.EngineMap.AllSpecializations.Count}];" ).NewLine();
+                    .Append( $"_implStObjs = new GStObj[{CKTypeResult.RealObjects.EngineMap.AllSpecializations.Count}];" ).NewLine();
             int iStObj = 0;
             int iImplStObj = 0;
             foreach( MutableItem m in OrderedStObjs )
@@ -177,7 +183,7 @@ class GStObj : IStObj
             }
 
             rootCtor.Append( $"_map = new Dictionary<Type,GStObj>();" ).NewLine();
-            var allMappings = AmbientTypeResult.RealObjects.EngineMap.RawMappings;
+            var allMappings = CKTypeResult.RealObjects.EngineMap.RawMappings;
             // We skip highest implementation Type mappings (ie. RealObjectInterfaceKey keys) since 
             // there is no ToStObj mapping (to root generalization) on final (runtime) IStObjMap.
             foreach( var e in allMappings.Where( e => e.Key is Type ) )
@@ -316,7 +322,7 @@ class GStObj : IStObj
 
             rootType.Append( "readonly IReadOnlyCollection<VFeature> _vFeatures;" ).NewLine();
 
-            rootCtor.Append( "_vFeatures = new[]{ " );
+            rootCtor.Append( "_vFeatures = new VFeature[]{ " );
             bool atleastOne = false;
             foreach( var f in features )
             {

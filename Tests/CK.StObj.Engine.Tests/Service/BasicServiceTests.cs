@@ -2,24 +2,14 @@ using CK.Core;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace CK.StObj.Engine.Tests.Service.StObj
+namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class BasicServiceTests : TestsBase
+    public class BasicServiceTests : ServiceTestsBase
     {
         public interface IServiceRegistered : IScopedAutoService
         {
         }
-
-        [Test]
-        public void only_IPoco_or_classes_can_be_registered()
-        {
-            var collector = CreateStObjCollector();
-            collector.RegisterType( typeof( IServiceRegistered ) );
-            collector.RegisteringFatalOrErrorCount.Should().Be( 1 );
-            CheckFailure( collector );
-        }
-
 
         public interface IAutoService { }
         public interface IScopedAutoService { }
@@ -88,7 +78,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisterType( typeof( LifetimeOfExternalBoostToSingleton ) );
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
-            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( IExternalService ) ).Should().BeTrue();
+            r.CKTypeResult.TypeKindDetector.IsSingleton( typeof( IExternalService ) ).Should().BeTrue();
         }
 
         [Test]
@@ -142,7 +132,7 @@ namespace CK.StObj.Engine.Tests.Service.StObj
             collector.RegisteringFatalOrErrorCount.Should().Be( 0 );
             var r = CheckSuccess( collector );
             r.Services.SimpleMappings[typeof( AmbientThatDependsOnSingleton )].IsScoped.Should().BeFalse();
-            r.AmbientTypeResult.TypeKindDetector.IsSingleton( typeof( AmbientThatDependsOnSingleton ) ).Should().BeTrue();
+            r.CKTypeResult.TypeKindDetector.IsSingleton( typeof( AmbientThatDependsOnSingleton ) ).Should().BeTrue();
         }
 
         public interface IAmbientThatDependsOnNothing : IAutoService { }

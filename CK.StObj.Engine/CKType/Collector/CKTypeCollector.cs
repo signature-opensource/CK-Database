@@ -12,7 +12,7 @@ namespace CK.Setup
     /// and <see cref="IPoco"/> marker interfaces.
     /// The <see cref="GetResult"/> method encapsulates the whole work.
     /// </summary>
-    public partial class AutoRealTypeCollector
+    public partial class CKTypeCollector
     {
         readonly IActivityMonitor _monitor;
         readonly IDynamicAssembly _tempAssembly;
@@ -25,14 +25,14 @@ namespace CK.Setup
         readonly Func<IActivityMonitor, Type, bool> _typeFilter;
 
         /// <summary>
-        /// Initializes a new <see cref="AutoRealTypeCollector"/> instance.
+        /// Initializes a new <see cref="CKTypeCollector"/> instance.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
-        /// <param name="serviceProvider">Service provider used for attribute constructor injection.</param>
+        /// <param name="serviceProvider">Service provider used for attribute constructor injection. Must not be null.</param>
         /// <param name="tempAssembly">The temporary <see cref="IDynamicAssembly"/>.</param>
         /// <param name="mapName">Optional map name. Defaults to the empty string.</param>
         /// <param name="typeFilter">Optional type filter.</param>
-        public AutoRealTypeCollector(
+        public CKTypeCollector(
             IActivityMonitor monitor,
             IServiceProvider serviceProvider,
             IDynamicAssembly tempAssembly,
@@ -52,8 +52,8 @@ namespace CK.Setup
             _serviceCollector = new Dictionary<Type, AutoServiceClassInfo>();
             _serviceRoots = new List<AutoServiceClassInfo>();
             _serviceInterfaces = new Dictionary<Type, AutoServiceInterfaceInfo>();
-            _pocoRegisterer = new PocoRegisterer( typeFilter: _typeFilter );
-            _kindDetector = new AutoRealTypeKindDetector();
+            _kindDetector = new CKTypeKindDetector();
+            _pocoRegisterer = new PocoRegisterer( ( m, t ) => (_kindDetector.GetKind( m, t ) & CKTypeKind.IsPoco) != 0, typeFilter: _typeFilter );
             _kindDetector.DefineAsExternalSingleton( monitor, typeof( IPocoFactory<> ) );
             _kindDetector.DefineAsExternalScoped( monitor, typeof( IActivityMonitor ) );
             _mapName = mapName ?? String.Empty;
@@ -65,46 +65,39 @@ namespace CK.Setup
         public int RegisteredTypeCount => _objectCollector.Count;
 
         /// <summary>
-        /// Registers multiple types. Only classes and IPoco interfaces are considered.
+        /// Registers multiple types.
         /// </summary>
-        /// <param name="types">Set of types.</param>
-        public void SafeRegister( IEnumerable<Type> types )
+        /// <param name="types">Set of types to register.</param>
+        public void RegisterTypes( IEnumerable<Type> types )
         {
             if( types == null ) throw new ArgumentNullException( "types" );
             foreach( var t in types )
             {
-                if( t != null && t != typeof( object ) ) DoRegisterClassOrPoco( t );
+                if( t != null && t != typeof( object ) ) RegisterType( t );
             }
         }
 
         /// <summary>
         /// Registers a type.
-        /// It must be a class or a IPoco interface otherwise an argument exception is thrown.
         /// </summary>
-        /// <param name="type">Class or IPoco interface.</param>
-        public void RegisterClassOrPoco( Type type )
+        /// <param name="type">
+        /// Any type that could be a <see cref="IRealObject"/>, a <see cref="IPoco"/> or a <see cref="IAutoService"/>.
+        /// Must not be null.
+        /// </param>
+        public void RegisterType( Type type )
         {
             if( type == null ) throw new ArgumentNullException( nameof( type ) );
-            if( type != typeof( object ) && !DoRegisterClassOrPoco( type ) )
+            if( type != typeof( object ) )
             {
-                throw new ArgumentException( $"Must be a Class or a IPoco interface: '{type.AssemblyQualifiedName}'.", nameof( type ) );
+                if( type.IsClass )
+                {
+                    DoRegisterClass( type, out _, out _ );
+                }
+                else if( _pocoRegisterer.Register( _monitor, type ) )
+                {
+                    RegisterAssembly( type );
+                }
             }
-        }
-
-        bool DoRegisterClassOrPoco( Type type )
-        {
-            Debug.Assert( type != null && type != typeof( object ) );
-            if( type.IsClass )
-            {
-                DoRegisterClass( type, out _, out _ );
-                return true;
-            }
-            if( type.IsInterface && typeof( IPoco ).IsAssignableFrom( type ) )
-            {
-                if( _pocoRegisterer.Register( _monitor, type ) ) RegisterAssembly( type );
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
@@ -139,20 +132,20 @@ namespace CK.Setup
             AutoServiceClassInfo sParent = null;
             if( t.BaseType != typeof( object ) ) DoRegisterClass( t.BaseType, out acParent, out sParent );
 
-            AutoRealTypeKind lt = _kindDetector.GetKind( _monitor, t );
-            var conflictMsg = lt.GetAmbientKindCombinationError( true );
+            CKTypeKind lt = _kindDetector.GetKind( _monitor, t );
+            var conflictMsg = lt.GetCKTypeKindCombinationError( true );
             if( conflictMsg != null )
             {
                 _monitor.Error( $"Type {t.FullName}: {conflictMsg}." );
             }
             else
             {
-                if( acParent != null || (lt & AutoRealTypeKind.RealObject) == AutoRealTypeKind.RealObject )
+                if( acParent != null || (lt & CKTypeKind.RealObject) == CKTypeKind.RealObject )
                 {
                     objectInfo = RegisterObjectClassInfo( t, acParent );
                     Debug.Assert( objectInfo != null );
                 }
-                if( sParent != null || (lt & AutoRealTypeKind.IsAutoService) != 0 )
+                if( sParent != null || (lt & CKTypeKind.IsAutoService) != 0 )
                 {
                     serviceInfo = RegisterServiceClassInfo( t, sParent, lt, objectInfo );
                     Debug.Assert( serviceInfo != null );
@@ -198,7 +191,7 @@ namespace CK.Setup
         /// This is the root of type analysis: the whole system relies on it.
         /// </summary>
         /// <returns>The result object.</returns>
-        public AutoRealTypeCollectorResult GetResult()
+        public CKTypeCollectorResult GetResult()
         {
             using( _monitor.OpenInfo( "Static Type analysis." ) )
             {
@@ -224,7 +217,7 @@ namespace CK.Setup
                 {
                     services = GetAutoServiceResult( contracts );
                 }
-                return new AutoRealTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _kindDetector );
+                return new CKTypeCollectorResult( _assemblies, pocoSupport, contracts, services, _kindDetector );
             }
         }
 
