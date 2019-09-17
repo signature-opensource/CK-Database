@@ -14,7 +14,7 @@ namespace CK.Core
         {
             enum RegType : byte
             {
-                AmbienObject,
+                RealObject,
                 InternalMapping,
                 InternalImplementation,
                 PreviouslyRegistered,
@@ -115,13 +115,13 @@ namespace CK.Core
                 DoRegisterSingleton( serviceType, implementation, false );
             }
 
-            void DoRegisterSingleton( Type serviceType, object implementation, bool isAmbient )
+            void DoRegisterSingleton( Type serviceType, object implementation, bool isRealObject )
             {
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
                 {
-                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to {(isAmbient ? $"real object '{implementation.GetType().Name}'" : "provided singleton instance")}." );
+                    Monitor.Trace( $"Registering service mapping from '{serviceType}' to {(isRealObject ? $"real object '{implementation.GetType().Name}'" : "provided singleton instance")}." );
                     Services.Add( new ServiceDescriptor( serviceType, implementation ) );
-                    _registered.Add( serviceType, isAmbient ? RegType.AmbienObject : RegType.InternalMapping );
+                    _registered.Add( serviceType, isRealObject ? RegType.RealObject : RegType.InternalMapping );
                 }
                 else if( reg == RegType.PreviouslyRegistered )
                 {
@@ -165,7 +165,7 @@ namespace CK.Core
                     {
                         Monitor.Warn( $"Service type '{implementation}' is already registered in ServiceCollection. {lt} registration skipped." );
                     }
-                    else if( reg != RegType.AmbienObject && reg != RegType.InternalImplementation )
+                    else if( reg != RegType.RealObject && reg != RegType.InternalImplementation )
                     {
                         Monitor.Error( $"Duplicate '{implementation}' type registration in ServiceRegister. ServiceRegister checks that registration occur at most once." );
                     }
@@ -174,7 +174,7 @@ namespace CK.Core
                 {
                     Monitor.Warn( $"Service mapping '{serviceType}' is already registered in ServiceCollection. {lt} registration skipped." );
                 }
-                else if( reg != RegType.AmbienObject
+                else if( reg != RegType.RealObject
                          && !(reg == RegType.InternalImplementation && serviceType == implementation) )
                 {
                     Monitor.Error( $"Duplicate '{serviceType}' registration in ServiceRegister (mapped to {implementation}). ServiceRegister checks that registration occur at most once." );

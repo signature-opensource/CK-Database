@@ -45,8 +45,8 @@ namespace CK.Core
         IEnumerable<KeyValuePair<Type, object>> Mappings { get; }
 
         /// <summary>
-        /// Configures a <see cref="IServiceCollection"/> by calling first <see cref="StObjContextRoot.RegisterStartupServicesMethodName"/>
-        /// an then <see cref="StObjContextRoot.ConfigureServicesMethodName"/> on all the <see cref="Implementations"/> that expose
+        /// Configures a <see cref="IServiceCollection"/> by calling first all <see cref="StObjContextRoot.RegisterStartupServicesMethodName"/>
+        /// an then all <see cref="StObjContextRoot.ConfigureServicesMethodName"/> on all the <see cref="Implementations"/> that expose
         /// such methods.
         /// </summary>
         /// <param name="register">The service register.</param>
