@@ -53,6 +53,8 @@ namespace CK.Core
 
             /// <summary>
             /// Gets the startup services container.
+            /// These services is not used to build IRealObject (they must be independent of any "dynamic" services). These registered services
+            /// become available to any <see cref="ConfigureServicesMethodName"/> methods through parameter injection.
             /// </summary>
             public SimpleServiceContainer StartupServices { get; }
 

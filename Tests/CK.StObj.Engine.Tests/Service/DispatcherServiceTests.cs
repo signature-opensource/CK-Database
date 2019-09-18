@@ -2,11 +2,12 @@ using CK.Core;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using static CK.Testing.StObjEngineTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class DispatcherServiceTests : ServiceTestsBase
+    public class DispatcherServiceTests
     {
         public interface IServiceBase : IScopedAutoService
         {
@@ -39,11 +40,11 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void simple_dispatcher()
         {
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( S1 ) );
             collector.RegisterType( typeof( S2 ) );
             collector.RegisterType( typeof( SDispatcher ) );
-            CheckFailure( collector );
+            TestHelper.GetFailedResult( collector );
             Assume.That( false, "IEnumerable<T> or IReadOnlyList<T> where T is IScoped/SingletonAutoService is not supported yet." );
         }
 

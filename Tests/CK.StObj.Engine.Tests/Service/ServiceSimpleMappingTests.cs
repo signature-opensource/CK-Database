@@ -5,12 +5,12 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 
-using static CK.Testing.MonitorTestHelper;
+using static CK.Testing.StObjEngineTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class ServiceSimpleMappingTests : ServiceTestsBase
+    public class ServiceSimpleMappingTests 
     {
         public interface ISBase : IScopedAutoService
         {
@@ -41,19 +41,19 @@ namespace CK.StObj.Engine.Tests.Service
         public void service_interfaces_requires_unification_otherwise_ISBase_would_be_ambiguous()
         {
             {
-                var collector = CreateStObjCollector();
+                var collector = TestHelper.CreateStObjCollector();
                 collector.RegisterType( typeof( ServiceS1Impl ) );
                 collector.RegisterType( typeof( ServiceS2Impl ) );
-                var r = CheckFailure( collector );
+                var r = TestHelper.GetFailedResult( collector );
                 r.CKTypeResult.AutoServices.RootClasses.Should().HaveCount( 2 );
             }
             // Same tests as above but excluding ISBase type: success since
             // ISBase is no more considered a IScopedAutoService.
             {
-                var collector = CreateStObjCollector( t => t != typeof( ISBase ) );
+                var collector = TestHelper.CreateStObjCollector( t => t != typeof( ISBase ) );
                 collector.RegisterType( typeof( ServiceS1Impl ) );
                 collector.RegisterType( typeof( ServiceS2Impl ) );
-                var r = CheckSuccess( collector );
+                var r = TestHelper.GetSuccessfulResult( collector );
                 r.Services.SimpleMappings.ContainsKey( typeof( ISBase ) ).Should().BeFalse();
                 r.Services.SimpleMappings[typeof( IS1 )].ClassType.Should().BeSameAs( typeof( ServiceS1Impl ) );
                 r.Services.SimpleMappings[typeof( IS2 )].ClassType.Should().BeSameAs( typeof( ServiceS2Impl ) );
@@ -65,9 +65,9 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void service_interfaces_with_single_implementation()
         {
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( ServiceS1S2Impl ) );
-            var r = CheckSuccess( collector );
+            var r = TestHelper.GetSuccessfulResult( collector );
             r.Services.SimpleMappings[typeof( ISBase )].ClassType.Should().BeSameAs( typeof( ServiceS1S2Impl ) );
             r.Services.SimpleMappings[typeof( IS2 )].ClassType.Should().BeSameAs( typeof( ServiceS1S2Impl ) );
             r.Services.SimpleMappings[typeof( IS1 )].ClassType.Should().BeSameAs( typeof( ServiceS1S2Impl ) );
@@ -85,9 +85,9 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void service_interfaces_unification_works()
         {
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( ServiceUnifiedImpl ) );
-            var r = CheckSuccess( collector );
+            var r = TestHelper.GetSuccessfulResult( collector );
             var interfaces = r.CKTypeResult.AutoServices.LeafInterfaces;
             interfaces.Should().HaveCount( 1 );
             var iSU = interfaces[0];
@@ -143,14 +143,14 @@ namespace CK.StObj.Engine.Tests.Service
         {
             bool solved = mode == "With Service Chaining";
 
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( ServiceImpl1 ) );
             collector.RegisterType( typeof( ServiceImpl3 ) );
             if( solved ) collector.RegisterType( typeof( ResolveByClassUnification ) );
 
             if( solved )
             {
-                var r = CheckSuccess( collector );
+                var r = TestHelper.GetSuccessfulResult( collector );
                 r.Services.SimpleMappings[typeof( IMultiImplService )].ClassType.Should().BeSameAs( typeof( ResolveByClassUnification ) );
                 r.Services.SimpleMappings[typeof( ServiceImplBaseBase )].ClassType.Should().BeSameAs( typeof( ResolveByClassUnification ) );
                 r.Services.SimpleMappings[typeof( ServiceImplRootProblem )].ClassType.Should().BeSameAs( typeof( ResolveByClassUnification ) );
@@ -161,7 +161,7 @@ namespace CK.StObj.Engine.Tests.Service
             }
             else
             {
-                var r = CheckFailure( collector );
+                var r = TestHelper.GetFailedResult( collector );
                 var interfaces = r.CKTypeResult.AutoServices.LeafInterfaces;
                 interfaces.Should().HaveCount( 1 );
                 var classes = r.CKTypeResult.AutoServices.RootClasses;
@@ -201,12 +201,12 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void simple_linked_list_of_service_classes()
         {
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( S1 ) );
             collector.RegisterType( typeof( S2 ) );
             collector.RegisterType( typeof( S3 ) );
             collector.RegisterType( typeof( S4 ) );
-            var r = CheckSuccess( collector );
+            var r = TestHelper.GetSuccessfulResult( collector );
             r.Services.SimpleMappings[typeof( ISBase )].ClassType.Should().BeSameAs( typeof( S1 ) );
             r.Services.SimpleMappings[typeof( S1 )].ClassType.Should().BeSameAs( typeof( S1 ) );
             r.Services.SimpleMappings[typeof( S2 )].ClassType.Should().BeSameAs( typeof( S2 ) );
@@ -238,11 +238,11 @@ namespace CK.StObj.Engine.Tests.Service
         [Test]
         public void Linked_list_of_service_abstract_classes()
         {
-            var collector = CreateStObjCollector();
+            var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( AbstractS1 ) );
             collector.RegisterType( typeof( AbstractS2 ) );
             collector.RegisterType( typeof( AbstractS3 ) );
-            var (r, map) = CheckSuccessAndEmit( collector );
+            var (r, map) = TestHelper.CompileStObjMap( collector );
 
             var final = r.Services.SimpleMappings[typeof( ISBase )];
             final.ClassType.Should().NotBeSameAs( typeof( AbstractS1 ) );

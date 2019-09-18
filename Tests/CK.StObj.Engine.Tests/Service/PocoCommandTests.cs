@@ -4,14 +4,14 @@ using CK.Setup;
 using NUnit.Framework;
 using System.Linq;
 using FluentAssertions;
-
-using static CK.Testing.MonitorTestHelper;
 using Microsoft.Extensions.DependencyInjection;
+
+using static CK.Testing.StObjEngineTestHelper;
 
 namespace CK.StObj.Engine.Tests.Service
 {
     [TestFixture]
-    public class PocoCommandTests : ServiceTestsBase
+    public class PocoCommandTests
     {
         [CKTypeDefiner]
         public interface ICommand : IClosedPoco
@@ -68,7 +68,7 @@ namespace CK.StObj.Engine.Tests.Service
                 c.RegisterType( typeof( ICreateDocumentCommand ) );
                 c.RegisterType( typeof( ICultureCreateUserCommand ) );
             }
-            var services = CheckSuccessAndBuildServices( c ).Services;
+            var services = TestHelper.GetAutomaticServices( c ).Services;
 
             var dCommand = services.GetService<IPocoFactory<ICreateDocumentCommand>>().Create();
             dCommand.Should().NotBeNull( "Factories are functional." );
@@ -104,7 +104,7 @@ namespace CK.StObj.Engine.Tests.Service
             var c = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             c.RegisterType( typeof( IOther1CreateUserCommand ) );
             c.RegisterType( typeof( IOther2CreateUserCommand ) );
-            CheckFailure( c );
+            TestHelper.GetFailedResult( c );
         }
 
         [TestCase( "ICreateUserFinalCommand only" )]
@@ -124,7 +124,7 @@ namespace CK.StObj.Engine.Tests.Service
                 c.RegisterType( typeof( ICreateUserFinalCommand ) );
             }
 
-            var services = CheckSuccessAndBuildServices( c ).Services;
+            var services = TestHelper.GetAutomaticServices( c ).Services;
             var factoryCommand = services.GetService<IPocoFactory<ICreateUserCommand>>();
             factoryCommand.Should().NotBeNull();
             services.GetService<IPocoFactory<IOther1CreateUserCommand>>().Should().BeSameAs( factoryCommand );
