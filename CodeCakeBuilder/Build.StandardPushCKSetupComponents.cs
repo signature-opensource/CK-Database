@@ -21,20 +21,26 @@ new CKSetupComponent( "CK.StObj.Model", "net461" ),
 new CKSetupComponent( "CK.StObj.Model", "netstandard2.0" ),
 new CKSetupComponent( "CK.StObj.Runtime", "net461" ),
 new CKSetupComponent( "CK.StObj.Runtime", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.StObj.Runtime", "netcoreapp2.2" ),
 new CKSetupComponent( "CK.StObj.Engine", "net461" ),
 new CKSetupComponent( "CK.StObj.Engine", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.StObj.Engine", "netcoreapp2.2" ),
 new CKSetupComponent( "CK.Setupable.Model", "net461" ),
 new CKSetupComponent( "CK.Setupable.Model", "netstandard2.0" ),
 new CKSetupComponent( "CK.Setupable.Runtime", "net461" ),
 new CKSetupComponent( "CK.Setupable.Runtime", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.Setupable.Runtime", "netcoreapp2.2" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Model", "net461" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Model", "netstandard2.0" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "net461" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "netcoreapp2.2" ),
 new CKSetupComponent( "CK.Setupable.Engine", "net461" ),
 new CKSetupComponent( "CK.Setupable.Engine", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.Setupable.Engine", "netcoreapp2.2" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Engine", "net461" ),
-new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" )
+new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.1" ),
+new CKSetupComponent( "CK.SqlServer.Setup.Engine", "netcoreapp2.2" )
 };
         }
 
