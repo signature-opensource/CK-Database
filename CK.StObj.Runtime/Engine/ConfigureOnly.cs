@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CK.Setup
 {
@@ -10,7 +8,7 @@ namespace CK.Setup
     /// their <see cref="IStObjEngineAspect.Configure"/> method.
     /// </summary>
     /// <typeparam name="T">Actual service type.</typeparam>
-    public struct ConfigureOnly<T>
+    public readonly struct ConfigureOnly<T>
     {
         /// <summary>
         /// The wrapped service instance.

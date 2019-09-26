@@ -3,12 +3,11 @@ using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using CK.CodeGen.Abstractions;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Code source generator for <see cref="IPoco"/>.

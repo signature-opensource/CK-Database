@@ -1,14 +1,9 @@
 using CK.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// This interface can be supported by attributes (typically <see cref="IAttributeAmbientContextBound"/>) or by the
+    /// This interface can be supported by attributes (typically <see cref="IAttributeContextBound"/>) or by the
     /// setup item itself in order to interact/configure the driver once it has been pre initialized.
     /// </summary>
     public interface ISetupItemDriverAware

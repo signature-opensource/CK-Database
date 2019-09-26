@@ -7,11 +7,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CK.Core;
-using System.Diagnostics;
-using CK.CodeGen;
 
 namespace CK.Setup
 {
@@ -24,13 +20,13 @@ namespace CK.Setup
         readonly StObjObjectEngineMap _liftedMap;
 
         internal StObjCollectorResult(
-            AmbientTypeCollectorResult typeResult,
+            CKTypeCollectorResult typeResult,
             DynamicAssembly tempAssembly,
             Dictionary<string,object> primaryRunCache,
             IReadOnlyList<MutableItem> orderedStObjs )
         {
-            AmbientTypeResult = typeResult;
-            _liftedMap = AmbientTypeResult?.AmbientContracts?.EngineMap;
+            CKTypeResult = typeResult;
+            _liftedMap = CKTypeResult?.RealObjects?.EngineMap;
             _tempAssembly = tempAssembly;
             if( primaryRunCache != null ) SecondaryRunAccessor = key => primaryRunCache[key];
             OrderedStObjs = orderedStObjs;
@@ -45,12 +41,12 @@ namespace CK.Setup
         /// <summary>
         /// True if a fatal error occured. Result should be discarded.
         /// </summary>
-        public bool HasFatalError => OrderedStObjs == null || (AmbientTypeResult?.HasFatalError ?? false); 
+        public bool HasFatalError => OrderedStObjs == null || (CKTypeResult?.HasFatalError ?? false); 
 
         /// <summary>
         /// Gets the result of the types discovery and analysis.
         /// </summary>
-        public AmbientTypeCollectorResult AmbientTypeResult { get; }
+        public CKTypeCollectorResult CKTypeResult { get; }
 
         /// <summary>
         /// Gets the <see cref="IStObjObjectEngineMap"/> that extends runtime <see cref="IStObjObjectMap"/>.
@@ -72,7 +68,13 @@ namespace CK.Setup
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// Null if <see cref="HasFatalError"/> is true.
         /// </summary>
-        public IReadOnlyList<IStObjResult> OrderedStObjs { get; } 
+        public IReadOnlyList<IStObjResult> OrderedStObjs { get; }
+
+        /// <summary>
+        /// Gets the features.
+        /// </summary>
+        public IReadOnlyCollection<VFeature> Features => _liftedMap.Features;
+
 
     }
 }

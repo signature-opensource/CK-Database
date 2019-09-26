@@ -1,16 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\AutoImplementationTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
-using System.Diagnostics;
 using FluentAssertions;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -30,7 +24,7 @@ namespace CK.StObj.Engine.Tests
             protected abstract int FirstMethod( int i );
         }
 
-        public abstract class A : ABase, IAmbientContract
+        public abstract class A : ABase, IRealObject
         {
             [AutoImplementMethod]
             public abstract string SecondMethod( int i );
@@ -44,13 +38,13 @@ namespace CK.StObj.Engine.Tests
 
 
         [Test]
-        public void abstract_auto_impl_is_supported_on_non_IAmbientContract_base_class()
+        public void abstract_auto_impl_is_supported_on_non_IRealObject_base_class()
         {
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterType( typeof( A2 ) );
             StObjCollectorResult result = collector.GetResult();
-            Assert.That( result.HasFatalError, Is.False );
-            Assert.That( result.StObjs.Obtain<A>(), Is.Not.Null.And.AssignableTo<A2>() );
+            result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A2>();
         }
 
         public abstract class A3 : A
@@ -65,6 +59,28 @@ namespace CK.StObj.Engine.Tests
             collector.RegisterType( typeof( A3 ) );
             StObjCollectorResult result = collector.GetResult();
             result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A>().And.NotBeAssignableTo<A3>();
+        }
+
+        [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
+        class PreventAutoImplementationAttribute : Attribute { }
+
+        [PreventAutoImplementation]
+        public abstract class A4 : A
+        {
+            [AutoImplementMethod]
+            public abstract A ThirdMethod( int i, string s );
+        }
+
+
+        [Test]
+        public void abstract_auto_implementable_leaf_but_using_PreventAutoImplementationAttribute_are_silently_ignored()
+        {
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterType( typeof( A4 ) );
+            StObjCollectorResult result = collector.GetResult();
+            result.HasFatalError.Should().BeFalse();
+            result.StObjs.Obtain<A>().Should().NotBeNull().And.BeAssignableTo<A>().And.NotBeAssignableTo<A4>();
         }
 
     }

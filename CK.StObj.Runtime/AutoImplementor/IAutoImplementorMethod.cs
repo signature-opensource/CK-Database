@@ -1,7 +1,8 @@
 using CK.CodeGen.Abstractions;
+using CK.Core;
 using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Classes that implement this interface are able to implement a method.

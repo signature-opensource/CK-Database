@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CK.Setup;
+using System;
 
 namespace SqlActorPackage
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
-    public class TestAutoHeaderSPAttribute : SetupItemSelectorBaseAttribute
+    public class TestAutoHeaderSPAttribute : CK.Setup.SetupItemSelectorBaseAttribute
     {
         public TestAutoHeaderSPAttribute( string headerComment, string commaSeparatedNames )
-            : base( "SqlActorPackage.Runtime.TestAutoHeaderSPAttributeImpl, SqlActorPackage.Runtime", commaSeparatedNames, SetupItemSelectorScope.All )
+            : base( "SqlActorPackage.Runtime.TestAutoHeaderSPAttributeImpl, SqlActorPackage.Runtime", commaSeparatedNames, CK.Core.SetupItemSelectorScope.All )
         {
             HeaderComment = headerComment;
         }

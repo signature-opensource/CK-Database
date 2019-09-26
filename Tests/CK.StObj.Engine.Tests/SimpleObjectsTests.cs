@@ -1,12 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\SimpleObjectsTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
-using System.Reflection;
 using CK.Core;
 using CK.Setup;
 using CK.StObj.Engine.Tests.SimpleObjects;
@@ -14,11 +6,16 @@ using NUnit.Framework;
 using System.Linq;
 using FluentAssertions;
 
+using static CK.Testing.MonitorTestHelper;
+using System.Reflection;
+
 namespace CK.StObj.Engine.Tests
 {
     [TestFixture]
     public class SimpleObjectsTests
     {
+        static Assembly ThisAssembly = typeof( SimpleObjectsTests ).Assembly;
+
         public class ObjectALevel1Conflict : ObjectA
         {
         }
@@ -26,7 +23,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void StObj_must_have_only_one_specialization_chain()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.IsClass )
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
@@ -37,12 +34,43 @@ namespace CK.StObj.Engine.Tests
             result.HasFatalError.Should().BeTrue();
         }
 
+        public class Auto : IAutoService { }
 
+        public class RealThatReferenceAutoIsError : IRealObject
+        {
+            void StObjConstruct( Auto s ) { }
+        }
+
+        public class AmbientInject : IRealObject
+        {
+            [InjectObject]
+            public Auto Service { get; private set; }
+        }
 
         [Test]
-        public void DiscoverSimpleObjects()
+        public void a_RealObject_that_references_an_auto_service_from_its_StObjConstruct_is_an_error()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = new[] { typeof( RealThatReferenceAutoIsError ) };
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.True );
+        }
+
+        [Test]
+        public void a_RealObject_that_references_an_auto_service_from_an_InjectObject_is_an_error()
+        {
+            var types = new[] { typeof( AmbientInject ) };
+            StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
+            collector.RegisterTypes( types.ToList() );
+            var result = collector.GetResult();
+            Assert.That( result.HasFatalError, Is.True );
+        }
+
+        [Test]
+        public void Discovering_SimpleObjects()
+        {
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.IsClass )
                             .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
 
@@ -72,11 +100,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void DiscoverWithLevel3()
+        public void Discovering_with_Level3()
         {
             using( TestHelper.Monitor.OpenInfo( "Without ObjectALevel4 class." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => (t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                               || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3")
@@ -91,7 +119,7 @@ namespace CK.StObj.Engine.Tests
 
             using( TestHelper.Monitor.OpenInfo( "ObjectALevel4 class (specializes ObjectALevel3 and use IAbstractionBOnLevel2)." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3" );
@@ -105,12 +133,12 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void CycleInPackage()
+        public void Cycle_in_package()
         {
             using( TestHelper.Monitor.OpenInfo( "A specialization of ObjectBLevel3 wants to be in PackageForAB." ) )
             {
                 // ↳ PackageForAB ∋ ObjectBLevel3_InPackageForAB ⇒ ObjectBLevel2 ⇒ ObjectBLevel1 ∈ PackageForABLevel1 ⇒ PackageForAB.
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                 .Where( t => t.IsClass )
                                 .Where( t => t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects.WithLevel3"
@@ -125,11 +153,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void Cycle()
+        public void ObjectXNeedsY_and_ObjectYNeedsX_Cycle()
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                .Where( t => t.IsClass )
                                .Where( t => t.Name == "ObjectXNeedsY"
                                              || t.Name == "ObjectYNeedsX"
@@ -144,11 +172,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void MissingReference()
+        public void Missing_reference()
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
+                var types = ThisAssembly.GetTypes()
                                .Where( t => t.IsClass )
                                .Where( t => t.Name == "ObjectXNeedsY"
                                              || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
@@ -161,12 +189,11 @@ namespace CK.StObj.Engine.Tests
         }
 
         [Test]
-        public void LoggerInjection()
+        public void IActivityMonitor_injected_in_the_StObjConstruct_is_the_Setup_monitor()
         {
             using( TestHelper.Monitor.OpenInfo( "ConsoleMonitor injection (and optional parameter)." ) )
             {
-                var types = TestHelper.Assembly.GetTypes()
-                                .Where( t => t.Name == "LoggerInjected" );
+                var types = new[] { typeof( SimpleObjects.LoggerInjection.LoggerInjected ) };
 
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
                 collector.RegisterTypes( types.ToList() );
@@ -182,16 +209,16 @@ namespace CK.StObj.Engine.Tests
         #region Buggy & Valid Model
 
         [StObj( ItemKind = DependentItemKindSpec.Container )]
-        class C1 : IAmbientContract
+        public class C1 : IRealObject
         {
         }
 
         [StObj( Container = typeof( C1 ), ItemKind = DependentItemKindSpec.Container )]
-        class C2InC1 : IAmbientContract
+        public class C2InC1 : IRealObject
         {
         }
 
-        class C3InC2SpecializeC1 : C1
+        public class C3InC2SpecializeC1 : C1
         {
             void StObjConstruct( [Container]C2InC1 c2 )
             {
@@ -207,7 +234,7 @@ namespace CK.StObj.Engine.Tests
             //            ⊐ []CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1 
             //                ↟ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
 
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3InC2SpecializeC1" );
@@ -220,7 +247,7 @@ namespace CK.StObj.Engine.Tests
         }
 
         [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( C2InC1 ), Children = new Type[] { typeof( C1 ) } )]
-        class C3ContainsC1 : IAmbientContract
+        public class C3ContainsC1 : IRealObject
         {
         }
 
@@ -233,7 +260,7 @@ namespace CK.StObj.Engine.Tests
             //            ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1 
             //                ⊏ []CK.StObj.Engine.Tests.SimpleObjectsTests+C1.
 
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                             .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                          || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3ContainsC1" );
@@ -244,7 +271,7 @@ namespace CK.StObj.Engine.Tests
             Assert.That( result.HasFatalError, Is.True );
         }
 
-        class C3RequiresC2SpecializeC1 : C1
+        public class C3RequiresC2SpecializeC1 : C1
         {
             void StObjConstruct( C2InC1 c2 )
             {
@@ -254,7 +281,7 @@ namespace CK.StObj.Engine.Tests
         [Test]
         public void ValidModelWithRequires()
         {
-            var types = TestHelper.Assembly.GetTypes()
+            var types = ThisAssembly.GetTypes()
                            .Where( t => t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C1"
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C2InC1"
                                         || t.FullName == "CK.StObj.Engine.Tests.SimpleObjectsTests+C3RequiresC2SpecializeC1" );

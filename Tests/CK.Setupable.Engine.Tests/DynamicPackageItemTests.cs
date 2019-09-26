@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Setup;
 using NUnit.Framework;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setupable.Engine.Tests
 {
@@ -21,7 +19,7 @@ namespace CK.Setupable.Engine.Tests
             var pAModel = pA.EnsureModelPackage();
             var pBModel = pB.EnsureModelPackage();
             pB.Requires.Add( pA );
-            var sortResult = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pB );
+            var sortResult = DependencySorter.OrderItems( TestHelper.Monitor, pB );
             Assert.That( sortResult.IsComplete );
             var sortedNames = sortResult.SortedItems.Select( i => i.FullName ).ToArray();
             CollectionAssert.AreEqual( new[] { "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" }, sortedNames );

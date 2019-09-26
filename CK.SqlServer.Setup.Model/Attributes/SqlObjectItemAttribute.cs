@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using System.Diagnostics;
 using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
 
     /// <summary>

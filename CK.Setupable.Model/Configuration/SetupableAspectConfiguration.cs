@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using CK.Core;
 using System.Xml.Linq;
-using System.Linq;
-using System.Diagnostics;
 
 namespace CK.Setup
 {
@@ -25,31 +20,9 @@ namespace CK.Setup
         public const int CurrentXmlVersion = 1;
 
         /// <summary>
-        /// Defines Xml centralized names.
+        /// The KeepUnaccessedItemsVersion element name.
         /// </summary>
-        public static class XmlNames
-        {
-            /// <summary>
-            /// The TraceDependencySorterInput element name.
-            /// </summary>
-            static public readonly XName TraceDependencySorterInput = XNamespace.None + "TraceDependencySorterInput";
-
-            /// <summary>
-            /// The TraceDependencySorterOutput element name.
-            /// </summary>
-            static public readonly XName TraceDependencySorterOutput = XNamespace.None + "TraceDependencySorterOutput";
-
-            /// <summary>
-            /// The RevertOrderingNames element name.
-            /// </summary>
-            static public readonly XName RevertOrderingNames = XNamespace.None + "RevertOrderingNames";
-
-            /// <summary>
-            /// The KeepUnaccessedItemsVersion element name.
-            /// </summary>
-            static public readonly XName KeepUnaccessedItemsVersion = XNamespace.None + "KeepUnaccessedItemsVersion";
-
-        }
+        static public readonly XName xKeepUnaccessedItemsVersion = XNamespace.None + "KeepUnaccessedItemsVersion";
 
         /// <summary>
         /// Reads a <see cref="XElement"/> content (typically created by <see cref="SerializeXml(XElement)"/>).
@@ -57,12 +30,11 @@ namespace CK.Setup
         /// <param name="e">The element to read.</param>
         public SetupableAspectConfiguration( XElement e )
         {
-            int? nv = (int?)e.Attribute( StObjEngineConfiguration.XmlNames.Version );
-            int v = nv.HasValue ? nv.Value : CurrentXmlVersion;
-            TraceDependencySorterInput = string.Equals( e.Element( XmlNames.TraceDependencySorterInput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            TraceDependencySorterOutput = string.Equals( e.Element( XmlNames.TraceDependencySorterOutput )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            RevertOrderingNames = string.Equals( e.Element( XmlNames.RevertOrderingNames )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            KeepUnaccessedItemsVersion = string.Equals( e.Element( XmlNames.KeepUnaccessedItemsVersion )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            int v = (int?)e.Attribute( StObjEngineConfiguration.xVersion ) ?? CurrentXmlVersion;
+            TraceDependencySorterInput = (bool?)e.Element( StObjEngineConfiguration.xTraceDependencySorterInput ) ?? false;
+            TraceDependencySorterOutput = (bool?)e.Element( StObjEngineConfiguration.xTraceDependencySorterOutput ) ?? false;
+            RevertOrderingNames = (bool?)e.Element( StObjEngineConfiguration.xRevertOrderingNames ) ?? false;
+            KeepUnaccessedItemsVersion = (bool?)e.Element( xKeepUnaccessedItemsVersion ) ?? false;
         }
 
         /// <summary>
@@ -72,11 +44,11 @@ namespace CK.Setup
         /// <returns>The <paramref name="e"/> element.</returns>
         public XElement SerializeXml( XElement e )
         {
-            e.Add( new XAttribute( StObjEngineConfiguration.XmlNames.Version, CurrentXmlVersion ),
-                   RevertOrderingNames ? new XElement( XmlNames.RevertOrderingNames, "true" ) : null,
-                   TraceDependencySorterInput ? new XElement( XmlNames.TraceDependencySorterInput, "true" ) : null,
-                   TraceDependencySorterOutput ? new XElement( XmlNames.TraceDependencySorterOutput, "true" ) : null,
-                   KeepUnaccessedItemsVersion ? new XElement( XmlNames.KeepUnaccessedItemsVersion, "true" ) : null );
+            e.Add( new XAttribute( StObjEngineConfiguration.xVersion, CurrentXmlVersion ),
+                   RevertOrderingNames ? new XElement( StObjEngineConfiguration.xRevertOrderingNames, true ) : null,
+                   TraceDependencySorterInput ? new XElement( StObjEngineConfiguration.xTraceDependencySorterInput, true ) : null,
+                   TraceDependencySorterOutput ? new XElement( StObjEngineConfiguration.xTraceDependencySorterOutput, true ) : null,
+                   KeepUnaccessedItemsVersion ? new XElement( xKeepUnaccessedItemsVersion, true ) : null );
             return e;
         }
 

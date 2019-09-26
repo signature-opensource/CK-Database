@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.Core
 {
@@ -10,7 +6,7 @@ namespace CK.Core
     /// Poco factory.
     /// These interfaces are automatically implemented.
     /// </summary>
-    public interface IPocoFactory<out T> : IAmbientContract where T : IPoco
+    public interface IPocoFactory<out T> : IRealObject where T : IPoco
     {
         /// <summary>
         /// Creates a new Poco instance.

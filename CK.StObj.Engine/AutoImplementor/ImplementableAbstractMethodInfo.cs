@@ -5,13 +5,9 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Associates an <see cref="IAutoImplementorMethod"/> to use for a <see cref="Method"/>.

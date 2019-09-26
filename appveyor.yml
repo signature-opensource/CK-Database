@@ -1,14 +1,14 @@
 
 version: build{build}
-image: Visual Studio 2017
+image: Visual Studio 2019
 clone_folder: C:\CKli-World\CK-Database-Projects\CK-Database
-services: mssql2016
+services: mssql2017
 branches:
   only:
     - master
     - develop
 environment:
-  SqlServer/MasterConnectionString: Server=(local)\SQL2016;Database=master;User ID=sa;Password=Password12!
+  SqlServer/MasterConnectionString: Server=(local)\SQL2017;Database=master;User ID=sa;Password=Password12!
   CKSETUPREMOTESTORE_PUSH_API_KEY:
     secure: ffSyq7zhajO1GUXQraZnZiZGtrPjUMGXXhlS71JUDouxx43VgzbtRfqmZM6zKTmS
   CKSETUP_CAKE_TARGET_STORE_APIKEY_AND_URL:

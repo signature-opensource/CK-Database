@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
-using System.Diagnostics;
 using System.Text;
 
 namespace CK.SqlServer.Setup
@@ -41,8 +38,15 @@ namespace CK.SqlServer.Setup
         /// </param>
         /// <param name="trackedItems">The set of <see cref="VersionedNameTracked"/> objects.</param>
         /// <param name="deleteUnaccessedItems">True to delete unaccessed items.</param>
-
-        public void SetVersions( IActivityMonitor monitor, IVersionedItemReader reader, IEnumerable<VersionedNameTracked> trackedItems, bool deleteUnaccessedItems )
+        /// <param name="originalFeatures">The original features.</param>
+        /// <param name="finalFeatures">The final (current) features.</param>
+        public void SetVersions(
+            IActivityMonitor monitor,
+            IVersionedItemReader reader,
+            IEnumerable<VersionedNameTracked> trackedItems,
+            bool deleteUnaccessedItems,
+            IReadOnlyCollection<VFeature> originalFeatures,
+            IReadOnlyCollection<VFeature> finalFeatures )
         {
             var sqlReader = reader as SqlVersionedItemReader;
             bool rewriteToSameDatabase = sqlReader != null && sqlReader.Manager == _manager;
@@ -52,64 +56,104 @@ namespace CK.SqlServer.Setup
                 _initialized = true;
             }
             StringBuilder delete = null;
+            StringBuilder deleteTrace = null;
             StringBuilder update = null;
+
+            void Delete( string fullName, bool hasBeenAccessed, string type, string version )
+            {
+                if( delete == null ) delete = new StringBuilder( "delete from CKCore.tItemVersionStore where FullName in (" );
+                else delete.Append( ',' );
+                delete.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( fullName ) ).Append( '\'' );
+
+                if( deleteTrace == null )
+                {
+                    deleteTrace = new StringBuilder();
+                    deleteTrace.AppendLine( "Items deletion from CKCore.tItemVersionStore:" ).AppendLine();
+                }
+                deleteTrace.Append( "Item ('" ).Append( fullName ).Append( "','" ).Append( type ).Append( "','" ).Append( version ).Append( "') " );
+                if( !hasBeenAccessed ) deleteTrace.AppendLine( "--> Unaccessed during DBSetup." );
+                else deleteTrace.AppendLine( "--> Explicitly deleted." );
+            }
+
+            void Update( string fullName, string typeName, string version )
+            {
+                if( update == null )
+                {
+                    update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
+                    update.Append( "insert into @T( F, T, V ) values " );
+                }
+                else update.Append( ',' );
+                update.Append( "(N'" ).Append( SqlHelper.SqlEncodeStringContent( fullName ) )
+                    .Append( "','" ).Append( SqlHelper.SqlEncodeStringContent( typeName ) )
+                    .Append( "','" ).Append( version ).Append( "')" );
+            }
+
             foreach( VersionedNameTracked t in trackedItems )
             {
-                VersionedTypedName toSet = null;
                 bool mustDelete = t.Deleted || (deleteUnaccessedItems && !t.Accessed);
                 if( mustDelete )
                 {
-                    if( delete == null ) delete = new StringBuilder( "delete from CKCore.tItemVersionStore where FullName in (" );
-                    else delete.Append( ',' );
-                    delete.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( t.FullName ) ).Append( '\'' );
-                    if( !t.Accessed )
-                    {
-                        monitor.Info( $"Item '{t.FullName}' has not been accessed: deleting its version information." );
-                    }
-                    else monitor.Info( $"Deleting '{t.FullName}' version information." );
+                    Delete( t.FullName, t.Accessed, t.Original.Type, t.Original.Version.ToString() );
                 }
                 else if( t.Original == null )
                 {
                     monitor.Trace( $"Item '{t.FullName}' is a new one." );
-                    toSet = new VersionedTypedName( t.FullName, t.NewType, t.NewVersion );
+                    Update( t.FullName, t.NewType, t.NewVersion.ToString() );
                 }
                 else if( t.NewVersion != null )
                 {
+                    bool mustUpdate = false;
                     if( t.NewVersion > t.Original.Version )
                     {
                         monitor.Trace( $"Item '{t.FullName}': version is upgraded." );
-                        toSet = new VersionedTypedName( t.FullName, t.NewType, t.NewVersion );
+                        mustUpdate = true;
                     }
                     else if( t.NewVersion < t.Original.Version )
                     {
-                        monitor.Error( $"Item '{t.FullName}': version downgraded from {t.Original.Version} to {t.NewVersion}. This is ignored." );
+                        monitor.Warn( $"Item '{t.FullName}': version downgraded from {t.Original.Version} to {t.NewVersion}." );
+                        mustUpdate = true;
                     }
-                    else if( t.NewType != t.Original.Type )
+                    if( t.NewType != t.Original.Type )
                     {
-                        monitor.Error( $"Item '{t.FullName}': Type change from '{t.Original.Type}' to '{t.NewType}'. This is ignored." );
+                        monitor.Warn( $"Item '{t.FullName}': Type change from '{t.Original.Type}' to '{t.NewType}'." );
+                        mustUpdate = true;
                     }
+                    if( mustUpdate ) Update( t.FullName, t.NewType, t.NewVersion.ToString() );
                 }
                 else
                 {
                     if( !rewriteToSameDatabase )
                     {
                         monitor.Trace( $"Item '{t.FullName}' has not been accessed. Updating target database." );
-                        toSet = t.Original;
+                        Update( t.Original.FullName, t.Original.Type, t.Original.Version.ToString() );
                     }
-                }
-                if( toSet != null )
-                {
-                    if( update == null )
-                    {
-                        update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
-                        update.Append( "insert into @T( F, T, V ) values " );
-                    }
-                    else update.Append( ',' );
-                    update.Append("(N'").Append( SqlHelper.SqlEncodeStringContent( toSet.FullName ) )
-                        .Append( "','" ).Append( SqlHelper.SqlEncodeStringContent( toSet.Type ) )
-                        .Append( "','" ).Append( toSet.Version.ToString() ).Append( "')" );
                 }
             }
+
+            var featureDiff = originalFeatures.Select( o => (o.Name, O: o, F: new VFeature()) )
+                                .Concat( finalFeatures.Select( f => (f.Name, O: new VFeature(), F: f) ) )
+                                .GroupBy( t => t.Name )
+                                .Select( x => (Name: x.Key, x.First().O, x.Last().F) );
+            foreach( var f in featureDiff )
+            {
+                if( !f.O.IsValid )
+                {
+                    monitor.Info( $"Created VFeature: '{f.F}'." );
+                    Update( f.Name, "VFeature", f.F.Version.ToNormalizedString() );
+                }
+                else if( !f.F.IsValid )
+                {
+                    monitor.Info( $"Removed VFeature: '{f.O}'." );
+                    Delete( f.Name, false, "VFeature", f.O.Version.ToNormalizedString() );
+                }
+                else if( f.O.Version != f.F.Version )
+                {
+                    monitor.Info( $"Updated VFeature {f.O} to version {f.F.Version}." );
+                    Update( f.Name, "VFeature", f.F.Version.ToNormalizedString() );
+                }
+                else monitor.Debug( $"VFeature {f.O} unchanged." );
+            }
+
             if( delete != null )
             {
                 delete.Append( ");" );
@@ -122,20 +166,8 @@ namespace CK.SqlServer.Setup
                 // Throws exception on error.
                 _manager.ExecuteOneScript( update.ToString() );
             }
+            if( deleteTrace != null ) monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
         }
 
-        static VersionedTypedName HandleSkippedVersionWrite( IActivityMonitor monitor, bool rewriteToSameDatabase, VersionedNameTracked t, string startMsg )
-        {
-            if( rewriteToSameDatabase )
-            {
-                monitor.Info( startMsg + "left as-is." );
-            }
-            else
-            {
-                monitor.Info( startMsg + "injected to the target database version." );
-                return t.Original;
-            }
-            return null;
-        }
     }
 }

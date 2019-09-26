@@ -8,11 +8,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
 using System.Collections;
-using System.Reflection;
 
 namespace CK.Setup
 {
@@ -67,7 +65,7 @@ namespace CK.Setup
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attributes above if it is the root Ambient Contract.
+                    // the attributes above if it is the root Real Object.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;

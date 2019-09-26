@@ -1,9 +1,9 @@
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using CK.Core;
+using CK.Setup;
 using CK.SqlServer.Parser;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -1,8 +1,5 @@
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace CK.Setup
@@ -25,7 +22,7 @@ namespace CK.Setup
             string finalFilePath,
             bool saveSource,
             string informationalVersion,
-            bool skipCompilation = false )
+            bool skipCompilation )
         {
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )

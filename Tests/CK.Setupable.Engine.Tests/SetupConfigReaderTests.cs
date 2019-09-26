@@ -1,13 +1,10 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Setup;
 using NUnit.Framework;
 using CK.Text;
-using System.Text.RegularExpressions;
-using CK.Core;
+
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setupable.Engine.Tests
 {
@@ -30,7 +27,7 @@ namespace CK.Setupable.Engine.Tests
         {
             var o = new DynamicContainerItem( "Test" );
             bool foundConfig;
-            new SetupConfigReader( o ).Apply( TestHelper.ConsoleMonitor, text, out foundConfig );
+            new SetupConfigReader( o ).Apply( TestHelper.Monitor, text, out foundConfig );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "n1", "[ctx]db^name" } ) );
             Assert.That( o.RequiredBy.Select( n => n.FullName ), Is.EquivalentTo( new[] { "d1" } ) );
             Assert.That( o.Groups.Select( n => n.FullName ), Is.EquivalentTo( new[] { "g1", "g2" } ) );
@@ -71,7 +68,7 @@ namespace CK.Setupable.Engine.Tests
             var o = new DynamicContainerItem( "Test" );
             var r = new Extended( o );
             bool foundConfig;
-            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, out foundConfig ) );
+            Assert.That( r.Apply( TestHelper.Monitor, text, out foundConfig ) );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "r" } ) );
             Assert.That( r.ExtendedProperties["K"], Is.EqualTo( 12.0 ) );
         }
@@ -149,7 +146,7 @@ namespace CK.Setupable.Engine.Tests
             var rItem = new Extended( o );
             var r = new ExtendedTransformer( t, rItem );
             bool foundConfig;
-            Assert.That( r.Apply( TestHelper.ConsoleMonitor, text, out foundConfig ) );
+            Assert.That( r.Apply( TestHelper.Monitor, text, out foundConfig ) );
 
             Assert.That( o.Container.FullName, Is.EqualTo( "container" ) );
             Assert.That( o.Requires.Select( n => n.FullName ), Is.EquivalentTo( new[] { "RX", "newR" } ) );

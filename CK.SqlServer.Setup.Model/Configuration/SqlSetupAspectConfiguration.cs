@@ -1,5 +1,3 @@
-using CK.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -39,9 +37,9 @@ namespace CK.Setup
         public SqlSetupAspectConfiguration( XElement e )
         {
             _databases = e.Elements( xDatabases ).Elements( xDatabase ).Select( d => new SqlDatabaseDescriptor( d ) ).ToList();
-            DefaultDatabaseConnectionString = e.Element( xDefaultDatabaseConnectionString )?.Value;
-            GlobalResolution = string.Equals( e.Element( xGlobalResolution )?.Value, "true", StringComparison.OrdinalIgnoreCase );
-            IgnoreMissingDependencyIsError = string.Equals( e.Element( xIgnoreMissingDependencyIsError )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            DefaultDatabaseConnectionString = (string)e.Element( xDefaultDatabaseConnectionString );
+            GlobalResolution = (bool?)e.Element( xGlobalResolution ) ?? false;
+            IgnoreMissingDependencyIsError = (bool?)e.Element( xIgnoreMissingDependencyIsError ) ?? false;
         }
 
         /// <summary>
@@ -54,8 +52,8 @@ namespace CK.Setup
         {
             e.Add( new XElement( xDatabases, _databases.Select( d => d.Serialize( new XElement( xDatabase ) ) ) ),
                    new XElement( xDefaultDatabaseConnectionString, DefaultDatabaseConnectionString ),
-                   GlobalResolution ? new XElement( xGlobalResolution, "true" ) : null,
-                   IgnoreMissingDependencyIsError ? new XElement( xGlobalResolution, "true" ) : null );
+                   GlobalResolution ? new XElement( xGlobalResolution, true ) : null,
+                   IgnoreMissingDependencyIsError ? new XElement( xGlobalResolution, true ) : null );
             return e;
         }
         /// <summary>

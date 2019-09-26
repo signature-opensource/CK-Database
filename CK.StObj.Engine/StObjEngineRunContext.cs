@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using CK.Core;
 
 namespace CK.Setup
@@ -9,14 +8,14 @@ namespace CK.Setup
     {
         readonly IActivityMonitor _monitor;
         readonly StObjEngineConfigureContext _startContext;
-        readonly IReadOnlyList<IStObjResult> _orderedStObjs;
         readonly StObjEngineAspectTrampoline<IStObjEngineRunContext> _trampoline;
 
-        public StObjEngineRunContext( IActivityMonitor monitor, StObjEngineConfigureContext startContext, IReadOnlyList<IStObjResult> stObjs )
+        public StObjEngineRunContext( IActivityMonitor monitor, StObjEngineConfigureContext startContext, IReadOnlyList<IStObjResult> stObjs, IReadOnlyCollection<VFeature> features )
         {
             _monitor = monitor;
             _startContext = startContext;
-            _orderedStObjs = stObjs;
+            OrderedStObjs = stObjs;
+            Features = features;
             _trampoline = new StObjEngineAspectTrampoline<IStObjEngineRunContext>( this );
         }
 
@@ -26,7 +25,9 @@ namespace CK.Setup
 
         public IReadOnlyList<IStObjEngineAspect> Aspects => _startContext.Aspects;
 
-        public IReadOnlyList<IStObjResult> OrderedStObjs => _orderedStObjs;
+        public IReadOnlyList<IStObjResult> OrderedStObjs { get; }
+
+        public IReadOnlyCollection<VFeature> Features { get; }
 
         public void PushDeferredAction( Func<IActivityMonitor, IStObjEngineRunContext, bool> postAction ) => _trampoline.Push( postAction );
 

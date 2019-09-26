@@ -3,11 +3,8 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.Text;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Xml.Linq;
 
 namespace SqlActorPackage.Runtime
@@ -48,50 +45,58 @@ namespace SqlActorPackage.Runtime
             // if they exist).
             if( !base.ExecutePreInit( monitor ) ) return false;
 
-            monitor.Info( $"BuggyPackageDriver:ExecutePreInit" );
-            return !(ReturnError && ErrorStep == SetupCallGroupStep.None);
+            bool success = !(ReturnError && ErrorStep == SetupCallGroupStep.None);
+            monitor.Info( $"BuggyPackageDriver:ExecutePreInit => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool Init( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:Init ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Init && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Init && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:Init ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool InitContent( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:InitContent ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.InitContent && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.InitContent && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:InitContent ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool Install( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:Install ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Install && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Install && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:Install ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool InstallContent( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:InstallContent ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.InstallContent && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.InstallContent && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:InstallContent ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool Settle( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:Settle ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Settle && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.Settle && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:Settle ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool SettleContent( IActivityMonitor monitor, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:SettleContent ({beforeHandlers})" );
-            return !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.SettleContent && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && !ErrorFromOnStep && ErrorStep == SetupCallGroupStep.SettleContent && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:SettleContent ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
         protected override bool OnStep( IActivityMonitor monitor, SetupCallGroupStep step, bool beforeHandlers )
         {
-            monitor.Info( $"BuggyPackageDriver:OnStep - {step} ({beforeHandlers})" );
-            return !(ReturnError && ErrorFromOnStep && ErrorStep == step && ErrorBeforeHandlers == beforeHandlers);
+            bool success = !(ReturnError && ErrorFromOnStep && ErrorStep == step && ErrorBeforeHandlers == beforeHandlers);
+            monitor.Info( $"BuggyPackageDriver:OnStep - {step} ({(beforeHandlers?"before":"after")} handler) => {(success?"ok":"ERROR (returning false)")}" );
+            return success;
         }
 
     }

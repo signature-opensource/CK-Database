@@ -6,7 +6,7 @@
 #endregion
 
 
-namespace CK.Core
+namespace CK.Setup
 {
 
     /// <summary>

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using CK.Core;
-using System.Diagnostics;
-using System.Data.SqlClient;
 
 namespace CK.SqlServer.Setup
 {

@@ -1,4 +1,3 @@
-using System;
 using CK.Core;
 using CK.Setup;
 

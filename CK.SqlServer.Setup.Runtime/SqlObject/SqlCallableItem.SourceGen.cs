@@ -1,11 +1,9 @@
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using CK.Core;
+using CK.Setup;
 using CK.SqlServer.Parser;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
 
 namespace CK.SqlServer.Setup
 {

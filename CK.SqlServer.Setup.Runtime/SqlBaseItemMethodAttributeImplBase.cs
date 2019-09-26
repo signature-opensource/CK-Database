@@ -4,7 +4,6 @@ using CK.Setup;
 using CK.SqlServer.Parser;
 using System;
 using System.Reflection;
-using System.Text;
 
 namespace CK.SqlServer.Setup
 {
@@ -99,7 +98,7 @@ namespace CK.SqlServer.Setup
                 string methodKey = $"Method:{m.Module.ModuleVersionId}.{m.MetadataToken}";
 
                 // SetupObjectItem is initialized by DynamicItemInitialize.
-                // If it is null, we are be in a "second run" (a SetupFolder).
+                // If it is null, we are in a "second run" (a BinPath that is not the root).
                 if( dynamicAssembly.IsSecondaryRun )
                 {
                     sqlItem = (SqlBaseItem)dynamicAssembly.GetPrimaryRunResult( methodKey );

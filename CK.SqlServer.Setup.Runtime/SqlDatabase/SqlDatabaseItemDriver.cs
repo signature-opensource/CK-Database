@@ -2,7 +2,6 @@ using CK.Setup;
 using CK.Core;
 using CK.SqlServer.Parser;
 using System.Collections.Generic;
-using System;
 
 namespace CK.SqlServer.Setup
 {
@@ -41,12 +40,12 @@ namespace CK.SqlServer.Setup
         public ISqlManagerBase SqlManager => _connection.SqlManager;
 
         /// <summary>
-        /// Installs a script.
+        /// Executes a setup script.
         /// </summary>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="script">The script to install.</param>
-        /// <returns>True on succes, false on error.</returns>
-        public bool InstallScript( IActivityMonitor monitor, ISetupScript script )
+        /// <param name="script">The script to run.</param>
+        /// <returns>True on success, false on error.</returns>
+        public bool RunSetupScript( IActivityMonitor monitor, ISetupScript script )
         {
             string body = script.GetScript();
             var tagHandler = new SimpleScriptTagHandler( body );

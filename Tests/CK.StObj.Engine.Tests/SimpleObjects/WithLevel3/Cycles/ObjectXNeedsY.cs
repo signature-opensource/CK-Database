@@ -12,7 +12,7 @@ namespace CK.StObj.Engine.Tests.SimpleObjects.WithLevel3.Cycles
 {
 
 
-    public class ObjectXNeedsY : IAmbientContract
+    public class ObjectXNeedsY : IRealObject
     {
         void StObjConstruct( ObjectYNeedsX other )
         {

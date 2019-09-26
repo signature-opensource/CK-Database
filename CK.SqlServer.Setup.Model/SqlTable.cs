@@ -1,24 +1,12 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\SqlTable.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
-
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Base class for table objects. 
-    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
-    /// are de facto ambient contracts.
+    /// Unless marked with <see cref="CKTypeDefinerAttribute"/>, direct specializations are de facto real objects.
+    /// A table is a <see cref="SqlPackage"/> with a <see cref="TableName"/>.
     /// </summary>
-    public class SqlTable : SqlPackageBase, IAmbientContractDefiner
+    [CKTypeDefiner]
+    public class SqlTable : SqlPackage
     {
         /// <summary>
         /// Initializes a new <see cref="SqlTable"/> with a null <see cref="TableName"/>.

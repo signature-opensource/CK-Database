@@ -1,7 +1,6 @@
 using CK.Core;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CK.Setup
 {
@@ -31,6 +30,11 @@ namespace CK.Setup
         /// Gets all the <see cref="IStObjResult"/> ordered by their dependencies.
         /// </summary>
         IReadOnlyList<IStObjResult> OrderedStObjs { get; }
+
+        /// <summary>
+        /// Gets the features.
+        /// </summary>
+        IReadOnlyCollection<VFeature> Features { get; }
 
         /// <summary>
         /// Pushes a defered action.

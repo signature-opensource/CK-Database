@@ -6,14 +6,14 @@
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.PackageForABLevel1" Collapsed="true">
     <Position X="8.5" Y="2.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\PackageForABLevel1.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.ObjectA" Collapsed="true">
     <Position X="3.25" Y="2" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAQiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAQCAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectA.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -21,14 +21,14 @@
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.ObjectALevel1" Collapsed="true">
     <Position X="3.25" Y="3" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectALevel1.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.ObjectALevel2" Collapsed="true">
     <Position X="3.25" Y="4" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectALevel2.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -42,7 +42,7 @@
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAEAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectALevel3.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -50,7 +50,7 @@
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.ObjectB" Collapsed="true">
     <Position X="5.75" Y="2" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAASAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectB.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -58,26 +58,20 @@
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.ObjectBLevel1" Collapsed="true">
     <Position X="5.75" Y="3" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\ObjectBLevel1.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CK.StObj.Engine.Tests.SimpleObjects.PackageForAB" Collapsed="true">
     <Position X="8.5" Y="1.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAACAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\PackageForAB.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
   <Interface Name="CK.StObj.Engine.Tests.SimpleObjects.IAbstractionA" Collapsed="true">
     <Position X="0.5" Y="1.5" Width="2" />
-    <InheritanceLine Type="CK.Core.IAmbientContract" FixedToPoint="true">
-      <Path>
-        <Point X="1.5" Y="1.062" />
-        <Point X="1.5" Y="1.5" />
-      </Path>
-    </InheritanceLine>
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\IAbstractionA.cs</FileName>
@@ -89,10 +83,6 @@
       <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SimpleObjects\IAbstractionALevel3.cs</FileName>
     </TypeIdentifier>
-  </Interface>
-  <Interface Name="CK.Core.IAmbientContract" Collapsed="true">
-    <Position X="0.75" Y="0.5" Width="1.5" />
-    <TypeIdentifier />
   </Interface>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

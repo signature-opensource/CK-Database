@@ -1,5 +1,3 @@
-using CK.Core;
-using CK.Setup;
 using FluentAssertions;
 using NUnit.Framework;
 using System.Data.SqlClient;
@@ -11,11 +9,11 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
     public class SqlManagerTests
     {
         [Test]
-        public void SqlManager_OpenOrCreate_catch_any_errors_when_a_Monitor_is_set()
+        public void SqlManager_OpenFromConnectionString_catch_any_error()
         {
             using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
             {
-                Assert.That( m.OpenFromConnectionString( TestHelper.GetConnectionString( "INVALID-NAME-TEST" ), true ), Is.False );
+                Assert.That( m.OpenFromConnectionString( "invalid connection string", true ), Is.False );
             }
         }
 

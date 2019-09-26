@@ -1,15 +1,8 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.StObj.Engine.Tests\AmbientPropertiesPropagationTests.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
-using System.Linq;
 using CK.Core;
 using CK.Setup;
 using NUnit.Framework;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -24,7 +17,7 @@ namespace CK.StObj.Engine.Tests
 
             public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                o.SetAmbiantPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
+                o.SetAmbientPropertyValue( monitor, PropertyName, PropertyValue, "AmbientPropertySetAttribute" );
             }
         }
 
@@ -32,7 +25,7 @@ namespace CK.StObj.Engine.Tests
         {
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnBaseObject" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class BaseObjectAmbient : IAmbientContract
+            public class BaseObjectAmbient : IRealObject
             {
                 [AmbientProperty( ResolutionSource = PropertyResolutionSource.FromContainerAndThenGeneralization )]
                 public string OneStringValue { get; set; }
@@ -53,7 +46,7 @@ namespace CK.StObj.Engine.Tests
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnAnotherContainer" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class AnotherContainer : IAmbientContract
+            public class AnotherContainer : IRealObject
             {
                 [AmbientProperty]
                 public string OneStringValue { get; set; }
@@ -65,7 +58,7 @@ namespace CK.StObj.Engine.Tests
                 {
                     if( o.ObjectType == typeof( BaseObjectAmbient ) )
                     {
-                        o.SetAmbiantPropertyValue( monitor, "OneStringValue", "Pouf", "ConfiguratorOneStringValueSetToPouf" );
+                        o.SetAmbientPropertyValue( monitor, "OneStringValue", "Pouf", "ConfiguratorOneStringValueSetToPouf" );
                     }
                 }
             }
@@ -133,7 +126,7 @@ namespace CK.StObj.Engine.Tests
         class FromGeneralizationAndThenContainer
         {
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class BaseObjectAmbient : IAmbientContract
+            public class BaseObjectAmbient : IRealObject
             {
                 [AmbientProperty]
                 public string OneStringValue { get; set; }
@@ -154,20 +147,20 @@ namespace CK.StObj.Engine.Tests
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "OnAnotherContainer" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class AnotherContainer : IAmbientContract
+            public class AnotherContainer : IRealObject
             {
                 [AmbientProperty( IsOptional = true )]
                 public string OneStringValue { get; set; }
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container, Container = typeof( ContainerForContainerForBaseObject ) )]
-            public class ContainerForBaseObject : IAmbientContract
+            public class ContainerForBaseObject : IRealObject
             {
             }
 
             [AmbientPropertySet( PropertyName = "OneStringValue", PropertyValue = "On Container of ContainerForBaseObject" )]
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class ContainerForContainerForBaseObject : IAmbientContract
+            public class ContainerForContainerForBaseObject : IRealObject
             {
                 [AmbientProperty( IsOptional = true )]
                 public string OneStringValue { get; set; }
@@ -179,7 +172,7 @@ namespace CK.StObj.Engine.Tests
                 {
                     if( o.ObjectType == typeof( BaseObjectAmbient ) )
                     {
-                        o.SetAmbiantPropertyValue( monitor, "OneStringValue", "Pouf", "ConfiguratorOneStringValueSetToPouf" );
+                        o.SetAmbientPropertyValue( monitor, "OneStringValue", "Pouf", "ConfiguratorOneStringValueSetToPouf" );
                     }
                 }
             }
@@ -241,7 +234,7 @@ namespace CK.StObj.Engine.Tests
                                                         if( o.ObjectType.Name == "InheritedBaseObject" ) o.Container.Type = typeof( AnotherContainer );
                                                         if( o.ObjectType == typeof( BaseObjectAmbient ) )
                                                         {
-                                                            o.SetAmbiantPropertyValue( TestHelper.Monitor, "OneStringValue", "OnBaseObject", "Configurator" );
+                                                            o.SetAmbientPropertyValue( TestHelper.Monitor, "OneStringValue", "OnBaseObject", "Configurator" );
                                                         }
 
                                                     } ) );

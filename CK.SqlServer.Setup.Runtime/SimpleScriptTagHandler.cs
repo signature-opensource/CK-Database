@@ -5,15 +5,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CK.Core;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace CK.SqlServer
 {
     /// <summary>
-    /// Parses scripts string to hanle 'go', 'begin/endsp' and 'begin/endscript'.
+    /// Parses scripts string to handle 'go', 'begin/endsp' and 'begin/endscript'.
     /// </summary>
     public class SimpleScriptTagHandler
     {
-        static Regex _rTag = new Regex(@"^go(\s+|$)|(?<!^\s*--.*)\s*--\[(?<1>(=/?)?[a-z]{3,})(\s+(?<2>\w+)\s*)?]\s*", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        static Regex _rTag = new Regex( @"^go(\s+|$)|(?<!^\s*--.*)\s*--\[(?<1>(=/?)?[a-z]{3,})(\s+(?<2>\w+)\s*)?]\s*", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
         [Flags]
         enum TokenType
@@ -33,9 +34,9 @@ namespace CK.SqlServer
             IsEnd = 512,
         }
 
-        static string TokenTypeDisplayName(TokenType type)
+        static string TokenTypeDisplayName( TokenType type )
         {
-            switch (type)
+            switch( type )
             {
                 case TokenType.IsScript: return "script";
                 case TokenType.IsSP: return "sp";
@@ -45,16 +46,16 @@ namespace CK.SqlServer
 
         class Token
         {
-            internal Token(Match m, TokenType type)
+            internal Token( Match m, TokenType type )
             {
                 Index = m.Index;
                 Length = m.Length;
                 Type = type;
                 string label = m.Groups[2].Value;
-                if (!string.IsNullOrWhiteSpace(label)) Label = label;
+                if( !string.IsNullOrWhiteSpace( label ) ) Label = label;
             }
 
-            internal Token(int idxText, int lenText)
+            internal Token( int idxText, int lenText )
             {
                 Index = idxText;
                 Length = lenText;
@@ -75,10 +76,10 @@ namespace CK.SqlServer
             public bool IsScriptBegin => (Type & (TokenType.IsScript | TokenType.IsBegin)) == (TokenType.IsScript | TokenType.IsBegin);
             public bool IsScriptEnd => (Type & (TokenType.IsScript | TokenType.IsEnd)) == (TokenType.IsScript | TokenType.IsEnd);
 
-            internal void MergeExpanded(Token t)
+            internal void MergeExpanded( Token t )
             {
-                Debug.Assert((Type & TokenType.StartExpanded) == TokenType.StartExpanded);
-                Debug.Assert((t.Type & TokenType.StopExpanded) == TokenType.StopExpanded);
+                Debug.Assert( (Type & TokenType.StartExpanded) == TokenType.StartExpanded );
+                Debug.Assert( (t.Type & TokenType.StopExpanded) == TokenType.StopExpanded );
                 Length += (t.Index - Index) + t.Length;
                 Type = (Type & ~TokenType.StartExpanded) | TokenType.IsExpanded;
             }
@@ -95,7 +96,7 @@ namespace CK.SqlServer
         /// </summary>
         public class Script
         {
-            internal Script(string label, string body)
+            internal Script( string label, string body )
             {
                 Label = label;
                 Body = body;
@@ -123,9 +124,9 @@ namespace CK.SqlServer
         /// Initializes a new <see cref="SimpleScriptTagHandler"/> on a script.
         /// </summary>
         /// <param name="script"></param>
-        public SimpleScriptTagHandler(string script)
+        public SimpleScriptTagHandler( string script )
         {
-            if (script == null) throw new ArgumentNullException("script");
+            if( script == null ) throw new ArgumentNullException( "script" );
             _text = script.Trim();
         }
 
@@ -142,16 +143,16 @@ namespace CK.SqlServer
         /// <param name="scriptAllowed">True to allow --[beginscript] / --[endscript] tags.</param>
         /// <param name="goInsideScriptAllowed">True to allow GO separator inside scripts.</param>
         /// <returns>True on success, false on error(s).</returns>
-        public bool Expand(IActivityMonitor monitor, bool scriptAllowed, bool goInsideScriptAllowed = false)
+        public bool Expand( IActivityMonitor monitor, bool scriptAllowed, bool goInsideScriptAllowed = false )
         {
-            if (monitor == null) throw new ArgumentNullException("monitor");
-            if (_sb != null) throw new InvalidOperationException();
+            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            if( _sb != null ) throw new InvalidOperationException();
 
-            if (!ParseTokens(monitor)) return false;
-            if (!HandleExpanded(monitor)) return false;
-            if (!CheckNested(monitor, TokenType.IsScript, scriptAllowed, goInsideScriptAllowed)) return false;
-            if (!CheckNested(monitor, TokenType.IsSP, true, false)) return false;
-            return (_expandSuccess = _tokens.Count > 0 ? DoExpand(monitor) : true);
+            if( !ParseTokens( monitor ) ) return false;
+            if( !HandleExpanded( monitor ) ) return false;
+            if( !CheckNested( monitor, TokenType.IsScript, scriptAllowed, goInsideScriptAllowed ) ) return false;
+            if( !CheckNested( monitor, TokenType.IsSP, true, false ) ) return false;
+            return (_expandSuccess = _tokens.Count > 0 ? DoExpand( monitor ) : true);
         }
 
         /// <summary>
@@ -165,197 +166,205 @@ namespace CK.SqlServer
         /// <returns>List of scripts (possibly empty).</returns>
         public List<Script> SplitScript()
         {
-            if (!_expandSuccess) throw new InvalidOperationException();
+            if( !_expandSuccess ) throw new InvalidOperationException();
             List<Script> result = new List<Script>();
-            if (_tokens.Count == 0) return result;
+            if( _tokens.Count == 0 ) return result;
 
-            Debug.Assert(_tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _sb.Length);
+            Debug.Assert( _tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _sb.Length );
             bool wasGo = false;
             int lenT;
             int idxText = 0;
-            foreach (Token t in _tokens)
+            foreach( Token t in _tokens )
             {
-                if (t.IsGo || t.IsScriptBegin)
+                if( t.IsGo || t.IsScriptBegin )
                 {
                     // Pushes the text before.
                     lenT = t.Index - idxText;
-                    if (lenT > 0) result.Add(new Script(null, _sb.ToString(idxText, lenT)));
+                    if( lenT > 0 ) result.Add( new Script( null, _sb.ToString( idxText, lenT ) ) );
 
                     idxText = t.Index;
                     // Skips the GO itself.
-                    if ((wasGo = t.IsGo)) idxText += t.Length;
+                    if( (wasGo = t.IsGo) ) idxText += t.Length;
                 }
-                else if (t.IsScriptEnd)
+                else if( t.IsScriptEnd )
                 {
                     // On end script, injects the token content itself in the current text flow.
                     lenT = (t.Index + t.Length) - idxText;
-                    if (lenT > 0) result.Add(new Script(wasGo ? null : t.Label, _sb.ToString(idxText, lenT)));
+                    if( lenT > 0 ) result.Add( new Script( wasGo ? null : t.Label, _sb.ToString( idxText, lenT ) ) );
                     idxText = t.Index + t.Length;
                 }
             }
             lenT = _sb.Length - idxText;
-            if (lenT > 0) result.Add(new Script(null, _sb.ToString(idxText, lenT)));
+            if( lenT > 0 ) result.Add( new Script( null, _sb.ToString( idxText, lenT ) ) );
 
             return result;
         }
 
-        bool HandleExpanded(IActivityMonitor monitor)
+        bool HandleExpanded( IActivityMonitor monitor )
         {
             Token currentStart = null;
-            for (int i = 0; i < _tokens.Count; ++i)
+            for( int i = 0; i < _tokens.Count; ++i )
             {
                 Token t = _tokens[i];
-                if ((t.Type & TokenType.StopExpanded) == TokenType.StopExpanded)
+                if( (t.Type & TokenType.StopExpanded) == TokenType.StopExpanded )
                 {
-                    if (currentStart == null)
+                    if( currentStart == null )
                     {
-                        monitor.Error( $"Unexpected {_text.Substring( t.Index, t.Length )}: missing expanded start marker.");
+                        LogError( monitor, $"Unexpected {_text.Substring( t.Index, t.Length )}: missing expanded start marker." );
                         return false;
                     }
-                    if ((currentStart.Type & ~TokenType.StartExpanded) != (t.Type & ~TokenType.StopExpanded))
+                    if( (currentStart.Type & ~TokenType.StartExpanded) != (t.Type & ~TokenType.StopExpanded) )
                     {
-                        monitor.Error( $"Expanded markers mismatch: {_text.Substring( currentStart.Index, currentStart.Length )} / {_text.Substring( t.Index, t.Length )}." );
+                        LogError( monitor, $"Expanded markers mismatch: {_text.Substring( currentStart.Index, currentStart.Length )} / {_text.Substring( t.Index, t.Length )}." );
                         return false;
                     }
-                    currentStart.MergeExpanded(t);
-                    _tokens.RemoveAt(i--);
+                    currentStart.MergeExpanded( t );
+                    _tokens.RemoveAt( i-- );
                     currentStart = null;
                 }
-                else if ((t.Type & TokenType.StartExpanded) == TokenType.StartExpanded)
+                else if( (t.Type & TokenType.StartExpanded) == TokenType.StartExpanded )
                 {
-                    if (currentStart != null)
+                    if( currentStart != null )
                     {
-                        monitor.Error( $"Unexpected {_text.Substring(t.Index, t.Length)}: duplicate expanded start marker." );
+                        LogError( monitor, $"Unexpected {_text.Substring( t.Index, t.Length )}: duplicate expanded start marker." );
                         return false;
                     }
                     currentStart = t;
                 }
-                else if (currentStart != null)
+                else if( currentStart != null )
                 {
-                    monitor.Error( $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker instead of {_text.Substring( t.Index, t.Length )}.");
+                    LogError( monitor, $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker instead of {_text.Substring( t.Index, t.Length )}." );
                     return false;
                 }
             }
-            if (currentStart != null)
+            if( currentStart != null )
             {
-                monitor.Error( $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker." );
+                LogError( monitor, $"Expected {_text.Substring( currentStart.Index, currentStart.Length )} stop marker." );
                 return false;
             }
             return true;
         }
 
-        bool CheckNested(IActivityMonitor monitor, TokenType type, bool allowed, bool allowInnerGo)
+        void LogError( IActivityMonitor monitor, string msg, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string fileName = null )
+        {
+            using( monitor.OpenError( msg, lineNumber, fileName ) )
+            {
+                monitor.Trace( _text );
+            }
+        }
+
+        bool CheckNested( IActivityMonitor monitor, TokenType type, bool allowed, bool allowInnerGo )
         {
             int scriptLevel = 0;
             List<string> labels = new List<string>();
-            for (int i = 0; i < _tokens.Count; ++i)
+            for( int i = 0; i < _tokens.Count; ++i )
             {
                 Token t = _tokens[i];
-                if (!allowInnerGo && t.IsGo && scriptLevel > 0)
+                if( !allowInnerGo && t.IsGo && scriptLevel > 0 )
                 {
-                    monitor.Error( $"Invalid GO batch separator inside --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}]." );
+                    LogError( monitor, $"Invalid GO batch separator inside --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}]." );
                     return false;
                 }
-                if ((t.Type & type) != 0)
+                if( (t.Type & type) != 0 )
                 {
-                    if (!allowed)
+                    if( !allowed )
                     {
-                        monitor.Error( $"Invalid {_text.Substring( t.Index, t.Length ).Trim()} in this context." );
+                        LogError( monitor, $"Invalid {_text.Substring( t.Index, t.Length ).Trim()} in this context." );
                         return false;
                     }
                     bool ignored = false;
-                    if (t.IsBegin)
+                    if( t.IsBegin )
                     {
-                        if (++scriptLevel > 1)
+                        if( ++scriptLevel > 1 )
                         {
-                            if (t.IsScript) --_nbScripts;
+                            if( t.IsScript ) --_nbScripts;
                             ignored = true;
                         }
                         else
                         {
-                            if (t.Label == null) t.Label = String.Format("AutoNum{0}", i);
+                            if( t.Label == null ) t.Label = String.Format( "AutoNum{0}", i );
                             // Adds the label to the list: the "current" label is always the last one.
-                            if (t.Label != null)
+                            if( t.Label != null )
                             {
-                                if (labels.Contains(t.Label))
+                                if( labels.Contains( t.Label ) )
                                 {
-                                    monitor.Error( $"Label '{t.Label}' is already used: labels must be unique.");
+                                    LogError( monitor, $"Label '{t.Label}' is already used: labels must be unique." );
                                     return false;
                                 }
-                                labels.Add(t.Label);
+                                labels.Add( t.Label );
                             }
                         }
                     }
                     else
                     {
-                        Debug.Assert(t.IsEnd);
-                        if (scriptLevel == 0)
+                        Debug.Assert( t.IsEnd );
+                        if( scriptLevel == 0 )
                         {
-                            monitor.Error( $"Unexpected {_text.Substring( t.Index, t.Length ).Trim()} found." );
+                            LogError( monitor, $"Unexpected {_text.Substring( t.Index, t.Length ).Trim()} found." );
                             return false;
                         }
-                        if (scriptLevel-- > 1)
+                        if( scriptLevel-- > 1 )
                         {
                             ignored = true;
                         }
                         else
                         {
                             string current = labels.LastOrDefault();
-                            if (t.Label != null)
+                            if( t.Label != null )
                             {
-                                if (current == null)
+                                if( current == null )
                                 {
-                                    monitor.Error( $"Unknown label: label '{t.Label}' has never be defined." );
+                                    LogError( monitor, $"Unknown label: label '{t.Label}' has never be defined." );
                                     return false;
                                 }
-                                if (current != t.Label)
+                                if( current != t.Label )
                                 {
-                                    monitor.Error( $"Label mismatch: label '{t.Label}' does not match current one '{current}'.");
+                                    LogError( monitor, $"Label mismatch: label '{t.Label}' does not match current one '{current}'." );
                                     return false;
                                 }
-                                labels.Add(t.Label);
+                                labels.Add( t.Label );
                             }
-                            if (current != null) t.Label = current;
+                            if( current != null ) t.Label = current;
                         }
                     }
-                    if (ignored)
+                    if( ignored )
                     {
                         monitor.Warn( $"Nested {_text.Substring( t.Index, t.Length ).Trim()} found. It is ignored." );
-                        _tokens.RemoveAt(i--);
+                        _tokens.RemoveAt( i-- );
                     }
                 }
             }
-            if (scriptLevel > 0)
+            if( scriptLevel > 0 )
             {
-                monitor.Error( $"Unbalanced --[begin{TokenTypeDisplayName(type)}] ... --[end{TokenTypeDisplayName(type)}] found." );
+                LogError( monitor, $"Unbalanced tokens --[begin{TokenTypeDisplayName( type )}] ... --[end{TokenTypeDisplayName( type )}] found." );
                 return false;
             }
             return true;
         }
 
-        bool ParseTokens(IActivityMonitor monitor)
+        bool ParseTokens( IActivityMonitor monitor )
         {
             _nbScripts = 0;
             _tokens = new List<Token>();
             int idxText = 0;
             int lenText;
-            Match m = _rTag.Match(_text);
-            while (m.Success)
+            Match m = _rTag.Match( _text );
+            while( m.Success )
             {
                 lenText = m.Index - idxText;
-                if (lenText > 0) _tokens.Add(new Token(idxText, lenText));
+                if( lenText > 0 ) _tokens.Add( new Token( idxText, lenText ) );
                 idxText = m.Index + m.Length;
 
-                if (_text[m.Index] == 'g' || _text[m.Index] == 'G') _tokens.Add(new Token(m, TokenType.IsGO));
+                if( _text[m.Index] == 'g' || _text[m.Index] == 'G' ) _tokens.Add( new Token( m, TokenType.IsGO ) );
                 else
                 {
                     TokenType t = TokenType.None;
                     int idxTag = m.Groups[1].Index;
                     // Handles --[= or --[=/.
-                    if (_text[idxTag] == '=')
+                    if( _text[idxTag] == '=' )
                     {
                         ++idxTag;
-                        if (_text[idxTag] == '/')
+                        if( _text[idxTag] == '/' )
                         {
                             ++idxTag;
                             t |= TokenType.StopExpanded;
@@ -364,13 +373,13 @@ namespace CK.SqlServer
                     }
                     // Handles beginXXX or endXXX.
                     bool isBeginOrEnd = false;
-                    if (String.Compare(_text, idxTag, "end", 0, 3, StringComparison.OrdinalIgnoreCase) == 0)
+                    if( String.Compare( _text, idxTag, "end", 0, 3, StringComparison.OrdinalIgnoreCase ) == 0 )
                     {
                         idxTag += 3;
                         t |= TokenType.IsEnd;
                         isBeginOrEnd = true;
                     }
-                    else if (String.Compare(_text, idxTag, "begin", 0, 5, StringComparison.OrdinalIgnoreCase) == 0)
+                    else if( String.Compare( _text, idxTag, "begin", 0, 5, StringComparison.OrdinalIgnoreCase ) == 0 )
                     {
                         idxTag += 5;
                         t |= TokenType.IsBegin;
@@ -378,23 +387,23 @@ namespace CK.SqlServer
                     }
                     // Handles XXX.
                     bool knownMark = false;
-                    if (isBeginOrEnd)
+                    if( isBeginOrEnd )
                     {
-                        if (String.Compare(_text, idxTag, "script", 0, 6, StringComparison.OrdinalIgnoreCase) == 0)
+                        if( String.Compare( _text, idxTag, "script", 0, 6, StringComparison.OrdinalIgnoreCase ) == 0 )
                         {
-                            if ((t & TokenType.IsBegin) != 0) ++_nbScripts;
+                            if( (t & TokenType.IsBegin) != 0 ) ++_nbScripts;
                             t |= TokenType.IsScript;
                             knownMark = true;
                         }
-                        else if (String.Compare(_text, idxTag, "sp", 0, 2, StringComparison.OrdinalIgnoreCase) == 0)
+                        else if( String.Compare( _text, idxTag, "sp", 0, 2, StringComparison.OrdinalIgnoreCase ) == 0 )
                         {
                             t |= TokenType.IsSP;
                             knownMark = true;
                         }
                     }
-                    if (knownMark)
+                    if( knownMark )
                     {
-                        _tokens.Add(new Token(m, t));
+                        _tokens.Add( new Token( m, t ) );
                     }
                     else
                     {
@@ -404,7 +413,7 @@ namespace CK.SqlServer
                 m = m.NextMatch();
             }
             lenText = _text.Length - idxText;
-            if (lenText > 0) _tokens.Add(new Token(idxText, lenText));
+            if( lenText > 0 ) _tokens.Add( new Token( idxText, lenText ) );
             return true;
         }
 
@@ -439,58 +448,58 @@ endsp: if @SPCallTC = 0 commit; return 0;
 ";
         #endregion
 
-        bool DoExpand(IActivityMonitor monitor)
+        bool DoExpand( IActivityMonitor monitor )
         {
-            Debug.Assert(_sb == null);
-            Debug.Assert(_tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _text.Length);
-            _sb = new StringBuilder(_text);
-            for (int i = 0; i < _tokens.Count; ++i)
+            Debug.Assert( _sb == null );
+            Debug.Assert( _tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _text.Length );
+            _sb = new StringBuilder( _text );
+            for( int i = 0; i < _tokens.Count; ++i )
             {
                 Token t = _tokens[i];
-                if (!t.IsExpanded)
+                if( !t.IsExpanded )
                 {
-                    if (t.IsScript)
+                    if( t.IsScript )
                     {
-                        if (t.IsBegin)
+                        if( t.IsBegin )
                         {
-                            Replace(i, t, BeginScript);
+                            Replace( i, t, BeginScript );
                         }
                         else
                         {
-                            Debug.Assert(t.IsEnd);
-                            Replace(i, t, EndScript);
+                            Debug.Assert( t.IsEnd );
+                            Replace( i, t, EndScript );
                         }
                     }
-                    else if (t.IsSP)
+                    else if( t.IsSP )
                     {
-                        if (t.IsBegin)
+                        if( t.IsBegin )
                         {
-                            Replace(i, t, BeginSP);
+                            Replace( i, t, BeginSP );
                         }
                         else
                         {
-                            Debug.Assert(t.IsEnd);
-                            Replace(i, t, EndSPWithoutRecoverableError);
+                            Debug.Assert( t.IsEnd );
+                            Replace( i, t, EndSPWithoutRecoverableError );
                         }
                     }
                 }
             }
-            Debug.Assert(_tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _sb.Length);
+            Debug.Assert( _tokens[0].Index == 0 && _tokens[_tokens.Count - 1].Index + _tokens[_tokens.Count - 1].Length == _sb.Length );
             return true;
         }
 
-        void Replace(int i, Token t, string expansion)
+        void Replace( int i, Token t, string expansion )
         {
-            Debug.Assert(t.Label == null || !String.IsNullOrWhiteSpace(t.Label));
-            expansion = expansion.Replace("#SLABELS#", t.Label != null ? " " + t.Label + " " : String.Empty);
-            expansion = expansion.Replace("#LABEL#", t.Label != null ? t.Label : String.Empty);
+            Debug.Assert( t.Label == null || !String.IsNullOrWhiteSpace( t.Label ) );
+            expansion = expansion.Replace( "#SLABELS#", t.Label != null ? " " + t.Label + " " : String.Empty );
+            expansion = expansion.Replace( "#LABEL#", t.Label != null ? t.Label : String.Empty );
 
             int deltaLength = expansion.Length - t.Length;
-            _sb.Remove(t.Index, t.Length);
-            _sb.Insert(t.Index, expansion);
+            _sb.Remove( t.Index, t.Length );
+            _sb.Insert( t.Index, expansion );
             t.Length = expansion.Length;
             t.Type = t.Type | TokenType.IsExpanded;
-            while (++i < _tokens.Count) _tokens[i].Index += deltaLength;
+            while( ++i < _tokens.Count ) _tokens[i].Index += deltaLength;
         }
 
     }

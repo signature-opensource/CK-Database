@@ -6,11 +6,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Encapsulates <see cref="Context"/>, <see cref="Location"/> and <see cref="Name"/> synchronized with the <see cref="FullName"/>.

@@ -1,10 +1,5 @@
-using CK.Core;
-using CKSetup;
+using CK.Setup;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.Testing.StObjSetup
 {
@@ -13,6 +8,8 @@ namespace CK.Testing.StObjSetup
     /// </summary>
     public class StObjSetupRunningEventArgs : EventArgs
     {
+        StObjEngineConfiguration _configuration;
+
         /// <summary>
         /// Initializes a new event with an existing configuration.
         /// </summary>
@@ -20,17 +17,21 @@ namespace CK.Testing.StObjSetup
         /// <param name="forceSetup">Initial <see cref="ForceSetup"/> configuration.</param>
         public StObjSetupRunningEventArgs( StObjEngineConfiguration conf, bool forceSetup )
         {
-            StObjEngineConfiguration = conf;
+            _configuration = conf;
             ForceSetup = forceSetup;
         }
 
         /// <summary>
-        /// Gets a mutable <see cref="StObjEngineConfiguration"/>.
+        /// Gets or sets a mutable <see cref="StObjEngineConfiguration"/> (it must never be null).
         /// This object is configured with the different values of <see cref="IStObjSetupTestHelperCore"/>.
         /// Its <see cref="StObjEngineConfiguration.Aspects"/> is empty: some aspect configurations must be
         /// added.
         /// </summary>
-        public StObjEngineConfiguration StObjEngineConfiguration { get; }
+        public StObjEngineConfiguration StObjEngineConfiguration
+        {
+            get => _configuration;
+            set => _configuration = value ?? throw new ArgumentNullException();
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="CKSetup.ICKSetupDriver.Run"/> forceSetup parameter.

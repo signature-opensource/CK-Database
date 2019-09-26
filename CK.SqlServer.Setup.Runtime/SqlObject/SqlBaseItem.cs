@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Reflection;
 using CK.Core;
 using CK.Setup;
-using System.Text;
 using CK.SqlServer.Parser;
-using System.Text.RegularExpressions;
 using System.Linq;
 using CK.Text;
 using System.Diagnostics;

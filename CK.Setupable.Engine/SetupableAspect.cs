@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
 using System.Collections;
@@ -26,7 +25,7 @@ namespace CK.Setup
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        class RunConfiguration : ISetupableAspectConfiguration
+        class RunConfiguration : ISetupableAspectRunConfiguration
         {
             readonly SetupableAspect _a;
 
@@ -58,7 +57,7 @@ namespace CK.Setup
 
         bool IStObjEngineAspect.Configure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
-            context.AddConfigureOnlyService( new ConfigureOnly<ISetupableAspectConfiguration>( new RunConfiguration( this ) ) );
+            context.AddConfigureOnlyService( new ConfigureOnly<ISetupableAspectRunConfiguration>( new RunConfiguration( this ) ) );
             context.PushPostConfigureAction( PostConfigure );
             return true;
         }
@@ -100,7 +99,7 @@ namespace CK.Setup
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
                 bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker, _setupSessionMemory );
-                setupSuccess &= versionTracker.ConcludeWithFatalOnError( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion );
+                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.Features );
                 return setupSuccess;
             }
             return false;

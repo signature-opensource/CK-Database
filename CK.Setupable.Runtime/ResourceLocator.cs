@@ -10,8 +10,9 @@ using System.Reflection;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Mutable locator that combines a <see cref="Type"/> and a path to a resource. 
@@ -113,7 +114,7 @@ namespace CK.Core
         /// </returns>
         public IEnumerable<string> GetNames( string namePrefix )
         {
-            if( Type == null ) return Util.Array.Empty<string>();
+            if( Type == null ) return Array.Empty<string>();
             IReadOnlyList<string> a = Type.Assembly.GetSortedResourceNames();
             
             string p = ResourceName( "." );

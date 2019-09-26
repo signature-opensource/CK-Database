@@ -1,11 +1,10 @@
+using CK.Core;
 using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     using Required = IReadOnlyList<KeyValuePair<object, Type>>;
 

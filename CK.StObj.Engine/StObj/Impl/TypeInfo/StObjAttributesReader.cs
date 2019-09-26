@@ -8,9 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
-using System.Reflection;
 
 namespace CK.Setup
 {
@@ -57,7 +55,7 @@ namespace CK.Setup
                     {
                         if( monitor.ShouldLogLine( multipleContainerLogLevel ) )
                         {
-                            string msg = $"Attribute {attr.GetType().Name} for type {objectType.FullName} specifies Container type '{attr.Container.Name}' but attribute {containerDefiner.GetType().Name} specifies Container type '{containerDefiner.Container.Name}'. Container remains '{containerDefiner.Container.Name}'.";
+                            string msg = $"Attribute {attr.GetType().Name} for type {objectType} specifies Container type '{attr.Container.Name}' but attribute {containerDefiner.GetType().Name} specifies Container type '{containerDefiner.Container.Name}'. Container remains '{containerDefiner.Container.Name}'.";
                             monitor.UnfilteredLog( ActivityMonitor.Tags.Empty, multipleContainerLogLevel, msg, monitor.NextLogTime(), null );
                         }
                     }

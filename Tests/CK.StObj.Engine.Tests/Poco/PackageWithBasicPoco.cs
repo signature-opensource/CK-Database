@@ -5,15 +5,12 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System.Reflection;
 using CK.Core;
-using CK.Setup;
-using NUnit.Framework;
 
 namespace CK.StObj.Engine.Tests.Poco
 {
     [StObj( ItemKind = DependentItemKindSpec.Container )]
-    public class PackageWithBasicPoco : IAmbientContract
+    public class PackageWithBasicPoco : IRealObject
     {
         void StObjConstruct( IPocoFactory<IBasicPoco> f )
         {

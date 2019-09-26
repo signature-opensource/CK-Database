@@ -1,11 +1,8 @@
-﻿using CK.Core;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using CK.Core;
 
 namespace SqlActorPackage
 {
-    public interface ISecurityZoneAbstraction : IAmbientContract
+    public interface ISecurityZoneAbstraction : IRealObject
     {
         bool IAmHere();
     }

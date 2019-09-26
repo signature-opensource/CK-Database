@@ -5,16 +5,12 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using CK.Core;
 
 namespace CK.Setup
 {
-    internal class AmbientPropertyInfo : AmbientPropertyOrInjectContractInfo
+    internal class AmbientPropertyInfo : AmbientPropertyOrInjectObjectInfo
     {
         public new readonly static string KindName = "[AmbientProperty]";
         readonly bool _isSourceDefined;

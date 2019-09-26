@@ -1,18 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
+using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
-    /// Base class for package objects. 
-    /// Sincer this class supports <see cref="IAmbientContractDefiner"/>, direct specializations
-    /// are de facto ambient contracts.
-    /// This class does not bring no more than the base <see cref="SqlPackageBase"/>.
+    /// Base class for actual packages and <see cref="SqlTable"/>.
     /// </summary>
-    public class SqlPackage : SqlPackageBase, IAmbientContractDefiner
+    [StObj( ItemKind = DependentItemKindSpec.Container )]
+    [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
+    [CKTypeDefiner]
+    public class SqlPackage : SqlServer.ISqlConnectionStringProvider, IRealObject
     {
+        /// <summary>
+        /// Gets or sets the database to which this package belongs.
+        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
+        /// </summary>
+        [AmbientProperty]
+        public SqlDatabase Database { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sql schema.
+        /// Typically initialized by an attribute (like <see cref="SqlPackageAttribute"/>).
+        /// </summary>
+        [AmbientProperty]
+        public string Schema { get; set; }
+
+        string SqlServer.ISqlConnectionStringProvider.ConnectionString => Database?.ConnectionString;
     }
 }

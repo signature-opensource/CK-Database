@@ -7,12 +7,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using CK.Core;
-using System.Reflection;
-using CK.CodeGen;
 
 namespace CK.Setup
 {
@@ -41,14 +37,6 @@ namespace CK.Setup
         /// target the correct type in the inheritance chain.
         /// </summary>
         public IReadOnlyList<PropertySetter> PreConstructProperties => _preConstruct;
-
-        //public string GetFinalTypeCSharpName( IActivityMonitor monitor, IDynamicAssembly a )
-        //{
-        //    Debug.Assert( Specialization == null );
-        //    return _leafData.ImplementableTypeInfo == null
-        //                ? ObjectType.ToCSharpName() 
-        //                : _leafData.ImplementableTypeInfo.GenerateType( monitor, a );
-        //}
 
         /// <summary>
         /// Gets the post build properties to set. Potentially not null only on leaves.

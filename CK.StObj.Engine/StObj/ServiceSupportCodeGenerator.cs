@@ -1,10 +1,9 @@
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using CK.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 
 namespace CK.Setup
 {
@@ -80,16 +79,25 @@ namespace CK.Setup
             _infoType.Namespace.Append( _sourceServiceSupport );
 
             _rootType.Append( @"
+Dictionary<Type, object> _objectServiceMappings;
 Dictionary<Type, IStObjServiceClassDescriptor> _simpleServiceMappings;
 Dictionary<Type, IStObjServiceClassFactory> _manualServiceMappings;
-Type[] _externallyDefinedSingletons;
 
 public IStObjServiceMap Services => this;
+IReadOnlyDictionary<Type, object> IStObjServiceMap.ObjectMappings => _objectServiceMappings;
 IReadOnlyDictionary<Type, IStObjServiceClassDescriptor> IStObjServiceMap.SimpleMappings => _simpleServiceMappings;
-IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;
-IReadOnlyCollection<Type> IStObjServiceMap.ExternallyDefinedSingletons => _externallyDefinedSingletons;" )
+IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMappings => _manualServiceMappings;" )
                      .NewLine();
 
+            // Object mappings.
+            _rootCtor.Append( $"_objectServiceMappings = new Dictionary<Type, object>({liftedMap.ObjectMappings.Count});" ).NewLine();
+            foreach( var map in liftedMap.ObjectMappings )
+            {
+                _rootCtor.Append( $"_objectServiceMappings.Add( " )
+                       .AppendTypeOf( map.Key )
+                       .Append( ", _stObjs[" ).Append( map.Value.IndexOrdered ).Append( "].Instance );" )
+                       .NewLine();
+            }
             // Service mappings (Simple).
             _rootCtor.Append( $"_simpleServiceMappings = new Dictionary<Type, IStObjServiceClassDescriptor>({liftedMap.ServiceSimpleMappings.Count});" ).NewLine();
             foreach( var map in liftedMap.ServiceSimpleMappings )
@@ -118,17 +126,67 @@ IReadOnlyCollection<Type> IStObjServiceMap.ExternallyDefinedSingletons => _exter
             {
                 CreateServiceClassFactory( serviceFactory );
             }
-            // ExternallyDefinedSingletons.
+        }
+
+        public void CreateConfigureServiceMethod( IReadOnlyList<IStObjResult> orderedStObjs )
+        {
+            var configure = _rootType.CreateFunction( "void IStObjObjectMap.ConfigureServices( in StObjContextRoot.ServiceRegister register )" );
+           
+            configure.Append( "register.StartupServices.Add( typeof(IStObjObjectMap), this );" ).NewLine()
+                     .Append( "object[] registerParam = new object[]{ register.Monitor, register.StartupServices };" ).NewLine();
+
+            foreach( MutableItem m in orderedStObjs ) 
             {
-                bool atLeastOne = false;
-                _rootCtor.Append( "_externallyDefinedSingletons = new Type[]{ " );
-                foreach( var s in liftedMap.ExternallyDefinedSingletons )
+                MethodInfo reg = m.Type.RegisterStartupServices;
+                if( reg != null )
                 {
-                    if( atLeastOne ) _rootCtor.Append( ", " );
-                    else atLeastOne = true;
-                    _rootCtor.AppendTypeOf( s );
+                    configure.AppendOnce( "GStObj s;" ).NewLine();
+                    configure.Append( $"s = _stObjs[{m.IndexOrdered}];" )
+                             .NewLine();
+                    configure.Append( $"s.ObjectType.GetMethod( \"{StObjContextRoot.RegisterStartupServicesMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
+                             .NewLine();
+                    configure.Append( ".Invoke( s.Instance, registerParam );" )
+                             .NewLine();
                 }
-                _rootCtor.Append( "};" ).NewLine();
+            }
+            foreach( MutableItem m in orderedStObjs )
+            {
+                var parameters = m.Type.ConfigureServicesParameters;
+                if( parameters != null )
+                {
+                    configure.AppendOnce( "GStObj s;" ).NewLine();
+                    configure.AppendOnce( "MethodInfo m;" ).NewLine();
+
+                    configure.Append( $"s = _stObjs[{m.IndexOrdered}];" )
+                             .NewLine();
+
+                    configure.Append( $"m = s.ObjectType.GetMethod( \"{StObjContextRoot.ConfigureServicesMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly );" )
+                             .NewLine();
+
+                    if( parameters.Length > 1 )
+                    {
+                        configure.AppendOnce( @"
+            var services = register.StartupServices;
+            var monitor = register.Monitor;
+            T Resolve<T>( bool o ) where T : class
+            {
+                var r = (T)services.GetService(typeof(T));
+                if( r == null )
+                {
+                    var mStr = $""{m.DeclaringType.FullName + '.' + m.Name}: unable to resolve service '{typeof(T).FullName}' from StartupServices."";
+                    if( !o ) throw new Exception( mStr );
+                    monitor.Info( mStr + "" Optional service ignored."" );
+                }
+                return r;
+            }" );
+                    }
+                    configure.Append( "m.Invoke( s.Instance, new object[]{ register" );
+                    foreach( var p in parameters.Skip( 1 ) )
+                    {
+                        configure.Append( $", Resolve<" ).AppendCSharpName( p.ParameterType, false ).Append( ">(" ).Append( p.HasDefaultValue ).Append( ')' );
+                    }
+                    configure.Append( " } );" ).NewLine();
+                }
             }
 
         }

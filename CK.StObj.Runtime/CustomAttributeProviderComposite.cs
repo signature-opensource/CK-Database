@@ -9,9 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Helper class that composes multiple <see cref="ICKCustomAttributeProvider"/> into one.

@@ -1,6 +1,5 @@
 using CK.Core;
 using FluentAssertions;
-using NUnit.Framework;
 using SqlActorPackage.Basic;
 using static CK.Testing.DBSetupTestHelper;
 

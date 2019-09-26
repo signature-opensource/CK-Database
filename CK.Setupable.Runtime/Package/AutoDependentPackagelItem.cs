@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 
 namespace CK.Setup
@@ -23,9 +22,9 @@ namespace CK.Setup
         readonly string _prefix;
         readonly string _prefixWithDot;
         IDependentItemContainerRef _explicitContaner;
-        DependentItemList _requires;
-        DependentItemList _requiredBy;
-        DependentItemGroupList _groups;
+        IDependentItemList _requires;
+        IDependentItemList _requiredBy;
+        IDependentItemGroupList _groups;
         IDependentItemList _children;
         bool _frontPackage;
         bool _autoProjectRequirements;
@@ -124,17 +123,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets a mutable list of items that this AutoDependentPackageItem requires.
         /// </summary>
-        public IDependentItemList Requires => _requires ?? (_requires = new DependentItemList()); 
+        public IDependentItemList Requires => _requires ?? (_requires = DependentItemListFactory.CreateItemList()); 
 
         /// <summary>
         /// Gets a mutable list of items that are required by this AutoDependentPackageItem.
         /// </summary>
-        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = new DependentItemList()); 
+        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = DependentItemListFactory.CreateItemList()); 
 
         /// <summary>
         /// Gets a mutable list of groups to which this AutoDependentPackageItem belongs.
         /// </summary>
-        public IDependentItemGroupList Groups => _groups ?? (_groups = new DependentItemGroupList()); 
+        public IDependentItemGroupList Groups => _groups ?? (_groups = DependentItemListFactory.CreateItemGroupList()); 
         
         /// <summary>
         /// Gets the version: it is the same as the <see cref="P:Package"/>'s one.
@@ -144,7 +143,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the mutable children list.
         /// </summary>
-        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
+        public IDependentItemList Children => _children ?? (_children = DependentItemListFactory.CreateItemList()); 
 
         IDependentItemRef IDependentItem.Generalization
         {

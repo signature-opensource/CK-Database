@@ -6,9 +6,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace CK.Setup
 {
@@ -55,13 +52,14 @@ namespace CK.Setup
 
         /// <summary>
         /// Ambient property.
-        /// This kind of reference can depend on the referenced StObj (see <see cref="TrackAmbientPropertiesMode"/>).
+        /// This kind of reference can depend on the referenced StObj (see <see cref="Core.TrackAmbientPropertiesMode"/>).
         /// </summary>
         AmbientProperty = 64,
 
         /// <summary>
         /// Pure reference to another object without any structural constraint.
         /// </summary>
-        AmbientContract = 128
+        RealObject = 128,
+
     }
 }

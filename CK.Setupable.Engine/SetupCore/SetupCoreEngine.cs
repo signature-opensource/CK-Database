@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Core setup object. Contains the execution context and all ambient services required to
+    /// Core setup object. Contains the execution context and all auto services required to
     /// process a setup. It is in charge of item ordering, setup drivers management and Init/Install/Settle steps.
     /// It does not contain anything related to script managemen.
     /// </summary>

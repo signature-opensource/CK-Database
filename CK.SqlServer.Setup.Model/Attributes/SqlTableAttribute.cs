@@ -1,23 +1,20 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.SqlServer.Setup.Model\Attributes\SqlTableAttribute.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Setup;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Attribute that must decorate a <see cref="SqlTable"/> class.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class SqlTableAttribute : SqlPackageAttributeBase
+    public class SqlTableAttribute : Setup.SqlPackageAttributeBase
     {
         /// <summary>
         /// Initializes a new <see cref="SqlTableAttribute"/>.

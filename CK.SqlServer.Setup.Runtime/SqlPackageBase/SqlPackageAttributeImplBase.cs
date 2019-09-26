@@ -1,7 +1,6 @@
 using System;
 using CK.Core;
 using CK.Setup;
-using System.Reflection;
 
 namespace CK.SqlServer.Setup
 {
@@ -29,9 +28,9 @@ namespace CK.SqlServer.Setup
        
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackageBase ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            if( !typeof( SqlPackage ).IsAssignableFrom( o.ObjectType.BaseType ) )
             {
-                monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackageBase." );
+                monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackage." );
             }
             if( Attribute.Package != null )
             {
@@ -49,15 +48,15 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    o.SetAmbiantPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
+                    o.SetAmbientPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
                 }
             }
-            else o.SetAmbiantPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
+            else o.SetAmbientPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
             // ResourceLocation is a StObjProperty.
             o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ObjectType ) );
             if( Attribute.Schema != null )
             {
-                o.SetAmbiantPropertyValue( monitor, "Schema", Attribute.Schema );
+                o.SetAmbientPropertyValue( monitor, "Schema", Attribute.Schema );
             }
             ConfigureMutableItem( monitor, o );
         }
@@ -83,7 +82,7 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                var p = (SqlPackageBase)data.StObj.InitialObject;
+                var p = (SqlPackage)data.StObj.InitialObject;
                 var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common\Shared.props" />
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <Description>Extends CK.Testing.Monitoring TestHelper with methods that supports direct use of the StObjEngine (without the out-of-process CKSetup).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
+    <PackageReference Include="CK.Testing.Monitoring" Version="$(CKTestingVersion)" />
+    <!-- This implements concrete ServiceCollection and DI engine itself. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+  </ItemGroup>
+
+</Project>

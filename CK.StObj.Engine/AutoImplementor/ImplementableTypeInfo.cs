@@ -7,8 +7,9 @@ using CK.Reflection;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
 using System.Reflection.Emit;
+using CK.Core;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Handles abstract Type and <see cref="IAttributeAutoImplemented"/>, <see cref="IAutoImplementorMethod"/>
@@ -83,8 +84,11 @@ namespace CK.Core
             if( !abstractType.IsAbstract ) throw new ArgumentException( "Type must be abstract.", nameof( abstractType ) );
             if( attributeProvider == null ) throw new ArgumentNullException( nameof( attributeProvider ) );
 
-            if( abstractType.IsDefined( typeof( PreventAutoImplementationAttribute ), false ) ) return null;
-
+            if( abstractType.GetCustomAttributesData().Any( d => d.AttributeType.Name == "PreventAutoImplementationAttribute" ) )
+            {
+                monitor.Trace( $"Type {abstractType} is marked with a [PreventAutoImplementationAttribute]. Auto implementation is skipped." );
+                return null;
+            }
             var candidates = abstractType.GetMethods( BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public ).Where( m => !m.IsSpecialName && m.IsAbstract );
             int nbUncovered = 0;
             List<ImplementableAbstractMethodInfo> methods = new List<ImplementableAbstractMethodInfo>();
@@ -111,7 +115,7 @@ namespace CK.Core
                     ++nbUncovered;
                     if( mGet == null || mSet == null || !mGet.IsAbstract || !mSet.IsAbstract )
                     {
-                        monitor.Error( $"Property {p.DeclaringType.FullName}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
+                        monitor.Error( $"Property {p.DeclaringType}.{p.Name} is not a valid abstract property (both getter and setter must exist and be abstract)." );
                     }
                     else
                     {
@@ -181,13 +185,13 @@ namespace CK.Core
                 IAutoImplementorMethod m = am.ImplementorToUse;
                 if( m == null || m == UnimplementedMarker )
                 {
-                    monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
+                    monitor.Fatal( $"Method '{AbstractType}.{am.Method.Name}' has no valid associated IAutoImplementorMethod." );
                 }
                 else
                 {
                     if( !m.Implement( monitor, am.Method, a, cB ) )
                     {
-                        monitor.Fatal( $"Method '{AbstractType.FullName}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
+                        monitor.Fatal( $"Method '{AbstractType}.{am.Method.Name}' can not be implemented by its IAutoImplementorMethod." );
                     }
                 }
             }
@@ -196,17 +200,24 @@ namespace CK.Core
                 IAutoImplementorProperty p = ap.ImplementorToUse;
                 if( p == null || p == UnimplementedMarker )
                 {
-                    monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
+                    monitor.Fatal( $"Property '{AbstractType}.{ap.Property.Name}' has no valid associated IAutoImplementorProperty." );
                 }
                 else
                 {
                     if( !p.Implement( monitor, ap.Property, a, cB ) )
                     {
-                        monitor.Fatal( $"Property '{AbstractType.FullName}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
+                        monitor.Fatal( $"Property '{AbstractType}.{ap.Property.Name}' can not be implemented by its IAutoImplementorProperty." );
                     }
                 }
             }
             return cB.FullName;
         }
+
+        /// <summary>
+        /// Overridden to return a readable string with the <see cref="AbstractType"/> name and the <see cref="StubType"/> if there is one.
+        /// </summary>
+        /// <returns>A readable string.</returns>
+        public override string ToString() => $"{AbstractType.Name} => {_stubType?.Name ?? "(no stub type)" }";
+
     }
 }

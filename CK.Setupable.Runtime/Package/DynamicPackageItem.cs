@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using CK.Core;
 
 namespace CK.Setup
@@ -16,7 +13,7 @@ namespace CK.Setup
     /// </remarks>
     public class DynamicPackageItem : MultiVersionDependentItem, IMutableSetupItemContainer, IPackageItem, IDependentItemContainerRef, IDependentItemDiscoverer<ISetupItem>
     {
-        DependentItemList _children;
+        IDependentItemList _children;
         AutoDependentPackageItem _model;
         AutoDependentPackageItem _objects;
         object _driverType;
@@ -39,7 +36,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets a mutable list of children for this package.
         /// </summary>
-        public IDependentItemList Children => _children ?? (_children = new DependentItemList()); 
+        public IDependentItemList Children => _children ?? (_children = DependentItemListFactory.CreateItemList()); 
 
         bool IDependentItemRef.Optional => false;
 

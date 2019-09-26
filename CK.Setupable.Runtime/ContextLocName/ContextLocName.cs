@@ -6,11 +6,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Independent implementation of <see cref="IContextLocNaming"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).

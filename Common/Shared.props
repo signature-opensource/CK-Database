@@ -1,18 +1,18 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>11.2.0</CKCoreVersion>
-    <CKActivityMonitorVersion>11.1.1</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>8.2.0</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.6.0</CKSqlServerVersion>
-    <CKSqlServerParserVersion>11.3.0</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>8.1.1</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>8.0.3</CKReflectionVersion>
-    <CKCodeGenVersion>0.7.0</CKCodeGenVersion>
-    <YodiiScriptVersion>0.7.3</YodiiScriptVersion>
-    <CKSetupVersion>9.3.0</CKSetupVersion>
-    <CKTestingVersion>0.10.0</CKTestingVersion>
-    <FluentAssertionsVersion>5.7.0</FluentAssertionsVersion>
+    <CKCoreVersion>12.0.0</CKCoreVersion>
+    <CKActivityMonitorVersion>12.0.0</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>9.0.0</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.7.0</CKSqlServerVersion>
+    <CKSqlServerParserVersion>12.0.0</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>9.0.0</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>8.0.4</CKReflectionVersion>
+    <CKCodeGenVersion>0.9.0</CKCodeGenVersion>
+    <YodiiScriptVersion>0.7.4</YodiiScriptVersion>
+    <CKSetupVersion>10.0.0</CKSetupVersion>
+    <CKTestingVersion>0.12.0</CKTestingVersion>
+    <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
@@ -20,13 +20,6 @@
     <EmbeddedResource Remove="CKSetup-WorkingDir\**" />
     <None Remove="CKSetup-WorkingDir\**" />
   </ItemGroup>
-  <!-- When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion). -->
-  <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
-    <Version>0.0.0-0</Version>
-    <AssemblyVersion>0.0.0</AssemblyVersion>
-    <FileVersion>0.0.0.0</FileVersion>
-    <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
-  </PropertyGroup>
   <!--<SourceLink>: is enabled only for Cake build. -->
   <PropertyGroup>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
@@ -74,7 +67,7 @@
     <Version>0.0.0-0</Version>
     <AssemblyVersion>0.0.0</AssemblyVersion>
     <FileVersion>0.0.0.0</FileVersion>
-    <InformationalVersion>0.0.0-0 (0.0.0-0) - SHA1: 0000000000000000000000000000000000000000 - CommitDate: 0001-01-01 00:00:00Z</InformationalVersion>
+    <InformationalVersion>0.0.0-0/0000000000000000000000000000000000000000/0001-01-01 00:00:00Z</InformationalVersion>
   </PropertyGroup>
   <!--</ZeroVersion>-->
   <!--<GenerateDocumentation>: Default is in Release or during Cake builds (except for projects below Tests/). Each project can override GenerateDocumentationFile property.-->

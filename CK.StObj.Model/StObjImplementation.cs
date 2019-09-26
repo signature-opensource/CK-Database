@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CK.Core
 {
@@ -10,7 +6,7 @@ namespace CK.Core
     /// Captures mapping in a <see cref="IStObjObjectMap"/>: 
     /// associates a <see cref="IStObj"/> to its final implementation.
     /// </summary>
-    public struct StObjImplementation
+    public readonly struct StObjImplementation
     {
         /// <summary>
         /// The StObj slice.

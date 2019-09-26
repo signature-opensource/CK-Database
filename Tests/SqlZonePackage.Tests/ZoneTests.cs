@@ -31,18 +31,18 @@ namespace SqlZonePackage.Tests
         }
 
         [Test]
-        public void construct_injection_of_unresolved_AmbientContract_is_null()
+        public void construct_injection_of_unresolved_RealObject_is_null()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.UnexistingByConstructParam, Is.Null);
         }
 
         [Test]
-        public void optional_property_InjectContract_of_resolved_AmbientContract()
+        public void optional_property_InjectObject_of_resolved_RealObject()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>()));
-            Assert.That(a.UnexistingByInjectContract, Is.Null, "Remains null.");
+            Assert.That(a.UnexistingByInjectObject, Is.Null, "Remains null.");
         }
 
         [Test]

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Declares a stored procedure.
     /// Signature is checked and code required to call it is generated.
     /// </summary>
-    public class SqlProcedureAttribute : SqlCallableAttributeBase
+    public class SqlProcedureAttribute : Setup.SqlCallableAttributeBase
     {
         /// <summary>
         /// Initializes a new <see cref="SqlProcedureAttribute"/>.

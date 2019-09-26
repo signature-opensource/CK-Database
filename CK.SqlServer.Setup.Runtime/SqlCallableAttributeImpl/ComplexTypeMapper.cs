@@ -89,7 +89,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        struct UnmappedInput
+        readonly struct UnmappedInput
         {
             public readonly int Index;
             public readonly string Name;

@@ -1,16 +1,19 @@
+using CK.Core;
 using NUnit.Framework;
+using System.Reflection;
 using static CK.Testing.CKDatabaseLocalTestHelper;
 
 namespace LocalTestHelper
 {
     [TestFixture]
-    public class DBSetup : CK.DB.Tests.DBSetup
+    public abstract class DBSetup : CK.DB.Tests.DBSetup
     {
 
-        [Explicit]
         [Test]
+        [Explicit]
         public void delete_netcore_published_folders()
         {
+            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.DeleteAllLocalComponentsPublishedFolders();
         }

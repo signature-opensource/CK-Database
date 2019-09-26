@@ -1,12 +1,7 @@
-using CK.Setup;
+using CK.Core;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
-using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CKLevel2.IntermediateTransformation
 {

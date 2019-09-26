@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using CK.Core;
+using CK.Setup;
+using System;
 
 namespace CK.Setupable.Engine.Tests
 {
@@ -241,11 +238,11 @@ namespace CK.Setupable.Engine.Tests
         [TestCase( "--^H", "nimp", "oneLoc" )]
         public void ResolveException( string input, string curContext, string curLoc )
         {
-            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
-            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
-            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
-            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
-            Assert.Throws<CKException>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
+            Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
+            Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
+            Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
+            Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
+            Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
         }
 
         [Test]

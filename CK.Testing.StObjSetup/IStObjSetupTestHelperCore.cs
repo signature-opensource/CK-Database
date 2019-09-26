@@ -1,12 +1,11 @@
-using CK.Core;
+using CK.Setup;
 using CKSetup;
 using System;
 
 namespace CK.Testing.StObjSetup
 {
     /// <summary>
-    /// This core helper exposes only <see cref="StObjGenerateSourceFiles"/> and
-    /// 
+    /// This core helper enables CKSetup runs of the StObj engine.
     /// This helper heavily relies on <see cref="CKSetup.ICKSetupTestHelperCore"/>.
     /// </summary>
     [ResolveTarget( typeof( IStObjSetupTestHelper ) )]

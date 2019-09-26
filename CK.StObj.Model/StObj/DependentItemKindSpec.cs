@@ -6,7 +6,7 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Core
 {
     /// <summary>
     /// Describes the kind of a dependent item.

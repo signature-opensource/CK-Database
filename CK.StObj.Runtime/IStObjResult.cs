@@ -5,16 +5,13 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// A StObj "slices" a Structured Object (that is an <see cref="IAmbientContract"/>) by types in its inheritance chain.
+    /// A StObj "slices" a Structured Object (that is an <see cref="IRealObject"/>) by types in its inheritance chain.
     /// The <see cref="InitialObject">Structured Object</see> itself is built based on already built dependencies from top 
     /// to bottom thanks to its "StObjConstruct" (<see cref="StObjContextRoot.ConstructMethodName"/>) methods. 
     /// This interface is available after the dependency graph ordering (this is the Owner exposed by <see cref="IStObjFinalParameter"/> for construct parameters for instance).
@@ -30,7 +27,7 @@ namespace CK.Setup
         object InitialObject { get; }
 
         /// <summary>
-        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeAmbientContextBound"/> are cached
+        /// Gets the provider for attributes. Attributes that are marked with <see cref="IAttributeContextBound"/> are cached
         /// and can keep an internal state if needed.
         /// </summary>
         /// <remarks>

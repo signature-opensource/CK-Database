@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using CK.Core;
-using CK.Setup;
-using System.IO;
-using System.CodeDom.Compiler;
-using System.Reflection;
-using System.Collections;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
+using CK.Core;
+using CK.Setup;
+using NUnit.Framework;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using static CK.Testing.MonitorTestHelper;
+
 
 namespace CK.StObj.Engine.Tests
 {
@@ -32,7 +30,7 @@ namespace CK.StObj.Engine.Tests
                 }
             }
 
-            public class A : IAmbientContract
+            public class A : IRealObject
             {
             }
 
@@ -54,14 +52,14 @@ namespace CK.StObj.Engine.Tests
                 public abstract int Auto( int i );
             }
 
-            public interface IC : IAmbientContract
+            public interface IC : IRealObject
             {
                 A TheA { get; }
             }
 
             public class C : IC
             {
-                [InjectContract]
+                [InjectObject]
                 public A TheA { get; private set; }
             }
 
@@ -94,8 +92,8 @@ namespace CK.StObj.Engine.Tests
                 var r = collector.GetResult();
                 Assert.That( r.HasFatalError, Is.False );
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false, null );
-                var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_SimpleEmit" );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_SimpleEmit.dll" ), false, null, false );
+                var a = Assembly.Load( "TEST_SimpleEmit" );
                 IStObjMap c = StObjContextRoot.Load( a, runtimeBuilder, TestHelper.Monitor );
                 Assert.That( typeof( B ).IsAssignableFrom( c.StObjs.ToLeafType( typeof( A ) ) ) );
                 Assert.That( c.StObjs.ToLeafType( typeof( IC ) ), Is.SameAs( typeof( D ) ) );
@@ -114,7 +112,7 @@ namespace CK.StObj.Engine.Tests
 
         public class CConstructCalledAndStObjProperties
         {
-            public class A : IAmbientContract
+            public class A : IRealObject
             {
                 [StObjProperty]
                 public string StObjPower { get; set; }
@@ -139,7 +137,7 @@ namespace CK.StObj.Engine.Tests
                 public B TheB { get; private set; }
             }
 
-            public class B : IAmbientContract
+            public class B : IRealObject
             {
                 void StObjConstruct( A a )
                 {
@@ -179,9 +177,9 @@ namespace CK.StObj.Engine.Tests
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false, null );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_ConstructCalled.dll" ), false, null, false );
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_ConstructCalled" );
+                    var a = Assembly.Load( "TEST_ConstructCalled" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.StObjs.Obtain<B>().TheA, Is.SameAs( c.StObjs.Obtain<A>() ).And.SameAs( c.StObjs.Obtain<ASpec>() ) );
                     Assert.That( c.StObjs.Obtain<ASpec>().TheB, Is.SameAs( c.StObjs.Obtain<B>() ) );
@@ -202,11 +200,14 @@ namespace CK.StObj.Engine.Tests
 
         public class PostBuildSet
         {
-            public class A : IAmbientContract
+            public class A : IRealObject
             {
                 [StObjProperty]
-                public string StObjPower { get; set; }
+                public string StObjPower { get; private set; }
 
+                /// <summary>
+                /// StObjInitialize is NOT called on setup instances.
+                /// </summary>
                 public bool StObjInitializeOnACalled; 
 
                 void StObjConstruct( IActivityMonitor monitor, [Container]BSpec bIsTheContainerOfA )
@@ -216,11 +217,11 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
                 }
 
-                [InjectContract]
+                [InjectObject]
                 public BSpec TheB { get; private set; }
             }
 
@@ -238,7 +239,7 @@ namespace CK.StObj.Engine.Tests
 
                 void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IAmbientContract>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );
                     StObjInitializeOnASpecCalled = true;
                 }
@@ -246,12 +247,12 @@ namespace CK.StObj.Engine.Tests
             }
 
             [StObj( ItemKind = DependentItemKindSpec.Container )]
-            public class B : IAmbientContract
+            public class B : IRealObject
             {
-                [InjectContract]
+                [InjectObject]
                 public A TheA { get; private set; }
 
-                [InjectContract]
+                [InjectObject]
                 public A TheInjectedA { get; private set; }
             }
 
@@ -260,8 +261,12 @@ namespace CK.StObj.Engine.Tests
                 void StObjConstruct( )
                 {
                 }
+
             }
 
+            /// <summary>
+            /// Configures the 2 A's StObjPower with "This is the A property." (for A) and "ASpec level property." (for ASpec).
+            /// </summary>
             class StObjPropertyConfigurator : IStObjStructuralConfigurator
             {
                 public void Configure( IActivityMonitor monitor, IStObjMutableItem o )
@@ -290,13 +295,14 @@ namespace CK.StObj.Engine.Tests
                     ASpec theA = (ASpec)r.StObjs.Obtain<A>();
                     Assert.That( theA.StObjPower, Is.EqualTo( "ASpec level property." ) );
                     Assert.That( typeof( A ).GetProperty( "StObjPower" ).GetValue( theA, null ), Is.EqualTo( "This is the A property." ) );
-                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on temporary instances." );
+                    Assert.That( theA.StObjInitializeOnACalled, Is.False, "StObjInitialize is NOT called on setup instances." );
+
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null );
+                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null, false );
 
                 {
-                    var a = TestHelper.LoadAssemblyFromAppContextBaseDirectory( "TEST_PostBuildSet" );
+                    var a = Assembly.Load( "TEST_PostBuildSet" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );
                     Assert.That( c.StObjs.Obtain<B>().TheA, Is.SameAs( c.StObjs.Obtain<A>() ).And.SameAs( c.StObjs.Obtain<ASpec>() ) );
                     Assert.That( c.StObjs.Obtain<ASpec>().TheB, Is.SameAs( c.StObjs.Obtain<B>() ) );
@@ -310,13 +316,14 @@ namespace CK.StObj.Engine.Tests
 
                     Assert.That( theA.StObjInitializeOnACalled, Is.True );
                     Assert.That( theA.StObjInitializeOnASpecCalled, Is.True );
+
                 }
             }
 
         }
 
         [Test]
-        public void PostBuildAndAmbientContracts()
+        public void PostBuildAndInjectObjects()
         {
             new PostBuildSet().DoTest();
         }

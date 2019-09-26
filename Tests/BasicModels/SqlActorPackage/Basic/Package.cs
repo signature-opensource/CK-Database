@@ -10,11 +10,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using CK.Core;
-using CK.Setup;
-using CK.SqlServer;
-using CK.SqlServer.Setup;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace SqlActorPackage.Basic
 {
@@ -26,8 +21,8 @@ namespace SqlActorPackage.Basic
     {
         IUnknownAbstraction _unexistingByConstructParam;
         IReadOnlyList<IAnyService> _allServices;
-        
-        void StObjConstruct(IUnknownAbstraction zone = null)
+
+        void StObjConstruct( IUnknownAbstraction zone = null )
         {
             _unexistingByConstructParam = zone;
         }
@@ -35,11 +30,11 @@ namespace SqlActorPackage.Basic
         public IUnknownAbstraction UnexistingByConstructParam => _unexistingByConstructParam;
 
 
-        [InjectContract(IsOptional = true)]
-        public IUnknownAbstraction UnexistingByInjectContract { get; protected set; }
+        [InjectObject( IsOptional = true )]
+        public IUnknownAbstraction UnexistingByInjectObject { get; private set; }
 
-        [InjectContract(IsOptional = true )]
-        public ISecurityZoneAbstraction ZoneHome { get; protected set; }
+        [InjectObject( IsOptional = true )]
+        public ISecurityZoneAbstraction ZoneHome { get; private set; }
 
         /// <summary>
         /// Interface IAnyService is supported by SqlActorPackage.GroupHome 
@@ -52,15 +47,14 @@ namespace SqlActorPackage.Basic
             _allServices = map.StObjs.Implementations.OfType<IAnyService>().ToArray();
         }
 
-        [InjectContract]
+        [InjectObject]
         public UserHome UserHome { get; protected set; }
         
-        [InjectContract]
+        [InjectObject]
         public GroupHome GroupHome { get; protected set; }
 
         [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
         public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
-
        
         #region Command injection (Connection & transaction)
 
@@ -91,10 +85,7 @@ namespace SqlActorPackage.Basic
 
         #endregion
 
-        string IKnowTheConnectionString.GetConnectionString()
-        {
-            return Database.ConnectionString;
-        }
+        string IKnowTheConnectionString.GetConnectionString() => Database.ConnectionString;
 
         #region Command Wrapper
 
@@ -148,9 +139,9 @@ namespace SqlActorPackage.Basic
         public class ScalarCmdWithAccessToABaseOfTheHome<T> : IDisposable
         {
             readonly SqlCommand _cmd;
-            readonly SqlPackageBase _package;
+            readonly SqlPackage _package;
 
-            public ScalarCmdWithAccessToABaseOfTheHome( SqlCommand cmd, SqlPackageBase package )
+            public ScalarCmdWithAccessToABaseOfTheHome( SqlCommand cmd, SqlPackage package )
             {
                 _cmd = cmd;
                 _package = package;
@@ -294,9 +285,9 @@ namespace SqlActorPackage.Basic
         public class OutputCmd<T> : IDisposable
         {
             readonly SqlCommand _cmd;
-            readonly SqlPackageBase _p;
+            readonly SqlPackage _p;
 
-            public OutputCmd( SqlCommand cmd, SqlPackageBase p )
+            public OutputCmd( SqlCommand cmd, SqlPackage p )
             {
                 _cmd = cmd;
                 _p = p;

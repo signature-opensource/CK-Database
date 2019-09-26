@@ -3,7 +3,8 @@ using System.Collections.Generic;
 namespace CK.Setup
 {
     /// <summary>
-    /// Specialized list of <see cref="IDependentItemRef"/>.
+    /// Specialized list of <see cref="IDependentItemRef"/> that can handle named items (ie. <see cref="NamedDependentItemRef"/>) transparently.
+    /// Instances can be created by <see cref="DependentItemListFactory"/>.
     /// </summary>
     public interface IDependentItemList : IList<IDependentItemRef>
     {

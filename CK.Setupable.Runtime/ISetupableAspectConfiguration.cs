@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CK.Setup
 {
@@ -8,7 +6,7 @@ namespace CK.Setup
     /// Setup phasis configuration interface.
     /// Can be injected into other aspect by using a <see cref="ConfigureOnly{T}"/> parameter.
     /// </summary>
-    public interface ISetupableAspectConfiguration
+    public interface ISetupableAspectRunConfiguration
     {
         /// <summary>
         /// Gets the external aspect configuration object.

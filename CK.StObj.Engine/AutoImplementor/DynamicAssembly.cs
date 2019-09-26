@@ -1,18 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using CK.CodeGen;
 using CK.CodeGen.Abstractions;
-using Microsoft.CodeAnalysis;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Implements <see cref="IDynamicAssembly"/>.
@@ -71,13 +66,13 @@ namespace CK.Core
         public IDictionary Memory => _memory;
 
         /// <summary>
-        /// Gets the <see cref="StubModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
+        /// Gets the <see cref="ModuleBuilder"/> for this <see cref="DynamicAssembly"/>.
         /// </summary>
         public ModuleBuilder StubModuleBuilder { get; }
 
         /// <summary>
         /// Gets the default name space for this <see cref="IDynamicAssembly"/>
-        /// into which code should be generated.
+        /// into which code should be generated: this is "CK._g".
         /// Note that nothing prevents the <see cref="INamedScope.Workspace"/> to be used and other
         /// namespaces to be created.
         /// </summary>

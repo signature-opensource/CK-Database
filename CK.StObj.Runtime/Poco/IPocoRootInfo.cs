@@ -1,10 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CK.Core
+namespace CK.Setup
 {
     /// <summary>
     /// Defines information for a unified Poco type.
@@ -17,7 +14,7 @@ namespace CK.Core
         Type PocoClass { get; }
 
         /// <summary>
-        /// Gets the <see cref="IPocoInterfaceInfo"/> that this Poco implements.
+        /// Gets all the <see cref="IPocoInterfaceInfo"/> that this Poco implements.
         /// </summary>
         IReadOnlyList<IPocoInterfaceInfo> Interfaces { get; }
 

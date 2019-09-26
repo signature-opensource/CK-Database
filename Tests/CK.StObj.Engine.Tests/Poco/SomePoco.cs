@@ -1,6 +1,3 @@
-using System.Reflection;
-using NUnit.Framework;
-using CK.Setup;
 using CK.Core;
 
 namespace CK.StObj.Engine.Tests.Poco

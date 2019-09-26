@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
-using System.Diagnostics;
+using CK.Text;
+using CSemVer;
 
 namespace CK.SqlServer.Setup
 {
@@ -58,12 +58,10 @@ namespace CK.SqlServer.Setup
                     }
                     while( ver < CurrentVersion )
                     {
-                        using( monitor.OpenInfo( $"Upgrading to Version = {ver}." ) )
-                        {
-                            m.ExecuteNonQuery( _upgradeScripts[ver++] );
-                        }
+                        monitor.Info( $"Upgrading from Version {ver} to {ver + 1}." );
+                        m.ExecuteNonQuery( _upgradeScripts[ver++] );
+                        m.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{ver}' where FullName = N'CK.SqlVersionedItemRepository';" );
                     }
-                    m.ExecuteNonQuery( $"update CKCore.tItemVersionStore set ItemVersion = '{CurrentVersion}' where FullName = N'CK.SqlVersionedItemRepository';" );
                 }
             }
         }
@@ -73,9 +71,10 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <returns>The set of original verions.</returns>
-        public IReadOnlyCollection<VersionedTypedName> GetOriginalVersions( IActivityMonitor monitor )
+        public OriginalReadInfo GetOriginalVersions( IActivityMonitor monitor )
         {
             var result = new List<VersionedTypedName>();
+            var fResult = new List<VFeature>();
             if( !_initialized )
             {
                 AutoInitialize( Manager );
@@ -87,15 +86,24 @@ namespace CK.SqlServer.Setup
                 while( r.Read() )
                 {
                     string fullName = r.GetString( 0 );
-                    Version v;
-                    if( !Version.TryParse( r.GetString( 2 ), out v ) )
+                    string itemType = r.GetString( 1 );
+                    if( itemType == "VFeature" )
                     {
-                        throw new Exception( $"Unable to parse version for {fullName}: '{r.GetString(2)}'." );
+                        fResult.Add( new VFeature( fullName, SVersion.Parse( r.GetString( 2 ) ) ) );
                     }
-                    result.Add( new VersionedTypedName( fullName, r.GetString( 1 ), v ) );
+                    else
+                    {
+                        Version v;
+                        if( !Version.TryParse( r.GetString( 2 ), out v ) )
+                        {
+                            throw new Exception( $"Unable to parse version for {fullName}: '{r.GetString( 2 )}'." );
+                        }
+                        result.Add( new VersionedTypedName( fullName, r.GetString( 1 ), v ) );
+                    }
                 }
             }
-            return result;
+            monitor.Trace( $"Existing VFeatures: {fResult.Select( f => f.ToString() ).Concatenate()}" );
+            return new OriginalReadInfo( result, fResult );
         }
 
         /// <summary>
@@ -179,8 +187,12 @@ begin
 end";
 
         const string _update1 = @"update CKCore.tItemVersionStore set FullName = stuff(FullName,6,8,'Model.') where FullName like '[[]]db^Objects.%'";
+        const string _update2 = @"
+create view CKCore.vVFeature
+as
+    select VFeature = FullName, Version = ItemVersion from CKCore.tItemVersionStore where ItemType='VFeature';";
 
-        readonly static string[] _upgradeScripts = new[] { _update1 };
+        readonly static string[] _upgradeScripts = new[] { _update1, _update2 };
 
     }
 }

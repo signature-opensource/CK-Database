@@ -1,6 +1,6 @@
 using System;
 
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
 
     /// <summary>
@@ -8,7 +8,7 @@ namespace CK.SqlServer.Setup
     /// without code generation support to call it.
     /// </summary>
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = false )]
-    public class SqlProcedureNoExecuteAttribute : SqlCallableAttributeBase
+    public class SqlProcedureNoExecuteAttribute : Setup.SqlCallableAttributeBase
     {
         /// <summary>
         /// Initializes a new <see cref="SqlProcedureNoExecuteAttribute"/>.

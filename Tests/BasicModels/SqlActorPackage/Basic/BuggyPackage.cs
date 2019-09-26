@@ -8,18 +8,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using CK.Core;
-using CK.Setup;
 using CK.SqlServer;
-using CK.SqlServer.Setup;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace SqlActorPackage.Basic
 {
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" ), Versions( "1.0.0" )]
+    [SqlPackage( Schema = "CK", Package = typeof( Package )/*, Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res"*/ )]
+    [Versions( "1.0.0" )]
     [Setup( DriverTypeName = "SqlActorPackage.Runtime.BuggyPackageDriver, SqlActorPackage.Runtime" )]
     public abstract class BuggyPackage : SqlPackage
     {

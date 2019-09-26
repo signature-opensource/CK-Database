@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 
 namespace CK.Setup
@@ -12,7 +7,7 @@ namespace CK.Setup
     /// <summary>
     /// Implementation of <see cref="SetupObjectItemRefMemberAttributeBase"/>.
     /// </summary>
-    public abstract class SetupObjectItemRefMemberAttributeImplBase : IAttributeAmbientContextBoundInitializer
+    public abstract class SetupObjectItemRefMemberAttributeImplBase : IAttributeContextBoundInitializer
     {
         readonly SetupObjectItemRefMemberAttributeBase _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
@@ -43,7 +38,7 @@ namespace CK.Setup
         /// </summary>
         protected MemberInfo Member => _member; 
 
-        void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
+        void IAttributeContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
             _owner = owner;
             _member = m;

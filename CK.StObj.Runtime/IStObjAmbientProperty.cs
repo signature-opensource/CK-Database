@@ -1,21 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.StObj.Runtime\IStObjAmbientProperty.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CK.Core;
 
 namespace CK.Setup
 {
     /// <summary>
     /// Describes a <see cref="IStObjReference"/> that is an an ambient property. 
-    /// There is no setter for the value: <see cref="IStObjMutableItem.SetAmbiantPropertyValue"/> and <see cref="IStObjMutableItem.SetAmbiantPropertyConfiguration"/> must 
+    /// There is no setter for the value: <see cref="IStObjMutableItem.SetAmbientPropertyValue"/> and <see cref="IStObjMutableItem.SetAmbientPropertyConfiguration"/> must 
     /// be used to update the configuration of an ambient property from <see cref="IStObjStructuralConfigurator.Configure"/>.
     /// </summary>
     public interface IStObjAmbientProperty : IStObjReference

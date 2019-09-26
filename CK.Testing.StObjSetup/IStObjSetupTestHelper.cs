@@ -1,6 +1,3 @@
-using CKSetup;
-using System;
-
 namespace CK.Testing
 {
     /// <summary>

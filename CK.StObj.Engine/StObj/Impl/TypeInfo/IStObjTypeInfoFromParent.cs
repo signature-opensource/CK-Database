@@ -7,8 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CK.Core;
 
 namespace CK.Setup
@@ -18,7 +16,7 @@ namespace CK.Setup
         int SpecializationDepth { get; }
         Type Container { get; }
         IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; }
-        IReadOnlyList<InjectContractInfo> AmbientContracts { get; }
+        IReadOnlyList<InjectObjectInfo> InjectObjects { get; }
         IReadOnlyList<StObjPropertyInfo> StObjProperties { get; }
         DependentItemKind ItemKind { get; }
         TrackAmbientPropertiesMode TrackAmbientProperties { get; }

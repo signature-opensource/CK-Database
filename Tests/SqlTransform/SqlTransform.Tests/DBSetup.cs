@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace From.TestHelper
+namespace DBSetup
 {
     [TestFixture]
     public class DBSetup : LocalTestHelper.DBSetup

@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CK.SqlServer.Setup
+namespace CK.Core
 {
 
     /// <summary>
     /// Declares a scalar function.
     /// Signature is checked and code required to call it is generated.
     /// </summary>
-    public class SqlScalarFunctionAttribute : SqlCallableAttributeBase
+    public class SqlScalarFunctionAttribute : Setup.SqlCallableAttributeBase
     {
         /// <summary>
         /// Initializes a new <see cref="SqlScalarFunctionAttribute"/>.

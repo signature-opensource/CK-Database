@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CK.Core;
 
-namespace CK.Setup
+namespace CK.Core
 {
 
     /// <summary>
@@ -12,7 +8,7 @@ namespace CK.Setup
     /// type of the associated item and type of the setup driver.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class SetupAttribute : StObjAttribute, IAttributeSetupName
+    public class SetupAttribute : StObjAttribute, Setup.IAttributeSetupName
     {
         
         /// <summary>

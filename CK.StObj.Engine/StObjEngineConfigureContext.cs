@@ -1,9 +1,6 @@
 using CK.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
@@ -24,7 +21,7 @@ namespace CK.Setup
 
             public void ConfigureDone( IActivityMonitor monitor )
             {
-                ISimpleObjectActivator defaultActivator = _baseForConfig.GetService<ISimpleObjectActivator>();
+                ISimpleObjectActivator defaultActivator = _baseForConfig.GetService<ISimpleObjectActivator>( false );
                 BaseProvider = null;
                 if( GetService( typeof(ISimpleObjectActivator) ) == null )
                 {

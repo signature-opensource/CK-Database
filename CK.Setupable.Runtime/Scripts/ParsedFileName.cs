@@ -6,19 +6,15 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using CK.Core;
 using System.Runtime.CompilerServices;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Encapsulation of a file name associated to a setup object. It handles all the steps (<see cref="SetupCallGroupStep.InitContent"/>)
+    /// Encapsulation of a file name associated to a setup object. It handles all the steps (<see cref="SetupStep"/>)
     /// and versions (for <see cref="IVersionedItem"/>) but can be used for simple <see cref="IDependentItem"/>.
     /// Offers <see cref="Parse"/>, <see cref="TryParse"/> and <see cref="CreateFromSourceCode"/> factory methods.
     /// </summary>

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CK.Setup
+
+namespace CK.Core
 {
     /// <summary>
-    /// Defines scope for <see cref="SetupItemSelectorBaseAttribute"/>.
+    /// Defines scope for <see cref="Setup.SetupItemSelectorBaseAttribute"/>.
     /// </summary>
     public enum SetupItemSelectorScope
     {

@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using CK.Core;
 
 namespace CK.Setup
@@ -13,9 +8,9 @@ namespace CK.Setup
     /// Base implementation for <see cref="SetupObjectItemMemberAttributeBase"/> attributes applied to members that
     /// dynamically define one <see cref="SetupObjectItem"/>.
     /// </summary>
-    public abstract class SetupObjectItemMemberAttributeImplBase : SetupObjectItemAttributeImplBase.ISetupItemCreator, IAttributeAmbientContextBoundInitializer, ISetupObjectItemProvider
+    public abstract class SetupObjectItemMemberAttributeImplBase : SetupObjectItemAttributeImplBase.ISetupItemCreator, IAttributeContextBoundInitializer, ISetupObjectItemProvider
     {
-        readonly AmbientContextBoundDelegationAttribute _attribute;
+        readonly ContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
         SetupObjectItemAttributeImplBase.BestCreator _theBest;
@@ -34,7 +29,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="a">Attribute object.</param>
         /// <param name="objectName">The object name.</param>
-        protected SetupObjectItemMemberAttributeImplBase( AmbientContextBoundDelegationAttribute a, string objectName )
+        protected SetupObjectItemMemberAttributeImplBase( ContextBoundDelegationAttribute a, string objectName )
         {
             _attribute = a;
             ObjectName = SetupObjectItemAttributeImplBase.ExtractBehavior( out Behavior, objectName );
@@ -53,7 +48,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the original attribute.
         /// </summary>
-        protected AmbientContextBoundDelegationAttribute Attribute => _attribute; 
+        protected ContextBoundDelegationAttribute Attribute => _attribute; 
 
         /// <summary>
         /// Gets the owner (type and provider of its other attributes).
@@ -65,7 +60,7 @@ namespace CK.Setup
         /// </summary>
         protected MemberInfo Member => _member; 
 
-        void IAttributeAmbientContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
+        void IAttributeContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
         {
             _owner = owner;
             _member = m;
