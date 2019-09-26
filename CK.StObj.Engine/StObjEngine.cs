@@ -115,7 +115,7 @@ namespace CK.Setup
             if( _startContext != null ) throw new InvalidOperationException( "Run can be called only once." );
             if( !RootBinPathsAndOutputPaths() ) return false;
             if( _ckSetupConfig != null && !ApplyCKSetupConfiguration() ) return false;
-            var rootBinPath = CreateRootBPathFromBinPaths();
+            var rootBinPath = CreateRootBinPathFromAllBinPaths();
             if( rootBinPath == null ) return false;
 
             // Groups similar configurations to optimize runs.
@@ -213,8 +213,7 @@ namespace CK.Setup
                 if( binPaths == null ) throw new ArgumentException( $"Missing &lt;BinPaths&gt; element in '{_ckSetupConfig}'." );
                 foreach( XElement xB in binPaths.Elements( StObjEngineConfiguration.xBinPath ) )
                 {
-                    var assemblies = xB.Elements( StObjEngineConfiguration.xAssemblies )
-                                       .Elements()
+                    var assemblies = xB.Descendants()
                                        .Where( e => e.Name == "Model" || e.Name == "ModelDependent" )
                                        .Select( e => e.Value )
                                        .Where( s => s != null );
@@ -233,7 +232,7 @@ namespace CK.Setup
             }
         }
 
-        BinPath CreateRootBPathFromBinPaths()
+        BinPath CreateRootBinPathFromAllBinPaths()
         {
             var rootBinPath = new BinPath();
             rootBinPath.Path = rootBinPath.OutputPath = AppContext.BaseDirectory;
