@@ -117,7 +117,11 @@ namespace CK.Setup
             if( _ckSetupConfig != null && !ApplyCKSetupConfiguration() ) return false;
             var rootBinPath = CreateRootBinPathFromAllBinPaths();
             if( rootBinPath == null ) return false;
-
+            if( rootBinPath.Assemblies.Count == 0 )
+            {
+                _monitor.Error( "No Assemblies specified. Executing a setup with no content is an error." );
+                return false;
+            }
             // Groups similar configurations to optimize runs.
             var groups = _config.BinPaths.Append( rootBinPath ).GroupBy( Util.FuncIdentity, BinPathComparer.Default ).ToList();
             var rootGroup = groups.Single( g => g.Contains( rootBinPath ) );
