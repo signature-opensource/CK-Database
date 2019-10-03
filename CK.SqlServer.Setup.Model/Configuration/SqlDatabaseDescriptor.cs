@@ -33,7 +33,7 @@ namespace CK.Setup
         {
             LogicalDatabaseName = e.Element( xLogicalDatabaseName ).Value;
             ConnectionString = e.Element( xConnectionString ).Value;
-            AutoCreate = string.Equals( e.Element( xAutoCreate )?.Value, "true", StringComparison.OrdinalIgnoreCase );
+            AutoCreate = (bool?)e.Element( xAutoCreate ) ?? false;
         }
 
 
@@ -47,7 +47,7 @@ namespace CK.Setup
         {
             e.Add( new XElement( xLogicalDatabaseName, LogicalDatabaseName ),
                    new XElement( xConnectionString, ConnectionString ),
-                   AutoCreate ? new XElement( xAutoCreate, "true" ) : null );
+                   AutoCreate ? new XElement( xAutoCreate, true ) : null );
             return e;
         }
 
@@ -65,6 +65,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets whether the database should be created
         /// if opening the connection fails.
+        /// Defaults to false.
         /// </summary>
         public bool AutoCreate { get; set; }
 
