@@ -24,6 +24,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
         /// that may cause runtime errors.
         /// </para>
+        /// <para>
+        /// If the registration fails for any reason (file not found, type conflicts, etc.), an <see cref="InvalidOperationException"/> is thrown.
+        /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="monitor">The monitor to use.</param>
@@ -59,6 +62,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
         /// that may cause runtime errors.
         /// </para>
+        /// <para>
+        /// If the registration fails for any reason (file not found, type conflicts, etc.), an <see cref="InvalidOperationException"/> is thrown.
+        /// </para>
         /// </summary>
         /// <param name="services">This services.</param>
         /// <param name="monitor">Monitor to use.</param>
@@ -88,6 +94,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// and then <see cref="StObjContextRoot.ConfigureServicesMethodName"/> on all the <see cref="IStObjObjectMap.Implementations"/> that expose
         /// such methods and by registering the <see cref="IStObjServiceMap.SimpleMappings"/> and <see cref="IStObjServiceMap.ManualMappings"/> mappings.
         /// Any attempt to register an already registered service will be ignored and a warning will be emitted.
+        /// <para>
+        /// If the registration fails for any reason (file not found, type conflicts, etc.), an <see cref="InvalidOperationException"/> is thrown.
+        /// </para>
         /// </summary>
         /// <param name="services">This service collection to configure.</param>
         /// <param name="monitor">The monitor to use. Must not be null.</param>
@@ -101,7 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddStObjMap( this IServiceCollection services, IActivityMonitor monitor, IStObjMap map, SimpleServiceContainer startupServices = null )
         {
             var reg = new StObjContextRoot.ServiceRegister( monitor, services, startupServices );
-            reg.AddStObjMap( map );
+            if( !reg.AddStObjMap( map ) ) throw new Exception( "AddStObMap failed. The logs contains detailed information." );
             return services;
         }
 

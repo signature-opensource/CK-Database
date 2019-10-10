@@ -154,20 +154,25 @@ namespace CK.SqlServer.Setup
                 else monitor.Debug( $"VFeature {f.O} unchanged." );
             }
 
+            if( deleteTrace != null ) monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
+            // Throws exception on error, but uses ExecuteOneScript with monitor because it
+            // ensures that failing script is logged on error.
             if( delete != null )
             {
                 delete.Append( ");" );
-                // Throws exception on error.
-                _manager.ExecuteOneScript( delete.ToString() );
+                if( !_manager.ExecuteOneScript( delete.ToString(), monitor ) )
+                {
+                    throw new Exception( $"Unable to apply required deletions. Detailed error (including failing script) has been logged." );
+                }
             }
             if( update != null )
             {
                 update.Append( ";" ).Append( SqlVersionedItemReader.MergeTemporaryTableScript );
-                // Throws exception on error.
-                _manager.ExecuteOneScript( update.ToString() );
+                if( !_manager.ExecuteOneScript( update.ToString(), monitor ) )
+                {
+                    throw new Exception( $"Unable to apply required updates. Detailed error (including failing script) has been logged." );
+                }
             }
-            if( deleteTrace != null ) monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
         }
-
     }
 }
