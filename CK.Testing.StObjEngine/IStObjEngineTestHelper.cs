@@ -2,8 +2,7 @@
 namespace CK.Testing
 {
     /// <summary>
-    /// Mixin based on <see cref="IStObjSetupTestHelper"/>.
-    /// See <see cref="SetupableSetup.ISetupableSetupTestHelperCore"/>.
+    /// Mixin based on <see cref="IMonitorTestHelper"/>.
     /// </summary>
     public interface IStObjEngineTestHelper : IMixinTestHelper, IMonitorTestHelper, StObjEngine.IStObjEngineTestHelperCore
     {
