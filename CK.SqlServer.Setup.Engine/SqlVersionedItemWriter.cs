@@ -4,6 +4,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using System.Text;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
@@ -80,7 +81,7 @@ namespace CK.SqlServer.Setup
                 if( update == null )
                 {
                     update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
-                    update.Append( "insert into @T( F, T, V ) values " );
+                    update.AppendLine().Append( "insert into @T( F, T, V ) values " );
                 }
                 else update.Append( ',' );
                 update.Append( "(N'" ).Append( SqlHelper.SqlEncodeStringContent( fullName ) )
@@ -154,20 +155,23 @@ namespace CK.SqlServer.Setup
                 else monitor.Debug( $"VFeature {f.O} unchanged." );
             }
 
-            if( deleteTrace != null ) monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
             // Throws exception on error, but uses ExecuteOneScript with monitor because it
             // ensures that failing script is logged on error.
-            if( delete != null )
+            if( deleteTrace != null )
             {
+                monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
+
+                Debug.Assert( delete != null );
                 delete.Append( ");" );
                 if( !_manager.ExecuteOneScript( delete.ToString(), monitor ) )
                 {
                     throw new Exception( $"Unable to apply required deletions. Detailed error (including failing script) has been logged." );
                 }
             }
+            else monitor.Trace( "No version deleted." );
             if( update != null )
             {
-                update.Append( ";" ).Append( SqlVersionedItemReader.MergeTemporaryTableScript );
+                update.AppendLine( ";" ).Append( SqlVersionedItemReader.MergeTemporaryTableScript );
                 if( !_manager.ExecuteOneScript( update.ToString(), monitor ) )
                 {
                     throw new Exception( $"Unable to apply required updates. Detailed error (including failing script) has been logged." );
