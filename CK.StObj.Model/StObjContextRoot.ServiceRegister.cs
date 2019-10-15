@@ -48,6 +48,8 @@ namespace CK.Core
 
             /// <summary>
             /// Gets the target service collection.
+            /// By using this collection directly (and all the available extension methods), the <see cref="AllowOverride"/>
+            /// is not honored: use the Register methods to detect duplicate registrations.
             /// </summary>
             public IServiceCollection Services { get; }
 
@@ -117,6 +119,13 @@ namespace CK.Core
                 DoRegisterSingleton( serviceType, implementation, false );
             }
 
+            /// <summary>
+            /// Registers an existing implementation as a singleton.
+            /// </summary>
+            /// <typeparam name="T">Service type.</typeparam>
+            /// <param name="implementation">Resolved singleton instance.</param>
+            public void RegisterSingleton<T>( T implementation ) => DoRegisterSingleton( typeof( T ), implementation, false );
+
             void DoRegisterSingleton( Type serviceType, object implementation, bool isRealObject )
             {
                 if( !_registered.TryGetValue( serviceType, out var reg ) )
@@ -184,6 +193,15 @@ namespace CK.Core
             }
 
             /// <summary>
+            /// Registers a type mapping, ensuring that the <typeparamref name="TImpl"/> itself is
+            /// registered.
+            /// </summary>
+            /// <typeparam name="T">Service type.</typeparam>
+            /// <typeparam name="TImpl">Implementation type.</typeparam>
+            /// <param name="isScoped">True for scope, false for singletons.</param>
+            public void Register<T, TImpl>( bool isScoped ) where TImpl : T => Register( typeof( T ), typeof( TImpl ), isScoped );
+
+            /// <summary>
             /// Registers a factory method.
             /// </summary>
             /// <param name="serviceType">Service type.</param>
@@ -210,6 +228,14 @@ namespace CK.Core
                     Monitor.Error( $"Unable to register mapping of '{serviceType}' to a factory method since the type has already been mapped. ServiceRegister checks that registration occur at most once." );
                 }
             }
+
+            /// <summary>
+            /// Registers a factory method.
+            /// </summary>
+            /// <typeparam name="T">Service type.</typeparam>
+            /// <param name="factory">Instance factory.</param>
+            /// <param name="isScoped">True for scope, false for singletons.</param>
+            public void Register<T>( Func<IServiceProvider, object> factory, bool isScoped ) => Register( typeof( T ), factory, isScoped );
         }
     }
 }
