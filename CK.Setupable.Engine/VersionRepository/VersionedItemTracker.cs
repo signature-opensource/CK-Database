@@ -139,6 +139,7 @@ namespace CK.Setup
         /// <returns>True on success, false on error.</returns>
         internal bool Conclude( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems, IReadOnlyCollection<VFeature> features )
         {
+            using( monitor.OpenTrace( $"Handling version changes with {features.Count} features and deleteUnaccessedItems: {deleteUnaccessedItems}." ) )
             try
             {
                 writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems, OriginalFeatures, features );

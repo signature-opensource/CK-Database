@@ -149,7 +149,6 @@ namespace CK.Setup
         /// assembly qualified names.
         /// </summary>
         /// <param name="typeNames">Assembly qualified names of the types to register.</param>
-        /// <param name="throwOnError">False to silently ignore invalid types and return false.</param>
         public void RegisterTypes( IReadOnlyCollection<string> typeNames )
         {
             if( typeNames == null ) throw new ArgumentNullException( nameof( typeNames ) );
