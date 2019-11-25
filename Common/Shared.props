@@ -4,7 +4,7 @@
     <CKCoreVersion>12.1.1--0008-develop</CKCoreVersion>
     <CKActivityMonitorVersion>12.1.1--0010-develop</CKActivityMonitorVersion>
     <CKSetupDependencyVersion>9.1.1--0008-develop</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.8.1--0008-develop</CKSqlServerVersion>
+    <CKSqlServerVersion>0.8.1--0009-develop</CKSqlServerVersion>
     <CKSqlServerParserVersion>12.1.1--0010-develop</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>9.1.1--0004-develop</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.5--0005-develop</CKReflectionVersion>

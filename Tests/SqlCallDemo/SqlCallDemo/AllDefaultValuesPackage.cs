@@ -1,5 +1,6 @@
 using CK.SqlServer;
 using CK.Core;
+using System;
 
 namespace SqlCallDemo
 {
@@ -9,6 +10,9 @@ namespace SqlCallDemo
     {
         [SqlProcedure( "sAllDefaultValues" )]
         public abstract string AllDefaultValues( SqlStandardCallContext ctx );
+
+        [SqlProcedure( "sAllDefaultValues" )]
+        public abstract string AllDefaultValuesButTime( SqlStandardCallContext ctx, TimeSpan time );
 
     }
 }
