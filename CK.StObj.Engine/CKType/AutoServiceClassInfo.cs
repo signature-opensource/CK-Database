@@ -297,7 +297,7 @@ namespace CK.Setup
 
         /// <summary>
         /// This mimics the <see cref="RealObjectClassInfo.CreateMutableItemsPath"/> method
-        /// to reproduce the exact same Type handling between Services and StObj (ignoring agstract tails
+        /// to reproduce the exact same Type handling between Services and StObj (ignoring abstract tails
         /// for instance).
         /// This is simpler here since there is no split in type info (no MutableItem layer).
         /// </summary>
@@ -313,7 +313,7 @@ namespace CK.Setup
             Debug.Assert( !TypeInfo.IsExcluded );
             Debug.Assert( Interfaces == null );
             // Don't try to reuse the potential RealObjectInfo here: even if the TypeInfo is
-            // an RealObject, let the regular code be executed (any abstract Specializations
+            // a RealObject, let the regular code be executed (any abstract Specializations
             // have already been removed anyway) so we'll correctly initialize the Interfaces for
             // all the chain.
             bool isConcretePath = false;
@@ -529,6 +529,13 @@ namespace CK.Setup
                                                                        .Where( p => p != null )
                                                                        .Concat( replacedTargets ) );
                     }
+                }
+
+                // Checks here for (stupid) cyclic class dependencies.
+                if( _ctorParmetersClosure.Contains( this ) )
+                {
+                    m.Error( $"Cyclic constructor dependency detected: {Type} eventually depends on itself." );
+                    initializationError = true;
                 }
             }
             return _ctorParmetersClosure;

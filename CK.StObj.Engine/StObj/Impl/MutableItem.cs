@@ -95,6 +95,12 @@ namespace CK.Setup
         MutableReferenceList _groups;
         
         IReadOnlyList<MutableParameter> _constructParameterEx;
+        /// <summary>
+        /// This is the projection of <see cref="RealObjectClassInfo.BaseTypeInfo"/>'s <see cref="IStObjTypeRootParentInfo.StObjConstructCollector"/>.
+        /// This is not null if this is the root of the specialization path (<see cref="Generalization"/> is null) and at least
+        /// one of the base class has a StObjConstruct (with at least one parameter).
+        /// </summary>
+        IReadOnlyList<(MethodInfo, IReadOnlyList<MutableParameter>)> _constructParametersAbove;
         DependentItemKind _itemKind;
         List<StObjProperty> _stObjProperties;
         List<PropertySetter> _preConstruct;
@@ -236,8 +242,17 @@ namespace CK.Setup
             Debug.Assert( _constructParameterEx == null, "Called only once right after object instanciation..." );
             Debug.Assert( _container != null, "...and after ApplyTypeInformation." );
 
-            if( Type.StObjConstruct != null && Type.ConstructParameters.Length > 0 )
+            var fromAbove = Type.BaseTypeInfo?.StObjConstructCollector;
+            if( fromAbove != null )
             {
+                _constructParametersAbove = fromAbove
+                        .Select( c => (c.Item1,(IReadOnlyList<MutableParameter>)c.Item2.Select( p => new MutableParameter( this, p, false ) ).ToArray() ) )
+                        .ToArray();
+            }
+
+            if( Type.StObjConstruct != null )
+            {
+                Debug.Assert( Type.ConstructParameters.Length > 0, "Parameterless StObjConstruct are skipped." );
                 var parameters = new MutableParameter[Type.ConstructParameters.Length];
                 for( int idx = 0; idx < parameters.Length; ++idx )
                 {
@@ -336,7 +351,9 @@ namespace CK.Setup
 
         IStObjMutableReferenceList IStObjMutableItem.Groups => _groups;
 
-        public IReadOnlyList<IStObjMutableParameter> ConstructParameters => _constructParameterEx; 
+        public IReadOnlyList<IStObjMutableParameter> ConstructParameters => _constructParameterEx;
+
+        public IEnumerable<(MethodInfo,IReadOnlyList<IStObjMutableParameter>)> ConstructParametersAbove =>_constructParametersAbove?.Select( mp => (mp.Item1, (IReadOnlyList<IStObjMutableParameter>)mp.Item2) ); 
 
         IReadOnlyList<IStObjAmbientProperty> IStObjMutableItem.SpecializedAmbientProperties => _ambientPropertiesEx; 
 
@@ -507,16 +524,17 @@ namespace CK.Setup
                 //   See the commented old code (to be kept) below for more detail on this option.
                 // - If IStObjMutableParameter.SetParameterValue has been called by a IStObjStructuralConfigurator, then this 
                 //   breaks the potential dependency.
-                // 
-                if ( _constructParameterEx.Count > 0 )
+                //
+                IEnumerable<MutableParameter> allParams = _constructParametersAbove?.SelectMany( mp => mp.Item2 )
+                                                            ?? Enumerable.Empty<MutableParameter>();
+                allParams = allParams.Concat( _constructParameterEx );
+
+                foreach( MutableParameter t in allParams )
                 {
-                    foreach( MutableParameter t in _constructParameterEx )
+                    if( t.Value == System.Type.Missing )
                     {
-                        if( t.Value == System.Type.Missing )
-                        {
-                            MutableItem dep = t.ResolveToStObj( monitor, EngineMap );
-                            if( dep != null ) req.Add( dep );
-                        }
+                        MutableItem dep = t.ResolveToStObj( monitor, EngineMap );
+                        if( dep != null ) req.Add( dep );
                     }
                 }
             }

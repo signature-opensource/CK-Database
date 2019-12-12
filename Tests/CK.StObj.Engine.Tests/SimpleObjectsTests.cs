@@ -6,8 +6,9 @@ using NUnit.Framework;
 using System.Linq;
 using FluentAssertions;
 
-using static CK.Testing.MonitorTestHelper;
+using static CK.Testing.StObjEngineTestHelper;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.StObj.Engine.Tests
 {
@@ -77,26 +78,24 @@ namespace CK.StObj.Engine.Tests
             StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
             collector.RegisterTypes( types.ToList() );
             
-            var result = collector.GetResult();
-            Assert.That( result.HasFatalError, Is.False );
+            var result = TestHelper.GetSuccessfulResult( collector );
 
             IStObjResult oa = result.StObjs.ToStObj( typeof(ObjectA) );
-            Assert.That( oa.Container.ObjectType == typeof( PackageForAB ) );
-            Assert.That( oa.LeafSpecialization.ObjectType == typeof( ObjectALevel3 ) );
+            oa.Container.ObjectType.Should().Be( typeof( PackageForAB ) );
+            oa.LeafSpecialization.ObjectType.Should().Be( typeof( ObjectALevel3 ) );
 
             IStObjResult oa1 = result.StObjs.ToStObj( typeof( ObjectALevel1 ) );
-            Assert.That( oa1.Generalization == oa );
-            Assert.That( oa1.Container.ObjectType == typeof( PackageForABLevel1 ) );
+            oa1.Generalization.Should().BeSameAs( oa );
+            oa1.Container.ObjectType.Should().Be( typeof( PackageForABLevel1 ) );
 
             IStObjResult oa2 = result.StObjs.ToStObj( typeof( ObjectALevel2 ) );
-            Assert.That( oa2.Generalization == oa1 );
-            Assert.That( oa2.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
+            oa2.Generalization.Should().BeSameAs( oa1 );
+            oa2.Container.ObjectType.Should().Be( typeof( PackageForABLevel1 ), "Inherited." );
 
             IStObjResult oa3 = result.StObjs.ToStObj( typeof( ObjectALevel3 ) );
-            Assert.That( oa3.Generalization == oa2 );
-            Assert.That( oa3.Container.ObjectType == typeof( PackageForABLevel1 ), "Inherited." );
-            Assert.That( oa.RootGeneralization.ObjectType == typeof( ObjectA ) );
-
+            oa3.Generalization.Should().BeSameAs( oa2 );
+            oa3.Container.ObjectType.Should().Be( typeof( PackageForABLevel1 ), "Inherited." );
+            oa.RootGeneralization.ObjectType.Should().Be( typeof( ObjectA ) );
         }
 
         [Test]
@@ -152,22 +151,45 @@ namespace CK.StObj.Engine.Tests
             }
         }
 
+        public class ObjectXNeedsY : IRealObject
+        {
+            void StObjConstruct( ObjectYNeedsX other )
+            {
+                // This ObjectXNeedsY along with ObjectYNeedsX is used in two scenarii:
+                // - They create a cycle: this was tested by the following.
+                //   Assert.Fail( "Cycle: no object graph initialization." );
+                // - It is also tested without the ObjectYNeedsX missing in registration.
+                //   In such case, there is NO cycle, but the missing reference is
+                //   detected when the graph is Constructed and a default value (null) is
+                //   injected in order for other errors to be detected.
+                //   ==> SimpleObjectsTests.MissingReference will success (result.HasFatal is true)
+                //       but if we Assert.Fail here, NUnit 3.10.1 consider the test to have failed.
+                //       This is why we HARD FAIL only if this construct is called while the ObjectYNeedsX
+                //       is available.
+                if( other != null ) Assert.Fail( "Cycle: no object graph initialization." );
+            }
+        }
+
+        public class ObjectYNeedsX : IRealObject
+        {
+            void StObjConstruct( ObjectXNeedsY other )
+            {
+                // See comments in ObjectXNeedsY constructor.
+                Assert.Fail( "Cycle: no object graph initialization." );
+            }
+
+        }
+
         [Test]
         public void ObjectXNeedsY_and_ObjectYNeedsX_Cycle()
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY and ObjectYNeedsX." ) )
             {
-                var types = ThisAssembly.GetTypes()
-                               .Where( t => t.IsClass )
-                               .Where( t => t.Name == "ObjectXNeedsY"
-                                             || t.Name == "ObjectYNeedsX"
-                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
-
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
-                collector.RegisterTypes( types.ToList() );
+                collector.RegisterType( typeof( ObjectXNeedsY ) );
+                collector.RegisterType( typeof( ObjectYNeedsX ) );
 
-                var result = collector.GetResult(  );
-                Assert.That( result.HasFatalError, Is.True );
+                TestHelper.GetFailedResult( collector );
             }
         }
 
@@ -176,15 +198,9 @@ namespace CK.StObj.Engine.Tests
         {
             using( TestHelper.Monitor.OpenInfo( "ObjectXNeedsY without ObjectYNeedsX." ) )
             {
-                var types = ThisAssembly.GetTypes()
-                               .Where( t => t.IsClass )
-                               .Where( t => t.Name == "ObjectXNeedsY"
-                                             || t.Namespace == "CK.StObj.Engine.Tests.SimpleObjects" );
-
                 StObjCollector collector = new StObjCollector( TestHelper.Monitor, new SimpleServiceContainer() );
-                collector.RegisterTypes( types.ToList() );
-                var result = collector.GetResult(  );
-                Assert.That( result.HasFatalError, Is.True );
+                collector.RegisterType( typeof( ObjectXNeedsY ) );
+                TestHelper.GetFailedResult( collector );
             }
         }
 
@@ -205,6 +221,91 @@ namespace CK.StObj.Engine.Tests
                 Assert.That( theObject.InitialObject, Is.Not.Null.And.InstanceOf<CK.StObj.Engine.Tests.SimpleObjects.LoggerInjection.LoggerInjected>() );
             }
         }
+
+
+        public class Dep0 : IRealObject { }
+
+        public class Dep1 : IRealObject { }
+
+        public class Dep2 : IRealObject { }
+
+
+        public class BaseClass
+        {
+            public int StObjInitializeCallCount;
+            public int RegisterStartupServicesCallCount;
+            public int ConfigureServicesCallCount;
+
+            void StObjConstruct( Dep0 d )
+            {
+                Dep0 = d;
+            }
+
+            void StObjInitialize( IActivityMonitor m, IStObjObjectMap map ) => ++StObjInitializeCallCount;
+
+            void RegisterStartupServices( IActivityMonitor m, SimpleServiceContainer startupServices ) => ++RegisterStartupServicesCallCount;
+
+            void ConfigureServices( in StObjContextRoot.ServiceRegister register ) => ++ConfigureServicesCallCount;
+
+            public Dep0 Dep0 { get; private set; }
+        }
+
+
+        [CKTypeSuperDefiner]
+        public class SuperDef : BaseClass, IRealObject
+        {
+            void StObjConstruct( Dep1 d )
+            {
+                Dep1 = d;
+            }
+
+            void StObjInitialize( IActivityMonitor m, IStObjObjectMap map ) => ++StObjInitializeCallCount;
+
+            void RegisterStartupServices( IActivityMonitor m, SimpleServiceContainer startupServices ) => ++RegisterStartupServicesCallCount;
+
+            void ConfigureServices( in StObjContextRoot.ServiceRegister register ) => ++ConfigureServicesCallCount;
+
+            public Dep1 Dep1 { get; private set; }
+        }
+
+        public class Def : SuperDef
+        {
+            void StObjConstruct( Dep2 d )
+            {
+                Dep2 = d;
+            }
+
+            void StObjInitialize( IActivityMonitor m, IStObjObjectMap map ) => ++StObjInitializeCallCount;
+
+            void RegisterStartupServices( IActivityMonitor m, SimpleServiceContainer startupServices ) => ++RegisterStartupServicesCallCount;
+
+            void ConfigureServices( in StObjContextRoot.ServiceRegister register ) => ++ConfigureServicesCallCount;
+
+            public Dep2 Dep2 { get; private set; }
+        }
+
+        public class Defined : Def { }
+
+        [Test]
+        public void StObjConstruct_StObjInitialize_RegisterStartupServices_and_ConfigureServices_of_the_hierarchy_are_called()
+        {
+            var collector = TestHelper.CreateStObjCollector();
+            collector.RegisterType( typeof( Dep0 ) );
+            collector.RegisterType( typeof( Dep1 ) );
+            collector.RegisterType( typeof( Dep2 ) );
+            collector.RegisterType( typeof( Defined ) );
+            var r = TestHelper.GetAutomaticServices( collector );
+            r.Services.GetService<SuperDef>().Should().BeNull( "This is a SuperDefiner. It is NOT a real object." );
+            r.Services.GetService<Def>().Should().BeNull( "This is SuperDefiner direct specialization. It is NOT a real object." );
+            var defined = r.Services.GetRequiredService<Defined>();
+            defined.Dep0.Should().NotBeNull();
+            defined.Dep1.Should().NotBeNull();
+            defined.Dep2.Should().NotBeNull();
+            defined.StObjInitializeCallCount.Should().Be( 3 );
+            defined.RegisterStartupServicesCallCount.Should().Be( 3 );
+            defined.ConfigureServicesCallCount.Should().Be( 3 );
+        }
+
 
         #region Buggy & Valid Model
 

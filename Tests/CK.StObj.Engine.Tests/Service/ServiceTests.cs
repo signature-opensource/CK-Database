@@ -35,7 +35,6 @@ namespace CK.StObj.Engine.Tests.Service
         {
         }
 
-
         [Test]
         public void ReplaceAutoService_works_with_type()
         {
@@ -221,6 +220,73 @@ namespace CK.StObj.Engine.Tests.Service
             var oDep = sp.GetRequiredService<ODep>();
             sp.GetRequiredService<IBase>().Should().BeSameAs( oDep );
             sp.GetRequiredService<IDerived>().Should().BeSameAs( oDep );
+        }
+
+
+        public class StupidService1 : IBase
+        {
+            public StupidService1( StupidService2 stupid )
+            {
+            }
+
+        }
+
+        public class StupidService2 : ISampleService
+        {
+            public StupidService2( StupidService1 b )
+            {
+            }
+        }
+
+        [Test]
+        public void services_class_cyclic_dependencies_are_detected()
+        {
+            var collector = TestHelper.CreateStObjCollector();
+            collector.RegisterType( typeof( StupidService1 ) );
+            collector.RegisterType( typeof( StupidService2 ) );
+            TestHelper.GetFailedResult( collector );
+        }
+
+        public class StupidServiceViaInterface1 : IBase
+        {
+            public StupidServiceViaInterface1( ISampleService stupid )
+            {
+            }
+
+        }
+
+        public class StupidServiceViaInterface2 : ISampleService
+        {
+            public StupidServiceViaInterface2( IBase b )
+            {
+            }
+        }
+
+        [Test]
+        public void services_via_interfaces_cyclic_dependencies_are_NOT_detected()
+        {
+            var collector = TestHelper.CreateStObjCollector();
+            collector.RegisterType( typeof( StupidServiceViaInterface1 ) );
+            collector.RegisterType( typeof( StupidServiceViaInterface2 ) );
+            var r = TestHelper.GetAutomaticServices( collector );
+            // The cycle is not detected and for whatever reason, the faulty resolution
+            // "fails fast" the test (no exception, no update to the test status).
+            //
+            // To detect this we need to analyze the ctor (the one bound to an interface) parameters
+            // once the Service resolution has been done and that we know the mapping from the service
+            // interfaces to their classes.
+            // The idea may be, for all MostSpecialized ServiceClass:
+            // - to extend the AutoServiceClassInfo._ctorParmetersClosure that currently contains
+            //   only Class infos with new classes resolved from the Interface parameters and then check again.
+            // - to directly check CtorParameter that are a ServiceInterface.
+            //
+            // It seems that (re)using the closure is not the way to go: here we are not interested in
+            // the transitive generalisation's dependency set. We should focus on the direct dependencies of
+            // a Class: it is the same dependency set as for the IAmbienService handling.
+            // 
+            Assume.That( false, "Tests framework sucks... Is it NUnit, VSTest, the integration?" );
+            var noWay1 = r.Services.GetRequiredService<StupidServiceViaInterface1>();
+            var noWay2 = r.Services.GetRequiredService<StupidServiceViaInterface2>();
         }
 
     }

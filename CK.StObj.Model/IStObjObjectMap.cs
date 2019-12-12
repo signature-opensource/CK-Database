@@ -21,7 +21,7 @@ namespace CK.Core
         /// <summary>
         /// Gets the structured object final implementation or null if no mapping exists.
         /// </summary>
-        /// <param name="t">Key type (that must be a Real Object).</param>
+        /// <param name="t">Key type (that must be a <see cref="IRealObject"/>).</param>
         /// <returns>Structured object instance or null if the type has not been mapped.</returns>
         object Obtain( Type t );
 

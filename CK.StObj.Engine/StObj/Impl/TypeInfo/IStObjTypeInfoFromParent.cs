@@ -11,6 +11,10 @@ using CK.Core;
 
 namespace CK.Setup
 {
+    /// <summary>
+    /// This interface applies to base types (above real objects root) as well as <see cref="RealObjectClassInfo"/>
+    /// (via the <see cref="RealObjectClassInfo.Generalization"/>).
+    /// </summary>
     internal interface IStObjTypeInfoFromParent
     {
         int SpecializationDepth { get; }

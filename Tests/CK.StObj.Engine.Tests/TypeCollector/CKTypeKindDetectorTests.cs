@@ -83,7 +83,7 @@ namespace CK.StObj.Engine.Tests.Service.TypeCollector
         [CKTypeDefiner] public class SingletonDefinerLevel2 : SingletonDefiner { }
 
         [Test]
-        public void Definers_can_be_specialized_as_another_layer_of_Definers_and_are_still_not_ambient()
+        public void Definers_can_be_specialized_as_another_layer_of_Definers_and_are_still_abstract()
         {
             var a = new CKTypeKindDetector();
             a.GetKind( TestHelper.Monitor, typeof( ObjDefinerLevel2 ) ).Should().Be( CKTypeKind.None );
