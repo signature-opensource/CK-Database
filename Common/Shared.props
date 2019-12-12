@@ -5,12 +5,12 @@
     <CKActivityMonitorVersion>12.1.1--0013-develop</CKActivityMonitorVersion>
     <CKSetupDependencyVersion>9.1.1--0012-develop</CKSetupDependencyVersion>
     <CKSqlServerVersion>0.8.1--0014-develop</CKSqlServerVersion>
-    <CKSqlServerParserVersion>12.1.1--0016-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>12.1.1--0018-develop</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>9.1.1--0007-develop</CKSqlServerParserModelVersion>
     <CKReflectionVersion>8.0.5--0006-develop</CKReflectionVersion>
     <CKCodeGenVersion>0.10.1--0009-develop</CKCodeGenVersion>
     <YodiiScriptVersion>0.7.5--0006-develop</YodiiScriptVersion>
-    <CKSetupVersion>10.1.1--0009-develop</CKSetupVersion>
+    <CKSetupVersion>10.1.1--0012-develop</CKSetupVersion>
     <CKTestingVersion>0.13.1--0013-develop</CKTestingVersion>
     <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
