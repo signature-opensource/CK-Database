@@ -71,7 +71,7 @@ namespace CK.Setup
         public IReadOnlyList<Type> AbstractTails { get; }
 
         /// <summary>
-        /// Gets the subgraphs classes.It is either an independent leaf (its own most specialized) or
+        /// Gets the subgraphs classes. It is either an independent leaf (its own most specialized) or
         /// a base class that has a MostSpecialized that differ from the one of its generalization.
         /// </summary>
         public IReadOnlyList<AutoServiceClassInfo> SubGraphRootClasses { get; }

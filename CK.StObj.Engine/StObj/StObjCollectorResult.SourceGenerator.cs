@@ -8,6 +8,7 @@ using CK.CodeGen;
 using CK.Text;
 using CK.CodeGen.Abstractions;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Diagnostics;
 
 namespace CK.Setup
 {
@@ -233,36 +234,27 @@ class GStObj : IStObj
                             propertyCache.Add( key, varName );
 
                         }
-                        rootCtor.Append(varName)
+                        rootCtor.Append( varName )
                                .Append( ".SetValue(_stObjs[" )
                                .Append( m.IndexOrdered).Append( "].Instance," );
                         GenerateValue( rootCtor, setter.Value );
                         rootCtor.Append( ");" ).NewLine();
                     }
                 }
-                var mConstruct = m.Type.StObjConstruct;
-                if( mConstruct != null )
+                if( m.ConstructParametersAbove != null )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{mConstruct.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
-                           .Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, " );
-                    if( m.ConstructParameters.Count == 0 ) rootCtor.Append( "Array.Empty<object>()" );
-                    else
+                    foreach( var mp in m.ConstructParametersAbove )
                     {
-                        rootCtor.Append( "new object[] {" );
-                        // Missing Value {get;} on IStObjMutableParameter and we need the BuilderValueIndex...
-                        // Hideous downcast for the moment.
-                        foreach( var p in m.ConstructParameters.Cast<MutableParameter>() )
-                        {
-                            if( p.BuilderValueIndex < 0 )
-                            {
-                                rootCtor.Append( $"_stObjs[{-(p.BuilderValueIndex + 1)}].Instance" );
-                            }
-                            else GenerateValue( rootCtor, p.Value );
-                            rootCtor.Append( ',' );
-                        }
-                        rootCtor.Append( "}" );
+                        Debug.Assert( mp.Item2.Count > 0 );
+                        rootCtor.AppendTypeOf( mp.Item1.DeclaringType );
+                        CallConstructMethod( rootCtor, m, mp.Item2 );
                     }
-                    rootCtor.Append( ");" ).NewLine();
+                }
+                if( m.Type.StObjConstruct != null )
+                {
+                    Debug.Assert( m.ConstructParameters.Count > 0 );
+                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType" );
+                    CallConstructMethod( rootCtor, m, m.ConstructParameters );
                 }
             }
             foreach( MutableItem m in OrderedStObjs )
@@ -272,9 +264,8 @@ class GStObj : IStObj
                     foreach( var p in m.PostBuildProperties )
                     {
                         Type decl = p.Property.DeclaringType;
-                        rootCtor.Append( "typeof(" )
-                               .AppendCSharpName( decl )
-                               .Append( $").GetProperty( \"{p.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
+                        rootCtor.AppendTypeOf( decl )
+                               .Append( $".GetProperty( \"{p.Property.Name}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic )" )
                                .Append( $".SetValue(_stObjs[{m.IndexOrdered}].Instance, " );
                         GenerateValue( rootCtor, p.Value );
                         rootCtor.Append( ");" ).NewLine();
@@ -283,13 +274,17 @@ class GStObj : IStObj
             }
             foreach( MutableItem m in OrderedStObjs )
             {
-                MethodInfo init = m.Type.StObjInitialize;
-                if( init != null )
+                foreach( MethodInfo init in m.Type.AllStObjInitialize )
                 {
-                    rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType.GetMethod( \"{StObjContextRoot.InitializeMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
-                           .NewLine();
+                    if( init == m.Type.StObjInitialize ) rootCtor.Append( $"_stObjs[{m.IndexOrdered}].ObjectType" );
+                    else rootCtor.AppendTypeOf( init.DeclaringType );
+
+                    rootCtor.Append( ".GetMethod(")
+                            .AppendSourceString( StObjContextRoot.InitializeMethodName )
+                            .Append( ", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
+                            .NewLine();
                     rootCtor.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[]{{ monitor, this }} );" )
-                           .NewLine();
+                            .NewLine();
                 }
             }
 
@@ -314,6 +309,26 @@ class GStObj : IStObj
             serviceGen.CreateConfigureServiceMethod( OrderedStObjs );
 
             GenerateVFeatures( monitor, rootType, rootCtor, _liftedMap.Features );
+        }
+
+        static void CallConstructMethod( IFunctionScope rootCtor, MutableItem m, IEnumerable<IStObjMutableParameter> parameters )
+        {
+            rootCtor.Append( ".GetMethod(" )
+                    .AppendSourceString( StObjContextRoot.ConstructMethodName )
+                    .Append( ", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
+                    .Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, new object[] {{" );
+            // Missing Value {get;} on IStObjMutableParameter and we need the BuilderValueIndex...
+            // Hideous downcast for the moment.
+            foreach( var p in parameters.Cast<MutableParameter>() )
+            {
+                if( p.BuilderValueIndex < 0 )
+                {
+                    rootCtor.Append( $"_stObjs[{-(p.BuilderValueIndex + 1)}].Instance" );
+                }
+                else GenerateValue( rootCtor, p.Value );
+                rootCtor.Append( ',' );
+            }
+            rootCtor.Append( "});" ).NewLine();
         }
 
         void GenerateVFeatures( IActivityMonitor monitor, ITypeScope rootType, IFunctionScope rootCtor, IReadOnlyCollection<VFeature> features )

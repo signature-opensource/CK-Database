@@ -51,7 +51,12 @@ namespace CK.Setup
         /// <summary>
         /// A IPoco marked interface.
         /// </summary>
-        IsPoco = 16
+        IsPoco = 16,
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        //IsFront = 32
     }
 
     /// <summary>

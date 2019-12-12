@@ -137,30 +137,37 @@ IReadOnlyDictionary<Type, IStObjServiceClassFactory> IStObjServiceMap.ManualMapp
 
             foreach( MutableItem m in orderedStObjs ) 
             {
-                MethodInfo reg = m.Type.RegisterStartupServices;
-                if( reg != null )
+                foreach( var reg in m.Type.AllRegisterStartupServices )
                 {
-                    configure.AppendOnce( "GStObj s;" ).NewLine();
-                    configure.Append( $"s = _stObjs[{m.IndexOrdered}];" )
+                    if( reg == m.Type.RegisterStartupServices ) configure.Append( $"_stObjs[{m.IndexOrdered}].ObjectType" );
+                    else configure.AppendTypeOf( reg.DeclaringType );
+
+                    configure.Append( ".GetMethod(" )
+                             .AppendSourceString( StObjContextRoot.RegisterStartupServicesMethodName )
+                             .Append( ", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
                              .NewLine();
-                    configure.Append( $"s.ObjectType.GetMethod( \"{StObjContextRoot.RegisterStartupServicesMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly )" )
+                    configure.Append( $".Invoke( _stObjs[{m.IndexOrdered}].Instance, registerParam );" )
                              .NewLine();
-                    configure.Append( ".Invoke( s.Instance, registerParam );" )
-                             .NewLine();
+
                 }
             }
             foreach( MutableItem m in orderedStObjs )
             {
-                var parameters = m.Type.ConfigureServicesParameters;
-                if( parameters != null )
+                foreach( var parameters in m.Type.AllConfigureServicesParameters )
                 {
                     configure.AppendOnce( "GStObj s;" ).NewLine();
                     configure.AppendOnce( "MethodInfo m;" ).NewLine();
 
-                    configure.Append( $"s = _stObjs[{m.IndexOrdered}];" )
-                             .NewLine();
+                    configure.Append( $"s = _stObjs[{m.IndexOrdered}];" ).NewLine();
 
-                    configure.Append( $"m = s.ObjectType.GetMethod( \"{StObjContextRoot.ConfigureServicesMethodName}\", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly );" )
+                    configure.Append( "m = " );
+                    if( parameters == m.Type.ConfigureServicesParameters )
+                        configure.Append( "s.ObjectType" );
+                    else configure.AppendTypeOf( parameters[0].Member.DeclaringType );
+
+                    configure.Append( ".GetMethod(" )
+                             .AppendSourceString( StObjContextRoot.ConfigureServicesMethodName )
+                             .Append( ", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly );" )
                              .NewLine();
 
                     if( parameters.Length > 1 )

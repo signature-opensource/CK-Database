@@ -215,9 +215,9 @@ namespace CK.StObj.Engine.Tests
                     monitor.Trace( $"At A level: StObjPower = '{StObjPower}'." );
                 }
 
-                void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
+                void StObjInitialize( IActivityMonitor monitor, IStObjObjectMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     StObjInitializeOnACalled = true;
                 }
 
@@ -237,9 +237,9 @@ namespace CK.StObj.Engine.Tests
                     monitor.Trace( $"At ASpec level: StObjPower = '{StObjPower}'." );
                 }
 
-                void StObjInitialize( IActivityMonitor monitor, IStObjMap map )
+                void StObjInitialize( IActivityMonitor monitor, IStObjObjectMap map )
                 {
-                    Assert.That( map.StObjs.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
+                    Assert.That( map.Implementations.OfType<IRealObject>().Count, Is.EqualTo( 2 ) );
                     Assert.That( StObjInitializeOnACalled );
                     StObjInitializeOnASpecCalled = true;
                 }
@@ -299,8 +299,8 @@ namespace CK.StObj.Engine.Tests
 
                 }
 
-                r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null, false );
-
+                StObjCollectorResult.CodeGenerateResult genResult = r.GenerateFinalAssembly( TestHelper.Monitor, Path.Combine( AppContext.BaseDirectory, "TEST_PostBuildSet.dll" ), false, null, false );
+                Assert.That( genResult.Success );
                 {
                     var a = Assembly.Load( "TEST_PostBuildSet" );
                     IStObjMap c = StObjContextRoot.Load( a, StObjContextRoot.DefaultStObjRuntimeBuilder, TestHelper.Monitor );

@@ -15,7 +15,7 @@ namespace CK.Setup
         Type[] _ambientInterfaces;
         Type[] _thisAmbientInterfaces;
 
-        class TypeInfoForBaseClasses : IStObjTypeInfoFromParent
+        class TypeInfoForBaseClasses : IStObjTypeInfoFromParent, IStObjTypeRootParentInfo
         {
             public IReadOnlyList<AmbientPropertyInfo> AmbientProperties { get; private set; }
             public IReadOnlyList<InjectObjectInfo> InjectObjects { get; private set; }
@@ -24,16 +24,17 @@ namespace CK.Setup
             public Type Container { get; private set; }
             public DependentItemKind ItemKind { get; private set; }
             public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
+            // The following properties are specific to pure (non stObj) base types: IStObjTypeRootParentInfo
+            public IReadOnlyList<(MethodInfo, ParameterInfo[])> StObjConstructCollector { get; private set; }
+            public IReadOnlyList<MethodInfo> StObjInitializeCollector { get; private set; }
+            public IReadOnlyList<MethodInfo> RegisterStartupServicesCollector { get; private set; }
+            public IReadOnlyList<ParameterInfo[]> ConfigureServicesCollector { get; private set; }
 
-            bool IsFullyDefined
-            {
-                get { return Container != null && ItemKind != DependentItemKind.Unknown && TrackAmbientProperties != TrackAmbientPropertiesMode.Unknown; }
-            }
 
             static object _lock = new object();
-            static Dictionary<Type,TypeInfoForBaseClasses> _cache;
+            static Dictionary<Type, TypeInfoForBaseClasses> _cache;
 
-            static public IStObjTypeInfoFromParent GetFor( IActivityMonitor monitor, Type t, CKTypeKindDetector ambientTypeKind )
+            static public TypeInfoForBaseClasses GetFor( IActivityMonitor monitor, Type t, CKTypeKindDetector ambientTypeKind )
             {
                 TypeInfoForBaseClasses result = null;
                 // Poor lock: we don't care here. Really.
@@ -63,21 +64,44 @@ namespace CK.Setup
                                 result.ItemKind = (DependentItemKind)a.ItemKind;
                                 result.TrackAmbientProperties = a.TrackAmbientProperties;
                             }
+                            List<(MethodInfo, ParameterInfo[])> stObjConstructCollector = null;
+                            List<MethodInfo> stObjInitializeCollector = null;
+                            List<MethodInfo> registerStartupServicesCollector = null;
+                            List<ParameterInfo[]> configureServicesCollector = null;
+                            CollectMethods( monitor, t, ref stObjConstructCollector, ref stObjInitializeCollector, ref registerStartupServicesCollector, ref configureServicesCollector );
                             Type tAbove = t.BaseType;
                             while( tAbove != typeof( object ) )
                             {
                                 result.SpecializationDepth = result.SpecializationDepth + 1;
-                                if( !result.IsFullyDefined )
+                                var aAbove = StObjAttributesReader.GetStObjAttributeForExactType( tAbove, monitor );
+                                if( aAbove != null )
                                 {
-                                    var aAbove = StObjAttributesReader.GetStObjAttributeForExactType( tAbove, monitor );
-                                    if( aAbove != null )
-                                    {
-                                        if( result.Container == null ) result.Container = aAbove.Container;
-                                        if( result.ItemKind == DependentItemKind.Unknown ) result.ItemKind = (DependentItemKind)aAbove.ItemKind;
-                                        if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
-                                    }
+                                    if( result.Container == null ) result.Container = aAbove.Container;
+                                    if( result.ItemKind == DependentItemKind.Unknown ) result.ItemKind = (DependentItemKind)aAbove.ItemKind;
+                                    if( result.TrackAmbientProperties == TrackAmbientPropertiesMode.Unknown ) result.TrackAmbientProperties = aAbove.TrackAmbientProperties;
                                 }
+                                CollectMethods( monitor, tAbove, ref stObjConstructCollector, ref stObjInitializeCollector, ref registerStartupServicesCollector, ref configureServicesCollector );
                                 tAbove = tAbove.BaseType;
+                            }
+                            if( stObjConstructCollector != null )
+                            {
+                                stObjConstructCollector.Reverse();
+                                result.StObjConstructCollector = stObjConstructCollector;
+                            }
+                            if( stObjInitializeCollector != null )
+                            {
+                                stObjInitializeCollector.Reverse();
+                                result.StObjInitializeCollector = stObjInitializeCollector;
+                            }
+                            if( registerStartupServicesCollector != null )
+                            {
+                                registerStartupServicesCollector.Reverse();
+                                result.RegisterStartupServicesCollector = registerStartupServicesCollector;
+                            }
+                            if( configureServicesCollector != null )
+                            {
+                                configureServicesCollector.Reverse();
+                                result.ConfigureServicesCollector = configureServicesCollector;
                             }
                             // Ambient, InjectObjects & StObj Properties (uses a recursive function).
                             List<StObjPropertyInfo> stObjProperties = new List<StObjPropertyInfo>();
@@ -93,6 +117,41 @@ namespace CK.Setup
                     }
                 }
                 return result;
+            }
+
+            static void CollectMethods( IActivityMonitor monitor, Type tAbove, ref List<(MethodInfo, ParameterInfo[])> stObjConstructCollector, ref List<MethodInfo> stObjInitializeCollector, ref List<MethodInfo> registerStartupServicesCollector, ref List<ParameterInfo[]> configureServicesCollector )
+            {
+                var stObjConstruct = ReadStObjConstruct( monitor, tAbove );
+                if( stObjConstruct.Item2 != null )
+                {
+                    if( stObjConstruct.Item2.Any( p => p.GetCustomAttribute<ContainerAttribute>() != null ) )
+                    {
+                        monitor.Error( $"'{tAbove.FullName}.{StObjContextRoot.ConstructMethodName}' method cannot have a parameter marked with [Container] attribute." );
+                    }
+                    else
+                    {
+                        if( stObjConstructCollector == null ) stObjConstructCollector = new List<(MethodInfo, ParameterInfo[])>();
+                        stObjConstructCollector.Add( stObjConstruct );
+                    }
+                }
+                var stObjInitialize = ReadStObjInitialize( monitor, tAbove );
+                if( stObjInitialize != null )
+                {
+                    if( stObjInitializeCollector == null ) stObjInitializeCollector = new List<MethodInfo>();
+                    stObjInitializeCollector.Add( stObjInitialize );
+                }
+                var registerStartupServices = ReadRegisterStartupServices( monitor, tAbove );
+                if( registerStartupServices != null )
+                {
+                    if( registerStartupServicesCollector == null ) registerStartupServicesCollector = new List<MethodInfo>();
+                    registerStartupServicesCollector.Add( registerStartupServices );
+                }
+                var configureServices = ReadConfigureServices( monitor, tAbove );
+                if( configureServices != null )
+                {
+                    if( configureServicesCollector == null ) configureServicesCollector = new List<ParameterInfo[]>();
+                    configureServicesCollector.Add( configureServices );
+                }
             }
 
             /// <summary>
@@ -132,7 +191,13 @@ namespace CK.Setup
             Debug.Assert( parent == Generalization );
             if( IsExcluded ) return;
 
-            IStObjTypeInfoFromParent infoFromParent = Generalization ?? TypeInfoForBaseClasses.GetFor( monitor, t.BaseType, ambientTypeKind );
+            IStObjTypeInfoFromParent infoFromParent = Generalization;
+            if( infoFromParent == null )
+            {
+                var b = TypeInfoForBaseClasses.GetFor( monitor, t.BaseType, ambientTypeKind );
+                BaseTypeInfo = b;
+                infoFromParent = b;
+            }
             SpecializationDepth = infoFromParent.SpecializationDepth + 1;
 
             // StObj properties are initialized with inherited (non Real Object ones).
@@ -214,88 +279,138 @@ namespace CK.Setup
             // so that IStObjStructuralConfigurator objects can alter them).
             #endregion
 
-            #region StObjConstruct method & parameters
-            StObjConstruct = t.GetMethod( StObjContextRoot.ConstructMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-            // From Construct to StObjConstruct...
-            if( StObjConstruct == null )
+            #region StObjConstruct method & parameters (handles single [Container] parameter attribute).
+            (StObjConstruct, ConstructParameters) = ReadStObjConstruct( monitor, t );
+            if( ConstructParameters != null )
             {
-                StObjConstruct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-                if( StObjConstruct != null )
+                ContainerConstructParameterIndex = -1;
+                for( int i = 0; i < ConstructParameters.Length; ++i )
                 {
-                    monitor.Error( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
-                }
-            }
-            if( StObjConstruct != null )
-            {
-                if( StObjConstruct.IsVirtual )
-                {
-                    monitor.Error( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual." );
-                }
-                else
-                {
-                    ConstructParameters = StObjConstruct.GetParameters();
-                    ContainerConstructParameterIndex = -1;
-                    for( int i = 0; i < ConstructParameters.Length; ++i )
-                    {
-                        var p = ConstructParameters[i];
+                    var p = ConstructParameters[i];
 
-                        // Is it marked with ContainerAttribute?
-                        bool isContainerParameter = p.GetCustomAttribute<ContainerAttribute>() != null;
-                        if( isContainerParameter )
+                    // Is it marked with ContainerAttribute?
+                    bool isContainerParameter = p.GetCustomAttribute<ContainerAttribute>() != null;
+                    if( isContainerParameter )
+                    {
+                        if( ContainerConstructParameterIndex >= 0 )
                         {
-                            if( ContainerConstructParameterIndex >= 0 )
+                            monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute." );
+                        }
+                        else
+                        {
+                            // The Parameter is the Container.
+                            if( Container != null && Container != p.ParameterType )
                             {
-                                monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method has more than one parameter marked with [Container] attribute." );
+                                monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
                             }
-                            else
-                            {
-                                // The Parameter is the Container.
-                                if( Container != null && Container != p.ParameterType )
-                                {
-                                    monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConstructMethodName}' method parameter '{p.Name}' defines the Container as '{p.ParameterType.FullName}' but an attribute on the class declares the Container as '{Container.FullName}'." );
-                                }
-                                ContainerConstructParameterIndex = i;
-                                Container = p.ParameterType;
-                            }
+                            ContainerConstructParameterIndex = i;
+                            Container = p.ParameterType;
                         }
                     }
                 }
             }
             #endregion
 
-            #region StObjInitialize method checks: (non virtual) void StObjInitialize( IActivityMonitor, IStObjMap )
-            StObjInitialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-            if( StObjInitialize != null )
+            // StObjInitialize method checks: (non virtual) void StObjInitialize( IActivityMonitor, IStObjObjectMap )
+            StObjInitialize = ReadStObjInitialize( monitor, t );
+
+            // RegisterStartupServices method checks: (non virtual) void RegisterStartupServices( IActivityMonitor, SimpleServiceContainer )
+            RegisterStartupServices = ReadRegisterStartupServices( monitor, t );
+
+            // ConfigureServices method checks: (non virtual) void ConfigureServices( [in] StObjContextRoot.ServiceRegister, ... )
+            ConfigureServicesParameters = ReadConfigureServices( monitor, t );
+        }
+
+        #region Read StObjConstruct, StObjInitialize, RegisterStartupServices and ConfigureServices methods.
+
+        /// <summary>
+        /// Checks that StObjConstruct method if it exists is non virtual: void StObjConstruct( ... ).
+        /// </summary>
+        /// <param name="monitor">The monitor.</param>
+        /// <param name="t">The type.</param>
+        /// <returns>The method if it exists.</returns>
+        static (MethodInfo, ParameterInfo[]) ReadStObjConstruct( IActivityMonitor monitor, Type t )
+        {
+            var stObjConstruct = t.GetMethod( StObjContextRoot.ConstructMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            // From Construct to StObjConstruct...
+            if( stObjConstruct == null )
             {
-                if( StObjInitialize.IsVirtual )
+                stObjConstruct = t.GetMethod( "Construct", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+                if( stObjConstruct != null )
+                {
+                    monitor.Error( $"Deprecated: Method '{t.FullName}.Construct' must be named '{StObjContextRoot.ConstructMethodName}' instead." );
+                }
+            }
+            if( stObjConstruct != null )
+            {
+                if( stObjConstruct.IsVirtual )
+                {
+                    monitor.Error( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' must NOT be virtual." );
+                }
+                else
+                {
+                    var p = stObjConstruct.GetParameters();
+                    if( p.Length == 0 )
+                    {
+                        monitor.Warn( $"Method '{t.FullName}.{StObjContextRoot.ConstructMethodName}' has no parameters. It will be ignored." );
+                    }
+                    else return (stObjConstruct, p);
+                }
+            }
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Checks that StObjInitialize method if it exists is non virtual: void StObjInitialize( IActivityMonitor, IStObjObjectMap ).
+        /// </summary>
+        /// <param name="monitor">The monitor.</param>
+        /// <param name="t">The type.</param>
+        /// <returns>The method if it exists.</returns>
+        static MethodInfo ReadStObjInitialize( IActivityMonitor monitor, Type t )
+        {
+            var stObjInitialize = t.GetMethod( StObjContextRoot.InitializeMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( stObjInitialize != null )
+            {
+                if( stObjInitialize.IsVirtual )
                 {
                     monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method must NOT be virtual." );
                 }
                 else
                 {
-                    var parameters = StObjInitialize.GetParameters();
+                    var parameters = stObjInitialize.GetParameters();
                     if( parameters.Length != 2
                         || parameters[0].ParameterType != typeof( IActivityMonitor )
-                        || parameters[1].ParameterType != typeof( IStObjMap ) )
+                        || parameters[1].ParameterType != typeof( IStObjObjectMap ) )
                     {
-                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IStObjMap)." );
+                        monitor.Error( $"'{t.FullName}.{StObjContextRoot.InitializeMethodName}' method parameters must be (IActivityMonitor, IStObjObjectMap)." );
+                        if( parameters.Length >= 2 && parameters[1].ParameterType == typeof( IStObjMap ) )
+                        {
+                            monitor.Error( $"Before v12, this was IStObjMap but at StObjInitialize time, Services are not available: the IStObjObjectMap gives access to only Real Objects." );
+                        }
                     }
                 }
             }
-            #endregion
+            return stObjInitialize;
+        }
 
-
-            #region RegisterStartupServices method checks: (non virtual) void RegisterStartupServices( IActivityMonitor, SimpleServiceContainer )
-            RegisterStartupServices = t.GetMethod( StObjContextRoot.RegisterStartupServicesMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
-            if( RegisterStartupServices != null )
+        /// <summary>
+        /// Checks that RegisterStartupServices method if it exists is non virtual: void RegisterStartupServices( IActivityMonitor, SimpleServiceContainer ).
+        /// </summary>
+        /// <param name="monitor">The monitor.</param>
+        /// <param name="t">The type.</param>
+        /// <returns>The method if it exists.</returns>
+        static MethodInfo ReadRegisterStartupServices( IActivityMonitor monitor, Type t )
+        {
+            var registerStartupServices = t.GetMethod( StObjContextRoot.RegisterStartupServicesMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
+            if( registerStartupServices != null )
             {
-                if( RegisterStartupServices.IsVirtual )
+                if( registerStartupServices.IsVirtual )
                 {
                     monitor.Error( $"'{t.FullName}.{StObjContextRoot.RegisterStartupServicesMethodName}' method must NOT be virtual." );
                 }
                 else
                 {
-                    var parameters = RegisterStartupServices.GetParameters();
+                    var parameters = registerStartupServices.GetParameters();
                     if( parameters.Length != 2
                         || parameters[0].ParameterType != typeof( IActivityMonitor )
                         || parameters[1].ParameterType != typeof( SimpleServiceContainer ) )
@@ -304,9 +419,17 @@ namespace CK.Setup
                     }
                 }
             }
-            #endregion
+            return registerStartupServices;
+        }
 
-            #region ConfigureServices method checks: (non virtual) void ConfigureServices( IServiceCollection, ... )
+        /// <summary>
+        /// Checks that ConfigureServices method if it exists is non virtual: void ConfigureServices( [in] StObjContextRoot.ServiceRegister, ... ).
+        /// </summary>
+        /// <param name="monitor">The monitor.</param>
+        /// <param name="t">The type.</param>
+        /// <returns>The method's parameters or null.</returns>
+        static ParameterInfo[] ReadConfigureServices( IActivityMonitor monitor, Type t )
+        {
             var configureServices = t.GetMethod( StObjContextRoot.ConfigureServicesMethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly );
             if( configureServices != null )
             {
@@ -316,18 +439,30 @@ namespace CK.Setup
                 }
                 else
                 {
-                    ConfigureServicesParameters = configureServices.GetParameters();
-                    if( ConfigureServicesParameters.Length == 0
-                        || (ConfigureServicesParameters[0].ParameterType != typeof( StObjContextRoot.ServiceRegister )
-                            && !(ConfigureServicesParameters[0].ParameterType.IsByRef
-                                 && ConfigureServicesParameters[0].ParameterType.GetElementType() == typeof( StObjContextRoot.ServiceRegister ))) )
+                    var parameters = configureServices.GetParameters();
+                    if( parameters.Length == 0
+                        || (parameters[0].ParameterType != typeof( StObjContextRoot.ServiceRegister )
+                            && !(parameters[0].ParameterType.IsByRef
+                                 && parameters[0].ParameterType.GetElementType() == typeof( StObjContextRoot.ServiceRegister ))) )
                     {
                         monitor.Error( $"'{t.FullName}.{StObjContextRoot.ConfigureServicesMethodName}': first parameter must be a StObjContextRoot.ServiceRegister." );
                     }
+                    else
+                    {
+                        return parameters;
+                    }
                 }
             }
-            #endregion
+            return null;
         }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the information above the root if this is the root (null otherwise): this
+        /// property is not null if <see cref="Generalization"/> is null and vice versa.
+        /// </summary>
+        public IStObjTypeRootParentInfo BaseTypeInfo { get; }
 
         public new RealObjectClassInfo Generalization => (RealObjectClassInfo)base.Generalization;
 
@@ -343,7 +478,7 @@ namespace CK.Setup
         /// Gets the specialization depth from root object type (Object's depth being 0).
         /// </summary>
         public int SpecializationDepth { get; private set; }
-        
+
         public DependentItemKind ItemKind { get; private set; }
 
         public TrackAmbientPropertiesMode TrackAmbientProperties { get; private set; }
@@ -364,7 +499,25 @@ namespace CK.Setup
 
         public readonly MethodInfo StObjInitialize;
 
+        public IEnumerable<MethodInfo> AllStObjInitialize
+        {
+            get
+            {
+                var initializers = BaseTypeInfo?.StObjInitializeCollector ?? Enumerable.Empty<MethodInfo>();
+                return StObjInitialize == null ? initializers : initializers.Append( StObjInitialize );
+            }
+        }
+
         public readonly MethodInfo RegisterStartupServices;
+
+        public IEnumerable<MethodInfo> AllRegisterStartupServices
+        {
+            get
+            {
+                var registers = BaseTypeInfo?.RegisterStartupServicesCollector ?? Enumerable.Empty<MethodInfo>();
+                return RegisterStartupServices == null ? registers : registers.Append( RegisterStartupServices );
+            }
+        }
 
         /// <summary>
         /// ConfigureService parameters. The first parameter is a StObjContextRoot.ServiceRegister.
@@ -372,11 +525,19 @@ namespace CK.Setup
         /// </summary>
         public readonly ParameterInfo[] ConfigureServicesParameters;
 
+        public IEnumerable<ParameterInfo[]> AllConfigureServicesParameters
+        {
+            get
+            {
+                var conf = BaseTypeInfo?.ConfigureServicesCollector ?? Enumerable.Empty<ParameterInfo[]>();
+                return ConfigureServicesParameters == null ? conf : conf.Append( ConfigureServicesParameters );
+            }
+        }
 
         Type[] EnsureAllAmbientInterfaces( IActivityMonitor m, CKTypeKindDetector d )
         {
             return _ambientInterfaces
-                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t )&CKTypeKind.RealObject) == CKTypeKind.RealObject ).ToArray());
+                ?? (_ambientInterfaces = Type.GetInterfaces().Where( t => (d.GetKind( m, t ) & CKTypeKind.RealObject) == CKTypeKind.RealObject ).ToArray());
         }
 
         internal Type[] EnsureThisAmbientInterfaces( IActivityMonitor m, CKTypeKindDetector d )

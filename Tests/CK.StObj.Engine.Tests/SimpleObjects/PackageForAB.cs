@@ -11,12 +11,15 @@ using NUnit.Framework;
 
 namespace CK.StObj.Engine.Tests.SimpleObjects
 {
+    public interface IAmNotHere : IRealObject { }
+
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     public class PackageForAB : IRealObject
     {
         public int ConstructCount { get; protected set; }
 
-        void StObjConstruct()
+        // Adds an optional parameter otherwise parameter less StObjConstruct are not called.
+        void StObjConstruct( IAmNotHere opt = null )
         {
             Assert.That( ConstructCount, Is.EqualTo( 0 ), "First construct." );
             SimpleObjectsTrace.LogMethod( GetType().GetMethod( "StObjConstruct", BindingFlags.Instance | BindingFlags.NonPublic ) );

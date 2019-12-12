@@ -26,7 +26,7 @@ namespace CK.Setup
         /// value of the parameter or the default value for the parameter's type is automatically used (null for reference types).
         /// </summary>
         /// <remarks>
-        /// If this is originally false, it means that the the formal parameter of the method is NOT optional (<see cref="IsRealParameterOptional"/> is false). 
+        /// If this is originally false, it means that the formal parameter of the method is NOT optional (<see cref="IsRealParameterOptional"/> is false). 
         /// </remarks>
         bool IsOptional { get; set; }
 

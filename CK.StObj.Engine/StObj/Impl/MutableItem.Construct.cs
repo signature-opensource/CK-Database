@@ -31,15 +31,27 @@ namespace CK.Setup
                     SetPropertyValue( monitor, p );
                 }
             }
-
-            if( Type.StObjConstruct == null ) return;
-
-            object[] parameters = new object[_constructParameterEx.Count];
-            int i = 0;
-            foreach( MutableParameter t in _constructParameterEx )
+            if( _constructParametersAbove != null )
             {
-                // We inject our "setup monitor" only if it is exactly the formal parameter: ... , IActivityMonitor monitor, ...
-                // This enforces code homogeneity and let room for any other IActivityMonitor injection.
+                foreach( var above in _constructParametersAbove )
+                {
+                    DoCallStObjConstruct( monitor, valueCollector, valueResolver, above.Item1, above.Item2 );
+                }
+            }
+            if( Type.StObjConstruct != null )
+            {
+                Debug.Assert( _constructParameterEx != null );
+                DoCallStObjConstruct( monitor, valueCollector, valueResolver, Type.StObjConstruct, _constructParameterEx );
+            }
+        }
+
+        private void DoCallStObjConstruct( IActivityMonitor monitor, BuildValueCollector valueCollector, IStObjValueResolver valueResolver, MethodInfo stobjConstruct, IReadOnlyList<MutableParameter> mutableParameters )
+        {
+            object[] parameters = new object[mutableParameters.Count];
+            int i = 0;
+            foreach( MutableParameter t in mutableParameters )
+            {
+                // We inject our "setup monitor" for IActivityMonitor parameter type.
                 if( t.IsSetupLogger )
                 {
                     t.SetParameterValue( monitor );
@@ -82,7 +94,7 @@ namespace CK.Setup
                 }
                 parameters[i++] = t.Value;
             }
-            Type.StObjConstruct.Invoke( _leafData.StructuredObject, parameters );
+            stobjConstruct.Invoke( _leafData.StructuredObject, parameters );
         }
 
         internal void SetPostBuildProperties( IActivityMonitor monitor )
