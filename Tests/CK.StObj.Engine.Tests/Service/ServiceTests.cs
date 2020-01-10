@@ -289,5 +289,35 @@ namespace CK.StObj.Engine.Tests.Service
             var noWay2 = r.Services.GetRequiredService<StupidServiceViaInterface2>();
         }
 
+        #region issue https://gitlab.com/signature-code/CK-Setup/issues/3 (wrong repository :D).
+
+        public interface ISqlCallContext : IScopedAutoService { }
+
+        public interface IA : IAutoService { }
+        public interface IB : IAutoService { }
+
+        public class A : IA
+        {
+            public A( IB dep ) { }
+        }
+
+        public class B : IB
+        {
+            public B( ISqlCallContext dep ) { }
+        }
+
+        [Test]
+        public void scoped_dependency_detection()
+        {
+            var collector = TestHelper.CreateStObjCollector();
+            collector.RegisterType( typeof( A ) );
+            collector.RegisterType( typeof( B ) );
+            var r = TestHelper.GetAutomaticServices( collector );
+            r.Result.Services.SimpleMappings[typeof( IB )].IsScoped.Should().BeTrue();
+            r.Result.Services.SimpleMappings[typeof( A )].IsScoped.Should().BeTrue();
+            r.Result.Services.SimpleMappings[typeof( IA )].IsScoped.Should().BeTrue();
+        }
+
+        #endregion
     }
 }
