@@ -38,14 +38,13 @@ namespace CK.StObj.Engine.Tests.Service
         }
 
         [Test]
-        public void simple_dispatcher()
+        public void simple_dispatcher_on_IEnumerable_of_IAutoService_is_not_yet_supported()
         {
             var collector = TestHelper.CreateStObjCollector();
             collector.RegisterType( typeof( S1 ) );
             collector.RegisterType( typeof( S2 ) );
             collector.RegisterType( typeof( SDispatcher ) );
             TestHelper.GetFailedResult( collector );
-            Assume.That( false, "IEnumerable<T> or IReadOnlyList<T> where T is IScoped/SingletonAutoService is not supported yet." );
         }
 
 
