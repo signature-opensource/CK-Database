@@ -170,13 +170,16 @@ namespace CK.Setup
                                 // handled parameters (IReadOnlyCollection<IService>...).
                                 var r = heads[0].Class;
                                 Resolved = r;
-                                foreach( var i in _interfaces )
-                                {
-                                    i.FinalResolved = r;
-                                }
                                 m.CloseGroup( $"Resolved to '{r}'." );
                             }
                         }
+                    }
+                }
+                if( success )
+                {
+                    foreach( var i in _interfaces )
+                    {
+                        i.FinalResolved = Resolved;
                     }
                 }
                 return success;
