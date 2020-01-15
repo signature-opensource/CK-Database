@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OriginProjectName>SqlCallDemo.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
@@ -20,11 +20,6 @@
     <Compile Remove="..\SqlCallDemo.Tests\ProviderDemo\SqlProviderContext.cs" />
     <Compile Remove="..\SqlCallDemo.Tests\ProviderDemo\SqlProviderContextCleaner.cs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Logs\" />
   </ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <Description>Extends TestHelper to exploit generated assemblies (loading, deletion, obtaining a IServiceProvider with the AutomaticServices, etc.).</Description>
   </PropertyGroup>
   <ItemGroup>
