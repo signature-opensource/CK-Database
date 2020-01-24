@@ -1,5 +1,6 @@
 using CK.Core;
 using System;
+using System.Diagnostics;
 
 namespace CK.Setup
 {
@@ -101,7 +102,17 @@ namespace CK.Setup
         /// <summary>
         /// Marshallable service. This excludes <see cref="IsFrontOnlyService"/>.
         /// </summary>
-        IsMarshallableService = 64
+        IsMarshallableService = 64,
+
+        /// <summary>
+        /// Simple bit mask on <see cref="IsFrontOnlyService"/> | <see cref="IsMarshallableService"/>.
+        /// </summary>
+        FrontTypeMask = IsFrontOnlyService | IsMarshallableService,
+
+        /// <summary>
+        /// Simple bit mask on <see cref="IsScoped"/> | <see cref="IsSingleton"/>.
+        /// </summary>
+        LifetimeMask = IsScoped | IsSingleton
     }
 
     /// <summary>
@@ -142,6 +153,7 @@ namespace CK.Setup
                         {
                             return "RealObject and AutoSingleton";
                         }
+                        Debug.Assert( GetCKTypeKindCombinationError( @this ) != null );
                         return GetCKTypeKindCombinationError( @this );
                     }
             }

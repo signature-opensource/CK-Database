@@ -147,32 +147,38 @@ namespace CK.Setup
 
         CKTypeKind? SetLifetimeOrFrontType( IActivityMonitor m, Type t, CKTypeKind kind  )
         {
-            bool hasLifetime = (kind & (CKTypeKind.IsScoped | CKTypeKind.IsSingleton)) != 0;
-            bool hasFrontType = (kind & (CKTypeKind.IsMarshallableService | CKTypeKind.IsFrontOnlyService)) != 0;
+            bool hasLifetime = (kind & CKTypeKind.LifetimeMask) != 0;
+            bool hasFrontType = (kind & CKTypeKind.FrontTypeMask) != 0;
 
             Debug.Assert( (kind & (IsDefiner|IsSuperDefiner)) == 0
                           // At least, something must be set.
                           && (hasLifetime || hasFrontType)
                           // If lifetime is set, it cannot be both Scoped and Singleton.
-                          && (!hasLifetime || (kind & (CKTypeKind.IsScoped | CKTypeKind.IsSingleton)) != (CKTypeKind.IsScoped | CKTypeKind.IsSingleton) )
+                          && (!hasLifetime || (kind & CKTypeKind.LifetimeMask) != CKTypeKind.LifetimeMask )
                           // If front type is set, it cannot be both Marshallable and FrontOnly.
-                          && (!hasFrontType || (kind & (CKTypeKind.IsMarshallableService | CKTypeKind.IsFrontOnlyService)) != (CKTypeKind.IsMarshallableService | CKTypeKind.IsFrontOnlyService) ) );
+                          && (!hasFrontType || (kind & CKTypeKind.FrontTypeMask) != CKTypeKind.FrontTypeMask) );
 
             var k = RawGet( m, t );
             if( (k & (IsDefiner|IsSuperDefiner)) != 0 )
             {
                 throw new Exception( $"Type '{t}' is a Definer or a SuperDefiner. It cannot be defined as {ToStringFull( kind )}." );
             }
-            var kLifetime = k & (CKTypeKind.IsScoped | CKTypeKind.IsSingleton);
-            var kFrontType = k & (CKTypeKind.IsMarshallableService | CKTypeKind.IsFrontOnlyService);
-            Debug.Assert( kLifetime != (CKTypeKind.IsScoped | CKTypeKind.IsSingleton) && kFrontType != (CKTypeKind.IsFrontOnlyService | CKTypeKind.IsMarshallableService) );
-            if( (kLifetime != CKTypeKind.None && kLifetime != (kind & (CKTypeKind.IsScoped | CKTypeKind.IsSingleton)))
-                || (kFrontType != CKTypeKind.None && kFrontType != (kind & (CKTypeKind.IsMarshallableService | CKTypeKind.IsFrontOnlyService))) )
+            var kLifetime = k & CKTypeKind.LifetimeMask;
+            var kFrontType = k & CKTypeKind.FrontTypeMask;
+            Debug.Assert( kLifetime != CKTypeKind.LifetimeMask && kFrontType != CKTypeKind.FrontTypeMask, "Existing registration is correct." );
+
+            // Lifetime, if already set, must be the same (scoped excludes singletons and vice versa), but
+            // FrontType, if already set must be the same OR be IsMarshallableService: this resets the IsFrontOnlyService bit.
+            if( (kLifetime != CKTypeKind.None && kLifetime != (kind & CKTypeKind.LifetimeMask))
+                || (kFrontType != CKTypeKind.None
+                    && kFrontType != (kind & CKTypeKind.FrontTypeMask)
+                    && (kind & CKTypeKind.FrontTypeMask) != CKTypeKind.IsMarshallableService) )
             {
                 m.Error( $"Type '{t}' is already registered as a '{ToStringFull( k )}'. It can not be defined as {ToStringFull( kind )}." );
                 return null;
             }
             k |= kind;
+            if( (k & CKTypeKind.FrontTypeMask) == CKTypeKind.FrontTypeMask ) k &= ~CKTypeKind.IsFrontOnlyService;
             _cache[t] = k;
             Debug.Assert( (k & (IsDefiner | IsSuperDefiner)) == 0 );
             return k & MaskPublicInfo;
@@ -290,7 +296,7 @@ namespace CK.Setup
                 }
                 if( k != CKTypeKind.None )
                 {
-                    if( (k & (CKTypeKind.IsMarshallableService|CKTypeKind.IsFrontOnlyService)) == (CKTypeKind.IsMarshallableService|CKTypeKind.IsFrontOnlyService) )
+                    if( (k & CKTypeKind.FrontTypeMask) == CKTypeKind.FrontTypeMask )
                     {
                         // IsMarshallableService cancels IsFrontOnlyService.
                         k &= ~CKTypeKind.IsFrontOnlyService;
@@ -328,6 +334,8 @@ namespace CK.Setup
             if( (t & IsSingletonReasonReference) != 0 ) c += " [Lifetime:ReferencedBySingleton]";
             if( (t & IsSingletonReasonFinal) != 0 ) c += " [Lifetime:OpimizedAsSingleton]";
             if( (t & IsScopedReasonReference) != 0 ) c += " [Lifetime:UsesScoped]";
+            if( (t & IsMarshallableReasonMarshaller) != 0 ) c += " [FrontType:MarshallableSinceMarshallerExists]";
+            if( (t & IsFrontTypeReasonExternal) != 0 ) c += " [FrontType:External]";
             return c;
         }
 
