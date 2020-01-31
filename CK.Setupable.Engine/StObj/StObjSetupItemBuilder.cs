@@ -112,11 +112,13 @@ namespace CK.Setup
                             Type itemType = data.ItemType;
                             if( itemType == null )
                             {
+                                _monitor.Trace( $"'{data.FullName}': using default StObjDynamicPackageItem setup item."  );
                                 StObjDynamicPackageItem stobjDynamicPackageItem = new StObjDynamicPackageItem( _monitor, data );
                                 data.SetupItem = stobjDynamicPackageItem;
                             }
                             else
                             {
+                                _monitor.Trace( $"'{data.FullName}': using setup item type '{itemType.FullName},{itemType.Assembly.GetName().Name}'." );
                                 data.SetupItem = (IStObjSetupItem)_services.SimpleObjectCreate(_monitor, itemType, data );
                             }
                         }

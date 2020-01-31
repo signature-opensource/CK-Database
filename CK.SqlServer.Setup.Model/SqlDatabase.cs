@@ -13,8 +13,9 @@ namespace CK.Core
     /// <summary>
     /// Database objects hold the <see cref="ConnectionString"/> and the schemas defined in it.
     /// </summary>
+    [CKTypeDefiner]
     [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
-    public class SqlDatabase: SqlServer.ISqlConnectionStringProvider
+    public class SqlDatabase : SqlServer.ISqlConnectionStringProvider, IRealObject
     {
         /// <summary>
         /// Default database name is "db": this is the name of the <see cref="SqlDefaultDatabase"/> type.
