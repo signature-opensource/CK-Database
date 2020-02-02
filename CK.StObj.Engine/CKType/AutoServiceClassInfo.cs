@@ -124,7 +124,7 @@ namespace CK.Setup
             }
             else TypeInfo = new CKTypeInfo( m, parent?.TypeInfo, t, serviceProvider, isExcluded, this );
 
-            Debug.Assert( ReferenceEquals( TypeInfo.Generalization, parent?.TypeInfo ), $"Gen={TypeInfo.Generalization}/Par={parent?.TypeInfo}" );
+            Debug.Assert( parent == null || ReferenceEquals( TypeInfo.Generalization, parent.TypeInfo ), $"Gen={TypeInfo.Generalization}/Par={parent?.TypeInfo}" );
             Debug.Assert( (lifetime == (CKTypeKind.RealObject | CKTypeKind.AutoSingleton)) == TypeInfo is RealObjectClassInfo );
 
 
