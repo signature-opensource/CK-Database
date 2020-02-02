@@ -11,7 +11,7 @@ namespace CK.Setup
     /// </summary>
     public class StObjDynamicPackageItem : DynamicPackageItem, IStObjSetupItem, ISetupObjectItem
     {
-        readonly IStObjResult _stObj;
+        readonly IStObjSetupData _setupData;
 
         /// <summary>
         /// Initializes a new <see cref="StObjDynamicPackageItem"/> initialized by a <see cref="IStObjSetupData"/>.
@@ -26,7 +26,7 @@ namespace CK.Setup
             Debug.Assert( data.ItemType == null || typeof( StObjDynamicPackageItem ).IsAssignableFrom( data.ItemType ), "If we are using a StObjDynamicPackageItem, this is because no explicit ItemType (nor ItemTypeName) have been set, or it is a type that specializes this." );
             ItemKind = (DependentItemKind)data.StObj.ItemKind;
             SetVersionsString( data.Versions );
-            _stObj = data.StObj;
+            _setupData = data;
             FullName = data.FullName;
             Requires.AddRange( data.Requires );
             RequiredBy.AddRange( data.RequiredBy );
@@ -37,12 +37,29 @@ namespace CK.Setup
         /// <summary>
         /// Gets the StObj.
         /// </summary>
-        public IStObjResult StObj => _stObj; 
+        public IStObjResult StObj => _setupData.StObj; 
         
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object). 
         /// </summary>
-        public object ActualObject => _stObj.InitialObject; 
+        public object ActualObject => _setupData.StObj.InitialObject;
+
+
+        /// <summary>
+        /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 
+        /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type 
+        /// otherwise an error is logged.
+        /// </summary>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
+        /// <param name="propertyName">Name of the property to set.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        public bool SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null )
+        {
+            return _setupData.SetDirectPropertyValue( monitor, propertyName, value, sourceDescription );
+        }
+
 
     }
 }

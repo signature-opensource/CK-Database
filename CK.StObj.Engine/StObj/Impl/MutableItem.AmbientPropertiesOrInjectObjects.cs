@@ -136,13 +136,18 @@ namespace CK.Setup
             BuildValueCollector valueCollector,
             IStObjValueResolver valueResolver )
         {
-            Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the  ultimate (leaf) Specialization." );
+            Debug.Assert( Specialization == null && _leafData.LeafSpecialization == this, "We are on the ultimate (leaf) Specialization." );
+            // Here we AddPreConstructProperty the current direct properties: they will be set on the final object before 
+            // the call to StObjConstruct.
+            // We flush the dictionary and the next calls to SetDirectProperty will be AddPostBuildProperty.
+            // This enforces the conherency between build time and runtime.
             if( _leafData.DirectPropertiesToSet != null )
             {
                 foreach( var k in _leafData.DirectPropertiesToSet )
                 {
                     if( k.Value != System.Type.Missing ) RootGeneralization.AddPreConstructProperty( k.Key, k.Value, valueCollector ); 
                 }
+                _leafData.DirectPropertiesToSet.Clear();
             }
             foreach( var c in _leafData.AllInjectObjects )
             {

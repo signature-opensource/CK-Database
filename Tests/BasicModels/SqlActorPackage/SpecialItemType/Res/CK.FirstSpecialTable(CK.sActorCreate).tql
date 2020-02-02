@@ -1,0 +1,6 @@
+﻿create transformer on CK.sActorCreate
+as
+begin
+	inject "--FirstSpecialTable
+	" after single "--[endsp]";
+end

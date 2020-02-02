@@ -27,10 +27,11 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribte type.
         /// </summary>
-        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute; 
+        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute;
 
         /// <summary>
         /// Transfers <see cref="SqlPackageAttribute.HasModel"/> to "HasModel" stobj property.
+        /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The configured object.</param>

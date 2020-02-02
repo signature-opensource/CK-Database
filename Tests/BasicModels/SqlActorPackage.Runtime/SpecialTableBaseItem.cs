@@ -5,6 +5,7 @@ using CK.SqlServer.Setup;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace SqlActorPackage.Runtime
@@ -19,11 +20,27 @@ namespace SqlActorPackage.Runtime
             _parser = parser;
         }
 
-        public void DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
+        void IStObjSetupDynamicInitializer.DynamicItemInitialize( IStObjSetupDynamicInitializerState state, IMutableSetupItem _, IStObjResult stObjResult )
         {
-            Debug.Assert( this == item );
-            var name = SqlBaseItem.SqlBuildFullName( this, SetupObjectItemBehavior.Transform, "sDynObjRead" );
-            string text = name.LoadTextResource( state.Monitor, this, out string fileName );
+            Debug.Assert( this == _ );
+
+            //
+            var tableName = ActualObject.TableName;
+            if( String.IsNullOrEmpty( tableName ) || tableName[0] != 't' || !tableName.EndsWith( "Special" ) )
+            {
+                state.Monitor.Error( $"{FullName}: TableName property must be set and follow the 'tXXXXSpecial' pattern." );
+                return;
+            }
+            var specialName = tableName.Substring( 1, tableName.Length - 1 - 7 );
+            SetDirectPropertyValue( state.Monitor, "SpecialName", specialName, nameof( IStObjSetupDynamicInitializer.DynamicItemInitialize ) );
+
+            var name = SqlBaseItem.SqlBuildFullName( this, SetupObjectItemBehavior.Transform, "sActorCreate" );
+            string text = name.LoadTextResource( state.Monitor, this, out string _ );
+            if( text == null )
+            {
+                state.Monitor.Error( $"Special table '{FullName}' requires a transfomer on sActorCreate procedure to exist." );
+                return;
+            }
             var parseResult = _parser.ParseTransformer( text );
             if( parseResult.IsError )
             {
@@ -31,10 +48,14 @@ namespace SqlActorPackage.Runtime
                 return;
             }
             var t = new SqlTransformerItem( name, parseResult.Result );
-            state.
-            //Must find the Target in the state memory.
-            // and call AddTransformer to it.
+            var target = state.FindItem( name.TransformArg );
+            if( target == null ) throw new CKException( "Actor Package should have defined the sActorCreate procedure." );
+            target.OnItemAvailable( state.Monitor, (m,item) => item.AddTransformer( m, t ) );
             Children.Add( t );
+            // Synchronizes the ordering of the transformers with the ordering of the table.
+            SqlTransformerItem previous = (SqlTransformerItem)state.Memory[typeof( SpecialTableBaseItem )];
+            if( previous != null ) t.Requires.Add( previous );
+            state.Memory[typeof( SpecialTableBaseItem )] = t;
         }
     }
 }

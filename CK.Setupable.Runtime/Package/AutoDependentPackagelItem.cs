@@ -108,6 +108,9 @@ namespace CK.Setup
 
         string IContextLocNaming.TransformArg => null;
 
+        /// <inheritdoc />
+        public IContextLocNaming CombineName( string n ) => new ContextLocName( new ContextLocNameStructImpl( this ).CombineName( n ) );       
+
         /// <summary>
         /// Gets or set the container to which this dependent package explicitly belongs. 
         /// It is totally independent of the <see cref="Package"/>'s container and should be let to null:

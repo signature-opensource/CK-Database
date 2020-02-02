@@ -92,6 +92,9 @@ namespace CK.Setup
         /// </summary>
         public string FullName => _fullName;
 
+        /// <inheritdoc />
+        public IContextLocNaming CombineName( string n ) => new ContextLocName( new ContextLocNameStructImpl( this ).CombineName( n ) );
+
         /// <summary>
         /// Gets the original file name (including its extension and [Context] prefix if any) without any normalization.
         /// Not null nor empty.

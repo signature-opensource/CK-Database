@@ -167,6 +167,8 @@ namespace CK.Setup
             }
         }
 
+        IContextLocNaming IContextLocNaming.CombineName( string n ) => _contextLocName.CombineName( n );
+
         /// <summary>
         /// Gets or sets the container to which this item belongs.
         /// </summary>

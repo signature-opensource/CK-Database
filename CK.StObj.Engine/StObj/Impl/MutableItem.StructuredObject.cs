@@ -43,6 +43,16 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<PropertySetter> PostBuildProperties => _leafData?.PostBuildProperties;
 
-
+        internal void RegisterRemainingDirectPropertiesAsPostBuildProperties( BuildValueCollector valueCollector )
+        {
+            if( Specialization == null && _leafData.DirectPropertiesToSet != null )
+            {
+                foreach( var k in _leafData.DirectPropertiesToSet )
+                {
+                    if( k.Value != System.Type.Missing ) AddPostBuildProperty( k.Key, k.Value, valueCollector );
+                }
+                _leafData.DirectPropertiesToSet.Clear();
+            }
+        }
     }
 }
