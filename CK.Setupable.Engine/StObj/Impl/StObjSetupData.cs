@@ -64,5 +64,10 @@ namespace CK.Setup
 
         IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups => (IReadOnlyList<IDependentItemGroupRef>)Groups;
 
+        bool IStObjSetupData.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
+        {
+            return ((IStObjMutableItem)_stObj).SetDirectPropertyValue( monitor, propertyName, value, sourceDescription );
+        }
+
     }
 }

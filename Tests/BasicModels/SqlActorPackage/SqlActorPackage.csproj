@@ -4,36 +4,11 @@
     <IsPackable>False</IsPackable>
   </PropertyGroup>
   <Import Project="..\..\..\Common\Shared.props" />
+
   <ItemGroup>
-    <None Remove="Basic\Res\Model\SqlActorPackage.Basic.Package.Init.sql" />
-    <None Remove="Basic\Res\Model\SqlActorPackage.Basic.Package.SettleContent.sql" />
+    <EmbeddedResource Include="**\*.sql;**\*.tql;**\*.y4" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Basic\Res\a_stupid_view.sql" />
-    <EmbeddedResource Include="Basic\Res\fUserIsInGroup.sql" />
-    <EmbeddedResource Include="Basic\Res\Model\BadNameTable.Install.1.0.0.sql" />
-    <EmbeddedResource Include="Basic\Res\Model\CK.ActorHome.Init.2.12.10.sql" />
-    <EmbeddedResource Include="Basic\Res\Model\CK.ActorProfileHome.Init.2.12.10.sql" />
-    <EmbeddedResource Include="Basic\Res\Model\CK.GroupHome.Init.2.12.10.sql" />
-    <EmbeddedResource Include="Basic\Res\Model\CK.UserHome.Init.2.12.10.sql" />
-    <EmbeddedResource Include="Basic\Res\OneActorView.sql" />
-    <EmbeddedResource Include="Basic\Res\sActorCreate.sql" />
-    <EmbeddedResource Include="Basic\Res\sActorGuidRefTest.sql" />
-    <EmbeddedResource Include="Basic\Res\sBasicProcedureWithAuth.sql" />
-    <EmbeddedResource Include="Basic\Res\sBasicSimpleProcedure.sql" />
-    <EmbeddedResource Include="Basic\Res\sBasicSimpleScalar.sql" />
-    <EmbeddedResource Include="Basic\Res\sGroupCreate.sql" />
-    <EmbeddedResource Include="Basic\Res\sGroupDestroy.sql" />
-    <EmbeddedResource Include="Basic\Res\SqlActorPackage.Basic.Package.Init.sql" />
-    <EmbeddedResource Include="Basic\Res\SqlActorPackage.Basic.BuggyPackage.SettleContent.sql" />
-    <EmbeddedResource Include="Basic\Res\SqlActorPackage.Basic.Package.SettleContent.sql" />
-    <EmbeddedResource Include="Basic\Res\sUserCreate.sql" />
-    <EmbeddedResource Include="Basic\Res\sUserExists.sql" />
-    <EmbeddedResource Include="Basic\Res\sUserExists2.sql" />
-    <EmbeddedResource Include="Basic\Res\sUserToBeOverriden.sql" />
-    <EmbeddedResource Include="Basic\Res\sUserToBeOverridenIndirect.sql" />
-    <EmbeddedResource Include="TransformPackageRes\sGroupDestroy.tql" />
-  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>

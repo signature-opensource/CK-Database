@@ -1,10 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setupable.Runtime\StObj\IStObjSetupData.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
+using CK.Core;
 using System;
 using System.Collections.Generic;
 
@@ -12,7 +6,8 @@ using System.Collections.Generic;
 namespace CK.Setup
 {
     /// <summary>
-    /// Wraps a <see cref="IStObjResult"/> StObj with information related to the setup phasis.
+    /// Wraps a <see cref="IStObjResult"/> StObj with information related to the ordering phasis and supports
+    /// the capacity to set a property on this <see cref="IStObjSetupDataBase.StObj"/>'s <see cref="IStObjResult.InitialObject"/>.
     /// </summary>
     public interface IStObjSetupData : IStObjSetupDataBase
     {
@@ -88,5 +83,18 @@ namespace CK.Setup
         /// Gets the list of children (can be <see cref="IDependentItem"/> instances or named references).
         /// </summary>
         IReadOnlyList<IDependentItemRef> Children { get; }
+
+        /// <summary>
+        /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 
+        /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type 
+        /// otherwise an error is logged.
+        /// </summary>
+        /// <param name="monitor">The monitor to use to describe any error.</param>
+        /// <param name="propertyName">Name of the property to set.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="sourceDescription">Optional description of the origin of the value to help troubleshooting.</param>
+        /// <returns>True on success, false if any error occurs.</returns>
+        bool SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription = null );
+
     }
 }

@@ -32,6 +32,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Transfers <see cref="SqlTableAttribute.TableName" /> as a direct property "TableName" of the StObj item
         /// and <see cref="SqlPackageAttributeBase.Schema"/> as the "Schema" ambient property.
+        /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The configured object.</param>

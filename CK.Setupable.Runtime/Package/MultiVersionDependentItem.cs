@@ -82,6 +82,8 @@ namespace CK.Setup
 
         string IContextLocNaming.TransformArg => null;
 
+        /// <inheritdoc/>
+        public virtual IContextLocNaming CombineName( string n ) => new ContextLocName( _name.CombineName( n ) );
 
         /// <summary>
         /// Gets whether this item is a simple Item, a Group or a Container.

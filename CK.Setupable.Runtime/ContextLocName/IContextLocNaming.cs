@@ -9,7 +9,7 @@
 namespace CK.Setup
 {
     /// <summary>
-    /// Defines the immutable aspect of Context-Location-Name triplet.
+    /// Defines the read only aspect of Context-Location-Name triplet.
     /// </summary>
     public interface IContextLocNaming
     {
@@ -38,10 +38,19 @@ namespace CK.Setup
         string FullName { get; }
 
         /// <summary>
-        /// Gets the transform argument name: the suffix enclosed in parenthesis if it exists, null otherwise. 
-        /// This can be null (no target) or not empty: an empty transformation argument is not valid.
+        /// Gets the transform argument name (that is the suffix enclosed in parenthesis) if it exists, null otherwise. 
+        /// This can be null (no target meanig that this is not a transformer's name) or not empty: an empty transformation 
+        /// argument is not valid.
         /// </summary>
         string TransformArg { get; }
 
+        /// <summary>
+        /// Combines this <see cref="IContextLocNaming"/> with another one: if the other one has unknown <see cref="Context"/> 
+        /// or <see cref="Location"/> those from this name are used (this also applies to the potential transform argument 
+        /// of <paramref name="n"/>).
+        /// </summary>
+        /// <param name="n">The raw name. When null or empty, this name is cloned.</param>
+        /// <returns>A new combined name.</returns>
+        IContextLocNaming CombineName( string n );
     }
 }

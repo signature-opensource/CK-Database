@@ -37,8 +37,8 @@ namespace CK.Setup
         /// Copy constructor. Initializes a new <see cref="ContextLocName"/> from another ContextLocName.
         /// </summary>
         public ContextLocName( ContextLocName other )
+            : this( other._impl )
         {
-            _impl = other._impl;
         }
 
         /// <summary>
@@ -173,6 +173,9 @@ namespace CK.Setup
                 if( oldName != _impl.Name ) OnNameChanged();
             }
         }
+
+        /// <inheritdoc/>
+        public virtual IContextLocNaming CombineName( string n ) => new ContextLocName( _impl.CombineName( n ) );
 
         /// <summary>
         /// Overriden to return the <see cref="FullName"/>.

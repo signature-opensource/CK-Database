@@ -13,7 +13,7 @@ namespace CK.Setup
         readonly ContextBoundDelegationAttribute _attribute;
         ICKCustomAttributeTypeMultiProvider _owner;
         MemberInfo _member;
-        SetupObjectItemAttributeImplBase.BestCreator _theBest;
+        SetupObjectItemDynamicResource _theBest;
 
         /// <summary>
         /// Initializes a new <see cref="SetupObjectItemMemberAttributeImplBase"/> bound to a <see cref="SetupObjectItemMemberAttributeBase"/>.

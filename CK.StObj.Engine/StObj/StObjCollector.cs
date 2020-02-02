@@ -253,15 +253,15 @@ namespace CK.Setup
             {
                 throw new CKException( $"There are {_registerFatalOrErrorCount} registration errors." );
             }
-            var (typeResult, orderedItems) = CreateTypeAndObjectResults();
+            var (typeResult, orderedItems,buildValueCollector) = CreateTypeAndObjectResults();
             if( orderedItems != null )
             {
                 if( !RegisterServices( typeResult ) ) orderedItems = null;
             }
-            return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems );
+            return new StObjCollectorResult( typeResult, _tempAssembly, _primaryRunCache, orderedItems, buildValueCollector );
         }
 
-        (CKTypeCollectorResult, IReadOnlyList<MutableItem>) CreateTypeAndObjectResults()
+        (CKTypeCollectorResult, IReadOnlyList<MutableItem>, BuildValueCollector) CreateTypeAndObjectResults()
         {
             bool error = false;
             using( _monitor.OnError( () => error = true ) )
@@ -274,14 +274,14 @@ namespace CK.Setup
                         typeResult = _cc.GetResult();
                         typeResult.LogErrorAndWarnings( _monitor );
                     }
-                    if( error || typeResult.HasFatalError ) return (typeResult, null);
+                    if( error || typeResult.HasFatalError ) return (typeResult, null, null);
                     using( _monitor.OpenInfo( "Creating final objects and configuring items." ) )
                     {
                         int nbItems = ConfigureMutableItems( typeResult.RealObjects );
                         _monitor.CloseGroup( $"{nbItems} items configured." );
                     }
                 }
-                if( error ) return (typeResult, null); 
+                if( error ) return (typeResult, null, null); 
 
                 StObjObjectEngineMap engineMap = typeResult.RealObjects.EngineMap;
                 IDependencySorterResult sortResult = null;
@@ -299,7 +299,7 @@ namespace CK.Setup
                             noCycleDetected &= item.PrepareDependentItem( _monitor, valueCollector );
                         }
                     }
-                    if( error ) return (typeResult, null);
+                    if( error ) return (typeResult, null, null);
                     using( _monitor.OpenInfo( "Resolving PreConstruct and PostBuild properties." ) )
                     {
                         // This is the last step before ordering the dependency graph: all mutable items have now been created and configured, they are ready to be sorted,
@@ -313,7 +313,7 @@ namespace CK.Setup
                             item.ResolvePreConstructAndPostBuildProperties( _monitor, valueCollector, _valueResolver );
                         }
                     }
-                    if( error ) return (typeResult, null);
+                    if( error ) return (typeResult, null, null);
                     sortResult = DependencySorter.OrderItems(
                                                    _monitor,
                                                    engineMap.RawMappings.Select( kv => kv.Value ),
@@ -332,7 +332,7 @@ namespace CK.Setup
                     {
                         sortResult.LogError( _monitor );
                         _monitor.CloseGroup( "Ordering failed." );
-                        if( error ) return (typeResult, null);
+                        if( error ) return (typeResult, null, null);
                     }
                 }
 
@@ -370,7 +370,7 @@ namespace CK.Setup
                             }
                         }
                     }
-                    if( error ) return (typeResult, null);
+                    if( error ) return (typeResult, null, null);
                     using( _monitor.OpenInfo( "Setting PostBuild properties and injected Objects." ) )
                     {
                         // Finalize construction by injecting Real Objects
@@ -380,10 +380,10 @@ namespace CK.Setup
                             item.SetPostBuildProperties( _monitor );
                         }
                     }
-                    if( error ) return (typeResult, null);
+                    if( error ) return (typeResult, null, null);
                 }
                 Debug.Assert( !error );
-                return (typeResult, ordered);
+                return (typeResult, ordered, valueCollector);
             }
         }
 
