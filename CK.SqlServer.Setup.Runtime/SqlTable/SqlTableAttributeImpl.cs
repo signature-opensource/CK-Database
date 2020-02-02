@@ -45,8 +45,16 @@ namespace CK.SqlServer.Setup
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
             SetAutomaticSetupFullNameWithoutContext( monitor, data, "SqlTable" );
-            data.ItemType = typeof( SqlTableItem );
-            data.DriverType = typeof( SqlTableItemDriver );
+            // Since we are THE SqlTable attribute, if a SetupItem or a Driver has been configured 
+            // we consider that the configuration must be specific: this acts as a kind of default.
+            if( data.ItemType == null && data.ItemTypeName == null )
+            {
+                data.ItemType = typeof( SqlTableItem );
+            }
+            if( data.DriverType == null && data.DriverTypeName == null )
+            {
+                data.DriverType = typeof( SqlTableItemDriver );
+            }
         }
 
     }

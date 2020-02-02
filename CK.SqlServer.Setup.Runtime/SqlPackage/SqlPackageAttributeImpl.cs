@@ -46,6 +46,8 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Info( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
             }
+            // Since we are THE SqlPackage attribute, if a SetupItem or a Driver has been configured 
+            // we consider that the configuration must be specific: this acts as a kind of default.
             if( data.ItemType == null && data.ItemTypeName == null )
             {
                 data.ItemType = typeof( SqlPackageBaseItem );
