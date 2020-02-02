@@ -73,7 +73,7 @@ namespace CK.Setup
         public bool IsExcluded { get; }
 
         /// <summary>
-        /// Gets the generalization of this <see cref="Type"/>, it is be null if no base <see cref="IAutoService"/>
+        /// Gets the generalization of this <see cref="Type"/>, it is null if no base <see cref="IAutoService"/>
         /// or <see cref="IRealObject"/> exists.
         /// This property is valid even if this type is excluded (however this CKTypeInfo does not
         /// appear in generalization's <see cref="Specializations"/>).
