@@ -1,17 +1,17 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>13.0.0-a</CKCoreVersion>
-    <CKActivityMonitorVersion>13.0.0-a</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>10.0.0-a</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.10.0-a</CKSqlServerVersion>
-    <CKSqlServerParserVersion>13.0.0-a</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>10.0.0-a</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>9.0.0-a</CKReflectionVersion>
-    <CKCodeGenVersion>0.12.0-a</CKCodeGenVersion>
-    <YodiiScriptVersion>0.8.0-a</YodiiScriptVersion>
-    <CKSetupVersion>11.0.0-a</CKSetupVersion>
-    <CKTestingVersion>0.15.0-a</CKTestingVersion>
+    <CKCoreVersion>13.0.0-a00-00-0017-develop</CKCoreVersion>
+    <CKActivityMonitorVersion>13.0.0-a00-00-0018-develop</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>10.0.0-a00-00-0016-develop</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.10.0-a00-00-0018-develop</CKSqlServerVersion>
+    <CKSqlServerParserVersion>13.0.0-a00-00-0018-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>10.0.0-a00-00-0016-develop</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>9.0.0-a00-00-0011-develop</CKReflectionVersion>
+    <CKCodeGenVersion>0.12.0-a00-00-0019-develop</CKCodeGenVersion>
+    <YodiiScriptVersion>0.8.0-a00-00-0012-develop</YodiiScriptVersion>
+    <CKSetupVersion>11.0.0-a00-00-0021-develop</CKSetupVersion>
+    <CKTestingVersion>0.15.0-a00-00-0019-develop</CKTestingVersion>
     <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -29,7 +29,7 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
-    <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <!--</SourceLink>-->
   <!--<BasicDefinitions>: It is useful to knwow whether we are in the Tests/ folder and/or if the current project is a Test.-->
