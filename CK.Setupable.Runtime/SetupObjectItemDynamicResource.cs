@@ -67,9 +67,12 @@ namespace CK.Setup
             get => _item;
             internal set 
             {
-                Debug.Assert( _item == null && value != null );
-                _item = value;
-                ItemAvailable?.Invoke( this, EventArgs.Empty );
+                Debug.Assert( _item == null );
+                if( value != null )
+                {
+                    _item = value;
+                    ItemAvailable?.Invoke( this, EventArgs.Empty );
+                }
             } 
         }
 
