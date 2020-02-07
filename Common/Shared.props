@@ -1,17 +1,17 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKCoreVersion>13.0.0-a00-00-0011-develop</CKCoreVersion>
-    <CKActivityMonitorVersion>13.0.0-a00-00-0011-develop</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>10.0.0-a00-00-0012-develop</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.10.0-a00-00-0014-develop</CKSqlServerVersion>
-    <CKSqlServerParserVersion>13.0.0-a00-00-0012-develop</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>10.0.0-a00-00-0011-develop</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>9.0.0-a00-00-0006-develop</CKReflectionVersion>
-    <CKCodeGenVersion>0.12.0-a00-00-0013-develop</CKCodeGenVersion>
-    <YodiiScriptVersion>0.8.0-a00-00-0006-develop</YodiiScriptVersion>
-    <CKSetupVersion>11.0.0-a00-00-0028-develop</CKSetupVersion>
-    <CKTestingVersion>0.15.0-a00-00-0011-develop</CKTestingVersion>
+    <CKCoreVersion>13.0.0-a00-00-0013-develop</CKCoreVersion>
+    <CKActivityMonitorVersion>13.0.0-a00-00-0013-develop</CKActivityMonitorVersion>
+    <CKSetupDependencyVersion>10.0.0-a00-00-0014-develop</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.10.0-a00-00-0016-develop</CKSqlServerVersion>
+    <CKSqlServerParserVersion>13.0.0-a00-00-0014-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>10.0.0-a00-00-0013-develop</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>9.0.0-a00-00-0007-develop</CKReflectionVersion>
+    <CKCodeGenVersion>0.12.0-a00-00-0015-develop</CKCodeGenVersion>
+    <YodiiScriptVersion>0.8.0-a00-00-0007-develop</YodiiScriptVersion>
+    <CKSetupVersion>11.0.0-a00-00-0030-develop</CKSetupVersion>
+    <CKTestingVersion>0.15.0-a00-00-0013-develop</CKTestingVersion>
     <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
