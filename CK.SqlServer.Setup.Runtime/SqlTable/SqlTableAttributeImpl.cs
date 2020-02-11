@@ -32,6 +32,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Transfers <see cref="SqlTableAttribute.TableName" /> as a direct property "TableName" of the StObj item
         /// and <see cref="SqlPackageAttributeBase.Schema"/> as the "Schema" ambient property.
+        /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The configured object.</param>
@@ -44,8 +45,16 @@ namespace CK.SqlServer.Setup
         void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
         {
             SetAutomaticSetupFullNameWithoutContext( monitor, data, "SqlTable" );
-            data.ItemType = typeof( SqlTableItem );
-            data.DriverType = typeof( SqlTableItemDriver );
+            // Since we are THE SqlTable attribute, if a SetupItem or a Driver has been configured 
+            // we consider that the configuration must be specific: this acts as a kind of default.
+            if( data.ItemType == null && data.ItemTypeName == null )
+            {
+                data.ItemType = typeof( SqlTableItem );
+            }
+            if( data.DriverType == null && data.DriverTypeName == null )
+            {
+                data.DriverType = typeof( SqlTableItemDriver );
+            }
         }
 
     }

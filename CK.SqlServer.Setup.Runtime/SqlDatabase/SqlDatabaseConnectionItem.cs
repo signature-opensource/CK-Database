@@ -61,5 +61,7 @@ namespace CK.SqlServer.Setup
         public string Location => _db.Location;
 
         string IContextLocNaming.TransformArg => null;
+
+        IContextLocNaming IContextLocNaming.CombineName( string n ) => new ContextLocName( Context, Location, Name ).CombineName( n );
     }
 }

@@ -380,7 +380,12 @@ namespace CK.Setup
 
             // Direct property set.
             // Targets the specialization to honor property covariance.
-            PropertyInfo p = _leafData.LeafSpecialization.Type.Type.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+            var leafType = _leafData.LeafSpecialization.Type.Type;
+            PropertyInfo p = leafType.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+            if( p != null && p.DeclaringType != leafType )
+            {
+                p = p.DeclaringType.GetProperty( propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+            }
             if( p == null || !p.CanWrite )
             {
                 monitor.Error( $"Unable to set direct property '{Type.Type.FullName}.{propertyName}' structural value. It must exist and be writable (on type '{_leafData.LeafSpecialization.Type.Type.FullName}'). (Source:{sourceDescription})"  );

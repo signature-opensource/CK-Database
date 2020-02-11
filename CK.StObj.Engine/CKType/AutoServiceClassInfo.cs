@@ -124,7 +124,7 @@ namespace CK.Setup
             }
             else TypeInfo = new CKTypeInfo( m, parent?.TypeInfo, t, serviceProvider, isExcluded, this );
 
-            Debug.Assert( ReferenceEquals( TypeInfo.Generalization, parent?.TypeInfo ) );
+            Debug.Assert( parent == null || ReferenceEquals( TypeInfo.Generalization, parent.TypeInfo ), $"Gen={TypeInfo.Generalization}/Par={parent?.TypeInfo}" );
             Debug.Assert( (lifetime == (CKTypeKind.RealObject | CKTypeKind.AutoSingleton)) == TypeInfo is RealObjectClassInfo );
 
 
@@ -166,8 +166,8 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="CKTypeInfo"/> that can be an autonomus one (specific to this service), or an
-        /// existing RealObjectClassInfo if this service is implemented by an Real object (such service don't
+        /// Gets the <see cref="CKTypeInfo"/> that can be an autonomous one (specific to this service), or an
+        /// existing RealObjectClassInfo if this service is implemented by a Real object (such service don't
         /// have to have a public constructor).
         /// </summary>
         public CKTypeInfo TypeInfo { get; }

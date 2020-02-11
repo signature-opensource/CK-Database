@@ -19,6 +19,8 @@ namespace SqlActorPackage.Runtime
         protected override bool Init( IActivityMonitor m )
         {
             SqlProcedureItem item = (SqlProcedureItem)Driver.Item;
+            if( item.TransformTarget != null ) item = (SqlProcedureItem)item.TransformTarget;
+
             SqlStoredProcedure p = (SqlStoredProcedure)item.SqlObject;
             if( p != null )
             {

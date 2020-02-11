@@ -2,6 +2,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// A <see cref="ParsedFileName"/> associated to a way to read its content and a script source name.
+    /// The <see cref="SourceCodeSetupScript"/> helper can be used to easily create script directly from the source code.
     /// </summary>
     public interface ISetupScript
     {

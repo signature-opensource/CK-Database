@@ -2,6 +2,10 @@ using System;
 
 namespace SqlActorPackage
 {
+    /// <summary>
+    /// This attribute, when set on a class, injects a header in every stored procedure 
+    /// that of a 
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public class TestAutoHeaderSPAttribute : CK.Setup.SetupItemSelectorBaseAttribute
     {

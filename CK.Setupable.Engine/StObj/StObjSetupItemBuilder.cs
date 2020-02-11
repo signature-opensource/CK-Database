@@ -112,11 +112,13 @@ namespace CK.Setup
                             Type itemType = data.ItemType;
                             if( itemType == null )
                             {
+                                _monitor.Trace( $"'{data.FullName}': using default StObjDynamicPackageItem setup item."  );
                                 StObjDynamicPackageItem stobjDynamicPackageItem = new StObjDynamicPackageItem( _monitor, data );
                                 data.SetupItem = stobjDynamicPackageItem;
                             }
                             else
                             {
+                                _monitor.Trace( $"'{data.FullName}': using setup item type '{itemType.FullName},{itemType.Assembly.GetName().Name}'." );
                                 data.SetupItem = (IStObjSetupItem)_services.SimpleObjectCreate(_monitor, itemType, data );
                             }
                         }
@@ -373,6 +375,52 @@ namespace CK.Setup
             }
         }
         
+        void RegisterLastDirectProperties( Dictionary<IStObjResult, StObjSetupData> setupableItems )
+        {
+            using( _monitor.OpenInfo( "Binding dependencies between Setupable items." ) )
+            {
+                foreach( StObjSetupData data in setupableItems.Values )
+                {
+                    BindContainer( setupableItems, data );
+                    foreach( IStObjResult req in data.StObj.Requires )
+                    {
+                        StObjSetupData reqD = setupableItems[req];
+                        data.SetupItem.Requires.Add( reqD.SetupItem.GetReference() );
+                    }
+                    foreach( IStObjResult group in data.StObj.Groups )
+                    {
+                        StObjSetupData gData = setupableItems[group];
+                        IMutableSetupItemGroup g = gData.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _monitor.Error( $"Structure Item '{data.FullName}' declares '{gData.FullName}' as a Group, but the latter is not a IMutableSetupItemGroup (only a IMutableSetupItem)." );
+                        }
+                        else
+                        {
+                            data.SetupItem.Groups.Add( g.GetReference() );
+                        }
+                    }
+                    if( data.StObj.Children.Count > 0 )
+                    {
+                        // The StObj has children. 
+                        IMutableSetupItemGroup g = data.SetupItem as IMutableSetupItemGroup;
+                        if( g == null )
+                        {
+                            _monitor.Error( $"Structure Item '{data.FullName}' has associated children but it is not a IMutableSetupItemGroup (only a IMutableSetupItem)." );
+                        }
+                        else
+                        {
+                            foreach( IStObjResult child in data.StObj.Children )
+                            {
+                                StObjSetupData c = setupableItems[child];
+                                g.Children.Add( c.SetupItem.GetReference() );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
     }

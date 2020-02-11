@@ -18,7 +18,7 @@
         Replace,
 
         /// <summary>
-        /// Transforms an already exisiting item.
+        /// Transforms an already existing item.
         /// </summary>
         Transform
     }

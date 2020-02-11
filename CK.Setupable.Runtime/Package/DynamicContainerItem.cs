@@ -82,6 +82,9 @@ namespace CK.Setup
 
         string IContextLocNaming.TransformArg => null;
 
+        /// <inheritdoc />
+        public IContextLocNaming CombineName( string n ) => new ContextLocName( _name.CombineName( n ) );
+
         /// <summary>
         /// Gets or sets whether this container is actually NOT a Container or even not a Group.
         /// </summary>
