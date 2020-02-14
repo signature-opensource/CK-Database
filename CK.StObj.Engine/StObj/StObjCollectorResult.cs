@@ -21,7 +21,6 @@ namespace CK.Setup
         readonly DynamicAssembly _tempAssembly;
         readonly StObjObjectEngineMap _liftedMap;
         readonly BuildValueCollector _valueCollector;
-        bool _finalizedDone;
 
         internal StObjCollectorResult(
             CKTypeCollectorResult typeResult,

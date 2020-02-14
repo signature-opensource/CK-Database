@@ -29,7 +29,7 @@ namespace CK.Core
         /// This never throws.
         /// </summary>
         /// <param name="this">This enumerable of features.</param>
-        /// <param name="featureName">The expected feature.</param>
+        /// <param name="f">The expected feature.</param>
         /// <returns>True if the feature exists in these features.</returns>
         public static bool Has( this IEnumerable<VFeature> @this, VFeature f ) => @this.Contains( f );
 

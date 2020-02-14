@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Setup;
 using System;
 using System.Collections.Generic;
@@ -113,6 +113,10 @@ namespace CK.Setup
         /// </summary>
         public SetupObjectItemDynamicResource TransformTarget;
 
+        /// <summary>
+        /// Overridden to return the <see cref="Name"/> of this item.
+        /// </summary>
+        /// <returns>The item's name.</returns>
         public override string ToString() => Name.ToString();
     }
 }
