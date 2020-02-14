@@ -38,7 +38,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Creates a new <see cref="SqlContextLocName"/> from this name with another one: if the other one has 
-        /// unknown <see cref="Context"/>, <see cref="Location"/> or <see cref="Schema"/>, this context and location 
+        /// unknown <see cref="ContextLocName.Context"/>, <see cref="ContextLocName.Location"/> or <see cref="SqlContextLocName.Schema"/>, this context and location 
         /// are used and <see cref="ActualObject"/> schema (<see cref="SqlPackage.Schema"/>) is used.
         /// used.
         /// This also applies to the potential transform argument of <paramref name="n"/>.

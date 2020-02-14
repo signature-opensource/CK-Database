@@ -145,7 +145,7 @@ namespace CK.SqlServer.Setup
 
         /// <summary>
         /// Creates a new <see cref="SqlContextLocName"/> from this name with another one: if the other one has 
-        /// unknown <see cref="Context"/>, <see cref="Location"/> or <see cref="Schema"/> those from this name are 
+        /// unknown <see cref="ContextLocName.Context"/>, <see cref="ContextLocName.Location"/> or <see cref="Schema"/> those from this name are 
         /// used.
         /// This also applies to the potential transform argument of <paramref name="n"/>.
         /// </summary>
