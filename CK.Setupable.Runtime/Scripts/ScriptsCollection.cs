@@ -15,6 +15,7 @@ namespace CK.Setup
     public class ScriptsCollection : IReadOnlyCollection<ISetupScript>
     {
         readonly Dictionary<ISetupScript, ISetupScript> _scripts;
+        string _fullName;
 
         class CompareScript : IEqualityComparer<ISetupScript>
         {
@@ -46,6 +47,12 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Gets the full name of the very first script tat has been added to this collection: once bound to an
+        /// item name, all added scripts must be associated to the same name.
+        /// </summary>
+        public string FullName => _fullName;
+
+        /// <summary>
         /// Adds a script to this collection (by default a script is not added if the
         /// same script already exists).
         /// </summary>
@@ -61,6 +68,17 @@ namespace CK.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             if( script == null ) throw new ArgumentNullException( nameof( script ) );
+            if( _fullName == null )
+            {
+                _fullName = script.Name.FullName;
+            }
+            else
+            {
+                if( _fullName != script.Name.FullName )
+                {
+                    throw new ArgumentException( $"Invalid script '{script.Name}' for ScriptsCollection bound to '{_fullName}'.", nameof( script ) );
+                }
+            }
             ISetupScript existing;
             if( _scripts.TryGetValue( script, out existing ) )
             {

@@ -98,7 +98,7 @@ namespace CK.Setup
             if( versionTracker.Initialize( monitor ) )
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
-                bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker, _setupSessionMemory );
+                bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker );
                 setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.Features );
                 return setupSuccess;
             }
@@ -124,11 +124,11 @@ namespace CK.Setup
             return true;
         }
 
-        bool DoRun( IActivityMonitor monitor, IServiceProvider services, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        bool DoRun( IActivityMonitor monitor, IServiceProvider services, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker )
         {
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
-            using( SetupCoreEngine engine = CreateCoreEngine( monitor, services, versionTracker, m ) )
+            using( SetupCoreEngine engine = CreateCoreEngine( monitor, services, versionTracker ) )
             {
                 using( monitor.OpenInfo( "Register step." ) )
                 {
@@ -193,7 +193,7 @@ namespace CK.Setup
             }
         }
 
-        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IServiceProvider services, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IServiceProvider services, VersionedItemTracker versionTracker )
         {
             SetupCoreEngine engine = null;
             using( monitor.OpenInfo( "Setupable Core Engine initialization." ) )

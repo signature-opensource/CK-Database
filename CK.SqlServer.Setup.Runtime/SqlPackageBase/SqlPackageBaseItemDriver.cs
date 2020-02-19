@@ -51,10 +51,9 @@ namespace CK.SqlServer.Setup
                 return false;
             }
 
-            var externalVersion = ExternalVersion?.Version;
-            if( !CreateScriptHandlerFor( monitor, this, Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
-            if( Item.ModelPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ModelPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
-            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ObjectsPackage], Item.ResourceLocation, ItemVersion, externalVersion ) ) return false;
+            if( !CreateScriptHandlerFor( monitor, this, Item.ResourceLocation ) ) return false;
+            if( Item.ModelPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ModelPackage], Item.ResourceLocation ) ) return false;
+            if( Item.ObjectsPackage != null && !CreateScriptHandlerFor( monitor, Drivers[Item.ObjectsPackage], Item.ResourceLocation ) ) return false;
             return true;
         }
 
@@ -68,10 +67,8 @@ namespace CK.SqlServer.Setup
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="driver">The driver to which scripts must be associated.</param>
         /// <param name="resLoc">The resource locator to use.</param>
-        /// <param name="target">The current version.</param>
-        /// <param name="externalVersion">The existing version if any.</param>
         /// <returns>True on success, false otherwise.</returns>
-        protected bool CreateScriptHandlerFor( IActivityMonitor monitor, SetupItemDriver driver, ResourceLocator resLoc, Version target, Version externalVersion = null )
+        protected bool CreateScriptHandlerFor( IActivityMonitor monitor, SetupItemDriver driver, ResourceLocator resLoc )
         {
             ScriptsCollection c = LoadResourceScriptsFor( monitor, driver.Item, resLoc );
             bool externalLoadError = false;
