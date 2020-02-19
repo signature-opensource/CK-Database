@@ -7,13 +7,10 @@
       CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
     </Description>
   </PropertyGroup>
-  
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="13.1.1" />
+    <PackageReference Include="CK.StObj.Model" Version="0.0.0--02ohmdn-develop" />
   </ItemGroup>
-  
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>
