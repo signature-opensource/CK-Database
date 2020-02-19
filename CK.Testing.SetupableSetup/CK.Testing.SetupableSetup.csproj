@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
@@ -6,6 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <ProjectReference Include="..\CK.Testing.StObjSetup\CK.Testing.StObjSetup.csproj" />
+    <PackageReference Include="CK.Testing.StObjSetup" Version="13.1.1" />
   </ItemGroup>
 </Project>
