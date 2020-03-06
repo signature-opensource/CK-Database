@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- This implements concrete ServiceCollection and DI engine itself. -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <ProjectReference Include="..\CK.StObj.Model\CK.StObj.Model.csproj" />
     <PackageReference Include="CK.Testing.Monitoring" Version="$(CKTestingVersion)" />
   </ItemGroup>
