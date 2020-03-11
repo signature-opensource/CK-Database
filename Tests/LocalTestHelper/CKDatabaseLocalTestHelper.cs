@@ -20,12 +20,6 @@ namespace CK.Testing
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.CKDatabaseComponentsPaths => GetCKDatabaseComponentsPaths();
         IEnumerable<NormalizedPath> GetCKDatabaseComponentsPaths()
         {
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.StObj.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
-
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.StObj.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
-
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.StObj.Engine/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
-
             yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
 
             yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );

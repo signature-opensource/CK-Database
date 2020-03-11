@@ -12,13 +12,16 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
     [TestFixture]
     [Category( "DBSetup" )]
-    public partial class DatabaseSetup
+    public partial class InProcessDatabaseSetup
     {
-        //[Test]
-        //public void InstallActorBasic()
-        //{
-        //    InstallDropAndReverseInstall( false, false, "InstallActorBasic", false );
-        //}
+        [TestCase( "resetDatabaseFirst" )]
+        [TestCase( "" )]
+        [Explicit]
+        public void InstallActorBasic( string options )
+        {
+            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
+            InstallDropAndReverseInstall( options == "resetDatabaseFirst", false, "InstallActorBasic", false );
+        }
 
         [Test]
         public void InstallActorBasicFromScracthDropAndReverseInstall()
@@ -53,8 +56,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             var setupable = new SetupableAspectConfiguration();
             c.Aspects.Add( setupable );
 
-            var sql = new SqlSetupAspectConfiguration();
-            sql.DefaultDatabaseConnectionString = TestHelper.GetConnectionString();
+            var sql = new SqlSetupAspectConfiguration { DefaultDatabaseConnectionString = TestHelper.GetConnectionString() };
             c.Aspects.Add( sql );
 
             using( var db = SqlManager.OpenOrCreate( TestHelper.GetConnectionString(), TestHelper.Monitor ) )

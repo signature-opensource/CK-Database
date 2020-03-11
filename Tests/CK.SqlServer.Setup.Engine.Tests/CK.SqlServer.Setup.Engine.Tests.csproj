@@ -7,13 +7,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
-    <ProjectReference Include="..\..\CK.StObj.Engine\CK.StObj.Engine.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CK.StObj.Engine" Version="13.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
