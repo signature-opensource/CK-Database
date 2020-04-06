@@ -57,14 +57,5 @@ namespace SqlZonePackage.Tests
             }, a.AllServices );
         }
 
-        [Test]
-        public void checking_final_mappings()
-        {
-            IStObjObjectMap map = TestHelper.StObjMap.StObjs;
-            var mappings = new List<KeyValuePair<Type, object>>();
-            foreach (var t in map.Types) mappings.Add(new KeyValuePair<Type, object>(t,map.Obtain(t)));
-            CollectionAssert.AreEquivalent(mappings, map.Mappings);
-        }
-
     }
 }

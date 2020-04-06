@@ -71,7 +71,7 @@ namespace CK.Setup
                     StObjSetupData generalizationData = null;
                     StObjSetupDataRootClass fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.BaseType );
+                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ClassType.BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );
@@ -84,7 +84,7 @@ namespace CK.Setup
                         }
                     }
                     // If the object itself is a IStObjSetupConfigurator, calls it.
-                    IStObjSetupConfigurator objectItself = r.InitialObject as IStObjSetupConfigurator;
+                    IStObjSetupConfigurator objectItself = r.FinalImplementation.Implementation as IStObjSetupConfigurator;
                     if( objectItself != null ) objectItself.ConfigureDependentItem( _monitor, data );
 
                     // Calls external configuration.
@@ -350,7 +350,7 @@ namespace CK.Setup
                                 }
                             }
                             initSource = "Structured Item itself";
-                            if( o.InitialObject is IStObjSetupDynamicInitializer objectItself ) objectItself.DynamicItemInitialize( state, item, o );
+                            if( o.FinalImplementation.Implementation is IStObjSetupDynamicInitializer objectItself ) objectItself.DynamicItemInitialize( state, item, o );
                             initSource = "Setup Item itself";
                             if( item is IStObjSetupDynamicInitializer itemItself ) itemItself.DynamicItemInitialize( state, item, o );
                             initSource = "Global StObjSetupBuilder initializer";
@@ -358,7 +358,7 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ObjectType.FullName}'.", ex );
+                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ClassType.FullName}'.", ex );
                             Debug.Assert( success == false, "OnError did the job..." );
                         }
                     }

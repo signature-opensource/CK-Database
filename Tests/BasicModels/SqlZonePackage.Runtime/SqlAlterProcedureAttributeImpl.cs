@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
 
         void DoTransform( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            object transformer = GetTransformerObject( state, stObj.ObjectType );
+            object transformer = GetTransformerObject( state, stObj.ClassType );
             if( transformer != null )
             {
                 MethodInfo m = transformer.GetType().GetMethod( Member.Name );
