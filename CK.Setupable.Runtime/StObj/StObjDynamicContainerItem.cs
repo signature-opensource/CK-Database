@@ -40,7 +40,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object).
         /// </summary>
-        public object ActualObject => _data.StObj.InitialObject;
+        public object ActualObject => _data.StObj.FinalImplementation.Implementation;
 
         /// <summary>
         /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 
