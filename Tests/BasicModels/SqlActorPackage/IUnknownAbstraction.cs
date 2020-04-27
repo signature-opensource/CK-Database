@@ -9,6 +9,6 @@ namespace SqlActorPackage
     /// </summary>
     public interface IUnknownAbstraction : IRealObject
     {
-        bool IAmHere();
+        bool IAmHereButImUselessSinceImNotImplemented();
     }
 }
