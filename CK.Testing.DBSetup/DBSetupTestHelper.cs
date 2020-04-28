@@ -48,7 +48,7 @@ namespace CK.Testing
             }
         }
 
-        void OnAutomaticServicesConfigured( object sender, AutomaticServicesConfiguredEventArgs e )
+        void OnAutomaticServicesConfigured( object sender, AutomaticServicesConfigurationEventArgs e )
         {
             var testConnectionString = _sqlServer.GetConnectionString();
             var defaultDB = e.StObjMap.StObjs.Obtain<SqlDefaultDatabase>();
