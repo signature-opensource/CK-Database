@@ -41,5 +41,8 @@ namespace SqlCallDemo.CommandDemo
         /// <returns></returns>
         [SqlProcedure( "sProtoUserCreate" )]
         public abstract int CreateProtoUser( ISqlCallContext ctx, int actorId, [ParameterSource]ProtoUserData data );
+
+        [SqlProcedure( "sProtoUserCreate" )]
+        public abstract int ParameterSourceNamedTheSameAsOneOfTheActualParameters( ISqlCallContext ctx, int actorId, [ParameterSource]ProtoUserData phone );
     }
 }
