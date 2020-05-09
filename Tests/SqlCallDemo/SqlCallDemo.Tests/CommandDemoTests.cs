@@ -61,5 +61,16 @@ namespace SqlCallDemo.Tests
             }
         }
 
+        [Test]
+        public void when_parameter_source_name_conflicts()
+        {
+            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                int id = p.ParameterSourceNamedTheSameAsOneOfTheActualParameters( ctx, 3712, new ProtoUserData() { UserName = "01234567", Email = "@", Phone = "06" } );
+                Assert.That( id, Is.EqualTo( 3712 + 8 ) );
+            }
+        }
+
     }
 }

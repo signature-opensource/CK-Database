@@ -14,10 +14,7 @@ namespace SqlActorPackage.Basic
     [Versions( "1.0.0" )]
     public abstract class BadNameTable : SqlTable
     {
-
-        public string JustToForceKeeptingTheReferencedCKTextAssembly()
-        {
-            return new[] { "a", "b" }.Concatenate();
-        }
+        // This is also used to show the "out of transaction" script.
+        // See the Install script.
     }
 }

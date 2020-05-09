@@ -20,13 +20,13 @@ namespace CK.Testing
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.CKDatabaseComponentsPaths => GetCKDatabaseComponentsPaths();
         IEnumerable<NormalizedPath> GetCKDatabaseComponentsPaths()
         {
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
 
             yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
 
             yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Engine/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
 
             yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
 
@@ -36,7 +36,7 @@ namespace CK.Testing
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.SqlActorPackageComponentsPaths => GetSqlActorPackageComponentsPaths();
         IEnumerable<NormalizedPath> GetSqlActorPackageComponentsPaths()
         {
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
             yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
         }
 
@@ -44,7 +44,7 @@ namespace CK.Testing
         IEnumerable<NormalizedPath> GetSqlZonePackageComponentsPaths()
         {
             foreach( var p in GetSqlActorPackageComponentsPaths() ) yield return p;
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
             yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
         }
 

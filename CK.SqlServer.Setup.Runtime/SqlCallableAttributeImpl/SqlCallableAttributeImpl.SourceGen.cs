@@ -186,7 +186,11 @@ namespace CK.SqlServer.Setup
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
                 ParameterInfo mP = mParameters[iM];
-                int iSFound = sqlParamHandlers.IndexOf( iS, mP );
+                // If the parameter is a parameter source, we register it and consider that we didn't find it in the
+                // Sql parameters: if the same name is used, the [ParameterSource] takes precedence.
+                bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoInfo() );
+
+                int iSFound = isParameterSourceOrCallContext ? -1 : sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
                     Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
@@ -206,9 +210,6 @@ namespace CK.SqlServer.Setup
                         {
                             extraMethodParameters.Add( mP );
                         }
-                        // If the parameter is a parameter source, we register it.
-                        bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoInfo() );
-
                         if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {
                             monitor.Error( $"Parameter '{mP.Name}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task)." );

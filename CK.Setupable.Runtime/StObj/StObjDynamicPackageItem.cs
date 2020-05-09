@@ -42,7 +42,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets the associated object instance (the final, most specialized, structured object). 
         /// </summary>
-        public object ActualObject => _setupData.StObj.InitialObject;
+        public object ActualObject => _setupData.StObj.FinalImplementation.Implementation;
 
 
         /// <summary>

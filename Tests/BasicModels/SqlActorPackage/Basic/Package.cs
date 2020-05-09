@@ -44,7 +44,7 @@ namespace SqlActorPackage.Basic
 
         void StObjInitialize( IActivityMonitor m, IStObjObjectMap map )
         {
-            _allServices = map.Implementations.OfType<IAnyService>().ToArray();
+            _allServices = map.FinalImplementations.Select( i => i.Implementation ).OfType<IAnyService>().ToArray();
         }
 
         [InjectObject]

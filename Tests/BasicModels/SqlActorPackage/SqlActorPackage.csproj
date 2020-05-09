@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
   <Import Project="..\..\..\Common\Shared.props" />
@@ -9,9 +9,6 @@
     <EmbeddedResource Include="**\*.sql;**\*.tql;**\*.y4" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
   </ItemGroup>

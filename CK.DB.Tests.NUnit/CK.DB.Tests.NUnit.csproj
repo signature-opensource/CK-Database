@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Description>Contains NUnit test helpers.</Description>
     <IsTestProject>False</IsTestProject>
   </PropertyGroup>
