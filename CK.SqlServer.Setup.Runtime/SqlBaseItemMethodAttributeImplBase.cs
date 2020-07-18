@@ -1,4 +1,4 @@
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
@@ -89,7 +89,7 @@ namespace CK.SqlServer.Setup
             return null;
         }
 
-        bool IAutoImplementorMethod.Implement( IActivityMonitor monitor, MethodInfo m, IDynamicAssembly dynamicAssembly, ITypeScope tS )
+        AutoImplementationResult IAutoImplementor<MethodInfo>.Implement( IActivityMonitor monitor, MethodInfo m, ICodeGenerationContext c, ITypeScope tS )
         {
             using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
@@ -99,9 +99,9 @@ namespace CK.SqlServer.Setup
 
                 // SetupObjectItem is initialized by DynamicItemInitialize.
                 // If it is null, we are in a "second run" (a BinPath that is not the root).
-                if( dynamicAssembly.IsSecondaryRun )
+                if( !c.IsUnifiedRun )
                 {
-                    sqlItem = (SqlBaseItem)dynamicAssembly.GetPrimaryRunResult( methodKey );
+                    sqlItem = (SqlBaseItem)c.GetUnifiedRunResult( methodKey );
                 }
                 else
                 {
@@ -110,9 +110,9 @@ namespace CK.SqlServer.Setup
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
                                 : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
                     sqlItem = (SqlBaseItem)target;
-                    dynamicAssembly.SetPrimaryRunResult( methodKey, sqlItem, false );
+                    c.SetUnifiedRunResult( methodKey, sqlItem, false );
                 }
-                return DoImplement( monitor, m, sqlItem, dynamicAssembly, tS );
+                return DoImplement( monitor, m, sqlItem, c.Assembly, tS ) ? AutoImplementationResult.Success : AutoImplementationResult.Failed;
             }
         }
 

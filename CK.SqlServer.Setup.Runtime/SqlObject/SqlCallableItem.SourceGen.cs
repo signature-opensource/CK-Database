@@ -1,5 +1,4 @@
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
@@ -15,7 +14,7 @@ namespace CK.SqlServer.Setup
             ITypeScope tB = (ITypeScope)dynamicAssembly.Memory["CreatorForSqlCommand"];
             if( tB == null )
             {
-                tB = dynamicAssembly.DefaultGenerationNamespace
+                tB = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" )
                         .EnsureUsing( "System.Data" )
                         .EnsureUsing( "System.Data.SqlClient" )
                         .CreateType( "static class CreatorForSqlCommand" );
