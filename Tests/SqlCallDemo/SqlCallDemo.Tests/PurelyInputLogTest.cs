@@ -70,7 +70,7 @@ namespace SqlCallDemo.Tests
                 }
                 {
                     CancellationTokenSource source = new CancellationTokenSource();
-                    source.CancelAfter( 750 );
+                    source.CancelAfter( 1500 );
                     Task t = p.LogWait( ctx, "This one must pass.", 10, source.Token );
                     t.Wait();
                     p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )

@@ -7,7 +7,7 @@ using Yodii.Script;
 namespace CK.SqlServer.Setup
 {
     /// <summary>
-    /// Sql package item.
+    /// Sql package item (and base class for <see cref="SqlTableItem"/>).
     /// </summary>
     public class SqlPackageBaseItem : StObjDynamicPackageItem
     {
@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {
-            Context = data.StObj.StObjMap.MapName;
+            Context = data.StObj.StObjMap.Names[0];
             SqlPackage p = ActualObject;
             if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
@@ -35,6 +35,17 @@ namespace CK.SqlServer.Setup
             }
             Name = data.FullNameWithoutContext;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="SqlContextLocName"/> from this name with another one: if the other one has 
+        /// unknown <see cref="ContextLocName.Context"/>, <see cref="ContextLocName.Location"/> or <see cref="SqlContextLocName.Schema"/>, this context and location 
+        /// are used and <see cref="ActualObject"/> schema (<see cref="SqlPackage.Schema"/>) is used.
+        /// used.
+        /// This also applies to the potential transform argument of <paramref name="n"/>.
+        /// </summary>
+        /// <param name="n">The raw name. When null or empty, this name is cloned.</param>
+        /// <returns>A new combined name.</returns>
+        public override IContextLocNaming CombineName( string n ) => new SqlContextLocName( this, ActualObject.Schema, null ).CombineName( n );
 
         /// <summary>
         /// Masked to formally be associated to <see cref="SqlPackage"/>.

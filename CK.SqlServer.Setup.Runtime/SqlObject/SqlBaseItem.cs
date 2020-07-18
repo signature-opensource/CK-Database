@@ -110,25 +110,11 @@ namespace CK.SqlServer.Setup
         /// <returns>The Sql context-location-name.</returns>
         public static SqlContextLocName SqlBuildFullName( SqlPackageBaseItem container, SetupObjectItemBehavior b, string attributeName )
         {
-            var name = new SqlContextLocName( attributeName );
-            if( name.Context == null ) name.Context = container.Context;
-            if( name.Location == null ) name.Location = container.Location;
-            if( name.Schema == null ) name.Schema = container.ActualObject.Schema;
-            // Now handling transformation.
-            if( name.TransformArg != null )
-            {
-                // The provided name is a transformation: resolves context/location/schema from container 
-                // on the target component if they are not define.
-                var target = new SqlContextLocName( name.TransformArg );
-                if( target.Context == null ) target.Context = name.Context;
-                if( target.Location == null ) target.Location = name.Location;
-                if( target.Schema == null ) target.Schema = name.Schema;
-                name.TransformArg = target.FullName;
-            }
-            else if( b == SetupObjectItemBehavior.Transform )
+            SqlContextLocName name = (SqlContextLocName)container.CombineName( attributeName );
+            if( name.TransformArg == null && b == SetupObjectItemBehavior.Transform )
             {
                 // The name is not the name of a transformation however it should be:
-                // we consider it to be the default transformation of the (target) name by the container.
+                // we consider it to be the default transformation of the (target) named by the container.
                 name = new SqlContextLocName( container.Context, container.Location, container.Name + '(' + name.FullName + ')' );
             }
             return name;

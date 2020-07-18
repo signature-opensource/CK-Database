@@ -11,7 +11,7 @@ namespace CK.Setup
     /// <summary>
     /// Base class for attributes that define a SetupObjectItem.
     /// </summary>
-    public abstract class SetupObjectItemMemberAttributeBase : AmbientContextBoundDelegationAttribute
+    public abstract class SetupObjectItemMemberAttributeBase : ContextBoundDelegationAttribute
     {
         /// <summary>
         /// Initializes this attribute with the name of the SetupItem (like "sUserCreate" or "CK.sUserCreate").

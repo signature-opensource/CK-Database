@@ -35,11 +35,12 @@ namespace CK.Setup
             var items = new HashSet<ISortedItem>();
             foreach( var n in _attribute.CommaSeparatedTypeNames.Split( ',' ) )
             {
-                string itemName = n.Trim();
-                if( itemName.Length > 0 )
+                string rawName = n.Trim();
+                if( rawName.Length > 0 )
                 {
-                    if( already.Add( itemName ) )
+                    if( already.Add( rawName ) )
                     {
+                        var itemName = driver.Item.CombineName( rawName );
                         IEnumerable<ISortedItem<ISetupItem>> namedItems = ItemsByName( driver, itemName );
                         int count = 0;
                         foreach( var i in namedItems )
@@ -54,11 +55,11 @@ namespace CK.Setup
                         }
                         if( count == 0 )
                         {
-                            monitor.Error( $"Name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' not found." );
+                            monitor.Error( $"Name '{rawName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}' not found." );
                             result = false;
                         }
                     }
-                    else monitor.Warn( $"Duplicate name '{itemName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}'." );
+                    else monitor.Warn( $"Duplicate name '{rawName}' in {_attribute.GetShortTypeName()} attribute of '{driver.Item.FullName}'." );
                 }
             }
             if( !result ) return false;
@@ -75,18 +76,18 @@ namespace CK.Setup
         /// <returns>True on success, false to stop the process.</returns>
         protected abstract bool OnDriverCreated( IActivityMonitor monitor, SetupItemDriver driver, IEnumerable<T> items );
 
-        IEnumerable<ISortedItem<ISetupItem>> ItemsByName( SetupItemDriver driver, string name )
+        IEnumerable<ISortedItem<ISetupItem>> ItemsByName( SetupItemDriver driver, IContextLocNaming itemName )
         {
             if( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.DirectChildren )
             {
-                return driver.SortedItem.Children.Where( c => c.FullName.Contains( name ) ).ToList();
+                return driver.SortedItem.Children.Where( c => c.FullName == itemName.FullName ).ToList();
             }
             else if( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.All )
             {
-                return driver.Drivers.Where( d => d.FullName.Contains( name ) ).Select( d => d.SortedItem ).ToList();
+                return driver.Drivers.Where( d => d.FullName == itemName.FullName ).Select( d => d.SortedItem ).ToList();
             }
             Debug.Assert( _attribute.SetupItemSelectorScope == SetupItemSelectorScope.Children );
-            return driver.SortedItem.GetAllChildren().Where( c => c.FullName.Contains( name ) );
+            return driver.SortedItem.GetAllChildren().Where( c => c.FullName == itemName.FullName );
         }
     }
 }

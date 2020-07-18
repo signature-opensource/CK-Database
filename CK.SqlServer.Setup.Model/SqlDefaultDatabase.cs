@@ -1,9 +1,9 @@
 namespace CK.Core
 {
     /// <summary>
-    /// Typed <see cref="SqlDatabase"/> for the default <see cref="SqlDatabase"/>.
+    /// Default <see cref="SqlDatabase"/>.
     /// </summary>
-    public class SqlDefaultDatabase : SqlDatabase, IAmbientObject
+    public class SqlDefaultDatabase : SqlDatabase
     {
         /// <summary>
         /// Initializes the default database. Its name is <see cref="SqlDatabase.DefaultDatabaseName"/>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <OriginProjectName>CK.Setupable.Engine.Tests</OriginProjectName>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
@@ -28,9 +28,6 @@
     <OriginRes Include="..\$(OriginProjectName)\SubNamespace\**\*.txt">
       <Name>$(OriginProjectName).SubNamespace.%(RecursiveDir)%(Filename)%(Extension)</Name>
     </OriginRes>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <Target Name="EmbedOriginResource" BeforeTargets="BeforeBuild">
     <ItemGroup>

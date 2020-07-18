@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
       CK.SqlServer.Setup.Model contains base objects (like SqlTable) and attributes (like SqlProcedure) used to

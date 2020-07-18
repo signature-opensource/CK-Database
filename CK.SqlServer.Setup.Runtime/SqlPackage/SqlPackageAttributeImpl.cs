@@ -27,10 +27,11 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribte type.
         /// </summary>
-        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute; 
+        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute;
 
         /// <summary>
         /// Transfers <see cref="SqlPackageAttribute.HasModel"/> to "HasModel" stobj property.
+        /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="o">The configured object.</param>
@@ -45,6 +46,8 @@ namespace CK.SqlServer.Setup
             {
                 monitor.Info( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
             }
+            // Since we are THE SqlPackage attribute, if a SetupItem or a Driver has been configured 
+            // we consider that the configuration must be specific: this acts as a kind of default.
             if( data.ItemType == null && data.ItemTypeName == null )
             {
                 data.ItemType = typeof( SqlPackageBaseItem );

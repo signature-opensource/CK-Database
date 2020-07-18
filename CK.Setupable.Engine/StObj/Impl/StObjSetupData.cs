@@ -11,12 +11,12 @@ namespace CK.Setup
         string _versions;
 
         internal StObjSetupData( IActivityMonitor monitor, IStObjResult o, StObjSetupDataRootClass parent )
-            : base( monitor, o.ObjectType, parent )
+            : base( monitor, o.ClassType, parent )
         {
             _stObj = o;
 
-            _fullNameWithoutContext = AttributesReader.GetFullName( monitor, false, o.ObjectType );
-            _versions = AttributesReader.GetVersionsString( o.ObjectType );
+            _fullNameWithoutContext = AttributesReader.GetFullName( monitor, false, o.ClassType );
+            _versions = AttributesReader.GetVersionsString( o.ClassType );
         }
 
         public IStObjResult StObj => _stObj; 
@@ -38,9 +38,9 @@ namespace CK.Setup
             return true;
         }
 
-        public bool IsDefaultFullNameWithoutContext => ReferenceEquals( _fullNameWithoutContext, _stObj.ObjectType.FullName );
+        public bool IsDefaultFullNameWithoutContext => ReferenceEquals( _fullNameWithoutContext, _stObj.ClassType.FullName );
 
-        public string FullName => DefaultContextLocNaming.Format( _stObj.StObjMap.MapName, null, _fullNameWithoutContext );
+        public string FullName => DefaultContextLocNaming.Format( _stObj.StObjMap.Names[0], null, _fullNameWithoutContext );
 
         public string Versions
         {
@@ -63,6 +63,11 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> IStObjSetupData.Children => (IReadOnlyList<IDependentItemRef>)Children; 
 
         IReadOnlyList<IDependentItemGroupRef> IStObjSetupData.Groups => (IReadOnlyList<IDependentItemGroupRef>)Groups;
+
+        bool IStObjSetupData.SetDirectPropertyValue( IActivityMonitor monitor, string propertyName, object value, string sourceDescription )
+        {
+            return ((IStObjMutableItem)_stObj).SetDirectPropertyValue( monitor, propertyName, value, sourceDescription );
+        }
 
     }
 }

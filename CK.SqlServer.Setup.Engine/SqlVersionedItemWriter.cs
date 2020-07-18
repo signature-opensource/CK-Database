@@ -4,6 +4,7 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using System.Text;
+using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
 {
@@ -56,18 +57,23 @@ namespace CK.SqlServer.Setup
                 _initialized = true;
             }
             StringBuilder delete = null;
+            StringBuilder deleteTrace = null;
             StringBuilder update = null;
 
-            void Delete( string fullName, bool hasBeenAccessed )
+            void Delete( string fullName, bool hasBeenAccessed, string type, string version )
             {
                 if( delete == null ) delete = new StringBuilder( "delete from CKCore.tItemVersionStore where FullName in (" );
                 else delete.Append( ',' );
                 delete.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( fullName ) ).Append( '\'' );
-                if( !hasBeenAccessed )
+
+                if( deleteTrace == null )
                 {
-                    monitor.Info( $"Item '{fullName}' has not been accessed: deleting its version information." );
+                    deleteTrace = new StringBuilder();
+                    deleteTrace.AppendLine( "Items deletion from CKCore.tItemVersionStore:" ).AppendLine();
                 }
-                else monitor.Info( $"Deleting '{fullName}' version information." );
+                deleteTrace.Append( "Item ('" ).Append( fullName ).Append( "','" ).Append( type ).Append( "','" ).Append( version ).Append( "') " );
+                if( !hasBeenAccessed ) deleteTrace.AppendLine( "--> Unaccessed during DBSetup." );
+                else deleteTrace.AppendLine( "--> Explicitly deleted." );
             }
 
             void Update( string fullName, string typeName, string version )
@@ -75,7 +81,7 @@ namespace CK.SqlServer.Setup
                 if( update == null )
                 {
                     update = new StringBuilder( SqlVersionedItemReader.CreateTemporaryTableScript );
-                    update.Append( "insert into @T( F, T, V ) values " );
+                    update.AppendLine().Append( "insert into @T( F, T, V ) values " );
                 }
                 else update.Append( ',' );
                 update.Append( "(N'" ).Append( SqlHelper.SqlEncodeStringContent( fullName ) )
@@ -88,7 +94,7 @@ namespace CK.SqlServer.Setup
                 bool mustDelete = t.Deleted || (deleteUnaccessedItems && !t.Accessed);
                 if( mustDelete )
                 {
-                    Delete( t.FullName, t.Accessed );
+                    Delete( t.FullName, t.Accessed, t.Original.Type, t.Original.Version.ToString() );
                 }
                 else if( t.Original == null )
                 {
@@ -139,7 +145,7 @@ namespace CK.SqlServer.Setup
                 else if( !f.F.IsValid )
                 {
                     monitor.Info( $"Removed VFeature: '{f.O}'." );
-                    Delete( f.Name, false );
+                    Delete( f.Name, false, "VFeature", f.O.Version.ToNormalizedString() );
                 }
                 else if( f.O.Version != f.F.Version )
                 {
@@ -149,19 +155,28 @@ namespace CK.SqlServer.Setup
                 else monitor.Debug( $"VFeature {f.O} unchanged." );
             }
 
-            if( delete != null )
+            // Throws exception on error, but uses ExecuteOneScript with monitor because it
+            // ensures that failing script is logged on error.
+            if( deleteTrace != null )
             {
+                monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
+
+                Debug.Assert( delete != null );
                 delete.Append( ");" );
-                // Throws exception on error.
-                _manager.ExecuteOneScript( delete.ToString() );
+                if( !_manager.ExecuteOneScript( delete.ToString(), monitor ) )
+                {
+                    throw new Exception( $"Unable to apply required deletions. Detailed error (including failing script) has been logged." );
+                }
             }
+            else monitor.Trace( "No version deleted." );
             if( update != null )
             {
-                update.Append( ";" ).Append( SqlVersionedItemReader.MergeTemporaryTableScript );
-                // Throws exception on error.
-                _manager.ExecuteOneScript( update.ToString() );
+                update.AppendLine( ";" ).Append( SqlVersionedItemReader.MergeTemporaryTableScript );
+                if( !_manager.ExecuteOneScript( update.ToString(), monitor ) )
+                {
+                    throw new Exception( $"Unable to apply required updates. Detailed error (including failing script) has been logged." );
+                }
             }
         }
-
     }
 }

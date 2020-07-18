@@ -31,14 +31,14 @@ namespace SqlActorPackage.Tests
         }
 
         [Test]
-        public void construct_injection_of_unresolved_AmbientObject_is_null()
+        public void construct_injection_of_unresolved_RealObject_is_null()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             a.UnexistingByConstructParam.Should().BeNull();
         }
 
         [Test]
-        public void optional_property_InjectObject_of_unresolved_AmbientObject_is_null()
+        public void optional_property_InjectObject_of_unresolved_RealObject_is_null()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             a.ZoneHome.Should().BeNull();

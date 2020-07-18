@@ -65,13 +65,13 @@ namespace CK.Setup
                 foreach( var r in orderedObjects )
                 {
                     // Gets the StObjSetupDataBase that applies: the one of its base class or the one built from
-                    // the attributes above if it is the root Ambient Object.
+                    // the attributes above if it is the root Real Object.
                     Debug.Assert( r.Generalization == null || setupableItems.ContainsKey( r.Generalization ), "Generalizations are required: they are processed first." );
 
                     StObjSetupData generalizationData = null;
                     StObjSetupDataRootClass fromAbove;
                     if( r.Generalization != null ) fromAbove = generalizationData = setupableItems[r.Generalization];
-                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ObjectType.BaseType );
+                    else fromAbove = StObjSetupDataRootClass.CreateRootData( _monitor, r.ClassType.BaseType );
 
                     // Builds the StObjSetupData from the different attributes.
                     var data = new StObjSetupData( _monitor, r, fromAbove );
@@ -84,7 +84,7 @@ namespace CK.Setup
                         }
                     }
                     // If the object itself is a IStObjSetupConfigurator, calls it.
-                    IStObjSetupConfigurator objectItself = r.InitialObject as IStObjSetupConfigurator;
+                    IStObjSetupConfigurator objectItself = r.FinalImplementation.Implementation as IStObjSetupConfigurator;
                     if( objectItself != null ) objectItself.ConfigureDependentItem( _monitor, data );
 
                     // Calls external configuration.
@@ -112,11 +112,13 @@ namespace CK.Setup
                             Type itemType = data.ItemType;
                             if( itemType == null )
                             {
+                                _monitor.Trace( $"'{data.FullName}': using default StObjDynamicPackageItem setup item."  );
                                 StObjDynamicPackageItem stobjDynamicPackageItem = new StObjDynamicPackageItem( _monitor, data );
                                 data.SetupItem = stobjDynamicPackageItem;
                             }
                             else
                             {
+                                _monitor.Trace( $"'{data.FullName}': using setup item type '{itemType.FullName},{itemType.Assembly.GetName().Name}'." );
                                 data.SetupItem = (IStObjSetupItem)_services.SimpleObjectCreate(_monitor, itemType, data );
                             }
                         }
@@ -348,7 +350,7 @@ namespace CK.Setup
                                 }
                             }
                             initSource = "Structured Item itself";
-                            if( o.InitialObject is IStObjSetupDynamicInitializer objectItself ) objectItself.DynamicItemInitialize( state, item, o );
+                            if( o.FinalImplementation.Implementation is IStObjSetupDynamicInitializer objectItself ) objectItself.DynamicItemInitialize( state, item, o );
                             initSource = "Setup Item itself";
                             if( item is IStObjSetupDynamicInitializer itemItself ) itemItself.DynamicItemInitialize( state, item, o );
                             initSource = "Global StObjSetupBuilder initializer";
@@ -356,7 +358,7 @@ namespace CK.Setup
                         }
                         catch( Exception ex )
                         {
-                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ObjectType.FullName}'.", ex );
+                            _monitor.Error( $"While Dynamic item initialization (from {initSource}) of '{item.FullName}' for object '{o.ClassType.FullName}'.", ex );
                             Debug.Assert( success == false, "OnError did the job..." );
                         }
                     }
@@ -372,7 +374,7 @@ namespace CK.Setup
                 return success;
             }
         }
-        
+
         #endregion
 
     }

@@ -28,7 +28,7 @@ namespace CK.SqlServer.Setup
        
         void IStObjStructuralConfigurator.Configure( IActivityMonitor monitor, IStObjMutableItem o )
         {
-            if( !typeof( SqlPackage ).IsAssignableFrom( o.ObjectType.BaseType ) )
+            if( !typeof( SqlPackage ).IsAssignableFrom( o.ClassType.BaseType ) )
             {
                 monitor.Error( $"{o.ToString()}: Attribute {GetType().Name} must be set only on class that specialize SqlPackage." );
             }
@@ -48,15 +48,15 @@ namespace CK.SqlServer.Setup
                 }
                 else
                 {
-                    o.SetAmbiantPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
+                    o.SetAmbientPropertyConfiguration( monitor, "Database", Attribute.Database, StObjRequirementBehavior.WarnIfNotStObj );
                 }
             }
-            else o.SetAmbiantPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
+            else o.SetAmbientPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
             // ResourceLocation is a StObjProperty.
-            o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ObjectType ) );
+            o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ClassType ) );
             if( Attribute.Schema != null )
             {
-                o.SetAmbiantPropertyValue( monitor, "Schema", Attribute.Schema );
+                o.SetAmbientPropertyValue( monitor, "Schema", Attribute.Schema );
             }
             ConfigureMutableItem( monitor, o );
         }
@@ -82,16 +82,16 @@ namespace CK.SqlServer.Setup
         {
             if( data.IsDefaultFullNameWithoutContext )
             {
-                var p = (SqlPackage)data.StObj.InitialObject;
-                var autoName = p.Schema + '.' + data.StObj.ObjectType.Name;
+                var p = (SqlPackage)data.StObj.FinalImplementation.Implementation;
+                var autoName = p.Schema + '.' + data.StObj.ClassType.Name;
                 if( data.IsFullNameWithoutContextAvailable( autoName ) )
                 {
-                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ObjectType.FullName}' uses '{autoName}' as its SetupName." );
+                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ClassType.FullName}' uses '{autoName}' as its SetupName." );
                 }
                 else
                 {
                     autoName = FindAvailableFullNameWithoutContext( data, autoName );
-                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ObjectType.FullName}' has no defined SetupName. It has been automatically computed as '{autoName}'. You may set a [SetupName] attribute on the class to settle it." );
+                    monitor.Info( $"{loggedObjectTypeName} '{data.StObj.ClassType.FullName}' has no defined SetupName. It has been automatically computed as '{autoName}'. You may set a [SetupName] attribute on the class to settle it." );
                 }
                 data.FullNameWithoutContext = autoName;
                 return true;
@@ -109,7 +109,7 @@ namespace CK.SqlServer.Setup
         protected string FindAvailableFullNameWithoutContext( IMutableStObjSetupData data, string shortestName )
         {
             string proposal;
-            string className = data.StObj.ObjectType.Name;
+            string className = data.StObj.ClassType.Name;
 
             bool shortestNameHasClassName = shortestName.Contains( className );
 
@@ -122,14 +122,14 @@ namespace CK.SqlServer.Setup
                 className = '-' + className;
                 if( data.IsFullNameWithoutContextAvailable( (proposal = shortestName + className) ) ) return proposal;
             }
-            string[] ns = data.StObj.ObjectType.Namespace.Split( '.' );
+            string[] ns = data.StObj.ClassType.Namespace.Split( '.' );
             int i = ns.Length - 1;
             while( i >= 0 )
             {
                 className = '-' + ns[i] + className;
                 if( data.IsFullNameWithoutContextAvailable( (proposal = shortestName + className) ) ) return proposal;
             }
-            return data.StObj.ObjectType.FullName;
+            return data.StObj.ClassType.FullName;
         }
 
 

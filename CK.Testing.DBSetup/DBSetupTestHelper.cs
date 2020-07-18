@@ -23,6 +23,7 @@ namespace CK.Testing
             _sqlServer = sqlServer;
             _setupableSetup.StObjSetupRunning += OnStObjSetupRunning;
             _setupableSetup.StObjMapAccessed += OnStObjMapAccessed;
+            _setupableSetup.AutomaticServicesConfigured += OnAutomaticServicesConfigured;
         }
 
         void OnStObjMapAccessed( object sender, StObjMapAccessedEventArgs e )
@@ -44,6 +45,22 @@ namespace CK.Testing
 
                 e.ForceSetup |= _sqlServer.EnsureDatabase();
                 e.StObjEngineConfiguration.Aspects.Add( conf );
+            }
+        }
+
+        void OnAutomaticServicesConfigured( object sender, AutomaticServicesConfigurationEventArgs e )
+        {
+            var testConnectionString = _sqlServer.GetConnectionString();
+            var defaultDB = e.StObjMap.StObjs.Obtain<SqlDefaultDatabase>();
+            if( testConnectionString != defaultDB.ConnectionString )
+            {
+
+                _setupableSetup.Monitor.Trace( $"Replacing StObjMap's SqlDefaultDatabase connection string ({defaultDB.ConnectionString}) by the SqlServer test helper one: '{testConnectionString}'." );
+                defaultDB.ConnectionString = testConnectionString;
+            }
+            else
+            {
+                _setupableSetup.Monitor.Trace( $"The StObjMap's SqlDefaultDatabase connection string is the one of the SqlServer test helper ({testConnectionString}). Nothing to change." );
             }
         }
 

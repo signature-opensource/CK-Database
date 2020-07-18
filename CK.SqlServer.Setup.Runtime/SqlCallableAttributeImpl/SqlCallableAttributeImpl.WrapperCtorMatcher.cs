@@ -1,12 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.WrapperCtorMatcher.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
 using System;
 using System.Collections.Generic;

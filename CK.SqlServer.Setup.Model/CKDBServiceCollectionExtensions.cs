@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -80,40 +80,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Calls <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, AssemblyName, SimpleServiceContainer)">StObjMap registration</see>
-        /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
-        /// <para>
-        /// Assembly load conflicts may occur here. In such case, you should use the CK.WeakAssemblyNameResolver package
-        /// and wrap the call this way:
-        /// <code>
-        /// using( CK.Core.WeakAssemblyNameResolver.TemporaryInstall() )
-        /// {
-        ///     services.AddCKDatabase( "CK.StObj.AutoAssembly" );
-        /// }
-        /// </code>
-        /// Note that there SHOULD NOT be any conflicts. This workaround may be necessary but hides a conflict of version dependencies
-        /// that may cause runtime errors.
-        /// </para>
-        /// </summary>
-        /// <param name="services">This services.</param>
-        /// <param name="monitor">The monitor to use. Must not be null.</param>
-        /// <param name="assemblyName">The assembly name.</param>
-        /// <param name="defaultConnectionString">
-        /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
-        /// </param>
-        /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
-        /// (they must be independent of any "dynamic" services), however registered services become available to
-        /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
-        /// </param>
-        /// <returns>This services collection.</returns>
-        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, AssemblyName assemblyName, string defaultConnectionString = null, SimpleServiceContainer startupServices = null )
-        {
-            return CKDatabasify( services.AddStObjMap( monitor, assemblyName, startupServices ), defaultConnectionString );
-        }
-
-
-        /// <summary>
         /// Calls <see cref="StObjServiceCollectionExtensions.AddStObjMap(IServiceCollection, IActivityMonitor, IStObjMap, SimpleServiceContainer)">StObjMap registration</see>
         /// and optionnally configures the <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </summary>
@@ -124,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Optional connection string that will override <see cref="SqlDefaultDatabase"/> <see cref="SqlDatabase.ConnectionString">ConnectionString</see>.
         /// </param>
         /// <param name="startupServices">
-        /// Optional simple container that may provide startup services. This is not used to build IAmbientObject
+        /// Optional simple container that may provide startup services. This is not used to build IRealObject
         /// (they must be independent of any "dynamic" services), however registered services become available to
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
@@ -145,4 +111,5 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
     }
+
 }

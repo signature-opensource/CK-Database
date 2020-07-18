@@ -7,8 +7,8 @@ namespace CK.Core
     /// </summary>
     [StObj( ItemKind = DependentItemKindSpec.Container )]
     [StObjProperty( PropertyName = "ResourceLocation", PropertyType = typeof( IResourceLocator ) )]
-    [AmbientDefiner]
-    public class SqlPackage : SqlServer.ISqlConnectionStringProvider, IAmbientObject
+    [CKTypeDefiner]
+    public class SqlPackage : SqlServer.ISqlConnectionStringProvider, IRealObject
     {
         /// <summary>
         /// Gets or sets the database to which this package belongs.

@@ -13,7 +13,7 @@ namespace CK.Setup
     {
         readonly SetupObjectItemAttributeBase _attribute;
         readonly int _maxObjectCount;
-        List<BestCreator> _theBest;
+        List<SetupObjectItemDynamicResource> _theBest;
 
         /// <summary>
         /// Internal interface that enables code factorization between SetupObjectItemAttributeImplBase
@@ -40,61 +40,6 @@ namespace CK.Setup
             SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer r, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument );
 
             string GetDetailedName( ISetupItem container, string name );
-        }
-
-        /// <summary>
-        /// This is used both for the key and the value.
-        /// This secures the key in the IStObjSetupDynamicInitializerState.Memory dictionary: only an internal 
-        /// BestCreator can be equal to a BestCreator.
-        /// </summary>
-        internal class BestCreator
-        {
-            int _hash;
-
-            internal BestCreator( IContextLocNaming name )
-            {
-                Name = name;
-                _hash = name.FullName.GetHashCode();
-            }
-
-            public override bool Equals( object obj )
-            {
-                BestCreator x = obj as BestCreator;
-                return x != null && x.Name.FullName == Name.FullName;
-            }
-
-            public override int GetHashCode() => _hash;
-
-            /// <summary>
-            /// Name of the item to create is the key.
-            /// </summary>
-            public readonly IContextLocNaming Name;
-
-            /// <summary>
-            /// The eventually created item.
-            /// </summary>
-            public SetupObjectItem Item;
-
-            /// <summary>
-            /// The last definer is the winner.
-            /// </summary>
-            public IStObjSetupDynamicInitializer LastDefiner;
-
-            /// <summary>
-            /// Keeps the container that has the first definer.
-            /// </summary>
-            public IMutableSetupItem FirstContainer;
-
-            /// <summary>
-            /// Keeping the last container is used to handle multiple definitions
-            /// in the same container.
-            /// </summary>
-            public IMutableSetupItem LastContainerSeen;
-
-            /// <summary>
-            /// The transform target creator in Name has a transform argument.
-            /// </summary>
-            public BestCreator TransformTarget;
         }
 
         /// <summary>
@@ -150,7 +95,7 @@ namespace CK.Setup
                     var best = r.Register( behavior, nTrimmed );
                     if( best != null )
                     {
-                        if( _theBest == null ) _theBest = new List<BestCreator>();
+                        if( _theBest == null ) _theBest = new List<SetupObjectItemDynamicResource>();
                         _theBest.Add( best );
                     }
                 }

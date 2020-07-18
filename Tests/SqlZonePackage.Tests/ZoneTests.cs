@@ -31,14 +31,14 @@ namespace SqlZonePackage.Tests
         }
 
         [Test]
-        public void construct_injection_of_unresolved_AmbientObject_is_null()
+        public void construct_injection_of_unresolved_RealObject_is_null()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.UnexistingByConstructParam, Is.Null);
         }
 
         [Test]
-        public void optional_property_InjectContract_of_resolved_AmbientObject()
+        public void optional_property_InjectObject_of_resolved_RealObject()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
             Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>()));
@@ -55,15 +55,6 @@ namespace SqlZonePackage.Tests
                 TestHelper.StObjMap.StObjs.Obtain<Zone.GroupHome>(),
                 TestHelper.StObjMap.StObjs.Obtain<Zone.Package>()
             }, a.AllServices );
-        }
-
-        [Test]
-        public void checking_final_mappings()
-        {
-            IStObjObjectMap map = TestHelper.StObjMap.StObjs;
-            var mappings = new List<KeyValuePair<Type, object>>();
-            foreach (var t in map.Types) mappings.Add(new KeyValuePair<Type, object>(t,map.Obtain(t)));
-            CollectionAssert.AreEquivalent(mappings, map.Mappings);
         }
 
     }

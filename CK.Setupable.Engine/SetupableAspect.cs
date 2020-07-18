@@ -90,7 +90,7 @@ namespace CK.Setup
         {
             var configurator = _configurator.FirstLayer;
             var itemBuilder = new StObjSetupItemBuilder( monitor, context.ServiceContainer, configurator, configurator, configurator );
-            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.OrderedStObjs );
+            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.UnifiedBinPath.EngineMap.StObjs.OrderedStObjs );
             if( setupItems == null ) return false;
 
             _setupSessionMemory = _setupSessionMemoryProvider.StartSetup();
@@ -98,8 +98,8 @@ namespace CK.Setup
             if( versionTracker.Initialize( monitor ) )
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
-                bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker, _setupSessionMemory );
-                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.Features );
+                bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker );
+                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.UnifiedBinPath.EngineMap.Features );
                 return setupSuccess;
             }
             return false;
@@ -124,11 +124,11 @@ namespace CK.Setup
             return true;
         }
 
-        bool DoRun( IActivityMonitor monitor, IServiceProvider services, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        bool DoRun( IActivityMonitor monitor, IServiceProvider services, IEnumerable<ISetupItem> stObjItems, VersionedItemTracker versionTracker )
         {
             bool hasError = false;
             using( monitor.OnError( () => hasError = true ) )
-            using( SetupCoreEngine engine = CreateCoreEngine( monitor, services, versionTracker, m ) )
+            using( SetupCoreEngine engine = CreateCoreEngine( monitor, services, versionTracker ) )
             {
                 using( monitor.OpenInfo( "Register step." ) )
                 {
@@ -193,7 +193,7 @@ namespace CK.Setup
             }
         }
 
-        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IServiceProvider services, VersionedItemTracker versionTracker, ISetupSessionMemory m )
+        SetupCoreEngine CreateCoreEngine( IActivityMonitor monitor, IServiceProvider services, VersionedItemTracker versionTracker )
         {
             SetupCoreEngine engine = null;
             using( monitor.OpenInfo( "Setupable Core Engine initialization." ) )

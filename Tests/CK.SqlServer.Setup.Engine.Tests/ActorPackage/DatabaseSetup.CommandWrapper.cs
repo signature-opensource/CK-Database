@@ -12,7 +12,7 @@ using static CK.Testing.DBSetupTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
 {
-    public partial class DatabaseSetup
+    public partial class InProcessDatabaseSetup
     {
         static void CheckCommandWrapper( SqlManager c, IStObjMap map )
         {

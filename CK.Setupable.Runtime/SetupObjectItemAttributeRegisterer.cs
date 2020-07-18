@@ -23,7 +23,6 @@ namespace CK.Setup
             _state = state;
             Container = item;
             _candidate = candidate;
-            HasError = _state.Memory[typeof( SetupObjectItemAttributeRegisterer )] != null;
         }
 
         /// <summary>
@@ -37,9 +36,10 @@ namespace CK.Setup
         public readonly IMutableSetupItem Container;
 
         /// <summary>
-        /// Gets whether <see cref="SetError(string)"/> has been called.
+        /// Gets whether <see cref="SetError(string)"/> has been called on any
+        /// registerer.
         /// </summary>
-        public bool HasError { get; private set; }
+        public bool HasError => _state.Memory[typeof( SetupObjectItemAttributeRegisterer )] != null;
 
         /// <summary>
         /// Sets an error that can be null (no error is traced but HasError becomes true).
@@ -47,15 +47,14 @@ namespace CK.Setup
         /// </summary>
         /// <param name="msg">Optional message to trace as error.</param>
         /// <returns>Always null.</returns>
-        BestCreator SetError( string msg )
+        SetupObjectItemDynamicResource SetError( string msg )
         {
             if( msg != null ) _state.Monitor.Error( msg );
-            HasError = true;
             _state.Memory[typeof( SetupObjectItemAttributeRegisterer )] = typeof( SetupObjectItemAttributeRegisterer );
             return null;
         }
 
-        internal BestCreator Register( SetupObjectItemBehavior b, string name )
+        internal SetupObjectItemDynamicResource Register( SetupObjectItemBehavior b, string name )
         {
             var n = _candidate.BuildFullName( Container, b, name );
             if( n == null )
@@ -63,24 +62,24 @@ namespace CK.Setup
                 return SetError( "Invalid name: " + _candidate.GetDetailedName( Container, name ) );
             }
             bool replace = b == SetupObjectItemBehavior.Replace;
-            var key = new BestCreator( n );
-            BestCreator best = (BestCreator)_state.Memory[key];
+            var key = new SetupObjectItemDynamicResource( n );
+            SetupObjectItemDynamicResource best = (SetupObjectItemDynamicResource)_state.Memory[key];
             if( best == null )
             {
                 if( replace )
                 {
                     return SetError( $"Object {_candidate.GetDetailedName( Container, name )} is not defined. It can not be replaced." );
                 }
-                BestCreator bestT = null;
+                SetupObjectItemDynamicResource bestT = null;
                 string transformArg = n.TransformArg;
                 if( transformArg != null )
                 {
                     var nT = new ContextLocName( transformArg );
-                    var keyT = new BestCreator( nT );
-                    bestT = (BestCreator)_state.Memory[keyT];
+                    var keyT = new SetupObjectItemDynamicResource( nT );
+                    bestT = (SetupObjectItemDynamicResource)_state.Memory[keyT];
                     if( bestT == null )
                     {
-                        return SetError( $"Transformer {_candidate.GetDetailedName( Container, name )}'s target is not defined." );
+                        return SetError( $"Transformer {_candidate.GetDetailedName( Container, name )}: target {nT} is not defined." );
                     }
                 }
                 _state.Memory[key] = best = key;
@@ -117,7 +116,7 @@ namespace CK.Setup
             return best;
         }
 
-        internal bool PostponeFinalizeRegister( BestCreator best )
+        internal bool PostponeFinalizeRegister( SetupObjectItemDynamicResource best )
         {
             if( best.LastDefiner == _candidate )
             {

@@ -143,6 +143,36 @@ namespace CK.SqlServer.Setup
             _schema = newSchema;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="SqlContextLocName"/> from this name with another one: if the other one has 
+        /// unknown <see cref="ContextLocName.Context"/>, <see cref="ContextLocName.Location"/> or <see cref="Schema"/> those from this name are 
+        /// used.
+        /// This also applies to the potential transform argument of <paramref name="n"/>.
+        /// </summary>
+        /// <param name="n">The raw name. When null or empty, this name is cloned.</param>
+        /// <returns>A new combined name.</returns>
+        public override IContextLocNaming CombineName( string n )
+        {
+            if( String.IsNullOrEmpty( n ) ) return new SqlContextLocName( this );
+            var name = new SqlContextLocName( n );
+            if( name.Context == null ) name.Context = Context;
+            if( name.Location == null ) name.Location = Location;
+            if( name.Schema == null ) name.Schema = Schema;
+            // Now handling transformation.
+            if( name.TransformArg != null )
+            {
+                // The provided name is a transformation: resolves context/location/schema from container 
+                // on the target component if they are not define.
+                var target = new SqlContextLocName( name.TransformArg );
+                if( target.Context == null ) target.Context = name.Context;
+                if( target.Location == null ) target.Location = name.Location;
+                if( target.Schema == null ) target.Schema = name.Schema;
+                name.TransformArg = target.FullName;
+            }
+            return name;
+        }
+
+
         static readonly string[] _allowedResourcePrefixes = new string[] { "[Replace]", "[Transform]" };
 
         /// <summary>

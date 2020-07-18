@@ -302,7 +302,7 @@ namespace CK.SqlServer.Setup
 
             public bool Execute( string script )
             {
-                if( script == null ) throw new ArgumentNullException( "script" );
+                if( script == null ) throw new ArgumentNullException( nameof(script) );
                 LastSucceed = false;
                 bool hasBeenTraced = false;
                 try

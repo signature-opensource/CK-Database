@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Description>CK.Setupable.Runtime defines tha aspect that supports Three Steps Setup.
     </Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <ProjectReference Include="..\CK.StObj.Runtime\CK.StObj.Runtime.csproj" />
+    <PackageReference Include="CK.StObj.Runtime" Version="0.0.0--02w77kd-local+v14.0.1" />
     <PackageReference Include="CK.Setup.Dependency" Version="$(CKSetupDependencyVersion)" />
   </ItemGroup>
   <ItemGroup>

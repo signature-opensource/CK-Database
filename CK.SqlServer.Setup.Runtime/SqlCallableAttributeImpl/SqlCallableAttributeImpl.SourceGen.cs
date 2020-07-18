@@ -1,5 +1,4 @@
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
@@ -154,15 +153,15 @@ namespace CK.SqlServer.Setup
             if( hasRefSqlCommand )
             {
                 string sqlCommandRefName = mParameters[0].Name;
-                cB.Append( $"if({sqlCommandRefName} == null ) {sqlCommandRefName} = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.FunctionName.NakedName}();" ).NewLine();
+                cB.Append( $"if({sqlCommandRefName} == null ) {sqlCommandRefName} = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.Definition.MethodName.Name}();" ).NewLine();
                 cB.Append( "cmd_loc = " ).Append( sqlCommandRefName ).Append( ";" ).NewLine();
             }
-            else cB.Append( $"cmd_loc = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.FunctionName.NakedName}();" ).NewLine();
+            else cB.Append( $"cmd_loc = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.Definition.MethodName.Name}();" ).NewLine();
             cB.Append( $"SqlParameterCollection cmd_parameters = cmd_loc.Parameters;" ).NewLine();
             // SqlCommand is created.
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
 
-            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoInfo() );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoSupportResult() );
             // We initialize the SetUsedByReturnedType information on parameters 
             // so that they can relax their checks on Sql parameter direction accordingly.
             if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )
@@ -186,7 +185,11 @@ namespace CK.SqlServer.Setup
             for( int iM = mParameterFirstIndex; iM < mParameters.Length; ++iM )
             {
                 ParameterInfo mP = mParameters[iM];
-                int iSFound = sqlParamHandlers.IndexOf( iS, mP );
+                // If the parameter is a parameter source, we register it and consider that we didn't find it in the
+                // Sql parameters: if the same name is used, the [ParameterSource] takes precedence.
+                bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoSupportResult() );
+
+                int iSFound = isParameterSourceOrCallContext ? -1 : sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
                 {
                     Debug.Assert( SqlObjectItem.TypeConnection.IsSealed && SqlObjectItem.TypeTransaction.IsSealed );
@@ -206,9 +209,6 @@ namespace CK.SqlServer.Setup
                         {
                             extraMethodParameters.Add( mP );
                         }
-                        // If the parameter is a parameter source, we register it.
-                        bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoInfo() );
-
                         if( mP.ParameterType.IsByRef && sqlParamHandlers.IsAsyncCall )
                         {
                             monitor.Error( $"Parameter '{mP.Name}' is ref or out: ref or out are not compatible with an asynchronous execution (the returned type of the method is a Task)." );

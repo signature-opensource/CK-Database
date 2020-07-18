@@ -199,6 +199,31 @@ namespace CK.Setup
         }
 
         /// <summary>
+        /// Combines this name with another one: if the other one has unknown <see cref="Context"/> or <see cref="Location"/> 
+        /// those from this name are used (this also applies to the potential transform argument of <paramref name="n"/>).
+        /// </summary>
+        /// <param name="n">The raw name. When null or empty, this name is cloned.</param>
+        /// <returns>A new combined name.</returns>
+        public ContextLocNameStructImpl CombineName( string n )
+        {
+            if( String.IsNullOrEmpty( n ) ) return this;
+            var name = new ContextLocNameStructImpl( n );
+            if( name.Context == null ) name.Context = Context;
+            if( name.Location == null ) name.Location = Location;
+            // Now handling transformation.
+            if( name.TransformArg != null )
+            {
+                // The provided name is a transformation: resolves context/location/schema from container 
+                // on the target component if they are not define.
+                var target = new ContextLocNameStructImpl( name.TransformArg );
+                if( target.Context == null ) target.Context = name.Context;
+                if( target.Location == null ) target.Location = name.Location;
+                name.TransformArg = target.FullName;
+            }
+            return name;
+        }
+
+        /// <summary>
         /// Overridden to return the hash of the full name.
         /// </summary>
         /// <returns>Hash of the full name.</returns>

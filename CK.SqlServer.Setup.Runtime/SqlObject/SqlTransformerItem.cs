@@ -1,5 +1,6 @@
 using CK.Setup;
 using CK.SqlServer.Parser;
+using System;
 using System.Diagnostics;
 
 namespace CK.SqlServer.Setup
@@ -12,10 +13,17 @@ namespace CK.SqlServer.Setup
         SqlBaseItem _source;
         SqlBaseItem _target;
 
-        internal SqlTransformerItem( SqlContextLocName name, ISqlServerTransformer t )
+        /// <summary>
+        /// Initializes a new Sql transformer. 
+        /// It must be added to its target (<see cref="SetupObjectItem.AddTransformer(Core.IActivityMonitor, ISetupObjectTransformerItem)"/>).
+        /// </summary>
+        /// <param name="name">The name of this transformer. Of course, <see cref="ContextLocName.TransformArg"/> must not be null.</param>
+        /// <param name="t">The transformer itself.</param>
+        public SqlTransformerItem( SqlContextLocName name, ISqlServerTransformer t )
             : base( name, "Transformer", t )
         {
-            Debug.Assert( name.TransformArg != null );
+            if( name.TransformArg == null ) throw new ArgumentNullException( nameof(name.TransformArg) );
+            if( t == null ) throw new ArgumentNullException( nameof( t ) );
             SetDriverType( typeof( SqlTransformerItemDriver ) );
         }
 

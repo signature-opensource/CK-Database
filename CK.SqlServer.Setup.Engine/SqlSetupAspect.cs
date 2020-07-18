@@ -29,7 +29,7 @@ namespace CK.SqlServer.Setup
             {
                 base.ResolveParameterValue( monitor, parameter );
                 if( parameter.Name == "connectionString"
-                    && parameter.Owner.InitialObject is SqlDatabase db )
+                    && parameter.Owner.FinalImplementation.Implementation is SqlDatabase db )
                 {
                     parameter.SetParameterValue( _config.FindConnectionStringByName( db.Name ) );
                 }

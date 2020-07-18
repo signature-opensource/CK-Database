@@ -2,10 +2,10 @@ namespace CK.Core
 {
     /// <summary>
     /// Base class for table objects. 
-    /// Unless marked with <see cref="AmbientDefinerAttribute"/>, direct specializations are de facto ambient objects.
+    /// Unless marked with <see cref="CKTypeDefinerAttribute"/>, direct specializations are de facto real objects.
     /// A table is a <see cref="SqlPackage"/> with a <see cref="TableName"/>.
     /// </summary>
-    [AmbientDefiner]
+    [CKTypeDefiner]
     public class SqlTable : SqlPackage
     {
         /// <summary>
