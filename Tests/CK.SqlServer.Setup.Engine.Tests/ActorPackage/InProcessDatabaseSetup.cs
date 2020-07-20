@@ -47,6 +47,7 @@ namespace CK.SqlServer.Setup.Engine.Tests.ActorPackage
             var b = new BinPathConfiguration();
             b.Path = AppContext.BaseDirectory;
             b.Assemblies.Add( "SqlActorPackage" );
+            b.CompileOption = CompileOption.Compile;
             if( withZone ) b.Assemblies.Add( "SqlZonePackage" );
             c.BinPaths.Add( b );
             c.GeneratedAssemblyName = dllName;
