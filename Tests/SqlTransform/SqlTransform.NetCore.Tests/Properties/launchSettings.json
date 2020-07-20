@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "NUnit Console": {
-      "commandName": "Project",
-      "commandLineArgs": "--wait"
-    }
-  }
-}

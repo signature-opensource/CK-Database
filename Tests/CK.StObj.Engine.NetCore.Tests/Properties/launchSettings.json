@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CK.Setupable.Engine.NetCore.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "--wait" // --where \"method == asking_for_a_link_class_bound_to_the_abstraction_in_a_chain_leads_to_funny_result \"
-    }
-  }
-}
