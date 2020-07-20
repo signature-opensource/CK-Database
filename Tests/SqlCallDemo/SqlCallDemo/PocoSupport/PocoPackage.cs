@@ -35,7 +35,7 @@ namespace SqlCallDemo
                 {
                     case nameof( IThing.Name ): p.SetValue( r, "name" ); break;
                     case nameof( IThing.FromBatabaseOnly ): p.SetValue( r, Guid.NewGuid() ); break;
-                    default: p.SetValue( r, ++i ); break;
+                    default: if( p.CanWrite ) p.SetValue( r, ++i ); break;
                 }
             }
             return r;

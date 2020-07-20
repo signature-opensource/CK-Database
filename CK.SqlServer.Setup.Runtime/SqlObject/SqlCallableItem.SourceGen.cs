@@ -17,6 +17,7 @@ namespace CK.SqlServer.Setup
             {
                 tB = ns.EnsureUsing( "System.Data" )
                        .EnsureUsing( "System.Data.SqlClient" )
+                       .EnsureUsing( "CK.SqlServer" )
                        .CreateType( "static class CreatorForSqlCommand" );
             }
             
