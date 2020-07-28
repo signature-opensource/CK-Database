@@ -82,7 +82,7 @@ namespace CK.SqlServer.Setup
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
                         var ret = returnedType.GetGenericArguments()[0];
                         _generateCallType = GenerateCallType.FuncBuilderHelper;
-                        _sourceExecutorCallNonQuery = $"FuncBuilderHelper<{ret.ToCSharpName(true)}>";
+                        _sourceExecutorCallNonQuery = $"FuncBuilderHelper<{ret.ToCSharpName()}>";
                     }
                     else
                     {
