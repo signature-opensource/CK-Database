@@ -121,7 +121,10 @@ namespace CK.SqlServer.Setup
             bool hasRefSqlCommand,
             int timeoutSeconds )
         {
-            tB.Namespace.EnsureUsing( "CK.SqlServer" );
+            tB.Namespace.EnsureUsing( "System.Data" )
+                        .EnsureUsing( "System.Data.SqlClient" )
+                        .EnsureUsing( "SqlGen" )
+                        .EnsureUsing( "CK.SqlServer" );
             int nbError = 0;
             List<ParameterInfo> extraMethodParameters = null;
             IFunctionScope cB = tB.CreateOverride( m );

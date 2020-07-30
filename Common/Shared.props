@@ -1,17 +1,17 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>13.0.0</CKCoreVersion>
     <CKActivityMonitorVersion>13.1.0</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>10.3.1--0001-develop</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.13.1--0001-develop</CKSqlServerVersion>
-    <CKSqlServerParserVersion>14.0.1--0001-develop</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>10.3.1--0001-develop</CKSqlServerParserModelVersion>
-    <CKReflectionVersion>9.0.2--0005-develop</CKReflectionVersion>
+    <CKSetupDependencyVersion>0.0.0--02wpt38-local+v10.3.0</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.0.0--02wpt38-local+v0.13.0</CKSqlServerVersion>
+    <CKSqlServerParserVersion>0.0.0--02wpt39-local+v14.0.0</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>0.0.0--02wpt36-local+v10.3.0</CKSqlServerParserModelVersion>
+    <CKReflectionVersion>0.0.0--02wpt2j-local+v9.0.1</CKReflectionVersion>
     <CKCodeGenVersion>0.13.0</CKCodeGenVersion>
-    <YodiiScriptVersion>0.8.1--0003-develop</YodiiScriptVersion>
+    <YodiiScriptVersion>0.0.0--02wpt2g-local+v0.8.0</YodiiScriptVersion>
     <CKSetupVersion>11.1.1</CKSetupVersion>
-    <CKTestingVersion>0.18.1--0002-develop</CKTestingVersion>
+    <CKTestingVersion>0.0.0--02wpt37-local+v0.18.0</CKTestingVersion>
     <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -51,7 +51,7 @@
   <!--</BasicDefinitions>-->
   <!--<StandardProperties>-->
   <PropertyGroup>
-    <RepositoryUrl>https://gitlab.com/Signature-Code/CK-Database.git</RepositoryUrl>
+    <RepositoryUrl>https://gitlab.com/Signature-Code/CK-Database</RepositoryUrl>
     <ProductName>CK</ProductName>
     <Company>Signature Code</Company>
     <Authors>Signature Code</Authors>

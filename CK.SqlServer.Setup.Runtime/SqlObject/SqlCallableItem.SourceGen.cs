@@ -11,18 +11,18 @@ namespace CK.SqlServer.Setup
         IFunctionScope ISqlCallableItem.AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
         {
             if( SqlObject == null ) return null;
-            ITypeScope tB = (ITypeScope)dynamicAssembly.Memory["CreatorForSqlCommand"];
+            INamespaceScope ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
+            ITypeScope tB = ns.FindType( "static class CreatorForSqlCommand" );
             if( tB == null )
             {
-                tB = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" )
-                        .EnsureUsing( "System.Data" )
-                        .EnsureUsing( "System.Data.SqlClient" )
-                        .CreateType( "static class CreatorForSqlCommand" );
-                dynamicAssembly.Memory.Add( "CreatorForSqlCommand", tB );
+                tB = ns.EnsureUsing( "System.Data" )
+                       .EnsureUsing( "System.Data.SqlClient" )
+                       .EnsureUsing( "CK.SqlServer" )
+                       .CreateType( "static class CreatorForSqlCommand" );
             }
             
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
-            var m = (IFunctionScope)dynamicAssembly.Memory[methodKey];
+            var m = (IFunctionScope)dynamicAssembly.Memory.GetValueWithDefault( methodKey, null );
             if( m == null )
             {
                 using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )
