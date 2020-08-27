@@ -11,7 +11,7 @@ namespace CK.Setup
     public abstract class SetupObjectItemMemberAttributeImplBase : SetupObjectItemAttributeImplBase.ISetupItemCreator, IAttributeContextBoundInitializer, ISetupObjectItemProvider
     {
         readonly ContextBoundDelegationAttribute _attribute;
-        ICKCustomAttributeTypeMultiProvider _owner;
+        ITypeAttributesCache _owner;
         MemberInfo _member;
         SetupObjectItemDynamicResource _theBest;
 
@@ -53,14 +53,14 @@ namespace CK.Setup
         /// <summary>
         /// Gets the owner (type and provider of its other attributes).
         /// </summary>
-        protected ICKCustomAttributeTypeMultiProvider Owner => _owner; 
+        protected ITypeAttributesCache Owner => _owner; 
 
         /// <summary>
         /// Gets the member to which the attribute applies.
         /// </summary>
         protected MemberInfo Member => _member; 
 
-        void IAttributeContextBoundInitializer.Initialize( ICKCustomAttributeTypeMultiProvider owner, MemberInfo m )
+        void IAttributeContextBoundInitializer.Initialize( IActivityMonitor monitor, ITypeAttributesCache owner, MemberInfo m )
         {
             _owner = owner;
             _member = m;
