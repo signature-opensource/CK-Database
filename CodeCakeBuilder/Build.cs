@@ -2,6 +2,9 @@ using Cake.Common.IO;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using SimpleGitVersion;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CodeCake
 {
@@ -47,8 +50,20 @@ namespace CodeCake
                                      || Cake.ReadInteractiveOption( "RunUnitTests", "Run Unit Tests?", 'Y', 'N' ) == 'Y' )
                 .Does( () =>
                  {
-                    
-                  globalInfo.GetDotnetSolution().Test();
+
+                     while( true )
+                     {
+                         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                         System.Threading.Tasks.Task.Delay( 60 * 5 * 1000, cancellationTokenSource.Token )
+                         .ContinueWith( s =>
+                          {
+                              if( s.IsCanceled ) return;
+                              if( !s.IsCompleted ) return;
+                              Debugger.Break();
+                          } );
+                         globalInfo.GetDotnetSolution().Test();
+                         cancellationTokenSource.Cancel();
+                     }
                  } );
 
             Task( "Create-NuGet-Packages" )

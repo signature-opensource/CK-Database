@@ -162,6 +162,7 @@ namespace CodeCake
 
         public bool CheckCommitMemoryKey( NormalizedPath key )
         {
+            return false;
             bool done = File.Exists( MemoryFilePath )
                         ? Array.IndexOf( File.ReadAllLines( MemoryFilePath ), key.Path ) >= 0
                         : false;
