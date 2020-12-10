@@ -24,7 +24,7 @@ namespace CK.SqlServer.Setup
                 short ver = 0;
                 if( !forceInstall && (ver = (short)manager.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
                 {
-                    monitor.CloseGroup( $"Already installed in version {CurrentVersion}." );
+                    monitor.CloseGroup( "Already installed." );
                 }
                 else
                 {
@@ -404,21 +404,29 @@ begin
         cross join finalSetter s;
     
     -- We use the ""Atomic"" transaction trick. 
-    --[=beginsp]
     set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
-    beginsp: if @SPCallTC = 0 begin tran; else begin set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar); save transaction @SPCallId; end begin try
-    --[=/beginsp]
-
-    exec sp_executesql @DisableC;
-    exec sp_executesql @SetValue;
-    exec sp_executesql @EnableC;
-
-    --[=endsp]
+    beginsp:
+    if @SPCallTC = 0 begin tran;
+    else
+    begin
+        set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar);
+        save transaction @SPCallId;
+    end
+    begin try
+        exec sp_executesql @DisableC;
+        exec sp_executesql @SetValue;
+        exec sp_executesql @EnableC;
     end try
-    begin catch if @SPCallTC = 0 rollback; else if XACT_STATE() = 1 rollback transaction @SPCallId; exec CKCore.sErrorRethrow @@ProcId; return -1; end catch;
-    endsp: if @SPCallTC = 0 commit; return 0;
-    --[=/endsp]
-end;
+    begin catch
+        if @SPCallTC = 0 rollback;
+        else if XACT_STATE() = 1 rollback transaction @SPCallId;
+        exec CKCore.sErrorRethrow @@ProcId;
+        return -1;
+    end catch;
+    endsp:
+    if @SPCallTC = 0 commit;
+    return 0;
+end
 GO
 create view CKCore.vConstraintColumns
 as
