@@ -21,17 +21,43 @@ namespace CK.DB.Tests
         static DBSetup()
         {
             var root = TestHelper.SolutionFolder.AppendPart( "Tests" );
-            void CheckFile( string commonTestName )
+
+            void CheckFile( string testName, string? displayTestName = null )
             {
-                var path = root.AppendPart( commonTestName + ".playlist" );
+                var path = root.AppendPart( testName + ".playlist" );
                 if( !System.IO.File.Exists( path ) )
                 {
-                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""1.0""><Add Test=""DBSetup.DBSetup.{commonTestName}"" /></Playlist>" );
+                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""2.0"">
+  <Rule Name=""Includes"" Match=""Any"">
+    <Rule Match=""All"">
+      <Property Name=""Solution"" />
+      <Rule Match=""All"">
+        <Property Name=""Namespace"" Value=""DBSetup"" />
+        <Rule Match=""Any"">
+          <Rule Match=""All"">
+            <Property Name=""Class"" Value=""DBSetup"" />
+            <Rule Match=""Any"">
+              <Rule Match=""All"">
+                <Property Name=""TestWithNormalizedFullyQualifiedName"" Value=""DBSetup.DBSetup.{testName}"" />
+                <Rule Match=""Any"">
+                  <Property Name=""DisplayName"" Value=""{displayTestName ?? testName}"" />
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>" );
                 }
             }
+
             CheckFile( "db_setup" );
             CheckFile( "drop_database" );
             CheckFile( "db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" );
+            CheckFile( "backup_create" );
+            CheckFile( "backup_restore", "backup_restore(&quot;0 - Most recent one.&quot;)" );
         }
 
         /// <summary>
