@@ -6,7 +6,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 15;
+        public readonly static short CurrentVersion = 16;
 
         /// <summary>
         /// Installs the kernel.
@@ -19,12 +19,12 @@ namespace CK.SqlServer.Setup
         {
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
 
-            using( monitor.OpenTrace( "Installing CKCore kernel." ) )
+            using( monitor.OpenTrace( $"Installing CKCore kernel (v{CurrentVersion})." ) )
             {
                 short ver = 0;
                 if( !forceInstall && (ver = (short)manager.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
                 {
-                    monitor.CloseGroup( $"Already installed in version {CurrentVersion}." );
+                    monitor.CloseGroup( "Already installed." );
                 }
                 else
                 {
@@ -62,6 +62,7 @@ begin
     if object_id('CKCore.sInvariantRegister') is not null drop procedure CKCore.sInvariantRegister;
     if object_id('CKCore.sInvariantRun') is not null drop procedure CKCore.sInvariantRun;
     if object_id('CKCore.sInvariantRunAll') is not null drop procedure CKCore.sInvariantRunAll;
+    if object_id('CKCore.sRefBazookation') is not null drop procedure CKCore.sRefBazookation;
 end
 GO
 create procedure CKCore.sErrorRethrow
@@ -319,6 +320,112 @@ runIt:
             fetch next from @C4 into @tName;
         end
     end
+end
+GO
+--
+-- This stored procedure changes the value of a field that is typically a key referenced by 
+-- many foreign keys (recursively).
+-- It works by first computing the transitive closure of the foreign keys on the column to change,
+-- then it disables all the foreign key constraints it found (and only these ones), updates all the columns 
+-- and reenables the constraints.
+--
+-- The operation is transacted. At worst an error is raised but no data should be compromised.
+-- On success, 0 is returned, -1 on error.
+--
+-- Example:
+--      @SchemaName = 'CK'      -- This is the schema of the target table.
+--      @TableName = 'tActor'   -- The name of the table.
+--      @ColumnName = 'ActorId' -- The name of the column.
+--      @ExistingValue = '2'    -- The value to update. This must be provided as a the string representation of the value.
+--      @NewValue = '3712'      -- The new value (also its string representation). 
+--                                 This has typically been ""allocated"" before the call: it must exist in the target table.
+--
+-- The name of this procedure is intentionally stupid.
+-- The violence implied by this neologism should dissuade pusillanimous users from using it.
+--
+create procedure CKCore.sRefBazookation
+    @SchemaName sysname,
+    @TableName sysname,
+    @ColumnName sysname,
+    @ExistingValue nvarchar(max),
+    @NewValue nvarchar(max)
+as
+begin
+    declare @DisableC nvarchar(max);
+    declare @SetValue nvarchar(max);
+    declare @EnableC nvarchar(max);
+
+    with rec as ( select 
+                       -- We aggregate the constraint identifier in a string to skip cycles.
+                       CCId =  ';' + cast( fc.constraint_object_id as varchar(max)) + ';',
+                       STId = fc.parent_object_id,
+                       SCId = fc.parent_column_id,
+                       TTId = fc.referenced_object_id,
+                       TCId = fc.referenced_column_id,
+                       CName = QUOTENAME( f.name ),
+                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
+                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
+                   from sys.foreign_key_columns as fc
+                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
+                   inner join sys.objects oS on oS.object_id = fc.parent_object_id
+                   inner join sys.objects oT on oT.object_id = f.referenced_object_id
+                   inner join sys.columns cT on cT.object_id = f.referenced_object_id and cT.column_id = fc.referenced_column_id
+                   where oT.schema_id = SCHEMA_ID(@SchemaName) and oT.name = @TableName and cT.name = @ColumnName
+                 
+              union all
+                
+                select CCId = r.CCId + cast( fc.constraint_object_id as varchar ) + ';',
+                       STId = fc.parent_object_id,
+                       SCId = fc.parent_column_id,
+                       TTId = fc.referenced_object_id,
+                       TCId = fc.referenced_column_id,
+                       CName = QUOTENAME( f.name ),
+                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
+                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
+                   from rec r
+                   inner join sys.foreign_key_columns as fc on fc.referenced_object_id = r.STId and fc.referenced_column_id = r.SCId 
+                                                                -- This is where cycles are handled.
+                                                                and r.CCId  not like '%;' + cast( fc.constraint_object_id as varchar ) + ';%' 
+                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
+                   inner join sys.objects oS on oS.object_id = fc.parent_object_id ),
+        scripts as (
+            select DisableConstraint = N'alter table ' + STable + N' nocheck constraint ' + CName + N';',
+                   SetValue = N'update ' + STable + N' set ' + SColumn + N' = ' + @NewValue + N' where ' + SColumn + N' = ' + @ExistingValue + N';',
+                   EnableConstraint = N'alter table ' + STable + N' check constraint ' + CName + N';'
+                from rec ),
+        finalConstraints as (
+            select D = STRING_AGG( DisableConstraint, N'' ),
+                   E = STRING_AGG( EnableConstraint, N'' ) 
+                from scripts ),
+        finalSetter as (
+            select S = STRING_AGG( s.SetValue, N'' ) from (select distinct SetValue from scripts) s )
+    select @DisableC = c.D, @SetValue = s.S, @EnableC = c.E 
+        from finalConstraints c 
+        cross join finalSetter s;
+    
+    -- We use the ""Atomic"" transaction trick. 
+    set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
+    beginsp:
+    if @SPCallTC = 0 begin tran;
+    else
+    begin
+        set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar);
+        save transaction @SPCallId;
+    end
+    begin try
+        exec sp_executesql @DisableC;
+        exec sp_executesql @SetValue;
+        exec sp_executesql @EnableC;
+    end try
+    begin catch
+        if @SPCallTC = 0 rollback;
+        else if XACT_STATE() = 1 rollback transaction @SPCallId;
+        exec CKCore.sErrorRethrow @@ProcId;
+        return -1;
+    end catch;
+    endsp:
+    if @SPCallTC = 0 commit;
+    return 0;
 end
 GO
 create view CKCore.vConstraintColumns

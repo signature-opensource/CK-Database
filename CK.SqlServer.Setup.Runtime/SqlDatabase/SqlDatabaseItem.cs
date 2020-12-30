@@ -59,14 +59,14 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// >Initializes a new <see cref="SqlDatabaseItem"/>.
+        /// Initializes a new <see cref="SqlDatabaseItem"/>.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="data">The setup data from actual object.</param>
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data, typeof(SqlDatabaseItemDriver) )
         {
-            Context = data.StObj.StObjMap.MapName;
+            Context = data.StObj.StObjMap.Names[0];
             Location = ActualObject.Name;
             Name = SqlDatabaseItemName;
             ConnectionItem = new SqlDatabaseConnectionItem( this );

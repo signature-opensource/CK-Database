@@ -90,7 +90,7 @@ namespace CK.Setup
         {
             var configurator = _configurator.FirstLayer;
             var itemBuilder = new StObjSetupItemBuilder( monitor, context.ServiceContainer, configurator, configurator, configurator );
-            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.OrderedStObjs );
+            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.UnifiedBinPath.EngineMap.StObjs.OrderedStObjs );
             if( setupItems == null ) return false;
 
             _setupSessionMemory = _setupSessionMemoryProvider.StartSetup();
@@ -99,7 +99,7 @@ namespace CK.Setup
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
                 bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker );
-                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.Features );
+                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.UnifiedBinPath.EngineMap.Features );
                 return setupSuccess;
             }
             return false;

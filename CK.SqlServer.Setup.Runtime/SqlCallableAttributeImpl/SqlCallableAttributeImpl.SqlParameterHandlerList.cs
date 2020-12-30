@@ -1,12 +1,4 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Runtime\SqlProcedureAttributeImpl.SqlParameterHandlerList.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using CK.CodeGen;
-using CK.CodeGen.Abstractions;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
@@ -75,7 +67,7 @@ namespace CK.SqlServer.Setup
 
                 public bool IsUsedByReturnType => _isUsedByReturnedType;
 
-                public int Index => _index; 
+                public int Index => _index;
 
                 /// <summary>
                 /// 1 - This is done first, right after the SqlParameterHandlerList has been created when in Calling mode.
@@ -195,7 +187,7 @@ namespace CK.SqlServer.Setup
                     }
                     return nbError;
                 }
-                
+
                 /// <summary>
                 /// 3 - If this Sql parameter is not mapped to a method parameter, then it may be mapped by a property of one 
                 /// of the SqlCallContext objects.
@@ -274,7 +266,7 @@ namespace CK.SqlServer.Setup
                             if( (SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime
                                  || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTime2
                                  || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.Date
-                                 || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTimeOffset )
+                                 || SqlExprParam.SqlType.DbType == System.Data.SqlDbType.DateTimeOffset)
                                 && o is string defValue
                                 && defValue.Length == 8
                                 && defValue.All( c => c >= '0' && c <= '9' ) )
@@ -357,7 +349,7 @@ namespace CK.SqlServer.Setup
                 _funcResultBuilderSignature = new StringBuilder();
             }
 
-            public IReadOnlyList<SqlParamHandler> Handlers => _params; 
+            public IReadOnlyList<SqlParamHandler> Handlers => _params;
 
             public int IndexOf( int iStart, ParameterInfo mP )
             {
@@ -369,15 +361,15 @@ namespace CK.SqlServer.Setup
                 return -1;
             }
 
-            public bool IsAsyncCall => _isAsyncCall; 
+            public bool IsAsyncCall => _isAsyncCall;
 
-            public ComplexTypeMapperModel ComplexReturnType => _complexReturnType; 
+            public ComplexTypeMapperModel ComplexReturnType => _complexReturnType;
 
             internal bool HandleNonVoidCallingReturnedType( IActivityMonitor monitor, Type returnType )
             {
                 if( returnType == typeof( Task ) ) return _isAsyncCall = true;
                 bool isSimpleType = IsSimpleReturnType( returnType );
-                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>) )
+                if( !isSimpleType && returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof( Task<> ) )
                 {
                     _isAsyncCall = true;
                     returnType = returnType.GetGenericArguments()[0];
@@ -459,26 +451,26 @@ namespace CK.SqlServer.Setup
                 p.SetUsedByReturnedType();
             }
 
-            internal string EmitInlineReturn(ICodeWriter b, string nameParameters, Func<string> tempObjectName )
+            internal string EmitInlineReturn( ICodeWriter b, string nameParameters, Func<string> tempObjectName )
             {
-                if (_simpleReturnType != null)
+                if( _simpleReturnType != null )
                 {
-                    return EmitGetSqlCommandParameterValue(b, nameParameters, tempObjectName, _simpleReturnType.Index, _unwrappedReturnedType);
+                    return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, _simpleReturnType.Index, _unwrappedReturnedType );
                 }
-                Debug.Assert(_complexReturnType != null);
-                return _complexReturnType.EmitFullInitialization(b, (idxValue, targetType) =>
-                {
-                    return EmitGetSqlCommandParameterValue(b, nameParameters, tempObjectName, idxValue, targetType);
-                });
+                Debug.Assert( _complexReturnType != null );
+                return _complexReturnType.EmitFullInitialization( b, ( idxValue, targetType ) =>
+                 {
+                     return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, idxValue, targetType );
+                 } );
             }
 
-            static string EmitGetSqlCommandParameterValue(ICodeWriter b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType)
+            static string EmitGetSqlCommandParameterValue( ICodeWriter b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType )
             {
                 Debug.Assert( !targetType.IsByRef );
                 string resultName = "getR" + sqlParameterIndex;
                 b.Append( tempObjName() )
                     .Append( " = " )
-                    .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;")
+                    .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;" )
                     .NewLine();
 
                 bool isNullable = true;
@@ -487,7 +479,7 @@ namespace CK.SqlServer.Setup
                 if( targetType.IsValueType )
                 {
                     isNullable = false;
-                    if( !(isChar = (targetType == typeof(char))) )
+                    if( !(isChar = (targetType == typeof( char ))) )
                     {
                         Type actualType = Nullable.GetUnderlyingType( targetType );
                         if( actualType != null )
@@ -532,21 +524,18 @@ namespace CK.SqlServer.Setup
 
             #region Result builders functions (AssumeResultBuilder)
 
-            /// <summary>
-            /// Equals to: "CK.&lt;FuncResultBuilder&gt;".
-            /// </summary>
-            const string _funcHolderTypeName = "CK.<FuncResultBuilder>";
-
             internal string AssumeSourceFuncResultBuilder( IDynamicAssembly dynamicAssembly )
             {
                 string funcKey = "S:_build_func_:" + _funcResultBuilderSignature.ToString();
-                string fieldFullName = (string)dynamicAssembly.Memory[funcKey];
+                string fieldFullName = (string)dynamicAssembly.Memory.GetValueWithDefault( funcKey, null );
                 if( fieldFullName == null )
                 {
-                    ITypeScope t = dynamicAssembly.DefaultGenerationNamespace.FindType( "_build_func_" );
+                    var ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
+                    ns.EnsureUsing( "CK.SqlServer" );
+                    ITypeScope t = ns.FindType( "_build_func_" );
                     if( t == null )
                     {
-                        t = dynamicAssembly.DefaultGenerationNamespace.CreateType( "static class _build_func_" );
+                        t = ns.CreateType( "static class _build_func_" );
                         t.CreateFunction(
                             @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelper<T>(
                                 this ISqlConnectionController @this,
@@ -589,7 +578,7 @@ namespace CK.SqlServer.Setup
                         }
                         return tempObjectName;
                     };
-                    fT.Append("var parameters = c.Parameters;").NewLine();
+                    fT.Append( "var parameters = c.Parameters;" ).NewLine();
                     string varName = EmitInlineReturn( fT, "parameters", GetTempObjectName );
                     fT.Append( "return " ).Append( varName ).Append( ";" ).NewLine();
 

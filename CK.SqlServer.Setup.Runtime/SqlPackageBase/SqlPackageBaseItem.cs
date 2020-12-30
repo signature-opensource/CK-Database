@@ -19,7 +19,7 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {
-            Context = data.StObj.StObjMap.MapName;
+            Context = data.StObj.StObjMap.Names[0];
             SqlPackage p = ActualObject;
             if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );

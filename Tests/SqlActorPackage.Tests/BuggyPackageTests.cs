@@ -40,27 +40,33 @@ namespace SqlActorPackage.Tests
         [Test]
         public void failing_db_setup_does_not_execute_SettleContent()
         {
-            File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
-            TestHelper.ResetStObjMap();
-            TestHelper.RunDBSetup().Should().Be( CKSetup.CKSetupRunResult.Failed );
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+            using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (1/2)" ) )
             {
-                var con = ctx[TestHelper.GetConnectionString()];
-                var lastSetup = (DateTime)con.ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
-                var times = BuggyPackage.ReadSettleContentInfo( con );
-                if( times.Count > 0 ) times[0].SetupTime.Should().BeBefore( lastSetup );
+                File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
+                TestHelper.ResetStObjMap();
+                TestHelper.RunDBSetup().Should().Be( CKSetup.CKSetupRunResult.Failed );
+                using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+                {
+                    var con = ctx[TestHelper.GetConnectionString()];
+                    var lastSetup = (DateTime)con.ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
+                    var times = BuggyPackage.ReadSettleContentInfo( con );
+                    if( times.Count > 0 ) times[0].SetupTime.Should().BeBefore( lastSetup );
+                }
             }
             // Removed config file and runs a new setup.
             File.Delete( _configFile );
 
-            var map = TestHelper.StObjMap;
-            map.Should().NotBeNull();
-            var p = map.StObjs.Obtain<BuggyPackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+            using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (2/2)" ) )
             {
-                var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
-                var times = p.ReadSettleContentInfo( ctx );
-                times[0].SetupTime.Should().Be( lastSetup );
+                var map = TestHelper.StObjMap;
+                map.Should().NotBeNull();
+                var p = map.StObjs.Obtain<BuggyPackage>();
+                using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+                {
+                    var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
+                    var times = p.ReadSettleContentInfo( ctx );
+                    times[0].SetupTime.Should().Be( lastSetup );
+                }
             }
         }
     }
