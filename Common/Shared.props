@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>13.0.0</CKCoreVersion>
@@ -68,7 +68,7 @@
     <PackageIcon>PackageIcon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PackageIcon.png" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)PackageIcon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
   <!--</StandardProperties>-->
   <!--<ZeroVersion>: When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion).-->
