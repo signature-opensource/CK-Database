@@ -3,15 +3,15 @@
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>13.0.0</CKCoreVersion>
     <CKActivityMonitorVersion>13.1.0</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>10.3.1</CKSetupDependencyVersion>
-    <CKSqlServerVersion>0.14.0</CKSqlServerVersion>
-    <CKSqlServerParserVersion>15.0.0</CKSqlServerParserVersion>
-    <CKSqlServerParserModelVersion>10.3.1</CKSqlServerParserModelVersion>
+    <CKSetupDependencyVersion>10.3.2</CKSetupDependencyVersion>
+    <CKSqlServerVersion>0.14.1</CKSqlServerVersion>
+    <CKSqlServerParserVersion>15.0.1</CKSqlServerParserVersion>
+    <CKSqlServerParserModelVersion>10.3.2</CKSqlServerParserModelVersion>
     <CKReflectionVersion>9.0.2</CKReflectionVersion>
     <CKCodeGenVersion>0.13.0</CKCodeGenVersion>
     <YodiiScriptVersion>0.8.1</YodiiScriptVersion>
     <CKSetupVersion>11.1.1</CKSetupVersion>
-    <CKTestingVersion>1.0.0</CKTestingVersion>
+    <CKTestingVersion>1.0.1</CKTestingVersion>
     <FluentAssertionsVersion>5.8.0</FluentAssertionsVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
@@ -68,7 +68,7 @@
     <PackageIcon>PackageIcon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PackageIcon.png" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)PackageIcon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
   <!--</StandardProperties>-->
   <!--<ZeroVersion>: When not building from the CI, assemblies always use the ZeroVersion (see CSemVer.InformationalVersion).-->
