@@ -8,10 +8,14 @@ namespace SqlCallDemo.ComplexType
         // No cast
         public short ParamSmallInt { get; set; }
 
-        // Cast (here it's an int).
-        public int ParamTinyInt { get; set; }
+        /// <summary>
+        /// Exposing an "int" here is an error.
+        /// To support this, we must handle chain of casts: have a look at
+        /// ISqlServerExtensions extensions IsTypeCompatible and SafeAssignableCastChain
+        /// in CK.SqlServer.Setup.Runtime. This is a TODO.
+        /// </summary>
+        public byte ParamTinyInt { get; set; }
 
         public string Result { get; set; }
-
     }
 }

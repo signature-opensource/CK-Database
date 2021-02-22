@@ -5,7 +5,7 @@ namespace SqlCallDemo.ComplexType
 {
 
     [SqlPackage( Schema = "CK", ResourcePath = "Res" ), Versions( "21.2.19" )]
-    public abstract partial class OutputTypePackage : SqlPackage
+    public abstract partial class IOTypePackage : SqlPackage
     {
         [SqlProcedure( "sOutputTypeCastWithDefault" )]
         public abstract OutputTypeCastWithDefault GetWithSqlDefault( ISqlCallContext ctx );
@@ -15,6 +15,9 @@ namespace SqlCallDemo.ComplexType
 
         [SqlProcedure( "sOutputTypeCastWithDefault" )]
         public abstract OutputTypeCastWithDefault GetWithCSharpDefault( ISqlCallContext ctx, int paramInt, short paramSmallInt = 37, byte paramTinyInt = 12 );
+
+        [SqlProcedure( "sOutputTypeCastWithDefault" )]
+        public abstract string GetWithInputType( ISqlCallContext ctx, [ParameterSource]InputTypeCastWithDefault p );
 
     }
 }

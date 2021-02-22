@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup
     public partial class SqlCallableAttributeImpl
     {
         [Flags]
-        enum GenerationType
+        internal enum GenerationType
         {
             ReturnSqlCommand = 1,
             ByRefSqlCommand = 2,
