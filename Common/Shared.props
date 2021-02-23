@@ -3,7 +3,7 @@
     <!-- Centralized version dependencies. -->
     <CKCoreVersion>13.0.0</CKCoreVersion>
     <CKActivityMonitorVersion>13.1.0</CKActivityMonitorVersion>
-    <CKSetupDependencyVersion>10.3.3--0003-develop</CKSetupDependencyVersion>
+    <CKSetupDependencyVersion>10.3.3--0004-develop</CKSetupDependencyVersion>
     <CKSqlServerVersion>0.14.2--0003-develop</CKSqlServerVersion>
     <CKSqlServerParserVersion>15.0.2--0003-develop</CKSqlServerParserVersion>
     <CKSqlServerParserModelVersion>10.3.3--0003-develop</CKSqlServerParserModelVersion>
