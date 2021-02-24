@@ -62,7 +62,7 @@ namespace CK.Setup
         /// Gets the transformers that have been registered with <see cref="AddTransformer"/>.
         /// Never null (empty when no transformers have been added yet).
         /// </summary>
-        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => (IReadOnlyList<ISetupObjectTransformerItem>)_transformers ?? Util.Array.Empty<ISetupObjectTransformerItem>();
+        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => (IReadOnlyList<ISetupObjectTransformerItem>)_transformers ?? Array.Empty<ISetupObjectTransformerItem>();
 
         class DownCastList<T> : IReadOnlyList<T>
         {

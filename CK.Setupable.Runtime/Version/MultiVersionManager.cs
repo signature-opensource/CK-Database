@@ -90,7 +90,7 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<VersionedName> PreviousNames
         {
-            get { return _previousNames ?? (IReadOnlyList<VersionedName>)Util.Array.Empty<VersionedName>(); }
+            get { return _previousNames ?? (IReadOnlyList<VersionedName>)Array.Empty<VersionedName>(); }
         }
 
         /// <summary>
