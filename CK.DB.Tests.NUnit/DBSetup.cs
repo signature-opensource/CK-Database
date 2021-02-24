@@ -133,7 +133,7 @@ namespace CK.DB.Tests
         }
 
         /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase(string)"/> on the
+        /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase"/> on the
         /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
         /// </summary>
         [Test]
@@ -146,7 +146,7 @@ namespace CK.DB.Tests
         }
 
         /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)(string)"/> on the
+        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
         /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
         /// </summary>
         [Test]
@@ -158,7 +158,7 @@ namespace CK.DB.Tests
         }
 
         /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
+        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.RestoreBackup(string?, int)"/> on the
         /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
         /// </summary>
         [TestCase( "0 - Most recent one." )]
@@ -301,11 +301,14 @@ namespace CK.DB.Tests
                         Console.WriteLine( $"[" );
                         foreach( var item in items )
                         {
-                            Type t = item.GetType();
-                            if( t.IsValueType || t == typeof( string ) )
+                            if( item != null )
                             {
-                                Console.Write( wPrefix );
-                                Console.WriteLine( item );
+                                Type t = item.GetType();
+                                if( t.IsValueType || t == typeof( string ) )
+                                {
+                                    Console.Write( wPrefix );
+                                    Console.WriteLine( item );
+                                }
                             }
                         }
                         Console.WriteLine( $"{wPrefix}]" );

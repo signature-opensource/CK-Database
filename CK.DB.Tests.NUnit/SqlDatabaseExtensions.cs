@@ -23,7 +23,7 @@ namespace CK.Core
             const string check = "select InvariantKey, CountSelect, RunStatus from CKCore.tInvariant where Ignored = 0 and RunStatus <> 'Success' and RunStatus <> 'Never ran'";
             if( invariantName.Length == 0 )
             {
-                return ExecuteReader( @this, "exec CKCore.sInvariantRunAll;" + check );
+                return ExecuteReader( @this, "exec CKCore.sInvariantRunAll;" + check )!;
             }
             StringBuilder b = new StringBuilder();
             foreach( var i in invariantName )
@@ -34,7 +34,7 @@ namespace CK.Core
                     .Append( "';" );
             }
             b.Append( check );
-            return ExecuteReader( @this, b.ToString() );
+            return ExecuteReader( @this, b.ToString() )!;
         }
 
         /// <summary>
@@ -56,9 +56,9 @@ namespace CK.Core
         /// <param name="selectClause">The select clause.</param>
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
         /// <returns>First row values or null if there is none.</returns>
-        public static object[] ReadFirstRow( this SqlDatabase @this, string selectClause, params object[] parameters )
+        public static object[]? ReadFirstRow( this SqlDatabase @this, string selectClause, params object[] parameters )
         {
-            object[] result = null;
+            object[]? result = null;
             Execute( @this, selectClause, parameters, cmd =>
             {
                 using( var reader = cmd.ExecuteReader() )
@@ -74,15 +74,16 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Executes the <paramref name="selectClause"/> and returns the scalar result.
+        /// Executes the <paramref name="selectClause"/> and returns the scalar result or null if the result set is empty.
+        /// Don't use this for big texts: a maximum of 2033 characters can be returned.
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="selectClause">The select clause.</param>
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
-        /// <returns>The scalar.</returns>
-        public static object ExecuteScalar( this SqlDatabase @this, string selectClause, params object[] parameters )
+        /// <returns>The scalar or null if the result set is empty.</returns>
+        public static object? ExecuteScalar( this SqlDatabase @this, string selectClause, params object[] parameters )
         {
-            object result = null;
+            object? result = null;
             Execute( @this, selectClause, parameters, cmd =>
             {
                 result = cmd.ExecuteScalar();
@@ -91,13 +92,14 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Executes the <paramref name="selectClause"/> and returns the scalar result.
+        /// Executes the <paramref name="selectClause"/> and returns the scalar result or null if the result set is empty.
+        /// Don't use this for big texts: a maximum of 2033 characters can be returned.
         /// </summary>
         /// <param name="this">This database.</param>
         /// <param name="selectClause">The select clause.</param>
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
         /// <returns>The typed scalar.</returns>
-        public static T ExecuteScalar<T>( this SqlDatabase @this, string selectClause, params object[] parameters ) => (T)@this.ExecuteScalar( selectClause, parameters );
+        public static T? ExecuteScalar<T>( this SqlDatabase @this, string selectClause, params object[] parameters ) => (T?)@this.ExecuteScalar( selectClause, parameters );
 
         /// <summary>
         /// Reads the <paramref name="selectClause"/> with its optional parameters @0, @1...
@@ -105,9 +107,10 @@ namespace CK.Core
         /// <param name="this">This database.</param>
         /// <param name="selectClause">The select clause.</param>
         /// <param name="parameters">Parameters that will replace @0, @1,...@n placeholders in <paramref name="selectClause"/>.</param>
-        public static SimpleDataTable ExecuteReader( this SqlDatabase @this, string selectClause, params object[] parameters )
+        /// <returns>A simple data table of the results.</returns>
+        public static SimpleDataTable? ExecuteReader( this SqlDatabase @this, string selectClause, params object[] parameters )
         {
-            SimpleDataTable result = null;
+            SimpleDataTable? result = null;
             Execute( @this, selectClause, parameters, cmd =>
             {
                 using( var reader = cmd.ExecuteReader() )

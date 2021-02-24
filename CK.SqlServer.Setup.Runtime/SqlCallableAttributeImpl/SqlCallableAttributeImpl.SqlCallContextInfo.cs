@@ -18,7 +18,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Unifies multiple ISqlCallContext parameters.
         /// </summary>
-        class SqlCallContextInfo
+        internal class SqlCallContextInfo
         {
             enum GenerateCallType
             {
@@ -54,10 +54,16 @@ namespace CK.SqlServer.Setup
                 {
                     if( StringComparer.OrdinalIgnoreCase.Equals( '@' + Prop.Name, sqlP.Name ) )
                     {
-                        if( sqlP.SqlType.IsTypeCompatible( Prop.PropertyType ) )
+                        if( sqlP.SqlType.IsContravariantTypeCompatible( Prop.PropertyType ) )
                         {
                             monitor.Info( $"Sql Parameter '{sqlP.ToStringClean()}' will take its value from the [ParameterSource] '{Parameter.Name}.{Prop.Name}' property." );
                             return true;
+                        }
+                        else
+                        {
+                            // As of 2021-02-21 this is a error.
+                            monitor.Error( $"Sql Parameter '{sqlP.ToStringClean()}' cannot take its value from [ParameterSource] '{Parameter.Name}.{Prop.Name}' property: types are not compatible. Type must match or property/Sql parameter may be renamed to not be the same anymore." );
+                            return false;
                         }
                     }
                     return false;

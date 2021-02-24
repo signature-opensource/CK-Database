@@ -62,7 +62,7 @@ namespace CK.Setup
         /// Gets the transformers that have been registered with <see cref="AddTransformer"/>.
         /// Never null (empty when no transformers have been added yet).
         /// </summary>
-        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => (IReadOnlyList<ISetupObjectTransformerItem>)_transformers ?? Util.Array.Empty<ISetupObjectTransformerItem>();
+        public IReadOnlyList<ISetupObjectTransformerItem> Transformers => (IReadOnlyList<ISetupObjectTransformerItem>)_transformers ?? Array.Empty<ISetupObjectTransformerItem>();
 
         class DownCastList<T> : IReadOnlyList<T>
         {
@@ -162,8 +162,7 @@ namespace CK.Setup
             get { return _contextLocName; }
             set
             {
-                if( value == null ) throw new ArgumentNullException( nameof( ContextLocName ) );
-                _contextLocName = value;
+                _contextLocName = value ?? throw new ArgumentNullException( nameof( ContextLocName ) );
             }
         }
 
@@ -177,17 +176,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the mutable list of requirements for this item.
         /// </summary>
-        public IDependentItemList Requires => _requires ?? (_requires = DependentItemListFactory.CreateItemList());
+        public IDependentItemList Requires => _requires ??= DependentItemListFactory.CreateItemList();
 
         /// <summary>
         /// Gets the mutable list or reverse requirements for this item.
         /// </summary>
-        public IDependentItemList RequiredBy => _requiredBy ?? (_requiredBy = DependentItemListFactory.CreateItemList());
+        public IDependentItemList RequiredBy => _requiredBy ??= DependentItemListFactory.CreateItemList();
 
         /// <summary>
         /// Gets the mutable list or groups to which this item belongs.
         /// </summary>
-        public IDependentItemGroupList Groups => _groups ?? (_groups = DependentItemListFactory.CreateItemGroupList());
+        public IDependentItemGroupList Groups => _groups ??= DependentItemListFactory.CreateItemGroupList();
 
         /// <summary>
         /// Gets or sets the type of the object ("Procedure" for instance). 

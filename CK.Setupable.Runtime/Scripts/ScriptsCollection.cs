@@ -33,7 +33,7 @@ namespace CK.Setup
             public int GetHashCode( ISetupScript xs )
             {
                 var x = xs.Name;
-                return Util.Hash.Combine( Util.Hash.StartValue, x.Extension, x.SetupStep, x.FromVersion, x.Version ).GetHashCode();
+                return HashCode.Combine( x.Extension, x.SetupStep, x.FromVersion, x.Version );
             }
         }
         static readonly CompareScript _cmp = new CompareScript();

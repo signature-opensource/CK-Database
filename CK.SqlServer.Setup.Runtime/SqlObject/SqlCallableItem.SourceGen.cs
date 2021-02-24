@@ -12,13 +12,21 @@ namespace CK.SqlServer.Setup
         {
             if( SqlObject == null ) return null;
             INamespaceScope ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
+
+//            ns.Append( @"
+//internal static class Helper
+//{
+//    public static T GetWithNullToDefault<T>( object o ) => DBNull.Value == o ? default( T ) : (T)o;
+//}
+//" );
+
             ITypeScope tB = ns.FindType( "static class CreatorForSqlCommand" );
             if( tB == null )
             {
                 tB = ns.EnsureUsing( "System.Data" )
                        .EnsureUsing( "System.Data.SqlClient" )
                        .EnsureUsing( "CK.SqlServer" )
-                       .CreateType( "static class CreatorForSqlCommand" );
+                       .CreateType( "static class CreatorForSqlCommand" ).GeneratedByComment();
             }
             
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
