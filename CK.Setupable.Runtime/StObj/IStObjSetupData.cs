@@ -6,8 +6,8 @@ using System.Collections.Generic;
 namespace CK.Setup
 {
     /// <summary>
-    /// Wraps a <see cref="IStObjResult"/> StObj with information related to the ordering phasis and supports
-    /// the capacity to set a property on this <see cref="IStObjSetupDataBase.StObj"/>'s <see cref="IStObjResult.InitialObject"/>.
+    /// Wraps a <see cref="IStObjResult"/> StObj with information related to the ordering phases and supports
+    /// the capacity to set a property on this <see cref="IStObjSetupDataBase.StObj"/>'s final object.
     /// </summary>
     public interface IStObjSetupData : IStObjSetupDataBase
     {
@@ -85,7 +85,7 @@ namespace CK.Setup
         IReadOnlyList<IDependentItemRef> Children { get; }
 
         /// <summary>
-        /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the Structured Object. 
+        /// Sets a direct property (it must not be an Ambient Property, Singleton nor a StObj property) on the final Object. 
         /// The property must exist, be writable and the type of the <paramref name="value"/> must be compatible with the property type 
         /// otherwise an error is logged.
         /// </summary>

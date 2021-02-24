@@ -22,8 +22,8 @@ namespace CK.SqlServer.Setup
         {
             readonly IPocoSupportResult _poco;
             readonly List<SqlParamHandler> _params;
+            readonly ISqlServerParameter _funcReturnParameter;
             SqlParamHandler _simpleReturnType;
-            ISqlServerParameter _funcReturnParameter;
             bool _isAsyncCall;
             Type _unwrappedReturnedType;
             readonly StringBuilder _funcResultBuilderSignature;
@@ -101,7 +101,6 @@ namespace CK.SqlServer.Setup
                     bool sqlIsInput = p.IsInput;
                     bool sqlIsPureOutput = p.IsPureOutput;
                     bool isComplexReturnedType = _holder.ComplexReturnType != null;
-                    bool sqlParameterHasDefaultValue = p.DefaultValue != null;
                     Debug.Assert( sqlIsInput || sqlIsOutput );
                     // Analyzing Method vs. Procedure parameters.
                     if( mP.ParameterType.IsByRef )
@@ -335,8 +334,7 @@ namespace CK.SqlServer.Setup
                 _poco = poco;
                 _params = new List<SqlParamHandler>();
                 int idx = 0;
-                ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
-                if( func != null )
+                if( sqlObject is ISqlServerFunctionScalar func )
                 {
                     _funcReturnParameter = new SqlParameterReturnedValue( func.ReturnType );
                     _params.Add( new SqlParamHandler( this, _funcReturnParameter, idx++ ) );

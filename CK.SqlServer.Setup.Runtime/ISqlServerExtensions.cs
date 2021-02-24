@@ -89,16 +89,16 @@ namespace CK.SqlServer.Parser
             return false;
         }
 
-        /// <summary>
-        /// Gets a chain of types that must be used to cast an object of actual <paramref name="tSql"/> type
-        /// into a value of the final <see cref="t"/> type.
-        /// </summary>
-        /// <param name="t">The final type.</param>
-        /// <param name="tSql">The source type.</param>
-        /// <returns>
-        /// A chain of cast where the first one is the final <paramref name="t"/> type.
-        /// Null if types are not compatible.
-        /// </returns>
+        ///// <summary>
+        ///// Gets a chain of types that must be used to cast an object of actual <paramref name="tSql"/> type
+        ///// into a value of the final <see cref="t"/> type.
+        ///// </summary>
+        ///// <param name="t">The final type.</param>
+        ///// <param name="tSql">The source type.</param>
+        ///// <returns>
+        ///// A chain of cast where the first one is the final <paramref name="t"/> type.
+        ///// Null if types are not compatible.
+        ///// </returns>
         //static (Type,Type?)? SafeAssignableCastChain( Type t, Type tSql )
         //{
         //    Debug.Assert( Convert.ToInt32( (decimal)Int32.MaxValue ) == Int32.MaxValue );
