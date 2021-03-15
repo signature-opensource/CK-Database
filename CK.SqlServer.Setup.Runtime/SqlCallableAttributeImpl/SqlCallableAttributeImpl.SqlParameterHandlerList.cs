@@ -297,7 +297,7 @@ namespace CK.SqlServer.Setup
                         if( isNullable ) b.Append( "(object)" );
                         if( _methodParam != null )
                         {
-                            b.Append( _methodParam.Name );
+                            b.AppendVariable( _methodParam.Name );
                         }
                         else
                         {
@@ -306,11 +306,11 @@ namespace CK.SqlServer.Setup
                                 b.Append( "((" )
                                     .AppendCSharpName( _ctxProp.PocoMappedType )
                                     .Append( ")" )
-                                    .Append( _ctxProp.Parameter.Name )
+                                    .AppendVariable( _ctxProp.Parameter.Name )
                                     .Append( ")." )
-                                    .Append( _ctxProp.Prop.Name );
+                                    .AppendVariable( _ctxProp.Prop.Name );
                             }
-                            else b.Append( _ctxProp.Parameter.Name ).Append( "." ).Append( _ctxProp.Prop.Name );
+                            else b.AppendVariable( _ctxProp.Parameter.Name ).Append( "." ).AppendVariable( _ctxProp.Prop.Name );
                         }
                         if( isNullable ) b.Append( " ?? DBNull.Value" );
                     }
@@ -323,7 +323,7 @@ namespace CK.SqlServer.Setup
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
 
                     string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, this, _actualParameterType );
-                    b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
+                    b.AppendVariable( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
                 }
 
                 public override string ToString() => SqlExprParam.ToString();

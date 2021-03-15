@@ -8,6 +8,9 @@
   <ItemGroup>
     <EmbeddedResource Include="**\*.sql;**\*.tql;**\*.y4" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Res\sVerbatimParameterProc.sql" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
