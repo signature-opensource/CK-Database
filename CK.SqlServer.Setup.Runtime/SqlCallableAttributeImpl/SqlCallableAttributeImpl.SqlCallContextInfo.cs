@@ -172,7 +172,7 @@ namespace CK.SqlServer.Setup
 
             public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {
-                b.Append( _sqlCallContextParameter.Name )
+                b.AppendVariable( _sqlCallContextParameter.Name )
                     .Append( "[Database]." )
                     .Append( _sourceExecutorCallNonQuery )
                     .Append( "(" )
@@ -186,7 +186,7 @@ namespace CK.SqlServer.Setup
                     b.Append( "," );
                     if( _cancellationTokenParam != null )
                     {
-                        b.Append( callingParameters[_cancellationTokenParam.Position].Name );
+                        b.AppendVariable( callingParameters[_cancellationTokenParam.Position].Name );
                     }
                     else b.Append( "default(System.Threading.CancellationToken)" );
                 }

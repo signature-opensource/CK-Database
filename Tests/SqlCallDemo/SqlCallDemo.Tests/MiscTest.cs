@@ -24,5 +24,19 @@ namespace SqlCallDemo.Tests
             }
         }
 
+        [Test]
+        public void verbatim_parameter_names()
+        {
+            var p = TestHelper.AutomaticServices.GetRequiredService<MiscPackage>();
+            using( var ctx = new SqlStandardCallContext() )
+            {
+                int @this = 3700;
+                int @operator = 12;
+                p.VerbatimParameterAtWork( ctx, @this, @operator ).Should().Be( 3712 ); 
+            }
+        }
+
+
+
     }
 }

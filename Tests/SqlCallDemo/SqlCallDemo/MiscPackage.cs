@@ -13,5 +13,8 @@ namespace SqlCallDemo
         [SqlProcedure( "sSleepProc", TimeoutSeconds = 1 )]
         public abstract void CanWaitOnlyForOneSecond( SqlStandardCallContext ctx, int sleepTime );
 
+        [SqlProcedure( "sVerbatimParameterProc" )]
+        public abstract int VerbatimParameterAtWork( SqlStandardCallContext ctx, int @this, int @operator );
+
     }
 }

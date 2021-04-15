@@ -149,13 +149,14 @@ namespace CK.SqlServer.Setup
                 if( mP.IsOut )
                 {
                     Debug.Assert( mP.ParameterType.IsByRef );
-                    cB.Append( $"{mP.Name} = default({mP.ParameterType.GetElementType().ToCSharpName()});" ).NewLine();
+                    cB.AppendVariable( mP.Name ).Append( $" = default({mP.ParameterType.GetElementType().ToCSharpName()});" ).NewLine();
                 }
             }
             cB.Append( $"SqlCommand cmd_loc;" ).NewLine();
             if( hasRefSqlCommand )
             {
                 string sqlCommandRefName = mParameters[0].Name;
+                if( ReservedKeyword.IsReservedKeyword( sqlCommandRefName ) ) sqlCommandRefName = '@' + sqlCommandRefName;
                 cB.Append( $"if({sqlCommandRefName} == null ) {sqlCommandRefName} = {mCreateCommand.EnclosingType.FullName}.{mCreateCommand.Definition.MethodName.Name}();" ).NewLine();
                 cB.Append( "cmd_loc = " ).Append( sqlCommandRefName ).Append( ";" ).NewLine();
             }
@@ -287,24 +288,24 @@ namespace CK.SqlServer.Setup
                 if( firstSqlConnectionParameter != null && firstSqlTransactionParameter != null )
                 {
                     // If both parameters are presents, the transaction wins if it is not null.
-                    cB.Append( "if( " ).Append( firstSqlTransactionParameter.Name ).Append( " != null )" ).NewLine()
+                    cB.Append( "if( " ).AppendVariable( firstSqlTransactionParameter.Name ).Append( " != null )" ).NewLine()
                         .Append( "{" ).NewLine()
-                        .Append( "  cmd_loc.Transaction = " ).Append( firstSqlTransactionParameter.Name ).Append( ";" ).NewLine()
-                        .Append( "  cmd_loc.Connection = " ).Append( firstSqlTransactionParameter.Name ).Append( ".Connection;" ).NewLine()
+                        .Append( "  cmd_loc.Transaction = " ).AppendVariable( firstSqlTransactionParameter.Name ).Append( ";" ).NewLine()
+                        .Append( "  cmd_loc.Connection = " ).AppendVariable( firstSqlTransactionParameter.Name ).Append( ".Connection;" ).NewLine()
                         .Append( "}" ).NewLine()
-                        .Append( "else cmd_loc.Connection = " ).Append( firstSqlConnectionParameter.Name ).Append( ";" ).NewLine();
+                        .Append( "else cmd_loc.Connection = " ).AppendVariable( firstSqlConnectionParameter.Name ).Append( ";" ).NewLine();
                 }
                 else if( firstSqlConnectionParameter != null )
                 {
                     // Only the connection parameter.
-                    cB.Append( "cmd_loc.Connection = " ).Append( firstSqlConnectionParameter.Name ).Append( ";" ).NewLine();
+                    cB.Append( "cmd_loc.Connection = " ).AppendVariable( firstSqlConnectionParameter.Name ).Append( ";" ).NewLine();
                 }
                 else if( firstSqlTransactionParameter != null )
                 {
                     // Only the transaction parameter: the connection is the one of the transaction if
                     // it is not null.
-                    cB.Append( "  cmd_loc.Transaction = " ).Append( firstSqlTransactionParameter.Name ).Append( ";" ).NewLine()
-                      .Append( "  cmd_loc.Connection = " ).Append( firstSqlTransactionParameter.Name ).Append( "?.Connection;" ).NewLine();
+                    cB.Append( "  cmd_loc.Transaction = " ).AppendVariable( firstSqlTransactionParameter.Name ).Append( ";" ).NewLine()
+                      .Append( "  cmd_loc.Connection = " ).AppendVariable( firstSqlTransactionParameter.Name ).Append( "?.Connection;" ).NewLine();
                 }
                 if( sqlParamHandlers.Handlers.Count > 0 )
                 {

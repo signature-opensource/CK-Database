@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
     </Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="16.0.0" />
+    <PackageReference Include="CK.StObj.Model" Version="$(CKStObjVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
