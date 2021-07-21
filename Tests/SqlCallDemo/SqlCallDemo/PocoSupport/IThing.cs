@@ -7,6 +7,6 @@ namespace SqlCallDemo
     {
         string Name { get; set; }
 
-        Guid FromBatabaseOnly { get; }
+        Guid UniqueId { get; set; }
     }
 }
