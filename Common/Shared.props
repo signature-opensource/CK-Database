@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKStObjVersion>16.1.1--0062-develop</CKStObjVersion>
+    <CKStObjVersion>16.1.1--0063-develop</CKStObjVersion>
     <CKSqlServerVersion>0.16.1--0010-develop</CKSqlServerVersion>
     <CKSqlServerParserVersion>16.1.1--0009-develop</CKSqlServerParserVersion>
     <CKTestingVersion>2.1.1--0009-develop</CKTestingVersion>
