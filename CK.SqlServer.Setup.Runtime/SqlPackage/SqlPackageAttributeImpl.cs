@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribte type.
+        /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribute type.
         /// </summary>
         protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute;
 
