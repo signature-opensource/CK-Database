@@ -6,6 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.Testing.StObjSetup" Version="16.1.0" />
+    <PackageReference Include="CK.Testing.StObjSetup" Version="17.0.0" />
   </ItemGroup>
 </Project>

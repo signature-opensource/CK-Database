@@ -11,7 +11,7 @@ namespace CK.Setup
 {
     /// <summary>
     /// Independent implementation of <see cref="IContextLocNaming"/> (wraps <see cref="ContextLocNameStructImpl"/> helper).
-    /// This can be overriden to manage other constraints or naming conventions or sub parts.
+    /// This can be overridden to manage other constraints or naming conventions or sub parts.
     /// </summary>
     public class ContextLocName : IContextLocNaming
     {
@@ -152,7 +152,7 @@ namespace CK.Setup
         /// <summary>
         /// Called whenever the <see cref="Name"/> has changed.
         /// This may be because the <see cref="FullName"/>, the <see cref="TransformArg"/> or the <see cref="Name"/>
-        /// itsef has been set.
+        /// itself has been set.
         /// </summary>
         protected virtual void OnNameChanged()
         {
@@ -178,7 +178,7 @@ namespace CK.Setup
         public virtual IContextLocNaming CombineName( string n ) => new ContextLocName( _impl.CombineName( n ) );
 
         /// <summary>
-        /// Overriden to return the <see cref="FullName"/>.
+        /// Overridden to return the <see cref="FullName"/>.
         /// </summary>
         /// <returns>The FullName of this name.</returns>
         public override string ToString() => _impl.FullName;

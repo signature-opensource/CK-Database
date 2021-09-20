@@ -40,7 +40,7 @@ namespace CK.Setup
 
         public bool IsDefaultFullNameWithoutContext => ReferenceEquals( _fullNameWithoutContext, _stObj.ClassType.FullName );
 
-        public string FullName => DefaultContextLocNaming.Format( _stObj.StObjMap.Names[0], null, _fullNameWithoutContext );
+        public string FullName => DefaultContextLocNaming.Format( string.Empty, null, _fullNameWithoutContext );
 
         public string Versions
         {

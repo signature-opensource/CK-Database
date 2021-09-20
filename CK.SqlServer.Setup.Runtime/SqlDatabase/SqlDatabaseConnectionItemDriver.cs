@@ -1,5 +1,6 @@
 using CK.Core;
 using CK.Setup;
+using System;
 
 namespace CK.SqlServer.Setup
 {
@@ -100,7 +101,17 @@ if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
             }
             if( c == null )
             {
-                monitor.Error( $"Database '{db.Name}' not available." );
+                monitor.Error( @$"Database '{db.Name}' is not defined. A simple way to define it is to add it to the Databases collection of the SqlSetupAspect configuration:
+  <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"">
+    <DefaultDatabaseConnectionString>...</DefaultDatabaseConnectionString>
+    <Databases>
+      <Database LogicalDatabaseName=""{db.Name}"" [AutoCreate=""true""]>
+        <ConnectionString>...</ConnectionString>
+      </Database>
+    </Databases>
+  </Aspect>
+(Note that AutoCreate is false by default.)
+" );
             }
             else if( !db.IsDefaultDatabase && db.InstallCore )
             {

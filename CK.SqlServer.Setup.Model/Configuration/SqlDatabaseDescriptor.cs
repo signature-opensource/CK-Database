@@ -31,9 +31,9 @@ namespace CK.Setup
         /// <param name="e">The element.</param>
         public SqlDatabaseDescriptor( XElement e )
         {
-            LogicalDatabaseName = e.Element( xLogicalDatabaseName ).Value;
+            LogicalDatabaseName = e.Element( xLogicalDatabaseName )?.Value ?? e.Attribute( xLogicalDatabaseName ).Value;
+            AutoCreate = (bool?)e.Element( xAutoCreate ) ?? (bool?)e.Attribute( xAutoCreate ) ?? false;
             ConnectionString = e.Element( xConnectionString ).Value;
-            AutoCreate = (bool?)e.Element( xAutoCreate ) ?? false;
         }
 
 
@@ -45,9 +45,9 @@ namespace CK.Setup
         /// <returns>The <paramref name="e"/> element.</returns>
         public XElement Serialize( XElement e )
         {
-            e.Add( new XElement( xLogicalDatabaseName, LogicalDatabaseName ),
-                   new XElement( xConnectionString, ConnectionString ),
-                   AutoCreate ? new XElement( xAutoCreate, true ) : null );
+            e.Add( new XAttribute( xLogicalDatabaseName, LogicalDatabaseName ),
+                   AutoCreate ? new XAttribute( xAutoCreate, true ) : null,
+                   new XElement( xConnectionString, ConnectionString ) );
             return e;
         }
 
