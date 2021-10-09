@@ -1,10 +1,10 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKStObjVersion>17.0.1</CKStObjVersion>
-    <CKSqlServerVersion>0.17.0</CKSqlServerVersion>
-    <CKSqlServerParserVersion>16.2.0</CKSqlServerParserVersion>
-    <CKTestingVersion>2.2.0</CKTestingVersion>
+    <CKStObjVersion>17.0.2--0002-develop</CKStObjVersion>
+    <CKSqlServerVersion>0.17.1--0002-develop</CKSqlServerVersion>
+    <CKSqlServerParserVersion>16.2.1--0002-develop</CKSqlServerParserVersion>
+    <CKTestingVersion>2.2.1--0002-develop</CKTestingVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
@@ -86,7 +86,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <!--</SourceLinkDebuggingWorkaround>-->
-
   <!--<Analyzers>-->
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.9.60" PrivateAssets="All" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
