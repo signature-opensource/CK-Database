@@ -6,7 +6,7 @@ namespace CK.SqlServer.Setup
 {
     internal class SqlCKCoreInstaller
     {
-        public readonly static short CurrentVersion = 16;
+        public readonly static short CurrentVersion = 17;
 
         /// <summary>
         /// Installs the kernel.
@@ -63,6 +63,7 @@ begin
     if object_id('CKCore.sInvariantRun') is not null drop procedure CKCore.sInvariantRun;
     if object_id('CKCore.sInvariantRunAll') is not null drop procedure CKCore.sInvariantRunAll;
     if object_id('CKCore.sRefBazookation') is not null drop procedure CKCore.sRefBazookation;
+    if object_id('CKCore.fUtf8ToNVARCHAR') is not null drop function CKCore.fUtf8ToNVARCHAR;
 end
 GO
 create procedure CKCore.sErrorRethrow
@@ -426,6 +427,93 @@ begin
     endsp:
     if @SPCallTC = 0 commit;
     return 0;
+end
+GO
+-- Converts UTF-8 encoded characters to displayable UCS-2 nvarchar(max).
+-- 
+-- This is this answer https://stackoverflow.com/a/68550176/190380 to https://stackoverflow.com/questions/28168055/convert-text-value-in-sql-server-from-utf8-to-iso-8859-1.
+-- It is NOT fast and should be used in views or computed columns for debugging or inspection.
+-- It seems to correctly master its job (for instance, these are correctly handled: N'❤️💥🤪🦌🎅⛄🎄🤐🙈🙉🙊💩﷽𪚥🔂꧅') 
+-- and has no size limitations.
+-- 
+create function CKCore.fUtf8ToNVARCHAR( @in varchar(max) ) returns nvarchar(max) 
+as
+begin
+    declare @out nvarchar(max), 
+            @thisOut nvarchar(max), 
+            @i int, 
+            @c int, 
+            @c2 int, 
+            @c3 int, 
+            @c4 int
+
+    select @i = 1, @out = '';
+
+    while( @i <= Len(@in) )
+    begin
+        set @c = Ascii( SubString(@in, @i, 1) );
+        if @c <= 0x7F 
+        begin
+            set @thisOut = nchar(@c)
+            set @i = @i + 1
+        end
+        else if @c between 0xC2 and 0xDF 
+        begin
+            set @c2 = Ascii( SubString(@in, @i + 1, 1) )
+            if @c2 < 0x80 OR @c2 > 0xBF 
+            begin
+                set @thisOut = nchar(0xFFFD)
+                set @i = @i + 1
+            end
+            else 
+            begin
+                set @thisOut = nchar(((@c & 31) * 64) | (@c2 & 63))
+                set @i = @i + 2
+            end
+        end
+        else if @c between 0xE0 and 0xEF 
+        begin
+            set @c2 = Ascii(SubString(@in, @i + 1, 1));
+            set @c3 = Ascii(SubString(@in, @i + 2, 1));
+            if @c2 < 0x80 OR @c2 > 0xBF OR @c3 < 0x80 OR (@c = 0xE0 AND @c2 < 0xA0) 
+            begin
+                set @thisOut = nchar(0xFFFD);
+                set @i = @i + 1;
+            end
+            else 
+            begin
+                set @thisOut = nchar(((@c & 15) * 4096) | ((@c2 & 63) * 64) | (@c3 & 63));
+                set @i = @i + 3;
+            end
+        end
+        else if @c between 0xF0 and 0xF4 
+        begin
+            set @c2 = Ascii(SubString(@in, @i + 1, 1));
+            set @c3 = Ascii(SubString(@in, @i + 2, 1));
+            set @c4 = Ascii(SubString(@in, @i + 3, 1));
+            if @c2 < 0x80 or @c2 >= 0xC0 or @c3 < 0x80 or @c3 >= 0xC0 or @c4 < 0x80 or @c4 >= 0xC0 or (@c = 0xF0 and @c2 < 0x90) 
+            begin
+                set @thisOut = nchar(0xFFFD);
+                set @i = @i + 1;
+            end
+            else 
+            begin
+                declare @nc int = (((@c & 0x07) * 262144 /* << 18 */) | ((@c2 & 0x3F) * 4096 /* << 12 */) | ((@c3 & 0x3F) * 64) | (@c4 & 0x3F));
+                declare @HighSurrogateInt int = 55232 + (@nc / 1024),
+                        @LowSurrogateInt int = 56320 + (@nc % 1024);
+                set @thisOut = nchar(@HighSurrogateInt) + nchar(@LowSurrogateInt);
+                set @i = @i + 4;
+            end
+        end
+        else 
+        begin
+            set @thisOut = nchar(0xFFFD);
+            set @i = @i + 1;
+        end
+
+        set @out = @out + @thisOut;
+    end
+    return @out;
 end
 GO
 create view CKCore.vConstraintColumns
