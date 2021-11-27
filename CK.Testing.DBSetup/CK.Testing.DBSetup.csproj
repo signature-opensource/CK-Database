@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Extends CK.Testing.SqlServer and CK.Testing.SetupableSetup TestHelper with a simple RunDBSetup method.</Description>
   </PropertyGroup>
   <ItemGroup>
