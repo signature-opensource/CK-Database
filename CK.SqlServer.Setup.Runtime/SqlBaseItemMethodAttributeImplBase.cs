@@ -89,7 +89,7 @@ namespace CK.SqlServer.Setup
             return null;
         }
 
-        AutoImplementationResult IAutoImplementor<MethodInfo>.Implement( IActivityMonitor monitor, MethodInfo m, ICodeGenerationContext c, ITypeScope tS )
+        CSCodeGenerationResult IAutoImplementor<MethodInfo>.Implement( IActivityMonitor monitor, MethodInfo m, ICSCodeGenerationContext c, ITypeScope tS )
         {
             using( monitor.OpenInfo( $"Generating {SqlCallableAttributeImpl.DumpMethodSignature( m )}." ) )
             {
@@ -112,7 +112,7 @@ namespace CK.SqlServer.Setup
                     sqlItem = (SqlBaseItem)target;
                     c.SetUnifiedRunResult( methodKey, sqlItem, false );
                 }
-                return DoImplement( monitor, m, sqlItem, c.Assembly, tS ) ? AutoImplementationResult.Success : AutoImplementationResult.Failed;
+                return DoImplement( monitor, m, sqlItem, c.Assembly, tS ) ? CSCodeGenerationResult.Success : CSCodeGenerationResult.Failed;
             }
         }
 

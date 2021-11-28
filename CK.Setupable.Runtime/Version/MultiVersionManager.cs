@@ -18,14 +18,14 @@ namespace CK.Setup
     /// </summary>
     public class MultiVersionManager
     {
-        CKSortedArrayList<Version> _versions;
+        readonly CKSortedArrayList<Version> _versions;
         CKSortedArrayKeyList<VersionedName,Version> _previousNames;
 
-        static Regex _rVersions = new Regex( @"((?<2>(\w|\.|-)+)\s*=)?\s*(?<1>\d+\.\d+\.\d+),?",
-                RegexOptions.Singleline
-                | RegexOptions.ExplicitCapture
-                | RegexOptions.CultureInvariant
-                | RegexOptions.Compiled );
+        static readonly Regex _rVersions = new Regex( @"((?<2>(\w|\.|-)+)\s*=)?\s*(?<1>\d+\.\d+\.\d+),?",
+                                                        RegexOptions.Singleline
+                                                        | RegexOptions.ExplicitCapture
+                                                        | RegexOptions.CultureInvariant
+                                                        | RegexOptions.Compiled );
 
         /// <summary>
         /// Initializes a new <see cref="MultiVersionManager"/> with a null <see cref="P:Version"/>.
@@ -38,7 +38,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the current version: it is the last one of the <see cref="VersionList"/>.
         /// Can be null: no version exists for this package. This property automatically 
-        /// synchronises <see cref="VersionList"/>: newer versions are removed from the list.
+        /// synchronizes <see cref="VersionList"/>: newer versions are removed from the list.
         /// </summary>
         public Version Version
         {
@@ -74,7 +74,7 @@ namespace CK.Setup
 
         /// <summary>
         /// Adds a new existing version in the sorted list of versions.
-        /// It automatically synchronises <see cref="Version"/>.
+        /// It automatically synchronizes <see cref="Version"/>.
         /// </summary>
         /// <param name="version">The version to add.</param>
         /// <returns>True if the version have been added, false if the version already exists.</returns>
@@ -90,7 +90,7 @@ namespace CK.Setup
         /// </summary>
         public IReadOnlyList<VersionedName> PreviousNames
         {
-            get { return _previousNames ?? (IReadOnlyList<VersionedName>)Util.Array.Empty<VersionedName>(); }
+            get { return _previousNames ?? (IReadOnlyList<VersionedName>)Array.Empty<VersionedName>(); }
         }
 
         /// <summary>
@@ -121,12 +121,11 @@ namespace CK.Setup
             _versions.Clear();
             if( String.IsNullOrEmpty( versions ) ) return;
 
-            Version version = null;
             MatchCollection c = _rVersions.Matches( versions );
             for( int i = 0; i < c.Count; ++i )
             {
                 Match m = c[i];
-                version = Version.Parse( m.Groups[1].Value );
+                var version = Version.Parse( m.Groups[1].Value );
                 _versions.Add( version );
                 if( m.Groups[2].Length > 0 )
                 {

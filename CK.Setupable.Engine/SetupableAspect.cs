@@ -82,7 +82,7 @@ namespace CK.Setup
         public event EventHandler<SetupEventArgs> SetupEvent;
 
         /// <summary>
-        /// Triggered for each <see cref="DriverBase"/> setup phasis.
+        /// Triggered for each <see cref="DriverBase"/> setup phases.
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 

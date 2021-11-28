@@ -30,7 +30,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the database driver.
         /// </summary>
-        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ?? (_dbDriver = Drivers.Find<SqlDatabaseItemDriver>( Item.Groups.OfType<SqlDatabaseItem>().Single() ) );
+        public SqlDatabaseItemDriver DatabaseDriver => _dbDriver ??= Drivers.Find<SqlDatabaseItemDriver>( Item.Groups.OfType<SqlDatabaseItem>().Single() ) ;
 
         /// <summary>
         /// Masked to be formally associated to <see cref="SqlPackageBaseItem"/> item.
@@ -86,7 +86,7 @@ namespace CK.SqlServer.Setup
                 var scripts = new IReadOnlyList<ISetupScript>[6];
                 for( var step = SetupCallGroupStep.Init; step <= SetupCallGroupStep.SettleContent; ++step )
                 {
-                    scripts[(int)step - 1] = Util.Array.Empty<ISetupScript>();
+                    scripts[(int)step - 1] = Array.Empty<ISetupScript>();
                     ScriptVector v = c.GetScriptVector( step, ExternalVersion?.Version, ItemVersion );
                     if( v != null && v.Scripts.Count > 0 )
                     {

@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable or SqlPackage) implementations.
     </Description>
   </PropertyGroup>
@@ -12,9 +12,9 @@
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="$(CKSqlServerParserModelVersion)" />
-    <PackageReference Include="Yodii.Script" Version="$(YodiiScriptVersion)" />
-    <PackageReference Include="CK.Reflection" Version="$(CKReflectionVersion)" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="11.2.1" />
+    <PackageReference Include="Yodii.Script" Version="0.8.1" />
+    <PackageReference Include="CK.Reflection" Version="9.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

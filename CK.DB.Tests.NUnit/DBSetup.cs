@@ -1,5 +1,6 @@
 using CK.Core;
 using CK.Testing;
+using CK.Text;
 using CKSetup;
 using FluentAssertions;
 using NUnit.Framework;
@@ -20,19 +21,43 @@ namespace CK.DB.Tests
         static DBSetup()
         {
             var root = TestHelper.SolutionFolder.AppendPart( "Tests" );
-            void CheckFile( string commonTestName )
+
+            void CheckFile( string testName, string? displayTestName = null )
             {
-                var path = root.AppendPart( commonTestName + ".playlist" );
-                if( !System.IO.File.Exists( path )
-                    // Fix 11.0.0-a bug: Why did I add ()!?
-                    || System.IO.File.ReadAllText( path ).Contains( commonTestName + "()" ) )
+                var path = root.AppendPart( testName + ".playlist" );
+                if( !System.IO.File.Exists( path ) )
                 {
-                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""1.0""><Add Test=""DBSetup.DBSetup.{commonTestName}"" /></Playlist>" );
+                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""2.0"">
+  <Rule Name=""Includes"" Match=""Any"">
+    <Rule Match=""All"">
+      <Property Name=""Solution"" />
+      <Rule Match=""All"">
+        <Property Name=""Namespace"" Value=""DBSetup"" />
+        <Rule Match=""Any"">
+          <Rule Match=""All"">
+            <Property Name=""Class"" Value=""DBSetup"" />
+            <Rule Match=""Any"">
+              <Rule Match=""All"">
+                <Property Name=""TestWithNormalizedFullyQualifiedName"" Value=""DBSetup.DBSetup.{testName}"" />
+                <Rule Match=""Any"">
+                  <Property Name=""DisplayName"" Value=""{displayTestName ?? testName}"" />
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>" );
                 }
             }
+
             CheckFile( "db_setup" );
             CheckFile( "drop_database" );
             CheckFile( "db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" );
+            CheckFile( "backup_create" );
+            CheckFile( "backup_restore", "backup_restore(&quot;0 - Most recent one.&quot;)" );
         }
 
         /// <summary>
@@ -108,7 +133,7 @@ namespace CK.DB.Tests
         }
 
         /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase(string)"/> on the
+        /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase"/> on the
         /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
         /// </summary>
         [Test]
@@ -118,6 +143,56 @@ namespace CK.DB.Tests
             Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.DropDatabase();
+        }
+
+        /// <summary>
+        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
+        /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+        /// </summary>
+        [Test]
+        [Explicit]
+        public void backup_create()
+        {
+            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
+            Assert.That( TestHelper.Backup.CreateBackup() != null, "Backup should be possible." );
+        }
+
+        /// <summary>
+        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.RestoreBackup(string?, int)"/> on the
+        /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+        /// </summary>
+        [TestCase( "0 - Most recent one." )]
+        [TestCase( "1" )]
+        [TestCase( "2" )]
+        [TestCase( "3" )]
+        [TestCase( "4" )]
+        [TestCase( "5" )]
+        [TestCase( "X - Oldest one." )]
+        [Explicit]
+        public void backup_restore( string what )
+        {
+            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
+            if( !int.TryParse( what, out var index ) )
+            {
+                index = what[0] == 'X' ? Int32.MaxValue : 0;
+            }
+            Assert.That( TestHelper.Backup.RestoreBackup( null, index ) != null, "Restoring should be possible." );
+        }
+
+        /// <summary>
+        /// Dumps all the available backup files in <see cref="CK.Testing.SqlServer.BackupManager.BackupFolder"/>
+        /// as information into the <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.Monitor"/>.
+        /// </summary>
+        [Test]
+        [Explicit]
+        public void backup_list()
+        {
+            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
+            var all = TestHelper.Backup.GetAllBackups();
+            using( TestHelper.Monitor.OpenInfo( $"There is {all.Count} backups available in '{TestHelper.Backup.BackupFolder}'." ) )
+            {
+                TestHelper.Monitor.Info( all.Select( a => $"n° {a.Index} - {a.FileName}" ).Concatenate( Environment.NewLine ) );
+            }
         }
 
         /// <summary>
@@ -226,11 +301,14 @@ namespace CK.DB.Tests
                         Console.WriteLine( $"[" );
                         foreach( var item in items )
                         {
-                            Type t = item.GetType();
-                            if( t.IsValueType || t == typeof( string ) )
+                            if( item != null )
                             {
-                                Console.Write( wPrefix );
-                                Console.WriteLine( item );
+                                Type t = item.GetType();
+                                if( t.IsValueType || t == typeof( string ) )
+                                {
+                                    Console.Write( wPrefix );
+                                    Console.WriteLine( item );
+                                }
                             }
                         }
                         Console.WriteLine( $"{wPrefix}]" );

@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Contains NUnit test helpers.</Description>
+    <LangVersion>9</LangVersion>
     <IsTestProject>False</IsTestProject>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
@@ -12,5 +14,4 @@
     <PackageReference Include="NUnit" Version="3.12.0" />
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

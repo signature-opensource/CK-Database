@@ -24,7 +24,7 @@ namespace CK.Setup
         /// <param name="itemType">The <see cref="IVersionedItem.ItemType"/> for this item.</param>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="SetupItemDriver"/> is asumed.
+        /// When null, the type of <see cref="SetupItemDriver"/> is assumed.
         /// </param>
         public DynamicPackageItem( string itemType, object driverType = null )
             : base( itemType )

@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup
     {
         /// <summary>
         /// All <see cref="SqlDatabaseItem"/> share the same name: "SqlDatabase".
-        /// Their full names are defined only by context and location (the logical databasename): 
+        /// Their full names are defined only by context and location (the logical database name): 
         /// "[context]dbName^SqlDatabase".
         /// </summary>
         public static string SqlDatabaseItemName = "SqlDatabase";
@@ -66,7 +66,7 @@ namespace CK.SqlServer.Setup
         public SqlDatabaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data, typeof(SqlDatabaseItemDriver) )
         {
-            Context = data.StObj.StObjMap.Names[0];
+            Context = string.Empty;
             Location = ActualObject.Name;
             Name = SqlDatabaseItemName;
             ConnectionItem = new SqlDatabaseConnectionItem( this );
@@ -81,7 +81,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Gets the name of the SqlDatabaseItem based on the context and location.
         /// </summary>
-        /// <param name="contextLocName">The non null context-locaton-name.</param>
+        /// <param name="contextLocName">The non null context-location-name.</param>
         /// <returns>The associated database item name.</returns>
         public static string ItemNameFor( IContextLocNaming contextLocName )
         {

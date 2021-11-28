@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
 using System.Diagnostics;
+using System;
 
 namespace CK.Setup
 {
@@ -47,7 +48,7 @@ namespace CK.Setup
                 Debug.Assert( covered.All( c => s.Name.Version > c.Name.FromVersion ), "The covering script brings the system to a version strictely greater than the starting point of any covered script." );
                 CoveredScripts = BuildCoveringScripts( covered );
             }
-            else CoveredScripts = Util.Array.Empty<CoveringScript>();
+            else CoveredScripts = Array.Empty<CoveringScript>();
         }
 
         static internal List<CoveringScript> BuildCoveringScripts( List<ISetupScript> scripts )

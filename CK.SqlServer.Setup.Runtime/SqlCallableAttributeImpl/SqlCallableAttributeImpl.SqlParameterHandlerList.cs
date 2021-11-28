@@ -18,12 +18,12 @@ namespace CK.SqlServer.Setup
         /// Manages sql parameters thanks to <see cref="SqlParamHandler"/> objects that are built on SqlExprParameter objects
         /// and can be associated to <see cref="ParameterInfo"/>.
         /// </summary>
-        class SqlParameterHandlerList
+        internal class SqlParameterHandlerList
         {
             readonly IPocoSupportResult _poco;
             readonly List<SqlParamHandler> _params;
+            readonly ISqlServerParameter _funcReturnParameter;
             SqlParamHandler _simpleReturnType;
-            ISqlServerParameter _funcReturnParameter;
             bool _isAsyncCall;
             Type _unwrappedReturnedType;
             readonly StringBuilder _funcResultBuilderSignature;
@@ -60,10 +60,7 @@ namespace CK.SqlServer.Setup
                 /// <summary>
                 /// Gets whether this Sql parameter has a corresponding method parameter or a property in one of the ParameterSource objects.
                 /// </summary>
-                public bool IsMappedToMethodParameterOrParameterSourceProperty
-                {
-                    get { return _methodParam != null || _ctxProp != null; }
-                }
+                public bool IsMappedToMethodParameterOrParameterSourceProperty => _methodParam != null || _ctxProp != null;
 
                 public bool IsUsedByReturnType => _isUsedByReturnedType;
 
@@ -104,9 +101,8 @@ namespace CK.SqlServer.Setup
                     bool sqlIsInput = p.IsInput;
                     bool sqlIsPureOutput = p.IsPureOutput;
                     bool isComplexReturnedType = _holder.ComplexReturnType != null;
-                    bool sqlParameterHasDefaultValue = p.DefaultValue != null;
                     Debug.Assert( sqlIsInput || sqlIsOutput );
-                    // Analysing Method vs. Procedure parameters.
+                    // Analyzing Method vs. Procedure parameters.
                     if( mP.ParameterType.IsByRef )
                     {
                         #region ref or out Method parameter
@@ -301,7 +297,7 @@ namespace CK.SqlServer.Setup
                         if( isNullable ) b.Append( "(object)" );
                         if( _methodParam != null )
                         {
-                            b.Append( _methodParam.Name );
+                            b.AppendVariable( _methodParam.Name );
                         }
                         else
                         {
@@ -310,11 +306,11 @@ namespace CK.SqlServer.Setup
                                 b.Append( "((" )
                                     .AppendCSharpName( _ctxProp.PocoMappedType )
                                     .Append( ")" )
-                                    .Append( _ctxProp.Parameter.Name )
+                                    .AppendVariable( _ctxProp.Parameter.Name )
                                     .Append( ")." )
-                                    .Append( _ctxProp.Prop.Name );
+                                    .AppendVariable( _ctxProp.Prop.Name );
                             }
-                            else b.Append( _ctxProp.Parameter.Name ).Append( "." ).Append( _ctxProp.Prop.Name );
+                            else b.AppendVariable( _ctxProp.Parameter.Name ).Append( "." ).AppendVariable( _ctxProp.Prop.Name );
                         }
                         if( isNullable ) b.Append( " ?? DBNull.Value" );
                     }
@@ -326,9 +322,11 @@ namespace CK.SqlServer.Setup
                 {
                     if( _methodParam == null || !_methodParam.ParameterType.IsByRef ) return;
 
-                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, _index, _actualParameterType );
-                    b.Append( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
+                    string resultName = EmitGetSqlCommandParameterValue( b, varCmdParameters, tempObjName, this, _actualParameterType );
+                    b.AppendVariable( _methodParam.Name ).Append( "=" ).Append( resultName ).Append( ";" ).NewLine();
                 }
+
+                public override string ToString() => SqlExprParam.ToString();
             }
 
             public SqlParameterHandlerList( ISqlServerCallableObject sqlObject, IPocoSupportResult poco )
@@ -336,8 +334,7 @@ namespace CK.SqlServer.Setup
                 _poco = poco;
                 _params = new List<SqlParamHandler>();
                 int idx = 0;
-                ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
-                if( func != null )
+                if( sqlObject is ISqlServerFunctionScalar func )
                 {
                     _funcReturnParameter = new SqlParameterReturnedValue( func.ReturnType );
                     _params.Add( new SqlParamHandler( this, _funcReturnParameter, idx++ ) );
@@ -428,13 +425,17 @@ namespace CK.SqlServer.Setup
                     _funcResultBuilderSignature.Append( _unwrappedReturnedType.FullName );
                     foreach( var p in _params )
                     {
-                        if( _complexReturnType.AddInput( p.Index, p.SqlParameterName, p.SqlExprParam.SqlType.IsTypeCompatible, p.SqlExprParam.SqlType.ToStringClean(), p.SqlExprParam.IsOutput ) )
+                        if( _complexReturnType.AddInput( p.Index,
+                                                         sqlName: p.SqlParameterName,
+                                                         typeMatcher: p.SqlExprParam.SqlType.IsTypeCompatible,
+                                                         sqlTypeName: p.SqlExprParam.SqlType.ToStringClean(),
+                                                         shouldBeMapped: p.SqlExprParam.IsOutput ) )
                         {
                             _funcResultBuilderSignature.Append( '-' ).Append( p.Index );
                             p.SetUsedByReturnedType();
                         }
                     }
-                    if( _complexReturnType.CheckValidity( monitor ) )
+                    if( _complexReturnType.CheckValidity( monitor, this ) )
                     {
                         return true;
                     }
@@ -455,24 +456,25 @@ namespace CK.SqlServer.Setup
             {
                 if( _simpleReturnType != null )
                 {
-                    return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, _simpleReturnType.Index, _unwrappedReturnedType );
+                    return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, _simpleReturnType, _unwrappedReturnedType );
                 }
                 Debug.Assert( _complexReturnType != null );
                 return _complexReturnType.EmitFullInitialization( b, ( idxValue, targetType ) =>
                  {
-                     return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, idxValue, targetType );
+                     return EmitGetSqlCommandParameterValue( b, nameParameters, tempObjectName, Handlers[ idxValue ], targetType );
                  } );
             }
 
-            static string EmitGetSqlCommandParameterValue( ICodeWriter b, string varCmdParameters, Func<string> tempObjName, int sqlParameterIndex, Type targetType )
+            static string EmitGetSqlCommandParameterValue( ICodeWriter b, string varCmdParameters, Func<string> tempObjName, SqlParamHandler sqlParam, Type targetType )
             {
                 Debug.Assert( !targetType.IsByRef );
-                string resultName = "getR" + sqlParameterIndex;
+
+                string resultName = "getR" + sqlParam.Index;
+
                 b.Append( tempObjName() )
                     .Append( " = " )
-                    .Append( varCmdParameters ).Append( "[" ).Append( sqlParameterIndex ).Append( "].Value;" )
+                    .Append( varCmdParameters ).Append( "[" ).Append( sqlParam.Index ).Append( "].Value;" )
                     .NewLine();
-
                 bool isNullable = true;
                 Type enumUnderlyingType = null;
                 bool isChar = false;

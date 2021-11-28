@@ -154,7 +154,7 @@ namespace CK.SqlServer.Setup
                     }
                     else
                     {
-                        b.Append( callingParameters[mP.Position].Name );
+                        b.AppendVariable( callingParameters[mP.Position].Name );
                     }
                     ++i;
                 }

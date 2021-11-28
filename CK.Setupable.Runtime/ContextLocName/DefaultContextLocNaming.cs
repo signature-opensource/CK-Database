@@ -476,7 +476,7 @@ namespace CK.Setup
         /// input does not specify them.
         /// </summary>
         /// <param name="input">The input location to resolve.</param>
-        /// <param name="startIndex">Statting index to consider in input.</param>
+        /// <param name="startIndex">Starting index to consider in input.</param>
         /// <param name="count">Number of characters from startIndex to consider.</param>
         /// <param name="curContext">Context to update if missing.</param>
         /// <param name="curLoc">Location to update if missing.</param>

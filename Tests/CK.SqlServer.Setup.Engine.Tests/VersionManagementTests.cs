@@ -15,7 +15,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
     [TestFixture]
     public class VersionManagementTests
     {
-        static SqlServerDatabaseOptions _db = new SqlServerDatabaseOptions() { DatabaseName = "TEST_SetupEngine_Version" };
+        static SqlServerDatabaseOptions _db = new SqlServerDatabaseOptions( "TEST_SetupEngine_Version" );
         static SqlManager _manager = new SqlManager( TestHelper.Monitor );
         static SqlVersionedItemReader _reader = new SqlVersionedItemReader( _manager );
         static SqlVersionedItemWriter _writer = new SqlVersionedItemWriter( _manager );

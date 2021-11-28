@@ -19,7 +19,9 @@ namespace CK.SqlServer.Setup
         public SqlPackageBaseItem( IActivityMonitor monitor, IStObjSetupData data )
             : base( monitor, data )
         {
-            Context = data.StObj.StObjMap.Names[0];
+            // The "context" is always the default one.
+            // There is currently no way to change this and this is fine: the [Context] should be removed.
+            Context = String.Empty;
             SqlPackage p = ActualObject;
             if( p.Database != null ) Location = p.Database.Name;
             ResourceLocation = (ResourceLocator)data.StObj.GetStObjProperty( "ResourceLocation" );
