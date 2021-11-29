@@ -159,7 +159,7 @@ namespace CK.SqlServer.Setup
             // ensures that failing script is logged on error.
             if( deleteTrace != null )
             {
-                monitor.UnfilteredLog( null, LogLevel.Info, deleteTrace.ToString(), monitor.NextLogTime(), null );
+                monitor.UnfilteredLog( LogLevel.Info, null, deleteTrace.ToString(), null );
 
                 Debug.Assert( delete != null );
                 delete.Append( ");" );

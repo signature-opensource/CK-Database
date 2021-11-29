@@ -2,8 +2,9 @@
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Description>CK.Setupable.Runtime defines tha aspect that supports Three Steps Setup.
+    <Description>CK.Setupable.Runtime defines that aspect that supports Three Steps Setup.
     </Description>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />

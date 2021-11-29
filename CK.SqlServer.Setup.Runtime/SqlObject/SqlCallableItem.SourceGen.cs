@@ -3,6 +3,7 @@ using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
 using System;
+using System.Collections.Generic;
 
 namespace CK.SqlServer.Setup
 {
@@ -24,13 +25,13 @@ namespace CK.SqlServer.Setup
             if( tB == null )
             {
                 tB = ns.EnsureUsing( "System.Data" )
-                       .EnsureUsing( "System.Data.SqlClient" )
+                       .EnsureUsing( "Microsoft.Data.SqlClient" )
                        .EnsureUsing( "CK.SqlServer" )
                        .CreateType( "static class CreatorForSqlCommand" ).GeneratedByComment();
             }
             
             string methodKey = "CreatorForSqlCommand" + '.' + FullName;
-            var m = (IFunctionScope)dynamicAssembly.Memory.GetValueWithDefault( methodKey, null );
+            var m = (IFunctionScope?)dynamicAssembly.Memory.GetValueOrDefault( methodKey, null );
             if( m == null )
             {
                 using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )

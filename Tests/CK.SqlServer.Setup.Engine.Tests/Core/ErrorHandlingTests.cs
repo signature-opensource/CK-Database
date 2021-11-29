@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using static CK.Testing.DBSetupTestHelper;
+using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {
@@ -44,7 +45,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
                     }
                     else
                     {
-                        Assert.That( () => m.ExecuteOneScript( s, null ), Throws.Nothing, s );
+                        FluentActions.Invoking( () => m.ExecuteOneScript( s, null ) ).Should().NotThrow();
                     }
                     string error = (string)m.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult" );
                     Assert.That( error, Is.EqualTo( String.Empty ), "No micro test should set an error." );

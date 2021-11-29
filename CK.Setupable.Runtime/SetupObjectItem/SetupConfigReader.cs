@@ -1,5 +1,4 @@
 using CK.Core;
-using CK.Text;
 using System;
 using System.Text.RegularExpressions;
 
@@ -33,7 +32,7 @@ namespace CK.Setup
         /// in the given string to the <see cref="Item"/>.
         /// </summary>
         /// <param name="monitor">The monitor that will receive errors.</param>
-        /// <param name="text">The text to analyse.</param>
+        /// <param name="text">The text to analyze.</param>
         /// <param name="foundConfig">True if the SetupConfig has been found, false otherwise.</param>
         /// <returns>True on success, false if an error occurred.</returns>
         public bool Apply( IActivityMonitor monitor, string text, out bool foundConfig )

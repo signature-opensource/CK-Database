@@ -122,7 +122,7 @@ namespace CK.SqlServer.Setup
             int timeoutSeconds )
         {
             tB.Namespace.EnsureUsing( "System.Data" )
-                        .EnsureUsing( "System.Data.SqlClient" )
+                        .EnsureUsing( "Microsoft.Data.SqlClient" )
                         .EnsureUsing( "SqlGen" )
                         .EnsureUsing( "CK.SqlServer" );
             int nbError = 0;

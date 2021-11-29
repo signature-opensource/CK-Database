@@ -34,9 +34,9 @@ namespace CK.Setup
                 _drivers = new List<DriverBase>();
             }
 
-            public DriverBase this[string fullName] => fullName == null ? null : _index.GetValueWithDefault( fullName, null ); 
+            public DriverBase this[string fullName] => fullName == null ? null : _index.GetValueOrDefault( fullName, null ); 
 
-            public DriverBase this[IDependentItem item] =>  item == null ? null : _index.GetValueWithDefault( item, null );
+            public DriverBase this[IDependentItem item] =>  item == null ? null : _index.GetValueOrDefault( item, null );
 
             public DriverBase this[int index] => _drivers[index];
 

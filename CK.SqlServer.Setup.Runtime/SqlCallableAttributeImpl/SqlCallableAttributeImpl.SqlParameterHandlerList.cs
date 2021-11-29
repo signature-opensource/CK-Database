@@ -529,7 +529,7 @@ namespace CK.SqlServer.Setup
             internal string AssumeSourceFuncResultBuilder( IDynamicAssembly dynamicAssembly )
             {
                 string funcKey = "S:_build_func_:" + _funcResultBuilderSignature.ToString();
-                string fieldFullName = (string)dynamicAssembly.Memory.GetValueWithDefault( funcKey, null );
+                string? fieldFullName = (string?)dynamicAssembly.Memory.GetValueOrDefault( funcKey, null );
                 if( fieldFullName == null )
                 {
                     var ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
