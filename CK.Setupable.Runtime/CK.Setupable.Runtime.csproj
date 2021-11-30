@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
     <PackageReference Include="CK.StObj.Runtime" Version="$(CKStObjVersion)" />
-    <PackageReference Include="CK.Setup.Dependency" Version="0.0.0--03lvnn6-local" />
+    <PackageReference Include="CK.Setup.Dependency" Version="0.0.0--03lx5p6-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
