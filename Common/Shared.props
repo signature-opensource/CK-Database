@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKStObjVersion>0.0.0--03lxewy-develop</CKStObjVersion>
-    <CKSqlServerVersion>0.0.0--03lxewy-develop</CKSqlServerVersion>
-    <CKSqlServerParserVersion>0.0.0--03lxewy-develop</CKSqlServerParserVersion>
-    <CKTestingVersion>0.0.0--03lxewx-develop</CKTestingVersion>
+    <CKStObjVersion>19.0.0-a</CKStObjVersion>
+    <CKSqlServerVersion>0.18.0-a</CKSqlServerVersion>
+    <CKSqlServerParserVersion>17.0.0-a</CKSqlServerParserVersion>
+    <CKTestingVersion>3.0.0-a</CKTestingVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
