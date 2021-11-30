@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 using CK.Core;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
 using static CK.Testing.DBSetupTestHelper;

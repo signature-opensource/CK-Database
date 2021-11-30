@@ -4,7 +4,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using static CK.Testing.CKDatabaseLocalTestHelper;
 

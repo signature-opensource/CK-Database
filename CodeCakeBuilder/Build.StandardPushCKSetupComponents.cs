@@ -17,9 +17,9 @@ namespace CodeCake
         {
             return new CKSetupComponent[]{
 
-new CKSetupComponent( "CK.Setupable.Model", "netstandard2.1" ),
+new CKSetupComponent( "CK.Setupable.Model", "net6.0" ),
 new CKSetupComponent( "CK.Setupable.Runtime", "net6.0" ),
-new CKSetupComponent( "CK.SqlServer.Setup.Model", "netstandard2.1" ),
+new CKSetupComponent( "CK.SqlServer.Setup.Model", "net6.0" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Runtime", "net6.0" ),
 new CKSetupComponent( "CK.Setupable.Engine", "net6.0" ),
 new CKSetupComponent( "CK.SqlServer.Setup.Engine", "net6.0" )

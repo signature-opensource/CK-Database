@@ -9,7 +9,6 @@ using System.Linq;
 using CK.Core;
 using CK.Setup;
 using System.Text;
-using CK.Text;
 using System.Diagnostics;
 using CK.SqlServer.Parser;
 

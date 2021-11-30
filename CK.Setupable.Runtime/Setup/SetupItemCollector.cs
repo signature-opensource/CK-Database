@@ -45,9 +45,9 @@ namespace CK.Setup
         /// </summary>
         /// <param name="fullName">The item name to find.</param>
         /// <returns>The setup item or null.</returns>
-        public ISetupItem Find( string fullName )
+        public ISetupItem? Find( string fullName )
         {
-            return _items.GetValueWithDefault( fullName, null );
+            return _items.GetValueOrDefault( fullName, null );
         }
 
         /// <summary>

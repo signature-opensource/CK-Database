@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using CK.Text;
+using CK.Core;
 
 namespace CK.Testing.CKDatabaseLocal
 {

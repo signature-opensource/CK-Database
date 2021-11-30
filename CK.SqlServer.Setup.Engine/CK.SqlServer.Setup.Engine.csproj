@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.SqlServer.Setup.Engine provides full Sql Server setup support.
     </Description>
   </PropertyGroup>

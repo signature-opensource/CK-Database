@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.SqlServer;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo
