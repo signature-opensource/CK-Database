@@ -14,8 +14,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Parser.Model" Version="0.0.0--03lx6al-develop" />
-    <PackageReference Include="Yodii.Script" Version="0.0.0--03lx6al-develop" />
-    <PackageReference Include="CK.Reflection" Version="0.0.0--03lx6ak-develop" />
+    <PackageReference Include="Yodii.Script" Version="0.8.2--0011-develop" />
+    <PackageReference Include="CK.Reflection" Version="9.0.3--0011-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
