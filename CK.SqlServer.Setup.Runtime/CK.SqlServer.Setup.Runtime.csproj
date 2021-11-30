@@ -13,9 +13,9 @@
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="0.0.0--03lx5p5-develop" />
-    <PackageReference Include="Yodii.Script" Version="0.0.0--03lx5cz-develop" />
-    <PackageReference Include="CK.Reflection" Version="0.0.0--03lx5cl-develop" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="0.0.0--03lx6al-develop" />
+    <PackageReference Include="Yodii.Script" Version="0.0.0--03lx6al-develop" />
+    <PackageReference Include="CK.Reflection" Version="0.0.0--03lx6ak-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
