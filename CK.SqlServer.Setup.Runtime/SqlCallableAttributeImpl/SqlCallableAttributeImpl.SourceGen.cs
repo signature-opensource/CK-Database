@@ -349,7 +349,7 @@ namespace CK.SqlServer.Setup
                     {
                         matcher.LogWarnings( monitor );
                         cB.Append( "return new " )
-                            .AppendCSharpName( matcher.Ctor.DeclaringType )
+                            .AppendCSharpName( matcher.Ctor.DeclaringType, true, true, true )
                             .Append( "( " );
                         matcher.LdParameters( cB, "cmd_loc", mParameters );
                         cB.Append( " );" );

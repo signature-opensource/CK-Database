@@ -11,7 +11,7 @@ namespace SqlCallDemo.Tests
     public class CharAndNCharTest
     {
         [Test]
-        public async Task async_call_to_functions_returns_the_char()
+        public async Task async_call_to_functions_returns_the_char_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<CharAndNCharPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -44,7 +44,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_to_sCharProc()
+        public async Task async_call_to_sCharProc_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<CharAndNCharPackage>();
             using( var ctx = new SqlStandardCallContext() )

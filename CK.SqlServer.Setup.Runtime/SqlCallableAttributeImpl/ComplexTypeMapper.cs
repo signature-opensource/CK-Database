@@ -267,7 +267,7 @@ namespace CK.SqlServer.Setup
                                                     .Select( pCtor => getValueGenerator( pCtor.InputIndex, pCtor.Type ) )
                                                     .ToArray();
 
-            b.Append( "var oR = new " ).AppendCSharpName( CreatedType ).Append( "(" )
+            b.Append( "var oR = new " ).AppendCSharpName( CreatedType, true, true, true ).Append( "(" )
                 .Append( ctorVariableNames )
                 .Append( ");" )
                 .NewLine();

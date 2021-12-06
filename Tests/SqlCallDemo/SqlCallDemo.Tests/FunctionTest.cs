@@ -10,7 +10,7 @@ namespace SqlCallDemo.Tests
     public class FunctionTest
     {
         [Test]
-        public async Task async_call_returns_string_with_nullable_parameter()
+        public async Task async_call_returns_string_with_nullable_parameter_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -40,7 +40,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_returns_null_string()
+        public async Task async_call_returns_null_string_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -62,7 +62,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_returns_byte()
+        public async Task async_call_returns_byte_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -88,7 +88,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_returns_null_nullable_byte()
+        public async Task async_call_returns_null_nullable_byte_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )

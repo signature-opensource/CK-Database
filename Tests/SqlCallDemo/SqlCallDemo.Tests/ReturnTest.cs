@@ -10,7 +10,7 @@ namespace SqlCallDemo.Tests
     public class ReturnTest
     {
         [Test]
-        public async Task async_call_returns_string()
+        public async Task async_call_returns_string_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -23,7 +23,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_returns_int()
+        public async Task async_call_returns_int_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -36,7 +36,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_returns_int_with_actor_context()
+        public async Task async_call_returns_int_with_actor_context_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new TestActorContext( 3712 ) )
