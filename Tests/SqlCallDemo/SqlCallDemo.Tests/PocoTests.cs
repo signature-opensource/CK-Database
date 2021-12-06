@@ -56,7 +56,7 @@ namespace SqlCallDemo.Tests
 
 
         [Test]
-        public async Task reading_Poco_Thing_from_database_async()
+        public async Task reading_Poco_Thing_from_database_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )

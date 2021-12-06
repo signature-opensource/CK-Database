@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
     public class ComplexTypeAsyncTests
     {
         [Test]
-        public async Task getting_a_totally_stupid_empty_object()
+        public async Task getting_a_totally_stupid_empty_object_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -26,7 +26,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task getting_a_simple_complex_type()
+        public async Task getting_a_simple_complex_type_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -50,7 +50,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task getting_a_simple_complex_typeWithCtor()
+        public async Task getting_a_simple_complex_typeWithCtor_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -71,7 +71,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task getting_a_simple_complex_type_with_extra_property_is_fine()
+        public async Task getting_a_simple_complex_type_with_extra_property_is_fine_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -85,7 +85,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task getting_a_simple_complex_type_with_missing_property_is_fine()
+        public async Task getting_a_simple_complex_type_with_missing_property_is_fine_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<ComplexTypePackage>();
             using( var ctx = new SqlStandardCallContext() )

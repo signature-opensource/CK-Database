@@ -304,7 +304,7 @@ namespace CK.SqlServer.Setup
                             if( _ctxProp.PocoMappedType != null )
                             {
                                 b.Append( "((" )
-                                    .AppendCSharpName( _ctxProp.PocoMappedType )
+                                    .AppendCSharpName( _ctxProp.PocoMappedType, true, true, true )
                                     .Append( ")" )
                                     .AppendVariable( _ctxProp.Parameter.Name )
                                     .Append( ")." )
@@ -497,17 +497,17 @@ namespace CK.SqlServer.Setup
                 {
                     b.Append( "DBNull.Value == " )
                         .Append( tempObjName() )
-                        .Append( "? default(" ).AppendCSharpName( targetType ).Append( ')' )
-                        .Append( ": (" ).AppendCSharpName( targetType ).Append( ')' );
+                        .Append( "? default(" ).AppendCSharpName( targetType, true, true, true ).Append( ')' )
+                        .Append( ": (" ).AppendCSharpName( targetType, true, true, true ).Append( ')' );
                     if( enumUnderlyingType != null )
                     {
-                        b.Append( '(' ).AppendCSharpName( enumUnderlyingType ).Append( ')' );
+                        b.Append( '(' ).AppendCSharpName( enumUnderlyingType, true, true, true ).Append( ')' );
                     }
                 }
                 else if( !isChar )
                 {
                     b.Append( '(' )
-                        .AppendCSharpName( targetType )
+                        .AppendCSharpName( targetType, true, true, true )
                         .Append( ')' );
                 }
                 if( isChar )

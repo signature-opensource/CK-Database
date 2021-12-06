@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
     public class CommandDemoTests
     {
         [Test]
-        public async Task command_pattern_just_work_with_poco_result()
+        public async Task command_pattern_just_work_with_poco_result_Async()
         {
             var cmd = new CmdDemo()
             {
@@ -31,7 +31,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task command_pattern_just_work_with_a_clean_reaonly_poco()
+        public async Task command_pattern_just_work_with_a_clean_reaonly_poco_Async()
         {
             var cmd = new CmdDemo()
             {

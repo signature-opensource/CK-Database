@@ -13,49 +13,50 @@ namespace SqlCallDemo.Tests
     public class PurelyInputLogTest
     {
         [Test]
-        public async Task async_call_simple_log()
+        public async Task async_call_simple_log_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.SimpleLog( ctx, "First async test call ever." ).ConfigureAwait( false );
+                await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                             .Should().Be( "First async test call ever. - SimpleLog" );
             }
         }
 
         [Test]
-        public async Task async_call_with_bit_parameter()
+        public async Task async_call_with_bit_parameter_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.Log( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
+                await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                             .Should().Be( "Second async test call ever. - @OneMore = 0" );
 
-                await p.Log( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
+                await p.LogAsync( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                             .Should().Be( "Second n°2 async test call ever. - @OneMore = 1" );
 
-                await p.Log( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
+                await p.LogAsync( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                             .Should().Be( "Second n°3 async test call ever. - @OneMore is null" );
             }
         }
 
         [Test]
-        public async Task async_call_with_the_default_value_for_bit_parameter()
+        public async Task async_call_with_the_default_value_for_bit_parameter_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
-                await p.LogWithDefaultBitValue( ctx, "Third async test call ever." ).ConfigureAwait( false );
+                await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                             .Should().Be( "Third async test call ever. - @OneMore = 1" );
             }
         }
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         [Test]
         public void async_call_with_cancellation_token_works()
         {
@@ -63,7 +64,7 @@ namespace SqlCallDemo.Tests
             using( var ctx = new SqlStandardCallContext() )
             {
                 {
-                    Task t = p.Log( ctx, false, "Testing Cancellation." );
+                    Task t = p.LogAsync( ctx, false, "Testing Cancellation." );
                     t.Wait();
                     p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                                 .Should().Be( "Testing Cancellation. - @OneMore = 0" );
@@ -71,7 +72,7 @@ namespace SqlCallDemo.Tests
                 {
                     CancellationTokenSource source = new CancellationTokenSource();
                     source.CancelAfter( 1500 );
-                    Task t = p.LogWait( ctx, "This one must pass.", 10, source.Token );
+                    Task t = p.LogWaitAsync( ctx, "This one must pass.", 10, source.Token );
                     t.Wait();
                     p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
                                 .Should().Be( "This one must pass. - @OneMore = 1" );
@@ -82,7 +83,7 @@ namespace SqlCallDemo.Tests
                     Task t = null;
                     try
                     {
-                        t = p.LogWait( ctx, "This will never be logged...", 1000, source.Token );
+                        t = p.LogWaitAsync( ctx, "This will never be logged...", 1000, source.Token );
                         t.Wait();
                     }
                     catch( AggregateException ex )
@@ -99,6 +100,7 @@ namespace SqlCallDemo.Tests
                 }
             }
         }
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
     }
 }
