@@ -539,7 +539,7 @@ namespace CK.SqlServer.Setup
                     {
                         t = ns.CreateType( "static class _build_func_" );
                         t.CreateFunction(
-                            @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelper<T>(
+                            @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelperAsync<T>(
                                 this ISqlConnectionController @this,
                                 SqlCommand cmd,
                                 Func<SqlCommand, T> resultBuilder,
