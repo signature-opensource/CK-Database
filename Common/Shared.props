@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version dependencies. -->
-    <CKStObjVersion>0.0.0--03m8fe5-local+v19.0.0-a</CKStObjVersion>
-    <CKSqlServerVersion>0.0.0--03m8fe5-local+v0.18.0-a</CKSqlServerVersion>
-    <CKSqlServerParserVersion>0.0.0--03m8fe5-local+v17.0.0-a</CKSqlServerParserVersion>
-    <CKTestingVersion>0.0.0--03m8fe4-local+v3.0.0-a</CKTestingVersion>
+    <CKStObjVersion>0.0.0--03n3nvv-local+v19.0.0-r01</CKStObjVersion>
+    <CKSqlServerVersion>0.0.0--03n3og5-local+v0.18.0-r</CKSqlServerVersion>
+    <CKSqlServerParserVersion>0.0.0--03n3nvv-local+v17.0.0-r</CKSqlServerParserVersion>
+    <CKTestingVersion>0.0.0--03n3nvu-local+v3.0.0-r</CKTestingVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
@@ -86,7 +86,7 @@
     </ItemGroup>
   </Target>
   <!--</SourceLinkDebuggingWorkaround>-->
-  <!--<Analyzers>-->
+  <!--<Analyzers>: This analyzer provides very welcome guidelines about async and threading issues.-->
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.64" PrivateAssets="All" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
   </ItemGroup>

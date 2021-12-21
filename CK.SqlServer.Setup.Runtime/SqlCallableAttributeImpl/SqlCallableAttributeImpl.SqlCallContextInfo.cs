@@ -25,7 +25,7 @@ namespace CK.SqlServer.Setup
                 None,
                 ExecuteNonQuery,
                 ExecuteNonQueryAsync,
-                FuncBuilderHelper
+                FuncBuilderHelperAsync
             }
 
             readonly GenerationType _gType;
@@ -87,8 +87,8 @@ namespace CK.SqlServer.Setup
                     {
                         _cancellationTokenParam = methodParameters.FirstOrDefault( p => p.ParameterType == typeof( CancellationToken ) );
                         var ret = returnedType.GetGenericArguments()[0];
-                        _generateCallType = GenerateCallType.FuncBuilderHelper;
-                        _sourceExecutorCallNonQuery = $"FuncBuilderHelper<{ret.ToCSharpName()}>";
+                        _generateCallType = GenerateCallType.FuncBuilderHelperAsync;
+                        _sourceExecutorCallNonQuery = $"FuncBuilderHelperAsync<{ret.ToCSharpName()}>";
                     }
                     else
                     {
@@ -163,12 +163,12 @@ namespace CK.SqlServer.Setup
             /// Gets whether a Func{SqlCommand,T} is required to call the procedure.
             /// It is necessarily an async call (for synchronous calls, the return code is inlined).
             /// </summary>
-            public bool RequiresReturnTypeBuilder => _generateCallType == GenerateCallType.FuncBuilderHelper; 
+            public bool RequiresReturnTypeBuilder => _generateCallType == GenerateCallType.FuncBuilderHelperAsync; 
 
             /// <summary>
             /// Gets whether this is an asynchronous call.
             /// </summary>
-            public bool IsAsyncCall => _generateCallType == GenerateCallType.ExecuteNonQueryAsync || _generateCallType == GenerateCallType.FuncBuilderHelper; 
+            public bool IsAsyncCall => _generateCallType == GenerateCallType.ExecuteNonQueryAsync || _generateCallType == GenerateCallType.FuncBuilderHelperAsync; 
 
             public void GenerateExecuteNonQueryCall( ICodeWriter b, string varCommandName, string resultBuilderName, ParameterInfo[] callingParameters )
             {
