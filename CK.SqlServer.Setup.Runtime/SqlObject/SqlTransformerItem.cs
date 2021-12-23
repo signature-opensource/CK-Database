@@ -71,7 +71,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Creates a <see cref="SetupConfigReader"/>.
         /// </summary>
-        /// <returns>The config reader to use.</returns>
+        /// <returns>The configuration reader to use.</returns>
         public override SetupConfigReader CreateConfigReader() => _target.CreateConfigReader().CreateTransformerConfigReader( this );
 
     }

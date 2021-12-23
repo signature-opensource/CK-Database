@@ -30,7 +30,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="driverType">
         /// Type of the driver to use. Can be the <see cref="Type"/> itself or the Assembly Qualified Name of the type.
-        /// When null, the type of <see cref="SetupItemDriver"/> is asumed.
+        /// When null, the type of <see cref="SetupItemDriver"/> is assumed.
         /// </param>
         public DynamicContainerItem( object driverType = null )
         {
@@ -145,7 +145,7 @@ namespace CK.Setup
         public IDependentItemList Children => _children ?? (_children = DependentItemListFactory.CreateItemList()); 
 
         /// <summary>
-        /// Called at the very beginning of the setup phasis, before <see cref="IDependentItem.FullName"/> is used to planify the setup. 
+        /// Called at the very beginning of the setup phase, before <see cref="IDependentItem.FullName"/> is used to organize the setup. 
         /// This start method has been already called on direct dependencies <see cref="Container"/>, <see cref="Generalization"/>
         /// and <see cref="Requires"/> if they are <see cref="IDependentItem"/> (and not strings).
         /// </summary>
