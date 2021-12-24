@@ -1,5 +1,7 @@
 using CK.Core;
 using System;
+using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CK.Setup
@@ -10,7 +12,7 @@ namespace CK.Setup
     /// </summary>
     public class SetupConfigReader
     {
-        static Regex _ckConfig = new Regex( @"""?SetupConfig""?\s*:\s*", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        static Regex _ckConfig = new Regex( @"""?SetupConfig""?\s*:", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
 
         /// <summary>
         /// Initializes a new <see cref="SetupConfigReader"/>.
@@ -44,13 +46,20 @@ namespace CK.Setup
                 foundConfig = false;
                 return true;
             }
-            StringMatcher m = new StringMatcher( text, match.Index + match.Length );
-            if( m.MatchChar( '{' ) ) ParseContent( m );
-            if( m.IsError )
+            var m = new ROSpanCharMatcher( text.AsSpan( match.Index ) );
+            m.Head.TryMatch( '"' );
+            m.Head.TryMatch( "SetupConfig" );
+            m.Head.TryMatch( '"' );
+            m.SkipWhiteSpaces();
+            m.Head.TryMatch( ':' );
+            m.SkipWhiteSpaces();
+            if( m.TryMatch( '{' ) ) ParseContent( ref m );
+            if( m.HasError )
             {
-                using( monitor.OpenError( "Invalid SetupConfig (expected JSON syntax): " + m.ErrorMessage ) )
+                using( monitor.OpenError( "Invalid SetupConfig (in JSON-like syntax):" ) )
                 {
-                    monitor.Trace( text );
+                    monitor.Trace( text.Substring( match.Index ) );
+                    monitor.Error( m.GetErrorMessage() );
                 }
                 return false;
             }
@@ -68,30 +77,30 @@ namespace CK.Setup
         /// True if <paramref name="propName"/> is one the basic properties, false 
         /// otherwise or if an error occurred (<see cref="StringMatcher.IsError"/> is true in such case).
         /// </returns>
-        internal protected virtual bool ApplyProperty( StringMatcher m, string propName )
+        internal protected virtual bool ApplyProperty( ref ROSpanCharMatcher m, string propName )
         {
             switch( propName )
             {
-                case "Requires": ApplyProperties( m, s => Item.Requires.Add( s ) ); break;
-                case "RequiredBy": ApplyProperties( m, s => Item.RequiredBy.Add( s ) ); break;
-                case "Groups": ApplyProperties( m, s => Item.Groups.Add( s ) ); break;
-                case "Children": ApplyChildren( m, true ); break;
-                case "Container": ApplyProperty( m, s => Item.Container = new NamedDependentItemContainerRef( s ) ); break;
-                case "Generalization": ApplyGeneralization( m ); break;
+                case "Requires": ApplyProperties( ref m, s => Item.Requires.Add( s ) ); break;
+                case "RequiredBy": ApplyProperties( ref m, s => Item.RequiredBy.Add( s ) ); break;
+                case "Groups": ApplyProperties( ref m, s => Item.Groups.Add( s ) ); break;
+                case "Children": ApplyChildren( ref m, true ); break;
+                case "Container": ApplyProperty( ref m, s => Item.Container = new NamedDependentItemContainerRef( s ) ); break;
+                case "Generalization": ApplyGeneralization( ref m ); break;
                 default: return false;
             }
             return true;
         }
 
         /// <summary>
-        /// Extension point: called when <see cref="ApplyProperty(StringMatcher, string)"/> failed.
-        /// By default sets a "Unknown property" error on the <see cref="StringMatcher"/>.
+        /// Extension point: called when <see cref="ApplyProperty(ref ROSpanCharMatcher, string)"/> failed.
+        /// By default adds a "Known property" expectation on the <see cref="ROSpanCharMatcher"/>.
         /// </summary>
         /// <param name="m">The string matcher.</param>
         /// <param name="propName">The unknown property name.</param>
-        protected virtual void OnUnknownProperty( StringMatcher m, string propName )
+        protected virtual void OnUnknownProperty( ref ROSpanCharMatcher m, string propName )
         {
-            m.SetError( "Unknown property: " + propName );
+            m.AddExpectation( $"Known property ('{propName}' is not known)" );
         }
 
         /// <summary>
@@ -108,80 +117,80 @@ namespace CK.Setup
             return new TransformerSetupConfigReader( transfomer, this );
         }
 
-        void ParseContent( StringMatcher m )
+        void ParseContent( ref ROSpanCharMatcher m )
         {
-            while( !m.IsError
-                    && !m.IsEnd
-                    && m.SkipWhiteSpacesAndJSComments()
-                    && !m.TryMatchChar( '}' ) )
+            while( !m.HasError
+                    && !m.Head.IsEmpty
+                    && m.Head.SkipWhiteSpacesAndJSComments()
+                    && !m.Head.TryMatch( '}' ) )
             {
                 string propName;
                 if( !m.TryMatchJSONQuotedString( out propName )
-                    || !m.SkipWhiteSpacesAndJSComments()
-                    || !m.TryMatchChar( ':' )
-                    || !m.SkipWhiteSpacesAndJSComments() ) m.SetError( @"""Identifier"" : ..." );
+                    || !m.Head.SkipWhiteSpacesAndJSComments()
+                    || !m.Head.TryMatch( ':' )
+                    || !m.Head.SkipWhiteSpacesAndJSComments() ) m.AddExpectation( @"""Identifier"" : ..." );
                 else
                 {
-                    if( !ApplyProperty( m, propName ) )
+                    if( !ApplyProperty( ref m, propName ) )
                     {
-                        OnUnknownProperty( m, propName );
+                        OnUnknownProperty( ref m, propName );
                     }
 
                 }
-                if( !m.IsError )
+                if( !m.HasError )
                 {
                     // Allow trailing comma.
-                    m.SkipWhiteSpacesAndJSComments();
-                    m.TryMatchChar( ',' );
+                    m.Head.SkipWhiteSpacesAndJSComments();
+                    m.Head.TryMatch( ',' );
                 }
             }
         }
 
-        internal void ApplyChildren( StringMatcher m, bool add )
+        internal void ApplyChildren( ref ROSpanCharMatcher m, bool add )
         {
             var g = Item as IMutableSetupItemGroup;
-            if( g == null ) m.SetError( $"Object is not a group, it can not have Children." );
-            else ApplyProperties( m, add ? (Action<string>)(s => g.Children.Add( s )) : s => g.Children.Remove( s ) );
+            if( g == null ) m.AddExpectation( $"No Children since Object is not a group." );
+            else ApplyProperties( ref m, add ? (Action<string>)(s => g.Children.Add( s )) : s => g.Children.Remove( s ) );
         }
 
-        internal void ApplyGeneralization( StringMatcher m )
+        internal void ApplyGeneralization( ref ROSpanCharMatcher m )
         {
             var o = Item as IMutableSetupItem;
-            if( o == null ) m.SetError( $"Object does not support Generalization." );
-            else ApplyProperty( m, s => o.Generalization = new NamedDependentItemRef( s ) );
+            if( o == null ) m.AddExpectation( $"No Generalization Object does not support it." );
+            else ApplyProperty( ref m, s => o.Generalization = new NamedDependentItemRef( s ) );
         }
 
-        internal void ApplyProperties( StringMatcher m, Action<string> a )
+        internal void ApplyProperties( ref ROSpanCharMatcher m, Action<string> a )
         {
             string content;
             if( m.TryMatchJSONQuotedString( out content ) )
             {
                 a( content );
             }
-            else if( m.MatchChar( '[' ) )
+            else if( m.TryMatch( '[' ) )
             {
                 do
                 {
-                    m.SkipWhiteSpacesAndJSComments();
-                    if( m.TryMatchChar( ']' ) ) break;
-                    if( !m.TryMatchJSONQuotedString( out content ) ) m.SetError( @"Expected ""full name"" in [""full name 1"", ...]." );
+                    m.Head.SkipWhiteSpacesAndJSComments();
+                    if( m.Head.TryMatch( ']' ) ) break;
+                    if( !m.TryMatchJSONQuotedString( out content ) ) m.AddExpectation( @"""full name"" in [""full name 1"", ...]." );
                     else
                     {
                         a( content );
                         // Allow trailing comma.
-                        m.SkipWhiteSpacesAndJSComments();
-                        m.TryMatchChar( ',' );
+                        m.Head.SkipWhiteSpacesAndJSComments();
+                        m.Head.TryMatch( ',' );
                     }
                 }
-                while( !m.IsEnd && !m.IsError );
+                while( !m.Head.IsEmpty && !m.HasError );
             }
-            else m.SetError( @"Expected ""full name"" in [""full name 1"", ...]." );
+            else m.AddExpectation( @"""full name"" in [""full name 1"", ...]." );
         }
 
-        internal void ApplyProperty( StringMatcher m, Action<string> a )
+        internal void ApplyProperty( ref ROSpanCharMatcher m, Action<string> a )
         {
             string s;
-            if( !m.TryMatchJSONQuotedString( out s, allowNull: true ) ) m.SetError( @"Expected ""full name""." );
+            if( !m.TryMatchJSONQuotedString( out s, allowNull: true ) ) m.AddExpectation( @"Expected ""full name""." );
             else a( s );
         }
     }
