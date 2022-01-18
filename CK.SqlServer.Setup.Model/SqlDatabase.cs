@@ -89,7 +89,7 @@ namespace CK.Core
         /// This can only be set by the configuration (handled by engine's SqlSetupAspect) of the <see cref="SqlSetupAspectConfiguration.Databases"/>.
         /// When false, no guaranty exists: this totally depends on the database, no attempt is made to alter it in any way.
         /// <para>
-        /// Defaults to false (since v19 - the first net6 version): in previous versions all databases were initialized with snapshot isolation.
+        /// Defaults to false (since v19 - the first net6 version and 18.1.0 in NetCore3): in previous versions all databases were initialized with snapshot isolation.
         /// </para>
         /// This is always true for the default database and not configurable (when <see cref="SqlDatabase.IsDefaultDatabase"/> is true).
         /// </para>
@@ -103,7 +103,7 @@ namespace CK.Core
         /// This can only be set by the configuration (handled by engine's SqlSetupAspect) of the <see cref="SqlSetupAspectConfiguration.Databases"/>.
         /// When false, no guaranty exists: this totally depends on the database, no attempt is made to alter it in any way.
         /// <para>
-        /// Defaults to false (since v19 - the first net6 version): in previous versions all databases were initialized with snapshot isolation.
+        /// Defaults to false (since v19 - the first net6 version and 18.1.0 in NetCore3): in previous versions all databases were initialized with snapshot isolation.
         /// </para>
         /// This is always true for the default database and not configurable (<see cref="SqlDatabase.IsDefaultDatabase"/> is true).
         /// </para>

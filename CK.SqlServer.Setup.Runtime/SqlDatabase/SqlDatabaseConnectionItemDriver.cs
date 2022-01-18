@@ -113,7 +113,7 @@ if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
       </Database>
     </Databases>
   </Aspect>
-(Note that AutoCreate is false by default.)
+(Note that AutoCreate, HasCKCore and UseSnapshotIsolation are false by default.)
 " );
             }
             else if( !db.IsDefaultDatabase && db.HasCKCore )
