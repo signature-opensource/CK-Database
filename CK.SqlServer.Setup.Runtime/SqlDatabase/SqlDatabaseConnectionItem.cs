@@ -22,7 +22,12 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
-        /// Gets the <see cref="SqlDatabase"/> object instance.
+        /// Gets the <see cref="SqlDatabaseItem"/>.
+        /// </summary>
+        public SqlDatabaseItem SqlDatabaseItem => _db;
+
+        /// <summary>
+        /// Gets the <see cref="SqlDatabase"/> object instance (the <see cref="SqlDatabaseItem.ActualObject"/>).
         /// </summary>
         public SqlDatabase SqlDatabase => _db.ActualObject;
 

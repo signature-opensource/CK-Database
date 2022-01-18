@@ -1,20 +1,15 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.SqlServer.Setup.Model\SqlDatabase.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 
 namespace CK.Core
 {
     /// <summary>
-    /// Database objects hold the <see cref="ConnectionString"/> and the schemas defined in it.
+    /// Database objects hold the <see cref="ConnectionString"/> and the schemes defined in it.
     /// </summary>
     [CKTypeDefiner]
-    [Setup( ItemKind = DependentItemKindSpec.Group, TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren, ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
+    [Setup( ItemKind = DependentItemKindSpec.Group,
+            TrackAmbientProperties = TrackAmbientPropertiesMode.AddPropertyHolderAsChildren,
+            ItemTypeName = "CK.SqlServer.Setup.SqlDatabaseItem,CK.SqlServer.Setup.Runtime" )]
     public class SqlDatabase : SqlServer.ISqlConnectionStringProvider, IRealObject
     {
         /// <summary>
@@ -29,7 +24,8 @@ namespace CK.Core
 
         readonly string _name;
         readonly Dictionary<string,string> _schemas;
-        bool _installCore;
+        bool _hasCKCore;
+        bool _useSnapshotIsolation;
 
         /// <summary>
         /// Initializes a new <see cref="SqlDatabase"/>.
@@ -54,7 +50,7 @@ namespace CK.Core
         /// This can be automatically configured during setup (if the specialized class implements a StObjConstruct method with a connectionString parameter
         /// and sets this property).
         /// </summary>
-        public string ConnectionString { get; set; }
+        public string? ConnectionString { get; set; }
 
         /// <summary>
         /// Finds or creates the given schema. 
@@ -66,12 +62,11 @@ namespace CK.Core
         public string EnsureSchema( string name )
         {
             if( string.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
-            string existing;
-            if( _schemas.TryGetValue( name, out existing ) )
+            if( _schemas.TryGetValue( name, out var existing ) )
             {
                 if( name != existing )
                 {
-                    throw new CKException( "Casing must be strictly the same. '{0}' differs from '{1}'.", name, existing ); 
+                    throw new CKException( "Casing must be strictly the same. '{0}' differs from '{1}'.", name, existing );
                 }
             }
             else _schemas.Add( name, (existing = name) );
@@ -79,25 +74,55 @@ namespace CK.Core
         }
 
         /// <summary>
-        /// Gets the different schemas that are owned by this <see cref="SqlDatabase"/>.
+        /// Gets the different schemes that are owned by this <see cref="SqlDatabase"/>.
         /// </summary>
         public IEnumerable<string> Schemas => _schemas.Keys; 
-
-        /// <summary>
-        /// Gets or sets whether CKCore kernel support must be installed in the database.
-        /// Defaults to false.
-        /// Always true if <see cref="IsDefaultDatabase"/> is true.
-        /// </summary>
-        public bool InstallCore 
-        {
-            get { return _installCore | IsDefaultDatabase; }
-            set { _installCore = value; } 
-        }
 
         /// <summary>
         /// Default database name is <see cref="DefaultDatabaseName"/> = "db".
         /// </summary>
         public bool IsDefaultDatabase => _name == DefaultDatabaseName;
+
+        /// <summary>
+        /// Gets whether CKCore schema with its helpers is installed in the database.
+        /// <para>
+        /// This can only be set by the configuration (handled by engine's SqlSetupAspect) of the <see cref="SqlSetupAspectConfiguration.Databases"/>.
+        /// When false, no guaranty exists: this totally depends on the database, no attempt is made to alter it in any way.
+        /// <para>
+        /// Defaults to false (since v19 - the first net6 version): in previous versions all databases were initialized with snapshot isolation.
+        /// </para>
+        /// This is always true for the default database and not configurable (when <see cref="SqlDatabase.IsDefaultDatabase"/> is true).
+        /// </para>
+        /// </summary>
+        public bool HasCKCore  => _hasCKCore | IsDefaultDatabase;
+
+        /// <summary>
+        /// Gets whether snapshot isolation ("SET ALLOW_SNAPSHOT_ISOLATION ON") is configured on the database
+        /// and activated ("SET READ_COMMITTED_SNAPSHOT ON") so that the default READ_COMITTED is actually READ_COMMITTED_SNAPSHOT.
+        /// <para>
+        /// This can only be set by the configuration (handled by engine's SqlSetupAspect) of the <see cref="SqlSetupAspectConfiguration.Databases"/>.
+        /// When false, no guaranty exists: this totally depends on the database, no attempt is made to alter it in any way.
+        /// <para>
+        /// Defaults to false (since v19 - the first net6 version): in previous versions all databases were initialized with snapshot isolation.
+        /// </para>
+        /// This is always true for the default database and not configurable (<see cref="SqlDatabase.IsDefaultDatabase"/> is true).
+        /// </para>
+        /// <para>
+        /// See https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server)
+        /// </para>
+        /// </summary>
+        public bool UseSnapshotIsolation => _useSnapshotIsolation | IsDefaultDatabase;
+
+        /// <summary>
+        /// The parameters are injected by the engine's SqlSetupAspect.StObjConfiguratorHook.
+        /// Do not change these parameter names nor the default values!
+        /// </summary>
+        void StObjConstruct( string? connectionString = null, bool hasCKCore = false, bool useSnapshotIsolation = false )
+        {
+            ConnectionString = connectionString;
+            _hasCKCore = hasCKCore;
+            _useSnapshotIsolation = useSnapshotIsolation;
+        }
 
     }
 }
