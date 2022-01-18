@@ -6,6 +6,10 @@ namespace CK.Core
     /// <summary>
     /// Specializes <see cref="StObjAttribute"/> to define properties related to the three-steps setup: naming of the object,
     /// type of the associated item and type of the setup driver.
+    /// <para>
+    /// All properties are inherited except the <see cref="ContainerFullName"/>: the container of a specialization is not, by default,
+    /// the container of its base class.
+    /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
     public class SetupAttribute : StObjAttribute, Setup.IAttributeSetupName

@@ -14,10 +14,5 @@ namespace CK.Core
         {
             EnsureSchema( DefaultSchemaName );
         }
-
-        void StObjConstruct( string connectionString )
-        {
-            ConnectionString = connectionString;
-        }
     }
 }

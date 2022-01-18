@@ -87,5 +87,6 @@ namespace CK.SqlServer.Setup
         {
             return DefaultContextLocNaming.Format( contextLocName.Context, contextLocName.Location, SqlDatabaseItemName );
         }
+
     }
 }

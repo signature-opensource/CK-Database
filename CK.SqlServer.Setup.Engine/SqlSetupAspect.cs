@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Parser;
@@ -25,15 +27,50 @@ namespace CK.SqlServer.Setup
                 _config = config;
             }
 
-            public override void ResolveParameterValue( IActivityMonitor monitor, IStObjFinalParameter parameter )
+            public override void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
-                base.ResolveParameterValue( monitor, parameter );
-                if( parameter.Name == "connectionString"
-                    && parameter.Owner.FinalImplementation.Implementation is SqlDatabase db )
+                base.Configure( monitor, o );
+                if( o.InitialObject is SqlDatabase db && o.Generalization == null )
                 {
-                    parameter.SetParameterValue( _config.FindConnectionStringByName( db.Name ) );
+                    var fromAbove = o.ConstructParametersAboveRoot;
+                    Debug.Assert( fromAbove != null, "Since we are on the root of the specializations path." );
+                    var (t, parameters) = fromAbove.Single();
+                    if( parameters.Count != 3
+                        || parameters[0].Name != "connectionString"
+                        || parameters[0].Type != typeof( string )
+                        || parameters[1].Name != "hasCKCore"
+                        || parameters[1].Type != typeof( bool )
+                        || parameters[2].Name != "useSnapshotIsolation"
+                        || parameters[2].Type != typeof( bool ) )
+                    {
+                        throw new CKException( "Expected SqlDatabase.StObjContruct(string? connectionString = null, bool hasCKCore = false, bool useSnapshotIsolation = false)" );
+                    }
+                    if( db.IsDefaultDatabase )
+                    {
+                        monitor.Debug( $"SqlDefaultDatabase.ConnectionString configured to '{_config.DefaultDatabaseConnectionString}' when StObjConstruct will be called." );
+                        parameters[0].SetParameterValue( _config.DefaultDatabaseConnectionString );
+                        // This is useless since the parameters have default values.
+                        // parameters[1].SetParameterValue( true );
+                        // parameters[2].SetParameterValue( true );
+                    }
+                    else
+                    {
+                        var desc = _config.Databases.Find( d => d.LogicalDatabaseName == db.Name );
+                        if( desc != null )
+                        {
+                            monitor.Debug( $"Database named '{db.Name}' of type {db.GetType()} configured to: ConnectionString='{_config.DefaultDatabaseConnectionString}', HasCKCore={desc.HasCKCore}, UseSnapshotIsolation={desc.UseSnapshotIsolation} when StObjConstruct will be called." );
+                            parameters[0].SetParameterValue( desc.ConnectionString );
+                            parameters[1].SetParameterValue( desc.HasCKCore );
+                            parameters[2].SetParameterValue( desc.UseSnapshotIsolation );
+                        }
+                        else
+                        {
+                            monitor.Warn( $"Unable to find configuration for Database named '{db.Name}' of type {db.GetType()}. Its ConnectionString will be null." );
+                        }
+                    }
                 }
-            } 
+            }
+
         }
 
         /// <summary>
