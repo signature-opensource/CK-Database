@@ -4,7 +4,7 @@ using System;
 namespace CK.Setup
 {
     /// <summary>
-    /// Helper class (that can be specialized: see <see cref="SetupConfigReader.OnUnknownProperty(StringMatcher, string)"/>)
+    /// Helper class (that can be specialized: see <see cref="SetupConfigReader.OnUnknownProperty(ref ROSpanCharMatcher, string)"/>)
     /// that applies a textual configuration '"SetupConfig": {...}' from a string to a target setup item
     /// or to a transformer and its target object.
     /// </summary>

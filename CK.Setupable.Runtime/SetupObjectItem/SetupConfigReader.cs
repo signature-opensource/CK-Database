@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace CK.Setup
 {
     /// <summary>
-    /// Helper class (that can be specialized: see <see cref="ApplyProperty(StringMatcher, string)"/>)
+    /// Helper class (that can be specialized: see <see cref="ApplyProperty(ref ROSpanCharMatcher, string)"/>)
     /// that applies a textual configuration '"SetupConfig": {...}' from a string to a setup item.
     /// </summary>
     public class SetupConfigReader
