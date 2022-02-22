@@ -30,6 +30,9 @@ namespace CK.SqlServer.Setup
             public override void Configure( IActivityMonitor monitor, IStObjMutableItem o )
             {
                 base.Configure( monitor, o );
+                // Magic!
+                // We call the SqlDatabase.StObjConstruct (the one of the base SqlDatabase "slice"), with the 
+                // parameters from the aspect configuration based on the instance Name.
                 if( o.InitialObject is SqlDatabase db && o.Generalization == null )
                 {
                     var fromAbove = o.ConstructParametersAboveRoot;
@@ -58,14 +61,14 @@ namespace CK.SqlServer.Setup
                         var desc = _config.Databases.Find( d => d.LogicalDatabaseName == db.Name );
                         if( desc != null )
                         {
-                            monitor.Debug( $"Database named '{db.Name}' of type {db.GetType()} configured to: ConnectionString='{_config.DefaultDatabaseConnectionString}', HasCKCore={desc.HasCKCore}, UseSnapshotIsolation={desc.UseSnapshotIsolation} when StObjConstruct will be called." );
+                            monitor.Info( $"Database named '{db.Name}' of type '{db.GetType().FullName}' configured to: ConnectionString='{desc.ConnectionString}', HasCKCore={desc.HasCKCore}, UseSnapshotIsolation={desc.UseSnapshotIsolation} when StObjConstruct will be called." );
                             parameters[0].SetParameterValue( desc.ConnectionString );
                             parameters[1].SetParameterValue( desc.HasCKCore );
                             parameters[2].SetParameterValue( desc.UseSnapshotIsolation );
                         }
                         else
                         {
-                            monitor.Warn( $"Unable to find configuration for Database named '{db.Name}' of type {db.GetType()}. Its ConnectionString will be null." );
+                            monitor.Warn( $"Unable to find configuration for Database named '{db.Name}' of type '{db.GetType().FullName}'. Its ConnectionString will be null." );
                         }
                     }
                 }
