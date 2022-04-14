@@ -3,7 +3,7 @@
     <!-- Centralized version dependencies. -->
     <CKStObjVersion>19.0.0-r07-02-0013-develop</CKStObjVersion>
     <CKSqlServerVersion>0.18.0-r06-02-0009-develop</CKSqlServerVersion>
-    <CKSqlServerParserVersion>17.0.0-r06-02-0009-develop</CKSqlServerParserVersion>
+    <CKSqlServerParserVersion>17.0.0-r06-02-0010-develop</CKSqlServerParserVersion>
     <CKTestingVersion>3.0.0-r06-02-0009-develop</CKTestingVersion>
   </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
