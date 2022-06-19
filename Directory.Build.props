@@ -1,11 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <!-- Centralized version dependencies. -->
-    <CKStObjVersion>19.0.0-r09</CKStObjVersion>
-    <CKSqlServerVersion>0.18.0-r08</CKSqlServerVersion>
-    <CKSqlServerParserVersion>17.0.0-r08</CKSqlServerParserVersion>
-    <CKTestingVersion>3.0.0-r08</CKTestingVersion>
-  </PropertyGroup>
   <!-- Ignore any CKSetup-WorkingDir folder. -->
   <ItemGroup>
     <Compile Remove="CKSetup-WorkingDir\**" />
