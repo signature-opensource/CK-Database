@@ -3,7 +3,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
-  <Import Project="..\..\Common\Shared.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />

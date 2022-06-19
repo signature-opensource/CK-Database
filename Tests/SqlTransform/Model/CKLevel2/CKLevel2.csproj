@@ -4,7 +4,6 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
-  <Import Project="..\..\..\..\Common\Shared.props" />
   <ItemGroup>
     <EmbeddedResource Include="IntermediateTransformation\Res\Package3%28vBase%29.tql" />
     <EmbeddedResource Include="IntermediateTransformation\Res\vDependent.sql" />

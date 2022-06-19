@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -11,7 +10,6 @@
   <ItemGroup>
     <None Remove="Res\sVerbatimParameterProc.sql" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <PackageReference Include="CK.SqlServer.Transaction" Version="$(CKSqlServerVersion)" />
