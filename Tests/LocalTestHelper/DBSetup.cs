@@ -13,7 +13,6 @@ namespace LocalTestHelper
         [Explicit]
         public void delete_netcore_published_folders()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.DeleteAllLocalComponentsPublishedFolders();
         }

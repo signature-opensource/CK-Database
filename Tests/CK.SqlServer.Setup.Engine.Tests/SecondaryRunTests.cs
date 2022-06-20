@@ -17,8 +17,6 @@ namespace CK.SqlServer.Setup.Engine.Tests
         [Explicit]
         public void SqlZonePackage_with_SqlActorPackage_BinPath()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
-
             var actorGeneratedPath = Path.Combine( TestHelper.BinFolder, "../ForActorOnly" );
             Directory.CreateDirectory( actorGeneratedPath );
             try
