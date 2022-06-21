@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>
-      CK-Database helps to setup, construct, manages and build modular relationnal databases upon SqlServer.
+      CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.SqlServer.Setup.Engine provides full Sql Server setup support.
     </Description>
   </PropertyGroup>
@@ -11,6 +10,6 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Transform" Version="$(CKSqlServerParserVersion)" />
+    <PackageReference Include="CK.SqlServer.Transform" Version="17.0.0" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Contains NUnit test helpers.</Description>
     <LangVersion>9</LangVersion>
     <IsTestProject>False</IsTestProject>
@@ -10,9 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="$(CKSqlServerParserVersion)" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="17.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

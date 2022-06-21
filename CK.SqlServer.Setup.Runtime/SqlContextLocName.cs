@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
 using CK.Setup;
-using CK.Text;
 
 namespace CK.SqlServer.Setup
 {

@@ -1,7 +1,7 @@
 using CK.Core;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using static CK.Testing.CKDatabaseLocalTestHelper;
 
 namespace SqlActorPackage.Tests

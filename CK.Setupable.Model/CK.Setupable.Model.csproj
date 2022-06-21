@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.Setupable.Model enables StObj objects to support TSS (Three Steps Setup).
     </Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="$(CKStObjVersion)" />
+    <PackageReference Include="CK.StObj.Model" Version="19.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

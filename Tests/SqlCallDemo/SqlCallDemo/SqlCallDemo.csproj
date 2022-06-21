@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
@@ -11,9 +10,8 @@
   <ItemGroup>
     <None Remove="Res\sVerbatimParameterProc.sql" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
-    <PackageReference Include="CK.SqlServer.Transaction" Version="$(CKSqlServerVersion)" />
+    <PackageReference Include="CK.SqlServer.Transaction" Version="1.0.0" />
   </ItemGroup>
 </Project>

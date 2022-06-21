@@ -99,6 +99,6 @@ namespace CK.SqlServer.Setup
         /// <typeparam name="T">The type of the service to retrieve.</typeparam>
         /// <param name="mustExist">True to throw an exception if the service is not registered.</param>
         /// <returns>The instance or null if it not registered and <paramref name="mustExist"/> is false.</returns>
-        public T GetService<T>( bool mustExist = false ) => mustExist ? (T)_sharedState[typeof(T)] : (T)_sharedState.GetValueWithDefault( typeof( T ), null );
+        public T GetService<T>( bool mustExist = false ) => mustExist ? (T)_sharedState[typeof(T)] : (T)_sharedState.GetValueOrDefault( typeof( T ), null );
     }
 }

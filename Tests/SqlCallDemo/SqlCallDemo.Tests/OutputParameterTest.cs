@@ -66,7 +66,7 @@ namespace SqlCallDemo.Tests
 
 
         [Test]
-        public async Task async_calling_a_pure_output_with_default_parameter()
+        public async Task async_calling_a_pure_output_with_default_parameter_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<OutputParameterPackage>();
             using( var ctx = new SqlStandardCallContext() )

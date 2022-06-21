@@ -2,7 +2,7 @@ using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 using static CK.Testing.DBSetupTestHelper;
 
@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
     public class EnumSupportTests
     {
         [Test]
-        public async Task async_call_with_enum_values()
+        public async Task async_call_with_enum_values_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )
@@ -68,7 +68,7 @@ namespace SqlCallDemo.Tests
         }
 
         [Test]
-        public async Task async_call_with_nullable_enum_values()
+        public async Task async_call_with_nullable_enum_values_Async()
         {
             var p = TestHelper.StObjMap.StObjs.Obtain<FunctionPackage>();
             using( var ctx = new SqlStandardCallContext() )

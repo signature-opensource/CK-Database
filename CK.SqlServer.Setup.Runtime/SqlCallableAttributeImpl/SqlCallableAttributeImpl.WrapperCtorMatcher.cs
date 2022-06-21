@@ -144,7 +144,7 @@ namespace CK.SqlServer.Setup
                     }
                     else if( mP == _declaringTypeMarker )
                     {
-                        b.Append( "(" ).AppendCSharpName( Parameters[i].ParameterType ).Append(")this" );
+                        b.Append( "(" ).AppendCSharpName( Parameters[i].ParameterType, true, true, true ).Append(")this" );
                     }
                     else if( mP.Member == Ctor )
                     {

@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Enables three-steps setup support by hooking the CK.Testing.StObjSetup TestHelper: the SetupableAspectConfiguration is injected into the StObjEngineConfiguration.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.Testing.StObjSetup" Version="18.0.0" />
+    <PackageReference Include="CK.Testing.StObjSetup" Version="19.0.0" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 using CK.Core;
 
@@ -313,12 +313,7 @@ namespace CK.SqlServer.Setup
                         _command.CommandText = script;
                         if( _monitor != null )
                         {
-                            hasBeenTraced = _monitor.ShouldLogLine( LogLevel.Trace );
-                            if( hasBeenTraced )
-                            {
-                                _monitor.UnfilteredLog( ActivityMonitor.Tags.Empty, LogLevel.Trace | LogLevel.IsFiltered, script, _monitor.NextLogTime(), null );
-                                _monitor.UnfilteredLog( ActivityMonitor.Tags.Empty, LogLevel.Trace | LogLevel.IsFiltered, "GO", _monitor.NextLogTime(), null );
-                            }
+                            hasBeenTraced = _monitor.Trace( script );
                         }
                         _command.ExecuteNonQuery();
                     }

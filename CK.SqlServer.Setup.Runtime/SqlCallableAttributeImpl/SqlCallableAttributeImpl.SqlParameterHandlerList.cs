@@ -304,7 +304,7 @@ namespace CK.SqlServer.Setup
                             if( _ctxProp.PocoMappedType != null )
                             {
                                 b.Append( "((" )
-                                    .AppendCSharpName( _ctxProp.PocoMappedType )
+                                    .AppendCSharpName( _ctxProp.PocoMappedType, true, true, true )
                                     .Append( ")" )
                                     .AppendVariable( _ctxProp.Parameter.Name )
                                     .Append( ")." )
@@ -497,17 +497,17 @@ namespace CK.SqlServer.Setup
                 {
                     b.Append( "DBNull.Value == " )
                         .Append( tempObjName() )
-                        .Append( "? default(" ).AppendCSharpName( targetType ).Append( ')' )
-                        .Append( ": (" ).AppendCSharpName( targetType ).Append( ')' );
+                        .Append( "? default(" ).AppendCSharpName( targetType, true, true, true ).Append( ')' )
+                        .Append( ": (" ).AppendCSharpName( targetType, true, true, true ).Append( ')' );
                     if( enumUnderlyingType != null )
                     {
-                        b.Append( '(' ).AppendCSharpName( enumUnderlyingType ).Append( ')' );
+                        b.Append( '(' ).AppendCSharpName( enumUnderlyingType, true, true, true ).Append( ')' );
                     }
                 }
                 else if( !isChar )
                 {
                     b.Append( '(' )
-                        .AppendCSharpName( targetType )
+                        .AppendCSharpName( targetType, true, true, true )
                         .Append( ')' );
                 }
                 if( isChar )
@@ -529,7 +529,7 @@ namespace CK.SqlServer.Setup
             internal string AssumeSourceFuncResultBuilder( IDynamicAssembly dynamicAssembly )
             {
                 string funcKey = "S:_build_func_:" + _funcResultBuilderSignature.ToString();
-                string fieldFullName = (string)dynamicAssembly.Memory.GetValueWithDefault( funcKey, null );
+                string? fieldFullName = (string?)dynamicAssembly.Memory.GetValueOrDefault( funcKey, null );
                 if( fieldFullName == null )
                 {
                     var ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
@@ -539,7 +539,7 @@ namespace CK.SqlServer.Setup
                     {
                         t = ns.CreateType( "static class _build_func_" );
                         t.CreateFunction(
-                            @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelper<T>(
+                            @"public static async System.Threading.Tasks.Task<T> FuncBuilderHelperAsync<T>(
                                 this ISqlConnectionController @this,
                                 SqlCommand cmd,
                                 Func<SqlCommand, T> resultBuilder,

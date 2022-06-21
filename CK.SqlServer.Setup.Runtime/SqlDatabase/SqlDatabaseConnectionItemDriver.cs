@@ -59,8 +59,10 @@ namespace CK.SqlServer.Setup
                 {
                     string sqlName = name.Replace( "]", "]]" );
                     _connection.ExecuteOneScript( $"if not exists(select 1 from sys.schemas where name = '{name}') begin exec( 'create schema [{sqlName}]' ); end", monitor );
-                }               
-                _connection.ExecuteOneScript( @"
+                }
+                if( Item.SqlDatabase.UseSnapshotIsolation )
+                {
+                    _connection.ExecuteOneScript( @"
 -- Ensure that snapshot_isolation and read_committed_snapshot are on for this db.
 declare @dbName sysname = DB_NAME();
 declare @dbNameQ sysname = QUOTENAME(@dbName);
@@ -84,6 +86,7 @@ end;
  
 if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
 ", monitor );
+                }
             }
             return true;
         }
@@ -105,15 +108,15 @@ if @isSingleUser = 1 exec( 'alter database '+@dbNameQ+' set multi_user;' );
   <Aspect Type=""CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model"">
     <DefaultDatabaseConnectionString>...</DefaultDatabaseConnectionString>
     <Databases>
-      <Database LogicalDatabaseName=""{db.Name}"" [AutoCreate=""true""]>
+      <Database LogicalDatabaseName=""{db.Name}"" [AutoCreate=""false""] [HasCKCore=""false""] [UseSnapshotIsolation=""false""]>
         <ConnectionString>...</ConnectionString>
       </Database>
     </Databases>
   </Aspect>
-(Note that AutoCreate is false by default.)
+(Note that AutoCreate, HasCKCore and UseSnapshotIsolation are false by default.)
 " );
             }
-            else if( !db.IsDefaultDatabase && db.InstallCore )
+            else if( !db.IsDefaultDatabase && db.HasCKCore )
             {
                 c.EnsureCKCoreIsInstalled( monitor );
             }

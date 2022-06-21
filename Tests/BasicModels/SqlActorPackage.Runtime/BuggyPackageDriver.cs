@@ -1,7 +1,6 @@
 using CK.Core;
 using CK.Setup;
 using CK.SqlServer.Setup;
-using CK.Text;
 using System;
 using System.IO;
 using System.Linq;

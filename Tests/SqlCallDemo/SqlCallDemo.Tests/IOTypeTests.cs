@@ -1,6 +1,5 @@
 using CK.Core;
 using CK.SqlServer;
-using CK.Text;
 using FluentAssertions;
 using NUnit.Framework;
 using SqlCallDemo.ComplexType;

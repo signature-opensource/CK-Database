@@ -1,6 +1,5 @@
 using CK.Core;
 using CK.Testing.CKDatabaseLocal;
-using CK.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,32 +19,32 @@ namespace CK.Testing
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.CKDatabaseComponentsPaths => GetCKDatabaseComponentsPaths();
         IEnumerable<NormalizedPath> GetCKDatabaseComponentsPaths()
         {
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Model/bin/{_dbSetup.BuildConfiguration}/net6.0" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Runtime/bin/{_dbSetup.BuildConfiguration}/net6.0" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Engine/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.Setupable.Engine/bin/{_dbSetup.BuildConfiguration}/net6.0" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Model/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Model/bin/{_dbSetup.BuildConfiguration}/net6.0" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Runtime/bin/{_dbSetup.BuildConfiguration}/net6.0" );
 
-            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Engine/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"CK.SqlServer.Setup.Engine/bin/{_dbSetup.BuildConfiguration}/net6.0" );
         }
 
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.SqlActorPackageComponentsPaths => GetSqlActorPackageComponentsPaths();
         IEnumerable<NormalizedPath> GetSqlActorPackageComponentsPaths()
         {
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage/bin/{_dbSetup.BuildConfiguration}/net6.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlActorPackage.Runtime/bin/{_dbSetup.BuildConfiguration}/net6.0" );
         }
 
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.SqlZonePackageComponentsPaths => GetSqlZonePackageComponentsPaths();
         IEnumerable<NormalizedPath> GetSqlZonePackageComponentsPaths()
         {
             foreach( var p in GetSqlActorPackageComponentsPaths() ) yield return p;
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/netstandard2.1" );
-            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage.Runtime/bin/{_dbSetup.BuildConfiguration}/netcoreapp3.1" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage/bin/{_dbSetup.BuildConfiguration}/net6.0" );
+            yield return _dbSetup.SolutionFolder.Combine( $"Tests/BasicModels/SqlZonePackage.Runtime/bin/{_dbSetup.BuildConfiguration}/net6.0" );
         }
 
         IEnumerable<NormalizedPath> ICKDatabaseLocalTestHelperCore.AllLocalComponentsPaths => GetAllLocalComponentsPaths();
@@ -80,7 +79,7 @@ namespace CK.Testing
             {
                 foreach( var p in GetAllLocalComponentsPaths() )
                 {
-                    if( p.LastPart.StartsWith("netcoreapp", StringComparison.OrdinalIgnoreCase) )
+                    if( p.LastPart.StartsWith( "net", StringComparison.OrdinalIgnoreCase ) )
                     {
                         _dbSetup.CleanupFolder( p.Combine( "publish" ) );
                     }

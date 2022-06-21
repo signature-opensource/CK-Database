@@ -1,10 +1,10 @@
-using CK.Text;
+using CK.Core;
 using System;
 
 namespace CK.Setup
 {
     /// <summary>
-    /// Helper class (that can be specialized: see <see cref="SetupConfigReader.OnUnknownProperty(StringMatcher, string)"/>)
+    /// Helper class (that can be specialized: see <see cref="SetupConfigReader.OnUnknownProperty(ref ROSpanCharMatcher, string)"/>)
     /// that applies a textual configuration '"SetupConfig": {...}' from a string to a target setup item
     /// or to a transformer and its target object.
     /// </summary>
@@ -49,24 +49,24 @@ namespace CK.Setup
         /// True if <paramref name="propName"/> has been applied, false 
         /// otherwise or if an error occurred (<see cref="StringMatcher.IsError"/> is true in such case).
         /// </returns>
-        protected internal override bool ApplyProperty( StringMatcher m, string propName )
+        protected internal override bool ApplyProperty( ref ROSpanCharMatcher m, string propName )
         {
             switch( propName )
             {
-                case "AddRequires": ApplyProperties( m, s => TargetConfigReader.Item.Requires.Add( s ) ); break;
-                case "AddRequiredBy": ApplyProperties( m, s => TargetConfigReader.Item.RequiredBy.Add( s ) ); break;
-                case "AddGroups": ApplyProperties( m, s => TargetConfigReader.Item.Groups.Add( s ) ); break;
-                case "AddChildren": TargetConfigReader.ApplyChildren( m, true ); break;
-                case "RemoveRequires": ApplyProperties( m, s => TargetConfigReader.Item.Requires.Remove( s ) ); break;
-                case "RemoveRequiredBy": ApplyProperties( m, s => TargetConfigReader.Item.RequiredBy.Remove( s ) ); break;
-                case "RemoveGroups": ApplyProperties( m, s => TargetConfigReader.Item.Groups.Remove( s ) ); break;
-                case "RemoveChildren": TargetConfigReader.ApplyChildren( m, false ); break;
-                case "TargetContainer": ApplyProperty( m, s => TargetConfigReader.Item.Container = new NamedDependentItemContainerRef( s ) ); break;
-                case "TargetGeneralization": TargetConfigReader.ApplyGeneralization( m ); break;
+                case "AddRequires": ApplyProperties( ref m, s => TargetConfigReader.Item.Requires.Add( s ) ); break;
+                case "AddRequiredBy": ApplyProperties( ref m, s => TargetConfigReader.Item.RequiredBy.Add( s ) ); break;
+                case "AddGroups": ApplyProperties( ref m, s => TargetConfigReader.Item.Groups.Add( s ) ); break;
+                case "AddChildren": TargetConfigReader.ApplyChildren( ref m, true ); break;
+                case "RemoveRequires": ApplyProperties( ref m, s => TargetConfigReader.Item.Requires.Remove( s ) ); break;
+                case "RemoveRequiredBy": ApplyProperties( ref m, s => TargetConfigReader.Item.RequiredBy.Remove( s ) ); break;
+                case "RemoveGroups": ApplyProperties( ref m, s => TargetConfigReader.Item.Groups.Remove( s ) ); break;
+                case "RemoveChildren": TargetConfigReader.ApplyChildren( ref m, false ); break;
+                case "TargetContainer": ApplyProperty( ref m, s => TargetConfigReader.Item.Container = new NamedDependentItemContainerRef( s ) ); break;
+                case "TargetGeneralization": TargetConfigReader.ApplyGeneralization( ref m ); break;
                 default:
                     {
-                        if( propName.StartsWith( "Transformer" ) ) return base.ApplyProperty( m, propName.Substring( 11 ) );
-                        if( propName.StartsWith( "Target" ) ) return TargetConfigReader.ApplyProperty( m, propName.Substring( 6 ) );
+                        if( propName.StartsWith( "Transformer" ) ) return base.ApplyProperty( ref m, propName.Substring( 11 ) );
+                        if( propName.StartsWith( "Target" ) ) return TargetConfigReader.ApplyProperty( ref m, propName.Substring( 6 ) );
                         return false;
                     }
             }

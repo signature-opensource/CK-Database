@@ -1,5 +1,4 @@
 using CK.Core;
-using CK.Text;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
@@ -284,7 +283,7 @@ inner nested.
 --[endscript s1]
 it should work.
 --[endscript s1]
-".NormalizeEOL() );
+".ReplaceLineEndings() );
                 p.Expand( TestHelper.Monitor, true ).Should().BeTrue();
                 var s = p.SplitScript();
                 p.ScriptCount.Should().Be( 1 );
@@ -293,7 +292,7 @@ it should work.
 --[beginscript s1]
 inner nested.
 --[endscript s1]
-it should work.".NormalizeEOL() );
+it should work.".ReplaceLineEndings() );
                 DumpScripts( "Nested labeled scripts", p, s );
             }
             {

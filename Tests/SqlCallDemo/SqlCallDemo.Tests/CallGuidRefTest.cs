@@ -3,7 +3,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using static CK.Testing.DBSetupTestHelper;
 
 namespace SqlCallDemo.Tests
@@ -21,7 +21,7 @@ namespace SqlCallDemo.Tests
             Guid inOut = Guid2;
             string result;
             SqlCommand cmd = p.CmdGuidRefTest( true, Guid1, ref inOut, out result );
-            cmd.Parameters.Should().HaveCount( 4 );
+            cmd.Parameters.Count.Should().Be( 4 );
 
             cmd.Parameters[0].ParameterName.Should().Be( "@ReplaceInAndOut" );
             cmd.Parameters[0].Direction.Should().Be( ParameterDirection.Input );

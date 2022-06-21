@@ -1,6 +1,5 @@
 using CK.Core;
 using CK.Testing;
-using CK.Text;
 using CKSetup;
 using FluentAssertions;
 using NUnit.Framework;
@@ -67,7 +66,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void toggle_logging_to_console()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = !TestHelper.LogToConsole;
         }
 
@@ -78,7 +76,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void toggle_CKSetup_LaunchDebug()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
             TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
@@ -94,7 +91,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void StObjMap_reset()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.ResetStObjMap();
             TestHelper.DeleteGeneratedAssemblies( TestHelper.BinFolder );
@@ -112,7 +108,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void AutomaticServices_load()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.StObjMap.Should().NotBeNull( "StObjMap loading failed." );
             TestHelper.AutomaticServices.Should().NotBeNull( "AutomaticServices configuration failed." );
@@ -126,7 +121,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void attach_debugger()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             if( !Debugger.IsAttached ) Debugger.Launch();
             else TestHelper.Monitor.Info( "Debugger is already attached." );
@@ -140,7 +134,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void drop_database()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             TestHelper.DropDatabase();
         }
@@ -153,7 +146,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void backup_create()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             Assert.That( TestHelper.Backup.CreateBackup() != null, "Backup should be possible." );
         }
 
@@ -171,7 +163,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void backup_restore( string what )
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             if( !int.TryParse( what, out var index ) )
             {
                 index = what[0] == 'X' ? Int32.MaxValue : 0;
@@ -187,7 +178,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void backup_list()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             var all = TestHelper.Backup.GetAllBackups();
             using( TestHelper.Monitor.OpenInfo( $"There is {all.Count} backups available in '{TestHelper.Backup.BackupFolder}'." ) )
             {
@@ -203,7 +193,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void db_setup()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             var r = TestHelper.RunDBSetup();
             Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed.");
@@ -211,14 +200,13 @@ namespace CK.DB.Tests
 
         /// <summary>
         /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/> with full
-        /// oredering traces.
+        /// ordering traces.
         /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
         /// </summary>
         [Test]
         [Explicit]
         public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             var r = TestHelper.RunDBSetup( null, true, true );
             Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
@@ -226,14 +214,13 @@ namespace CK.DB.Tests
 
         /// <summary>
         /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/> with full
-        /// oredering traces and reverse names.
+        /// ordering traces and reverse names.
         /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
         /// </summary>
         [Test]
         [Explicit]
         public void db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             TestHelper.LogToConsole = true;
             var r = TestHelper.RunDBSetup( null, true, true, true );
             Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
@@ -246,7 +233,6 @@ namespace CK.DB.Tests
         [Explicit]
         public void display_information()
         {
-            Assume.That( TestHelper.IsExplicitAllowed, "Press Ctrl key to allow this test to run." );
             Console.WriteLine( "-------------- TestHelper -------------" );
             DumpProperties( String.Empty, TestHelper );
             DumpProperties( "CKSetup.", TestHelper.CKSetup );
