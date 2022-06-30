@@ -99,9 +99,9 @@ namespace CK.SqlServer.Setup
 
                 // SetupObjectItem is initialized by DynamicItemInitialize.
                 // If it is null, we are in a "second run" (a BinPath that is not the root).
-                if( !c.IsUnifiedRun )
+                if( !c.IsPrimaryRun )
                 {
-                    sqlItem = (SqlBaseItem)c.GetUnifiedRunResult( methodKey );
+                    sqlItem = (SqlBaseItem)c.GetPrimaryRunResult( methodKey );
                 }
                 else
                 {
@@ -110,7 +110,7 @@ namespace CK.SqlServer.Setup
                                 ? ((SqlTransformerItem)SetupObjectItem).Target
                                 : (SetupObjectItem.TransformTarget ?? SetupObjectItem);
                     sqlItem = (SqlBaseItem)target;
-                    c.SetUnifiedRunResult( methodKey, sqlItem, false );
+                    c.SetPrimaryRunResult( methodKey, sqlItem, false );
                 }
                 return DoImplement( monitor, m, sqlItem, c.Assembly, tS ) ? CSCodeGenerationResult.Success : CSCodeGenerationResult.Failed;
             }
