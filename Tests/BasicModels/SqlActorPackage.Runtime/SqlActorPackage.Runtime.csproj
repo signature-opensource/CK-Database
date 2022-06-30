@@ -8,7 +8,7 @@
     <ProjectReference Include="..\..\..\Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser" Version="17.0.1--0002-develop" />
+    <PackageReference Include="CK.SqlServer.Parser" Version="17.0.1--0003-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
