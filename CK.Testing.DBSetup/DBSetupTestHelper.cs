@@ -78,7 +78,7 @@ namespace CK.Testing
             {
                 try
                 {
-                    var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _setupableSetup );
+                    var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _sqlServer.Monitor, _setupableSetup );
 
                     // If the database has been created, we force CKSetup to run the engine
                     // even if the files are up to date.
