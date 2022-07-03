@@ -77,8 +77,8 @@ namespace CK.DB.Tests
         public void toggle_CKSetup_LaunchDebug()
         {
             TestHelper.LogToConsole = true;
-            TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
-            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
+            TestHelper.CKSetup.LaunchDebug = !TestHelper.CKSetup.LaunchDebug;
+            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.LaunchDebug}." );
         }
 
         /// <summary>
