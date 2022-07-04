@@ -239,7 +239,7 @@ namespace CK.DB.Tests
 
             Console.WriteLine();
             Console.WriteLine( "------------ Configuration ------------" );
-            var conf = TestHelperResolver.Default.Resolve<ITestHelperConfiguration>();
+            var conf = TestHelperResolver.Default.Resolve<TestHelperConfiguration>();
             foreach( var cG in conf.ConfigurationValues.GroupBy( e => e.Value.BasePath ).OrderBy( x => x ) )
             {
                 Console.WriteLine( $"- Base path: {cG.Key}" );
