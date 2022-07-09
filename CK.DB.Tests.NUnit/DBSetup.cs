@@ -270,9 +270,9 @@ namespace CK.DB.Tests
             if( conf.UselessValues.Any() )
             {
                 Console.WriteLine( "- Useless configuration keys:" );
-                foreach( var u in conf.UselessValues.OrderBy( u => u.Key ) )
+                foreach( var u in conf.UselessValues.OrderBy( u => u.UnusedKey ) )
                 {
-                    Console.WriteLine( $" - {u.Key} = {u.ConfiguredValue}" );
+                    Console.WriteLine( $" - {u.UnusedKey} = {u.ConfiguredValue}" );
                 }
             }
             Console.WriteLine();
