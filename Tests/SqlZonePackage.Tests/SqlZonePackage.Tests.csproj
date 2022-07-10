@@ -9,7 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- This tests the CK.Dapper support with IPoco. -->
-    <PackageReference Include="CK.SqlServer.Dapper" Version="1.0.0" />
+    <PackageReference Include="CK.SqlServer.Dapper" Version="1.0.1--0012-develop" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
