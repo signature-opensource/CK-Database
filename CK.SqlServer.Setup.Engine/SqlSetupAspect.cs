@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Implements <see cref="ISqlSetupAspect"/>.
     /// </summary>
-    public sealed class SqlSetupAspect : IStObjEngineAspect, ICSCodeGenerator, ISqlSetupAspect, IDisposable
+    public sealed class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
         readonly ISetupableAspectRunConfiguration _setupConfiguration;
@@ -145,40 +145,6 @@ namespace CK.SqlServer.Setup
         bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
         {
             return true;
-        }
-
-        CSCodeGenerationResult ICSCodeGenerator.Implement( IActivityMonitor monitor, ICSCodeGenerationContext ctx )
-        {
-            var rootCtor = ctx.Assembly.Code.Global.FindOrCreateNamespace( "CK.StObj" )
-                                                   .FindType( StObjContextRoot.RootContextTypeName )?
-                                                   .FindFunction( $"{StObjContextRoot.RootContextTypeName}(IActivityMonitor)", false );
-
-            if( rootCtor == null )
-            {
-                Throw.InvalidOperationException( $"Unable to find the '{StObjContextRoot.RootContextTypeName}(IActivityMonitor)' constructor." );
-            }
-            var dapperSupport = rootCtor.CreatePart();
-            dapperSupport.GeneratedByComment()
-                         .Append( @"
-    // If the CK.Dapper assembly is used, configures the type mapping
-    // to support IPoco through Dapper.
-    if( System.Runtime.Loader.AssemblyLoadContext.Default.Assemblies.Any( a => a.Name == ""CK.Dapper"" ) )
-    {
-        Dapper.SqlMapper.AddAbstractTypeMap( current =>
-        {
-            return type =>
-            {
-                var m = current?.Invoke( type );
-                if( m == null )
-                {
-                    var f = PocoDirectory_CK.Instance.Find( type );
-                    if( f != null ) m = f.PocoClassType;
-                }
-                return m;
-            };
-        } );
-    }" );
-            return CSCodeGenerationResult.Success;
         }
 
         bool IStObjEngineAspect.RunPostCode( IActivityMonitor monitor, IStObjEnginePostCodeRunContext context )
