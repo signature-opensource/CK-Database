@@ -10,7 +10,7 @@ namespace CK.Setup
     /// <summary>
     /// Implements <see cref="ISetupableAspect"/>.
     /// </summary>
-    public class SetupableAspect : IStObjEngineAspect, ISetupableAspect
+    public sealed class SetupableAspect : IStObjEngineAspect, ISetupableAspect
     {
         readonly SetupableAspectConfiguration _config;
         readonly SetupAspectConfigurator _configurator;
@@ -25,7 +25,7 @@ namespace CK.Setup
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        class RunConfiguration : ISetupableAspectRunConfiguration
+        sealed class RunConfiguration : ISetupableAspectRunConfiguration
         {
             readonly SetupableAspect _a;
 
@@ -86,7 +86,7 @@ namespace CK.Setup
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 
-        bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context )
+        bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
         {
             var configurator = _configurator.FirstLayer;
             var itemBuilder = new StObjSetupItemBuilder( monitor, context.ServiceContainer, configurator, configurator, configurator );
@@ -103,6 +103,11 @@ namespace CK.Setup
                 return setupSuccess;
             }
             return false;
+        }
+
+        bool IStObjEngineAspect.RunPostCode( IActivityMonitor monitor, IStObjEnginePostCodeRunContext context )
+        {
+            return true;
         }
 
         bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context )
@@ -163,7 +168,7 @@ namespace CK.Setup
 
         static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e ) => new Flattennifier().Flatten<T>( e );
 
-        class Flattennifier
+        sealed class Flattennifier
         {
             Stack<object> _stack;
 
@@ -177,7 +182,7 @@ namespace CK.Setup
                         // If o is both a T and an IEnumerable, we continue: this
                         // handles composites. For "monades", this may lead to a duplicate
                         // (since often the element belongs to its own enumeration).
-                        // Such duplicates should not be a surprise for the developper
+                        // Such duplicates should not be a surprise for the developer
                         // that works with such funny beast: I prefer to keep handling 
                         // the composition.
                         if( o is IEnumerable && o != e )

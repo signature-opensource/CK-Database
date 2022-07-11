@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using CK.Core;
+using CK.CodeGen;
 using CK.Setup;
 using CK.SqlServer.Parser;
 
@@ -10,7 +11,7 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Implements <see cref="ISqlSetupAspect"/>.
     /// </summary>
-    public class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
+    public sealed class SqlSetupAspect : IStObjEngineAspect, ICSCodeGenerator, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
         readonly ISetupableAspectRunConfiguration _setupConfiguration;
@@ -18,7 +19,7 @@ namespace CK.SqlServer.Setup
         ISqlServerParser _sqlParser;
         ISqlManagerBase _defaultDatabase;
 
-        class StObjConfiguratorHook : StObjConfigurationLayer
+        sealed class StObjConfiguratorHook : StObjConfigurationLayer
         {
             readonly SqlSetupAspectConfiguration _config;
 
@@ -84,14 +85,16 @@ namespace CK.SqlServer.Setup
         /// <param name="config">Configuration object.</param>
         /// <param name="monitor">Monitor to use.</param>
         /// <param name="setupConfiguration"></param>
-        public SqlSetupAspect( SqlSetupAspectConfiguration config, IActivityMonitor monitor, ConfigureOnly<ISetupableAspectRunConfiguration> setupConfiguration )
+        public SqlSetupAspect( SqlSetupAspectConfiguration config,
+                               IActivityMonitor monitor,
+                               ConfigureOnly<ISetupableAspectRunConfiguration> setupConfiguration )
         {
-            if( setupConfiguration.Service == null ) throw new ArgumentNullException( nameof(setupConfiguration) );
-            if( config == null ) throw new ArgumentNullException( nameof(config) );
+            Throw.CheckNotNullArgument( setupConfiguration.Service );
+            Throw.CheckNotNullArgument( config );
             _config = config;
             _setupConfiguration = setupConfiguration.Service;
             _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
-            _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate:true );
+            _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate: true );
             foreach( var db in _config.Databases )
             {
                 _databases.Add( db.LogicalDatabaseName, db.ConnectionString, db.AutoCreate );
@@ -139,9 +142,54 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
-        bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context ) => true;
+        bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
+        {
+            return true;
+        }
 
-        bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context ) => true;
+        CSCodeGenerationResult ICSCodeGenerator.Implement( IActivityMonitor monitor, ICSCodeGenerationContext ctx )
+        {
+            var rootCtor = ctx.Assembly.Code.Global.FindOrCreateNamespace( "CK.StObj" )
+                                                   .FindType( StObjContextRoot.RootContextTypeName )?
+                                                   .FindFunction( $"{StObjContextRoot.RootContextTypeName}(IActivityMonitor)", false );
+
+            if( rootCtor == null )
+            {
+                Throw.InvalidOperationException( $"Unable to find the '{StObjContextRoot.RootContextTypeName}(IActivityMonitor)' constructor." );
+            }
+            var dapperSupport = rootCtor.CreatePart();
+            dapperSupport.GeneratedByComment()
+                         .Append( @"
+    // If the CK.Dapper assembly is used, configures the type mapping
+    // to support IPoco through Dapper.
+    if( System.Runtime.Loader.AssemblyLoadContext.Default.Assemblies.Any( a => a.Name == ""CK.Dapper"" ) )
+    {
+        Dapper.SqlMapper.AddAbstractTypeMap( current =>
+        {
+            return type =>
+            {
+                var m = current?.Invoke( type );
+                if( m == null )
+                {
+                    var f = PocoDirectory_CK.Instance.Find( type );
+                    if( f != null ) m = f.PocoClassType;
+                }
+                return m;
+            };
+        } );
+    }" );
+            return CSCodeGenerationResult.Success;
+        }
+
+        bool IStObjEngineAspect.RunPostCode( IActivityMonitor monitor, IStObjEnginePostCodeRunContext context )
+        {
+            return true;
+        }
+
+        bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context )
+        {
+            return true;
+        }
 
         /// <summary>
         /// Gets the configuration object.
@@ -174,11 +222,10 @@ namespace CK.SqlServer.Setup
         /// Releases all database managers.
         /// Can safely be called multiple times.
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
         {
             // Can safely be called multiple times.
             _databases.Dispose();
         }
-
     }
 }

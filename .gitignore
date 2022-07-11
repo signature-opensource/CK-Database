@@ -277,3 +277,4 @@ DBBackup/
 
 CodeCakeBuilder/[Rr]elease/
 CodeCakeBuilder/[Rr]eleases/
+/Tests/SqlCallDemo/SqlCallDemo.Tests/LocalStores/

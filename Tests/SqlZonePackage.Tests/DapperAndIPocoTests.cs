@@ -25,7 +25,6 @@ namespace SqlZonePackage.Tests
     [TestFixture]
     public class DapperAndIPocoTests
     {
-
         [Test]
         public void Dapper_Query_with_IPoco()
         {
