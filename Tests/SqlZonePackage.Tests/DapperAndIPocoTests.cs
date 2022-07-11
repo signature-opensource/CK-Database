@@ -72,10 +72,11 @@ namespace SqlZonePackage.Tests
                 listFromC[0].Power.Should().Be( 42 );
                 listFromC[1].Name.Should().Be( "Hop" );
                 listFromC[1].Power.Should().Be( 3712 );
-            }
 
-            SqlMapper.SetAbstractTypeMap( null );
-            SqlMapper.PurgeQueryCache();
+                var first = controller.QueryFirstOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );
+                first.Name.Should().Be( "Albert" );
+                first.Power.Should().Be( 42 );
+            }
         }
 
         [Test]
@@ -85,8 +86,9 @@ namespace SqlZonePackage.Tests
             using( var ctx = new SqlStandardCallContext() )
             {
                 var controller = ctx.GetConnectionController( db );
-                var first = controller.QuerySingleOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );
-                first.Should().BeEquivalentTo( (Name: "Albert", Power: 42) );
+                var first = controller.QueryFirstOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );
+                first.Name.Should().Be( "Albert" );
+                first.Power.Should().Be( 42 );
             }
         }
 
