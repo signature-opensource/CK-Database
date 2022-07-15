@@ -75,7 +75,8 @@ namespace CK.SqlServer.Setup
                     .Append( "','" ).Append( version ).Append( "')" );
             }
 
-            if( runSignature != reader.GetSignature( monitor ) )
+            Debug.Assert( reader != null || !rewriteToSameDatabase, "reader == null ==> !rewriteToSameDatabase" );
+            if( !rewriteToSameDatabase || runSignature != reader.GetSignature( monitor ) )
             {
                 Update( "RunSignature", "RunSignature", runSignature.ToString() );
             }

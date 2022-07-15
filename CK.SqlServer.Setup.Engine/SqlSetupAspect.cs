@@ -137,6 +137,10 @@ namespace CK.SqlServer.Setup
             return true;
         }
 
+        bool IStObjEngineAspect.OnSkippedRun( IActivityMonitor monitor )
+        {
+            return true;
+        }
 
         bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
         {

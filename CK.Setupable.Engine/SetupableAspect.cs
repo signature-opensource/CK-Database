@@ -87,6 +87,10 @@ namespace CK.Setup
             return true;
         }
 
+        bool IStObjEngineAspect.OnSkippedRun( IActivityMonitor monitor )
+        {
+            return true;
+        }
         /// <summary>
         /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.

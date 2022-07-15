@@ -170,7 +170,7 @@ namespace CK.SqlServer.Setup
                     : null;
         }
 
-        internal static string CreateTemporaryTableScript = @"declare @T table(F nvarchar(400) collate Latin1_General_BIN2 not null,T varchar(16) collate Latin1_General_BIN2 not null,V varchar(32) not null);";
+        internal static string CreateTemporaryTableScript = @"declare @T table(F nvarchar(400) collate Latin1_General_BIN2 not null,T varchar(16) collate Latin1_General_BIN2 not null,V varchar(64) not null);";
 
         internal static string MergeTemporaryTableScript = @"
 merge CKCore.tItemVersionStore as target
