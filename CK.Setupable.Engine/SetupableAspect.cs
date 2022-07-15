@@ -4,6 +4,7 @@ using CK.Core;
 using System.Diagnostics;
 using System.Collections;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.Setup
 {
@@ -20,6 +21,7 @@ namespace CK.Setup
         IVersionedItemWriter _versionedItemWriter;
         ISetupSessionMemoryProvider _setupSessionMemoryProvider;
         ISetupSessionMemory _setupSessionMemory;
+        SHA1Value _configBaseSHA1;
 
         readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
@@ -64,9 +66,24 @@ namespace CK.Setup
 
         bool PostConfigure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
-            _versionedItemReader = context.ServiceContainer.GetService<IVersionedItemReader>( true );
-            _versionedItemWriter = context.ServiceContainer.GetService<IVersionedItemWriter>( true );
-            _setupSessionMemoryProvider = context.ServiceContainer.GetService<ISetupSessionMemoryProvider>( true );
+            _versionedItemReader = context.ServiceContainer.GetRequiredService<IVersionedItemReader>();
+            _versionedItemWriter = context.ServiceContainer.GetRequiredService<IVersionedItemWriter>();
+            _setupSessionMemoryProvider = context.ServiceContainer.GetRequiredService<ISetupSessionMemoryProvider>();
+            _configBaseSHA1 = context.StObjEngineConfiguration.Configuration.BaseSHA1;
+            if( context.CanSkipRun )
+            {
+                Throw.CheckArgument( "Since CanSkipRun is true, a Configuration.BaseSHA1 must be set.", _configBaseSHA1 != SHA1Value.Zero && _configBaseSHA1 != SHA1Value.Empty );
+                var s = _versionedItemReader.GetSignature( monitor );
+                if( _configBaseSHA1 == _versionedItemReader.GetSignature( monitor ) )
+                {
+                    monitor.Info( $"Setup can be skipped: Setupable RunSignature from Versioned Item Reader match the configuration's base SHA1 '{_configBaseSHA1}'." );
+                }
+                else
+                {
+                    monitor.Info( $"Setupable RunSignature from Versioned Item Reader is '{s}' differ from configuration's base SHA1 '{_configBaseSHA1}'. Setup required." );
+                    context.CanSkipRun = false;
+                }
+            }
             return true;
         }
 
@@ -99,7 +116,14 @@ namespace CK.Setup
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
                 bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker );
-                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.PrimaryBinPath.EngineMap.Features );
+                // Conclude only on success.
+                // This memorizes the item versions (since this pre code step ran successfully).
+                // The run signature is also written even if it is 0 or empty.
+                setupSuccess &= versionTracker.Conclude( monitor,
+                                                         _versionedItemWriter,
+                                                         setupSuccess && !_config.KeepUnaccessedItemsVersion,
+                                                         context.PrimaryBinPath.EngineMap.Features,
+                                                         _configBaseSHA1 );
                 return setupSuccess;
             }
             return false;

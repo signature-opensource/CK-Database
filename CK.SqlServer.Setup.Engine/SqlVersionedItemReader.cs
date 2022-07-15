@@ -11,13 +11,14 @@ namespace CK.SqlServer.Setup
     /// <summary>
     /// Implements <see cref="IVersionedItemReader"/> on a Sql Server database. 
     /// </summary>
-    public class SqlVersionedItemReader : IVersionedItemReader
+    public sealed class SqlVersionedItemReader : IVersionedItemReader
     {
         /// <summary>
         /// Gets the current version of this store.
         /// </summary>
         public static int CurrentVersion => _upgradeScripts.Length;
 
+        SHA1Value? _runSignature;
         bool _initialized;
 
         /// <summary>
@@ -26,7 +27,7 @@ namespace CK.SqlServer.Setup
         /// <param name="manager">The sql manager to use.</param>
         public SqlVersionedItemReader( ISqlManager manager )
         {
-            if( manager == null ) throw new ArgumentNullException( "manager" );
+            Throw.CheckNotNullArgument( manager );
             Manager = manager;
         }
 
@@ -66,10 +67,26 @@ namespace CK.SqlServer.Setup
         }
 
         /// <summary>
+        /// Gets the "RunSignature" stored version.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>The stored SHA1. Can be the default Zero SHA1 (<see cref="SHA1Value.IsZero"/>).</returns>
+        public SHA1Value GetSignature( IActivityMonitor monitor )
+        {
+            if( !_runSignature.HasValue )
+            {
+                var s = (string)Manager.ExecuteScalar( "if object_id('CKCore.tItemVersionStore') is not null select ItemVersion from CKCore.tItemVersionStore where FullName=N'RunSignature' else select '';" );
+                SHA1Value.TryParse( s, out var v );
+                _runSignature = v;
+            }
+            return _runSignature.Value;
+        }
+
+        /// <summary>
         /// Gets the versions stored in the database.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
-        /// <returns>The set of original verions.</returns>
+        /// <returns>The set of original versions.</returns>
         public OriginalReadInfo GetOriginalVersions( IActivityMonitor monitor )
         {
             var result = new List<VersionedTypedName>();
@@ -90,7 +107,7 @@ namespace CK.SqlServer.Setup
                     {
                         fResult.Add( new VFeature( fullName, SVersion.Parse( r.GetString( 2 ) ) ) );
                     }
-                    else
+                    else if( fullName != "RunSignature" )
                     {
                         Version v;
                         if( !Version.TryParse( r.GetString( 2 ), out v ) )
@@ -168,7 +185,7 @@ begin
 	(
 		FullName nvarchar(400) collate Latin1_General_BIN2 not null,
 		ItemType varchar(16) collate Latin1_General_BIN2 not null,
-		ItemVersion varchar(32) not null,
+		ItemVersion varchar(64) not null,
 		constraint CKCore_PK_tItemVersionStore primary key(FullName)
 	);
 	if OBJECT_ID('CKCore.tItemVersion') is not null
@@ -191,7 +208,12 @@ create view CKCore.vVFeature
 as
     select VFeature = FullName, Version = ItemVersion from CKCore.tItemVersionStore where ItemType='VFeature';";
 
-        readonly static string[] _upgradeScripts = new[] { _update1, _update2 };
+        // The ItemVersion was 32 char we now need at least 40 to store the RunSignature SHA1.
+        // Let's go for 64.
+        const string _update3 = @"
+  alter table CKCore.tItemVersionStore alter column ItemVersion varchar(64) not null;
+";
+        readonly static string[] _upgradeScripts = new[] { _update1, _update2, _update3 };
 
     }
 }

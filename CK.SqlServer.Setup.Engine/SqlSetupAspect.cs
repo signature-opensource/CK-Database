@@ -14,7 +14,6 @@ namespace CK.SqlServer.Setup
     public sealed class SqlSetupAspect : IStObjEngineAspect, ISqlSetupAspect, IDisposable
     {
         readonly SqlSetupAspectConfiguration _config;
-        readonly ISetupableAspectRunConfiguration _setupConfiguration;
         readonly SqlManagerProvider _databases;
         ISqlServerParser _sqlParser;
         ISqlManagerBase _defaultDatabase;
@@ -84,15 +83,11 @@ namespace CK.SqlServer.Setup
         /// </summary>
         /// <param name="config">Configuration object.</param>
         /// <param name="monitor">Monitor to use.</param>
-        /// <param name="setupConfiguration"></param>
         public SqlSetupAspect( SqlSetupAspectConfiguration config,
-                               IActivityMonitor monitor,
-                               ConfigureOnly<ISetupableAspectRunConfiguration> setupConfiguration )
+                               IActivityMonitor monitor )
         {
-            Throw.CheckNotNullArgument( setupConfiguration.Service );
             Throw.CheckNotNullArgument( config );
             _config = config;
-            _setupConfiguration = setupConfiguration.Service;
             _databases = new SqlManagerProvider( monitor, m => m.IgnoreMissingDependencyIsError = _config.IgnoreMissingDependencyIsError );
             _databases.Add( SqlDatabase.DefaultDatabaseName, _config.DefaultDatabaseConnectionString, autoCreate: true );
             foreach( var db in _config.Databases )
@@ -141,6 +136,7 @@ namespace CK.SqlServer.Setup
             context.AddExplicitRegisteredType( typeof( SqlDefaultDatabase ) );
             return true;
         }
+
 
         bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
         {

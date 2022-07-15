@@ -11,7 +11,7 @@ namespace CK.SqlServer.Setup
     /// Offers script execution facility and higher level database management (such as automatically 
     /// creating a database) for Sql server databases.
     /// </summary>
-    public class SqlManager : ISqlManager
+    public sealed class SqlManager : ISqlManager
     {
         static List<string> _protectedDatabaseNames = new List<string>() { "master", "msdb", "tempdb", "model" };
 
@@ -28,7 +28,8 @@ namespace CK.SqlServer.Setup
         /// <param name="monitor">Required non null monitor.</param>
         public SqlManager( IActivityMonitor monitor )
         {
-            _monitor = monitor ?? throw new ArgumentNullException( nameof( monitor ) );
+            Throw.CheckNotNullArgument( monitor );
+            _monitor = monitor;
             _checkTranCount = true;
         }
 
@@ -78,14 +79,14 @@ namespace CK.SqlServer.Setup
 
         void CheckOpen()
         {
-            if( _oCon == null ) throw new InvalidOperationException( "SqlManager is closed." );
+            Throw.CheckState( "SqlManager is closed.", _oCon != null );
         }
 
         /// <summary>
         /// Gets or sets whether transaction count must be equal before and after 
         /// executing scripts. Defaults to true.
         /// </summary>
-        bool CheckTransactionCount
+        public bool CheckTransactionCount
         {
             get { return _checkTranCount; }
             set { _checkTranCount = value; }
@@ -197,7 +198,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success.</returns>
         public bool EnsureCKCoreIsInstalled( IActivityMonitor monitor )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
             CheckOpen();
             if( !_ckCoreInstalled )
             {
@@ -209,7 +210,7 @@ namespace CK.SqlServer.Setup
         /// <summary>
         /// Returns the object text definition of <paramref name="schemaName"/> object.
         /// </summary>
-        /// <param name="schemaName">Namme of the object.</param>
+        /// <param name="schemaName">Name of the object.</param>
         /// <returns>The object's text.</returns>
         public string GetObjectDefinition( string schemaName )
         {
@@ -265,7 +266,7 @@ namespace CK.SqlServer.Setup
             }
         }
 
-        class SqlExecutor : ISqlScriptExecutor
+        sealed class SqlExecutor : ISqlScriptExecutor
         {
             readonly SqlManager _manager;
             readonly SqlCommand _command;
@@ -302,7 +303,7 @@ namespace CK.SqlServer.Setup
 
             public bool Execute( string script )
             {
-                if( script == null ) throw new ArgumentNullException( nameof(script) );
+                Throw.CheckNotNullArgument( script );
                 LastSucceed = false;
                 bool hasBeenTraced = false;
                 try
@@ -489,7 +490,6 @@ namespace CK.SqlServer.Setup
                 return res;
             }
         }
-
 
         #region Private
 

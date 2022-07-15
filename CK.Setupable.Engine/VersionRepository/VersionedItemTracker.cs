@@ -136,13 +136,24 @@ namespace CK.Setup
         /// <param name="writer">The version writer.</param>
         /// <param name="deleteUnaccessedItems">True to delete non accessed names.</param>
         /// <param name="features">The current features.</param>
+        /// <param name="runSignature">The global run signature.</param>
         /// <returns>True on success, false on error.</returns>
-        internal bool Conclude( IActivityMonitor monitor, IVersionedItemWriter writer, bool deleteUnaccessedItems, IReadOnlyCollection<VFeature> features )
+        internal bool Conclude( IActivityMonitor monitor,
+                                IVersionedItemWriter writer,
+                                bool deleteUnaccessedItems,
+                                IReadOnlyCollection<VFeature> features,
+                                SHA1Value runSignature )
         {
             using( monitor.OpenTrace( $"Handling version changes with {features.Count} features and deleteUnaccessedItems: {deleteUnaccessedItems}." ) )
             try
             {
-                writer.SetVersions( monitor, _versionReader, _tracker.All, deleteUnaccessedItems, OriginalFeatures, features );
+                writer.SetVersions( monitor,
+                                    _versionReader,
+                                    _tracker.All,
+                                    deleteUnaccessedItems,
+                                    OriginalFeatures,
+                                    features,
+                                    runSignature );
                 return true;
             }
             catch( Exception ex )

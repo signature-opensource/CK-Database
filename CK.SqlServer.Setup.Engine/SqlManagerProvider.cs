@@ -22,7 +22,7 @@ namespace CK.SqlServer.Setup
 
         public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManagerBase> dbConfigurator = null )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
             _monitor = monitor;
             _items = new Dictionary<string, Item>();
             _dbConfigurator = dbConfigurator ?? Util.ActionVoid;

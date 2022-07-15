@@ -4,7 +4,7 @@ using CK.Core;
 
 namespace CK.SqlServer.Setup
 {
-    internal class SqlCKCoreInstaller
+    sealed class SqlCKCoreInstaller
     {
         public readonly static short CurrentVersion = 17;
 
@@ -17,7 +17,7 @@ namespace CK.SqlServer.Setup
         /// <returns>True on success.</returns>
         public static bool Install( SqlManager manager, IActivityMonitor monitor, bool forceInstall = false )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
 
             using( monitor.OpenTrace( $"Installing CKCore kernel (v{CurrentVersion})." ) )
             {
