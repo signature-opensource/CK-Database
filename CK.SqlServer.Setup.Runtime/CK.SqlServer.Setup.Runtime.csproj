@@ -12,9 +12,9 @@
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="12.0.1--0007-develop" />
-    <PackageReference Include="Yodii.Script" Version="0.8.2--0031-develop" />
-    <PackageReference Include="CK.Reflection" Version="9.0.3--0031-develop" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="12.1.0" />
+    <PackageReference Include="Yodii.Script" Version="0.8.1" />
+    <PackageReference Include="CK.Reflection" Version="9.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
