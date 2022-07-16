@@ -12,7 +12,7 @@ namespace CK.Testing
     {
         readonly IStObjSetupTestHelper _stObjSetup;
 
-        internal SetupableSetupTestHelper( ITestHelperConfiguration config, IStObjSetupTestHelper stObjSetup )
+        internal SetupableSetupTestHelper( TestHelperConfiguration config, IStObjSetupTestHelper stObjSetup )
         {
             _stObjSetup = stObjSetup;
             _stObjSetup.StObjSetupRunning += OnStObjSetupRunning;

@@ -4,13 +4,14 @@ using CK.Core;
 using System.Diagnostics;
 using System.Collections;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.Setup
 {
     /// <summary>
     /// Implements <see cref="ISetupableAspect"/>.
     /// </summary>
-    public class SetupableAspect : IStObjEngineAspect, ISetupableAspect
+    public sealed class SetupableAspect : IStObjEngineAspect, ISetupableAspect
     {
         readonly SetupableAspectConfiguration _config;
         readonly SetupAspectConfigurator _configurator;
@@ -20,12 +21,13 @@ namespace CK.Setup
         IVersionedItemWriter _versionedItemWriter;
         ISetupSessionMemoryProvider _setupSessionMemoryProvider;
         ISetupSessionMemory _setupSessionMemory;
+        SHA1Value _configBaseSHA1;
 
         readonly EventHandler<RegisterSetupEventArgs> _relayRegisterSetupEvent;
         readonly EventHandler<SetupEventArgs> _relaySetupEvent;
         readonly EventHandler<DriverEventArgs> _relayDriverEvent;
 
-        class RunConfiguration : ISetupableAspectRunConfiguration
+        sealed class RunConfiguration : ISetupableAspectRunConfiguration
         {
             readonly SetupableAspect _a;
 
@@ -64,12 +66,31 @@ namespace CK.Setup
 
         bool PostConfigure( IActivityMonitor monitor, IStObjEngineConfigureContext context )
         {
-            _versionedItemReader = context.ServiceContainer.GetService<IVersionedItemReader>( true );
-            _versionedItemWriter = context.ServiceContainer.GetService<IVersionedItemWriter>( true );
-            _setupSessionMemoryProvider = context.ServiceContainer.GetService<ISetupSessionMemoryProvider>( true );
+            _versionedItemReader = context.ServiceContainer.GetRequiredService<IVersionedItemReader>();
+            _versionedItemWriter = context.ServiceContainer.GetRequiredService<IVersionedItemWriter>();
+            _setupSessionMemoryProvider = context.ServiceContainer.GetRequiredService<ISetupSessionMemoryProvider>();
+            _configBaseSHA1 = context.StObjEngineConfiguration.Configuration.BaseSHA1;
+            if( context.CanSkipRun )
+            {
+                Throw.CheckArgument( "Since CanSkipRun is true, a Configuration.BaseSHA1 must be set.", _configBaseSHA1 != SHA1Value.Zero && _configBaseSHA1 != SHA1Value.Empty );
+                var s = _versionedItemReader.GetSignature( monitor );
+                if( _configBaseSHA1 == _versionedItemReader.GetSignature( monitor ) )
+                {
+                    monitor.Info( $"Setup can be skipped: Setupable RunSignature from Versioned Item Reader match the configuration's base SHA1 '{_configBaseSHA1}'." );
+                }
+                else
+                {
+                    monitor.Info( $"Setupable RunSignature from Versioned Item Reader is '{s}' differ from configuration's base SHA1 '{_configBaseSHA1}'. Setup required." );
+                    context.CanSkipRun = false;
+                }
+            }
             return true;
         }
 
+        bool IStObjEngineAspect.OnSkippedRun( IActivityMonitor monitor )
+        {
+            return true;
+        }
         /// <summary>
         /// This event fires before the <see cref="SetupEvent"/> (with <see cref="SetupEventArgs.Step"/> set to None), and enables
         /// registration of setup items.
@@ -86,11 +107,11 @@ namespace CK.Setup
         /// </summary>
         public event EventHandler<DriverEventArgs> DriverEvent;
 
-        bool IStObjEngineAspect.Run( IActivityMonitor monitor, IStObjEngineRunContext context )
+        bool IStObjEngineAspect.RunPreCode( IActivityMonitor monitor, IStObjEngineRunContext context )
         {
             var configurator = _configurator.FirstLayer;
             var itemBuilder = new StObjSetupItemBuilder( monitor, context.ServiceContainer, configurator, configurator, configurator );
-            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.UnifiedBinPath.EngineMap.StObjs.OrderedStObjs );
+            IEnumerable<ISetupItem> setupItems = itemBuilder.Build( context.PrimaryBinPath.EngineMap.StObjs.OrderedStObjs );
             if( setupItems == null ) return false;
 
             _setupSessionMemory = _setupSessionMemoryProvider.StartSetup();
@@ -99,10 +120,22 @@ namespace CK.Setup
             {
                 context.ServiceContainer.Add( _setupSessionMemory );
                 bool setupSuccess = DoRun( monitor, context.ServiceContainer, setupItems, versionTracker );
-                setupSuccess &= versionTracker.Conclude( monitor, _versionedItemWriter, setupSuccess && !_config.KeepUnaccessedItemsVersion, context.UnifiedBinPath.EngineMap.Features );
+                // Conclude only on success.
+                // This memorizes the item versions (since this pre code step ran successfully).
+                // The run signature is also written even if it is 0 or empty.
+                setupSuccess &= versionTracker.Conclude( monitor,
+                                                         _versionedItemWriter,
+                                                         setupSuccess && !_config.KeepUnaccessedItemsVersion,
+                                                         context.PrimaryBinPath.EngineMap.Features,
+                                                         _configBaseSHA1 );
                 return setupSuccess;
             }
             return false;
+        }
+
+        bool IStObjEngineAspect.RunPostCode( IActivityMonitor monitor, IStObjEnginePostCodeRunContext context )
+        {
+            return true;
         }
 
         bool IStObjEngineAspect.Terminate( IActivityMonitor monitor, IStObjEngineTerminateContext context )
@@ -163,7 +196,7 @@ namespace CK.Setup
 
         static IEnumerable<T> OfTypeRecurse<T>( IEnumerable e ) => new Flattennifier().Flatten<T>( e );
 
-        class Flattennifier
+        sealed class Flattennifier
         {
             Stack<object> _stack;
 
@@ -177,7 +210,7 @@ namespace CK.Setup
                         // If o is both a T and an IEnumerable, we continue: this
                         // handles composites. For "monades", this may lead to a duplicate
                         // (since often the element belongs to its own enumeration).
-                        // Such duplicates should not be a surprise for the developper
+                        // Such duplicates should not be a surprise for the developer
                         // that works with such funny beast: I prefer to keep handling 
                         // the composition.
                         if( o is IEnumerable && o != e )

@@ -53,7 +53,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             var versions = oVersions.Select( v => new VersionedNameTracked( v ) ).ToArray();
             versions[0].SetNewVersion( new Version( 1, 0, 1 ), "T1Bis" );
             versions[1].SetNewVersion( new Version( 1, 1, 2 ), "T2Bis" );
-            _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+            _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
             CheckVersions( "A - 1.0.1 - T1Bis, B - 1.1.2 - T2Bis" );
 
             versions = oVersions.Select( v => new VersionedNameTracked( v ) ).ToArray();
@@ -62,7 +62,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             bool hasLoggedError = false;
             using( TestHelper.Monitor.OnError( () => hasLoggedError = true ) )
             {
-                _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+                _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
             }
             hasLoggedError.Should().BeFalse();
             CheckVersions( "A - 1.0.1 - ChangingType, B - 1.1.2 - T2Bis" );
@@ -73,7 +73,7 @@ namespace CK.SqlServer.Setup.Engine.Tests
             hasLoggedError = false;
             using( TestHelper.Monitor.OnError( () => hasLoggedError = true ) )
             {
-                _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+                _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
             }
             hasLoggedError.Should().BeFalse();
             CheckVersions( "A - 1.0.1 - ChangingType, B - 1.0.0 - VersionRegr" );
@@ -89,16 +89,16 @@ namespace CK.SqlServer.Setup.Engine.Tests
             var f2 = new VFeature( "F2", SVersion.Parse( "2.0.0" ) );
 
             CheckFeatures( "" );
-            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, noFeatures, new[] { f1, f2 } );
+            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, noFeatures, new[] { f1, f2 }, SHA1Value.Zero );
             CheckFeatures( "F1/1.0.0-a, F2/2.0.0" );
 
-            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f2 } );
+            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f2 }, SHA1Value.Zero );
             CheckFeatures( "F2/2.0.0" );
 
-            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f1 } );
+            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f1 }, SHA1Value.Zero );
             CheckFeatures( "" );
 
-            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f1, f2 } );
+            _writer.SetVersions( TestHelper.Monitor, _reader, noItems, deleteUnaccessedItems: false, new[] { f1, f2 }, new[] { f1, f2 }, SHA1Value.Zero );
             CheckFeatures( "" );
         }
 
@@ -117,24 +117,24 @@ namespace CK.SqlServer.Setup.Engine.Tests
 
             // Since we claim to be on the same database, the table does not need to be updated:
             // Versions do not appear because they are already here.
-            _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+            _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
 
             CheckVersions( "" );
 
             // Here we claim to be on a different database, the table is updated.
-            _writer.SetVersions( TestHelper.Monitor, null, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+            _writer.SetVersions( TestHelper.Monitor, null, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
 
             CheckVersions( "A - 1.0.0 - T1, B - 1.1.1 - T2" );
 
             versions[1].Accessed = true;
             // On the same database, A is removed.
-            _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+            _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
 
             CheckVersions( "B - 1.1.1 - T2" );
 
             versions[1].Accessed = false;
             // On a different database, unaccessed items are removed too.
-            _writer.SetVersions( TestHelper.Monitor, null, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>() );
+            _writer.SetVersions( TestHelper.Monitor, null, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
 
             CheckVersions( "" );
         }

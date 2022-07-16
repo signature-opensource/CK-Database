@@ -30,7 +30,7 @@ namespace CK.Testing
         {
             if( e.DeltaLastAccessTime > TimeSpan.FromSeconds( 3 ) )
             {
-                e.ShouldReload |= _sqlServer.EnsureDatabase();
+                e.ShouldReset |= _sqlServer.EnsureDatabase();
             }
         }
 
@@ -43,7 +43,9 @@ namespace CK.Testing
                 conf.IgnoreMissingDependencyIsError = true;
                 conf.GlobalResolution = false;
 
-                e.ForceSetup |= _sqlServer.EnsureDatabase();
+                // If the database has been created, we force CKSetup to run the engine
+                // even if the files are up to date.
+                if( _sqlServer.EnsureDatabase() ) e.ForceSetup = ForceSetupLevel.Engine;
                 e.StObjEngineConfiguration.Aspects.Add( conf );
             }
         }
@@ -76,9 +78,12 @@ namespace CK.Testing
             {
                 try
                 {
-                    var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _setupableSetup );
+                    var stObjConf = StObjSetupTestHelper.CreateDefaultConfiguration( _sqlServer.Monitor, _setupableSetup );
 
-                    stObjConf.ForceSetup |= _sqlServer.EnsureDatabase( db );
+                    // If the database has been created, we force CKSetup to run the engine
+                    // even if the files are up to date.
+                    if( _sqlServer.EnsureDatabase() ) stObjConf.ForceSetup = ForceSetupLevel.Engine;
+
                     stObjConf.Configuration.TraceDependencySorterInput = traceStObjGraphOrdering;
                     stObjConf.Configuration.TraceDependencySorterOutput = traceStObjGraphOrdering;
 

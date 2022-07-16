@@ -77,8 +77,8 @@ namespace CK.DB.Tests
         public void toggle_CKSetup_LaunchDebug()
         {
             TestHelper.LogToConsole = true;
-            TestHelper.CKSetup.DefaultLaunchDebug = !TestHelper.CKSetup.DefaultLaunchDebug;
-            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.DefaultLaunchDebug}." );
+            TestHelper.CKSetup.LaunchDebug = !TestHelper.CKSetup.LaunchDebug;
+            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.LaunchDebug}." );
         }
 
         /// <summary>
@@ -233,22 +233,48 @@ namespace CK.DB.Tests
         [Explicit]
         public void display_information()
         {
-            Console.WriteLine( "-------------- TestHelper -------------" );
-            DumpProperties( String.Empty, TestHelper );
-            DumpProperties( "CKSetup.", TestHelper.CKSetup );
-
-            Console.WriteLine();
             Console.WriteLine( "------------ Configuration ------------" );
-            var conf = TestHelperResolver.Default.Resolve<ITestHelperConfiguration>();
-            foreach( var cG in conf.ConfigurationValues.GroupBy( e => e.Value.BasePath ).OrderBy( x => x ) )
+            var conf = TestHelperResolver.Default.Resolve<TestHelperConfiguration>();
+            Console.WriteLine( "- Configuration:" );
+            foreach( var v in conf.DeclaredValues.OrderBy( u => u.Key ) )
             {
-                Console.WriteLine( $"- Base path: {cG.Key}" );
-                foreach( var c in cG.OrderBy( x => x.Key ) )
+                if( v.IsEditable )
                 {
-                    Console.WriteLine( $" - {c.Key} = {c.Value.Value}" );
+                    if( v.ConfiguredValue != v.CurrentValue )
+                    {
+                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', CurrentValue: '{v.CurrentValue}'" );
+                    }
+                    else
+                    {
+                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [Editable]" );
+                    }
+                }
+                else
+                {
+                    if( v.ConfiguredValue != v.CurrentValue )
+                    {
+                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', DefaultValue: '{v.CurrentValue}'" );
+                    }
+                    else
+                    {
+                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [DefaultValue]" );
+                    }
+                }
+                if( !v.ObsoleteKeyUsed.IsEmptyPath )
+                {
+                    Console.WriteLine( $" *** Obsolete key name: '{v.ObsoleteKeyUsed}'. Configuration should be updated to use '{v.Key}'." );
+                }
+                Console.Write( "   - " );
+                Console.WriteLine( v.Description );
+            }
+            if( conf.UselessValues.Any() )
+            {
+                Console.WriteLine( "- Useless configuration keys:" );
+                foreach( var u in conf.UselessValues.OrderBy( u => u.UnusedKey ) )
+                {
+                    Console.WriteLine( $" - {u.UnusedKey} = {u.ConfiguredValue}" );
                 }
             }
-
             Console.WriteLine();
             Console.WriteLine( "---------- Assembly conflicts ----------" );
             AssemblyLoadConflict[] currents = WeakAssemblyNameResolver.GetAssemblyConflicts();
@@ -267,41 +293,5 @@ namespace CK.DB.Tests
                 Console.WriteLine( a.ToString() );
             }
         }
-
-        void DumpProperties( string prefix, object o )
-        {
-            foreach( var p in o.GetType().GetProperties() )
-            {
-                if( p.PropertyType.IsValueType || p.PropertyType == typeof(string) )
-                {
-                    Console.WriteLine( $"{prefix}{p.Name} = {p.GetValue( o ) ?? "<null>"}" );
-                }
-                else if( typeof( System.Collections.IEnumerable ).IsAssignableFrom( p.PropertyType ) )
-                {
-                    Console.Write( $"{prefix}{p.Name} = " );
-                    var items = p.GetValue( o ) as System.Collections.IEnumerable;
-                    if( items == null ) Console.WriteLine( "<null>" );
-                    else
-                    {
-                        var wPrefix = new String( ' ', prefix.Length + p.Name.Length + 3 );
-                        Console.WriteLine( $"[" );
-                        foreach( var item in items )
-                        {
-                            if( item != null )
-                            {
-                                Type t = item.GetType();
-                                if( t.IsValueType || t == typeof( string ) )
-                                {
-                                    Console.Write( wPrefix );
-                                    Console.WriteLine( item );
-                                }
-                            }
-                        }
-                        Console.WriteLine( $"{wPrefix}]" );
-                    }
-                }
-            }
-        }
-
     }
 }

@@ -5,7 +5,7 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Writes versionning information of a system.
+    /// Writes versioning information of a system.
     /// </summary>
     public interface IVersionedItemWriter
     {
@@ -15,7 +15,7 @@ namespace CK.Setup
         /// When <paramref name="deleteUnaccessedItems"/> is true, any non accessed names can be removed (if they exist)
         /// otherwise only names that has been deleted or have a new version should be updated.
         /// </summary>
-        /// <param name="monitor">Monitor to use for warnings or informations. Exceptions should be thrown an any serious error.</param>
+        /// <param name="monitor">Monitor to use for warnings or informations. Exceptions should be thrown on any serious error.</param>
         /// <param name="reader">
         /// The reader that has been used to read the original versions: this can be used to enable 
         /// checks and/or optimizations.
@@ -24,11 +24,13 @@ namespace CK.Setup
         /// <param name="deleteUnaccessedItems">True to delete unaccessed items.</param>
         /// <param name="originalFeatures">The original features.</param>
         /// <param name="finalFeatures">The final (current) features.</param>
+        /// <param name="runSignature">The global signature.</param>
         void SetVersions( IActivityMonitor monitor,
                           IVersionedItemReader reader,
                           IEnumerable<VersionedNameTracked> trackedItems,
                           bool deleteUnaccessedItems,
                           IReadOnlyCollection<VFeature> originalFeatures,
-                          IReadOnlyCollection<VFeature> finalFeatures);
+                          IReadOnlyCollection<VFeature> finalFeatures,
+                          in SHA1Value runSignature );
     }
 }

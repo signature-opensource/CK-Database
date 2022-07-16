@@ -10,7 +10,7 @@ namespace CK.Testing
     {
         readonly IDBSetupTestHelper _dbSetup;
 
-        internal CKDatabaseLocalTestHelper( ITestHelperConfiguration config, IDBSetupTestHelper ckSetup )
+        internal CKDatabaseLocalTestHelper( IDBSetupTestHelper ckSetup )
         {
             _dbSetup = ckSetup;
             _dbSetup.CKSetup.InitializeStorePath += OnInitializeStorePath;

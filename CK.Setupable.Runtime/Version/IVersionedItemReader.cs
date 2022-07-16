@@ -5,10 +5,18 @@ namespace CK.Setup
 {
 
     /// <summary>
-    /// Reads versionning information of a system.
+    /// Reads versioning information of a system.
     /// </summary>
     public interface IVersionedItemReader
     {
+        /// <summary>
+        /// Tries to get the previous successful run signature.
+        /// Must return the default (<see cref="SHA1Value.IsZero"/>) value if no signature exists.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <returns>The previous successful run signature.</returns>
+        SHA1Value GetSignature( IActivityMonitor monitor );
+
         /// <summary>
         /// Called by the engine at the beginning of the setup process.
         /// </summary>

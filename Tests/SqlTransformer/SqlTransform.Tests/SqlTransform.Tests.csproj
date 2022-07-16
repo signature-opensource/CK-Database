@@ -5,8 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
-    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel0\CKLevel0.csproj" />
-    <ProjectReference Include="..\..\SqlTransform\Model\CKLevel2\CKLevel2.csproj" />
+    <ProjectReference Include="..\..\SqlTransformer\Model\CKLevel0\CKLevel0.csproj" />
+    <ProjectReference Include="..\..\SqlTransformer\Model\CKLevel2\CKLevel2.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />

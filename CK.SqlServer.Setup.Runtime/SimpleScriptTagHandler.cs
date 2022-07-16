@@ -126,7 +126,7 @@ namespace CK.SqlServer
         /// <param name="script"></param>
         public SimpleScriptTagHandler( string script )
         {
-            if( script == null ) throw new ArgumentNullException( "script" );
+            Throw.CheckNotNullArgument( script );
             _text = script.Trim();
         }
 
@@ -145,7 +145,7 @@ namespace CK.SqlServer
         /// <returns>True on success, false on error(s).</returns>
         public bool Expand( IActivityMonitor monitor, bool scriptAllowed, bool goInsideScriptAllowed = false )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
             if( _sb != null ) throw new InvalidOperationException();
 
             if( !ParseTokens( monitor ) ) return false;
@@ -166,7 +166,7 @@ namespace CK.SqlServer
         /// <returns>List of scripts (possibly empty).</returns>
         public List<Script> SplitScript()
         {
-            if( !_expandSuccess ) throw new InvalidOperationException();
+            Throw.CheckState( _expandSuccess );
             List<Script> result = new List<Script>();
             if( _tokens.Count == 0 ) return result;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace CK.Setup
 {
     /// <summary>
-    /// Setup phasis configuration interface.
+    /// Setup phases configuration interface.
     /// Can be injected into other aspect by using a <see cref="ConfigureOnly{T}"/> parameter.
     /// </summary>
     public interface ISetupableAspectRunConfiguration
