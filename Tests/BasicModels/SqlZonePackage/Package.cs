@@ -1,5 +1,6 @@
 using CK.Core;
 using SqlActorPackage;
+using System.Diagnostics;
 
 namespace SqlZonePackage.Zone
 {
@@ -10,7 +11,7 @@ namespace SqlZonePackage.Zone
     public abstract class Package : SqlActorPackage.Basic.Package, SqlActorPackage.IAnyService
     {
         [InjectObject]
-        public new GroupHome GroupHome { get { return (GroupHome)base.GroupHome; } }
+        public new GroupHome GroupHome => (GroupHome)base.GroupHome;
 
         [InjectObject]
         public SecurityZoneHome SecurityZoneHome { get; protected set; }
