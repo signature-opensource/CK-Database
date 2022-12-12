@@ -61,12 +61,12 @@ namespace CK.Core
         /// <returns>Registered name.</returns>
         public string EnsureSchema( string name )
         {
-            if( string.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
+            Throw.CheckNotNullOrWhiteSpaceArgument( name );
             if( _schemas.TryGetValue( name, out var existing ) )
             {
                 if( name != existing )
                 {
-                    throw new CKException( "Casing must be strictly the same. '{0}' differs from '{1}'.", name, existing );
+                    Throw.CKException( $"Casing must be strictly the same. '{name}' differs from '{existing}'." );
                 }
             }
             else _schemas.Add( name, (existing = name) );

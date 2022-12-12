@@ -20,7 +20,7 @@ namespace CK.SqlServer.Setup
         /// </summary>
         internal class SqlParameterHandlerList
         {
-            readonly IPocoSupportResult _poco;
+            readonly IPocoDirectory _poco;
             readonly List<SqlParamHandler> _params;
             readonly ISqlServerParameter _funcReturnParameter;
             SqlParamHandler _simpleReturnType;
@@ -329,7 +329,7 @@ namespace CK.SqlServer.Setup
                 public override string ToString() => SqlExprParam.ToString();
             }
 
-            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject, IPocoSupportResult poco )
+            public SqlParameterHandlerList( ISqlServerCallableObject sqlObject, IPocoDirectory poco )
             {
                 _poco = poco;
                 _params = new List<SqlParamHandler>();
@@ -409,7 +409,7 @@ namespace CK.SqlServer.Setup
                         if( typeof( IPoco ).IsAssignableFrom( returnType ) )
                         {
                             IPocoInterfaceInfo info = _poco.Find( returnType );
-                            _complexReturnType = new ComplexTypeMapperModel( info.Root.PocoClass );
+                            _complexReturnType = new ComplexTypeMapperModel( info.Family.PocoClass );
                         }
                         else
                         {
