@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Description>CK.Setupable.Runtime defines that aspect that supports Three Steps Setup.
@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.StObj.Runtime" Version="0.0.0--045arq1-explo" />
+    <PackageReference Include="CK.StObj.Runtime" Version="0.0.0--045d8b3-explo" />
     <PackageReference Include="CK.Setup.Dependency" Version="13.0.1--0003-develop" />
   </ItemGroup>
   <ItemGroup>
