@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="21.0.1--0008-develop" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="21.0.1--0009-develop" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <Folder Include="Properties\" />
   </ItemGroup>
