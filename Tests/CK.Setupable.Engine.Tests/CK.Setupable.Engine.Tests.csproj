@@ -7,7 +7,7 @@
     <EmbeddedResource Include="Res\TextFile.txt;Another\Namespace\TextFile.txt;SubNamespace\**\*.txt" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Testing.Monitoring" Version="7.1.2--0031-develop" />
+    <PackageReference Include="CK.Testing.Monitoring" Version="7.1.2--0032-develop" />
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
