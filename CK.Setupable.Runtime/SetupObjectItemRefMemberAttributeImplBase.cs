@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using CK.Core;
@@ -38,7 +39,7 @@ namespace CK.Setup
         /// </summary>
         protected MemberInfo Member => _member; 
 
-        void IAttributeContextBoundInitializer.Initialize( IActivityMonitor monitor, ITypeAttributesCache owner, MemberInfo m )
+        void IAttributeContextBoundInitializer.Initialize( IActivityMonitor monitor, ITypeAttributesCache owner, MemberInfo m, Action<Type> alsoRegister )
         {
             _owner = owner;
             _member = m;
