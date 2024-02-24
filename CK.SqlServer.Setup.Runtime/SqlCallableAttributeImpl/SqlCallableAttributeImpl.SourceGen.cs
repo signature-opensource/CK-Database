@@ -165,7 +165,7 @@ namespace CK.SqlServer.Setup
             // SqlCommand is created.
             // Analyses parameters and generate removing of optional parameters if C# does not use them.
 
-            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoSupportResult() );
+            SqlParameterHandlerList sqlParamHandlers = new SqlParameterHandlerList( sqlObject, dynamicAssembly.GetPocoDirectory() );
             // We initialize the SetUsedByReturnedType information on parameters 
             // so that they can relax their checks on Sql parameter direction accordingly.
             if( (gType & GenerationType.IsCall) != 0 && m.ReturnType != typeof( void ) )
@@ -191,7 +191,7 @@ namespace CK.SqlServer.Setup
                 ParameterInfo mP = mParameters[iM];
                 // If the parameter is a parameter source, we register it and consider that we didn't find it in the
                 // Sql parameters: if the same name is used, the [ParameterSource] takes precedence.
-                bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoSupportResult() );
+                bool isParameterSourceOrCallContext = sqlCallContexts.AddParameterSourceOrSqlCallContext( mP, monitor, dynamicAssembly.GetPocoDirectory() );
 
                 int iSFound = isParameterSourceOrCallContext ? -1 : sqlParamHandlers.IndexOf( iS, mP );
                 if( iSFound < 0 )
