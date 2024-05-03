@@ -17,13 +17,13 @@ namespace SqlZonePackage.Tests
             var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
-            textA.Should().StartWith( 
+            textA.Should().StartWith(
                 "--Injected from SqlZonePackage.Zone.UserHome.CmdUserToBeOverriden (n°2/2)."
                 + Environment.NewLine
                 + "--Injected from UserHome.CmdUserToBeOverriden (n°1/2)." );
 
             var textB = a.Database.GetObjectDefinition( "CK.sUserToBeOverridenIndirect" );
-            textB.Should().StartWith( 
+            textB.Should().StartWith(
                 "--Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2)."
                 + Environment.NewLine
                 + "--Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." );
@@ -34,27 +34,27 @@ namespace SqlZonePackage.Tests
         public void construct_injection_of_unresolved_RealObject_is_null()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
-            Assert.That(a.UnexistingByConstructParam, Is.Null);
+            Assert.That( a.UnexistingByConstructParam, Is.Null );
         }
 
         [Test]
         public void optional_property_InjectObject_of_resolved_RealObject()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
-            Assert.That(a.ZoneHome, Is.SameAs(TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>()));
-            Assert.That(a.UnexistingByInjectObject, Is.Null, "Remains null.");
+            Assert.That( a.ZoneHome, Is.SameAs( TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>() ) );
+            Assert.That( a.UnexistingByInjectObject, Is.Null, "Remains null." );
         }
 
         [Test]
         public void Initialize_method_provides_a_way_to_register_multiple_services()
         {
             var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
-            Assert.That(a.AllServices.Count, Is.EqualTo(2));
-            CollectionAssert.AreEquivalent(new object[] 
+            Assert.That( a.AllServices.Count, Is.EqualTo( 2 ) );
+            a.AllServices.Should().BeEquivalentTo( new object[]
             {
                 TestHelper.StObjMap.StObjs.Obtain<Zone.GroupHome>(),
                 TestHelper.StObjMap.StObjs.Obtain<Zone.Package>()
-            }, a.AllServices );
+            } );
         }
 
     }
