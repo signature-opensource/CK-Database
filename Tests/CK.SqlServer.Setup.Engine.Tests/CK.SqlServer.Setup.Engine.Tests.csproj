@@ -12,7 +12,7 @@
     <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Engine" Version="25.0.1--0150-develop" />
+    <PackageReference Include="CK.StObj.Engine" Version="25.0.1--0151-develop" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="NUnit" Version="4.1.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
