@@ -36,6 +36,7 @@ namespace CK.Core
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentException( "Must be not null, empty, nor whitespace.", "name" );
             _name = name;
             _schemas = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+            ConnectionString = String.Empty;
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace CK.Core
         /// This can be automatically configured during setup (if the specialized class implements a StObjConstruct method with a connectionString parameter
         /// and sets this property).
         /// </summary>
-        public string? ConnectionString { get; set; }
+        public string ConnectionString { get; set; }
 
         /// <summary>
         /// Finds or creates the given schema. 
@@ -119,7 +120,7 @@ namespace CK.Core
         /// </summary>
         void StObjConstruct( string? connectionString = null, bool hasCKCore = false, bool useSnapshotIsolation = false )
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString ?? string.Empty;
             _hasCKCore = hasCKCore;
             _useSnapshotIsolation = useSnapshotIsolation;
         }

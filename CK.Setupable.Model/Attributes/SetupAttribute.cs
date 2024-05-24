@@ -12,7 +12,7 @@ namespace CK.Core
     /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class SetupAttribute : StObjAttribute, Setup.IAttributeSetupName
+    public class SetupAttribute : RealObjectAttribute, Setup.IAttributeSetupName
     {
         
         /// <summary>

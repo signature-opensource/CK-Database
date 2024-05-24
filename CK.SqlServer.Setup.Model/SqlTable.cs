@@ -9,10 +9,11 @@ namespace CK.Core
     public class SqlTable : SqlPackage
     {
         /// <summary>
-        /// Initializes a new <see cref="SqlTable"/> with a null <see cref="TableName"/>.
+        /// Initializes a new <see cref="SqlTable"/> with an empty <see cref="TableName"/>.
         /// </summary>
         protected SqlTable()
         {
+            TableName = string.Empty;
         }
 
         /// <summary>

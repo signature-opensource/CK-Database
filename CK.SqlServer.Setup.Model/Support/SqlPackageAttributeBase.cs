@@ -20,24 +20,24 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the package to which this package belongs.
         /// </summary>
-        public Type Package { get; set; }
+        public Type? Package { get; set; }
 
         /// <summary>
         /// Gets or sets the sql schema to use.
         /// </summary>
-        public string Schema { get; set; }
+        public string? Schema { get; set; }
 
         /// <summary>
         /// Gets or sets the Resource path to use for the <see cref="IResourceLocator"/>. 
         /// </summary>
-        public string ResourcePath { get; set; }
+        public string? ResourcePath { get; set; }
 
         /// <summary>
         /// Gets or sets the Resource Type to use for the <see cref="IResourceLocator"/>.
         /// When null (the default that should rarely be changed), it is the decorated type itself that is 
         /// used to locate the resources.
         /// </summary>
-        public Type ResourceType { get; set; }
+        public Type? ResourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="SqlDatabase"/> type targeted by the package. Let it to null to use the ambient one.
@@ -47,6 +47,6 @@ namespace CK.Setup
         /// The type must be a specialization of <see cref="SqlDatabase"/>. 
         /// If it supports <see cref="IRealObject"/>, the property is bound to the corresponding real object instance. 
         /// </remarks>
-        public Type Database { get; set; }
+        public Type? Database { get; set; }
     }
 }
