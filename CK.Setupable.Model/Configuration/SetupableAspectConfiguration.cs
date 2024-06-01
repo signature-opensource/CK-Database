@@ -5,7 +5,7 @@ namespace CK.Setup
     /// <summary>
     /// Configuration of 3 steps setup aspect.
     /// </summary>
-    public class SetupableAspectConfiguration : IStObjEngineAspectConfiguration
+    public class SetupableAspectConfiguration : EngineAspectConfiguration
     {
         /// <summary>
         /// Initializes a new empty <see cref="SetupableAspectConfiguration"/>.
@@ -30,10 +30,10 @@ namespace CK.Setup
         /// <param name="e">The element to read.</param>
         public SetupableAspectConfiguration( XElement e )
         {
-            int v = (int?)e.Attribute( StObjEngineConfiguration.xVersion ) ?? CurrentXmlVersion;
-            TraceDependencySorterInput = (bool?)e.Element( StObjEngineConfiguration.xTraceDependencySorterInput ) ?? false;
-            TraceDependencySorterOutput = (bool?)e.Element( StObjEngineConfiguration.xTraceDependencySorterOutput ) ?? false;
-            RevertOrderingNames = (bool?)e.Element( StObjEngineConfiguration.xRevertOrderingNames ) ?? false;
+            int v = (int?)e.Attribute( EngineConfiguration.xVersion ) ?? CurrentXmlVersion;
+            TraceDependencySorterInput = (bool?)e.Element( EngineConfiguration.xTraceDependencySorterInput ) ?? false;
+            TraceDependencySorterOutput = (bool?)e.Element( EngineConfiguration.xTraceDependencySorterOutput ) ?? false;
+            RevertOrderingNames = (bool?)e.Element( EngineConfiguration.xRevertOrderingNames ) ?? false;
             KeepUnaccessedItemsVersion = (bool?)e.Element( xKeepUnaccessedItemsVersion ) ?? false;
         }
 
@@ -42,12 +42,12 @@ namespace CK.Setup
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <returns>The <paramref name="e"/> element.</returns>
-        public XElement SerializeXml( XElement e )
+        public override XElement SerializeXml( XElement e )
         {
-            e.Add( new XAttribute( StObjEngineConfiguration.xVersion, CurrentXmlVersion ),
-                   RevertOrderingNames ? new XElement( StObjEngineConfiguration.xRevertOrderingNames, true ) : null,
-                   TraceDependencySorterInput ? new XElement( StObjEngineConfiguration.xTraceDependencySorterInput, true ) : null,
-                   TraceDependencySorterOutput ? new XElement( StObjEngineConfiguration.xTraceDependencySorterOutput, true ) : null,
+            e.Add( new XAttribute( EngineConfiguration.xVersion, CurrentXmlVersion ),
+                   RevertOrderingNames ? new XElement( EngineConfiguration.xRevertOrderingNames, true ) : null,
+                   TraceDependencySorterInput ? new XElement( EngineConfiguration.xTraceDependencySorterInput, true ) : null,
+                   TraceDependencySorterOutput ? new XElement( EngineConfiguration.xTraceDependencySorterOutput, true ) : null,
                    KeepUnaccessedItemsVersion ? new XElement( xKeepUnaccessedItemsVersion, true ) : null );
             return e;
         }
@@ -83,6 +83,6 @@ namespace CK.Setup
         /// <summary>
         /// Gets the 3 steps setup aspect engine Assmbly Qualified Name: "CK.Setup.SetupableAspect, CK.Setupable.Engine"
         /// </summary>
-        public string AspectType => "CK.Setup.SetupableAspect, CK.Setupable.Engine";
+        public override string AspectType => "CK.Setup.SetupableAspect, CK.Setupable.Engine";
     }
 }

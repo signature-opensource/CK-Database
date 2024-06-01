@@ -5,9 +5,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Setupable.Engine" Version="25.0.1--0029-develop" />
-    <PackageReference Include="CK.SqlServer.Setup.Engine" Version="25.0.1--0029-develop" />
     <PackageReference Include="CK.Testing.SqlServer" Version="9.0.1--0015-develop" />
-    <PackageReference Include="CK.Testing.StObjTypeScriptEngine" Version="0.18.1--0105-develop" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
+    <ProjectReference Include="..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
   </ItemGroup>
 </Project>

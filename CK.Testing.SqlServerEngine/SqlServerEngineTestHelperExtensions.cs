@@ -26,7 +26,7 @@ namespace CK.Testing
         /// </para>
         /// </param>
         public static void EnsureSqlServerConfigurationAspect( this ISqlServerTestHelper helper,
-                                                               StObjEngineConfiguration engineConfiguration,
+                                                               EngineConfiguration engineConfiguration,
                                                                ISqlServerDatabaseOptions? databaseOptions = null,
                                                                bool resetDatabase = false,
                                                                bool? revertOrderingName = null )
@@ -41,7 +41,7 @@ namespace CK.Testing
             if( setupable == null )
             {
                 setupable = new SetupableAspectConfiguration();
-                engineConfiguration.Aspects.Add( setupable );
+                engineConfiguration.AddAspect( setupable );
             }
             setupable.RevertOrderingNames = revertOrdering;
 
@@ -51,7 +51,7 @@ namespace CK.Testing
                 sqlEngine = new SqlSetupAspectConfiguration();
                 sqlEngine.IgnoreMissingDependencyIsError = true;
                 sqlEngine.GlobalResolution = false;
-                engineConfiguration.Aspects.Add( sqlEngine );
+                engineConfiguration.AddAspect( sqlEngine );
             }
             sqlEngine.DefaultDatabaseConnectionString = helper.GetConnectionString( databaseOptions?.DatabaseName );
             helper.EnsureDatabase( databaseOptions, resetDatabase );

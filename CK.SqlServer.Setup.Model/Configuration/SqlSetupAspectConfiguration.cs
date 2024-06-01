@@ -7,7 +7,7 @@ namespace CK.Setup
     /// <summary>
     /// Aspect configuration object.
     /// </summary>
-    public class SqlSetupAspectConfiguration : IStObjEngineAspectConfiguration
+    public class SqlSetupAspectConfiguration : EngineAspectConfiguration
     {
         /// <summary>
         /// Default database name is "db".
@@ -48,7 +48,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <returns>The <paramref name="e"/> element.</returns>
-        public XElement SerializeXml( XElement e )
+        public override XElement SerializeXml( XElement e )
         {
             e.Add( new XElement( xDatabases, _databases.Select( d => d.Serialize( new XElement( xDatabase ) ) ) ),
                    new XElement( xDefaultDatabaseConnectionString, DefaultDatabaseConnectionString ),
@@ -85,8 +85,7 @@ namespace CK.Setup
         /// </summary>
         public bool GlobalResolution { get; set; }
 
-        string IStObjEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
-
+        public override string AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
         
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 
