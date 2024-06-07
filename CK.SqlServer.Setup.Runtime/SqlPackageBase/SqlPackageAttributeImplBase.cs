@@ -53,7 +53,7 @@ namespace CK.SqlServer.Setup
             }
             else o.SetAmbientPropertyConfiguration( monitor, "Database", typeof(SqlDefaultDatabase), StObjRequirementBehavior.WarnIfNotStObj );
             // ResourceLocation is a StObjProperty.
-            o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType, Attribute.ResourcePath, o.ClassType ) );
+            o.SetStObjPropertyValue( monitor, "ResourceLocation", new ResourceLocator( Attribute.ResourceType ?? o.ClassType, Attribute.ResourcePath ) );
             if( Attribute.Schema != null )
             {
                 o.SetAmbientPropertyValue( monitor, "Schema", Attribute.Schema );
