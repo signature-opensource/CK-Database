@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Parser.Model" Version="17.0.1--0012-develop" />
-    <PackageReference Include="Yodii.Script" Version="0.8.2--0044-develop" />
+    <PackageReference Include="Yodii.Script" Version="0.8.2--0045-develop" />
     <PackageReference Include="CK.Reflection" Version="9.0.3--0046-develop" />
   </ItemGroup>
   <ItemGroup>
