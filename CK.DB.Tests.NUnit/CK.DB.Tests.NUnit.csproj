@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="23.0.1--0021-develop" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="23.0.1--0022-develop" />
     <PackageReference Include="NUnit" Version="4.1.0" />
     <Folder Include="Properties\" />
   </ItemGroup>
