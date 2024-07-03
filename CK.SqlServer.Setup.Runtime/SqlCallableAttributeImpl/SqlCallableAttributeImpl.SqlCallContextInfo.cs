@@ -98,7 +98,7 @@ namespace CK.SqlServer.Setup
                 }
             }
 
-            public bool AddParameterSourceOrSqlCallContext( ParameterInfo param, IActivityMonitor monitor, IPocoSupportResult poco )
+            public bool AddParameterSourceOrSqlCallContext( ParameterInfo param, IActivityMonitor monitor, IPocoDirectory poco )
             {
                 Type paramType = param.ParameterType;
                 if( paramType.IsValueType || typeof( string ).IsAssignableFrom( paramType ) ) return false;
@@ -112,7 +112,7 @@ namespace CK.SqlServer.Setup
                     IEnumerable<PropertyInfo> rawProperties = null;
                     if( isParameterSourcePoco )
                     {
-                        pocoMappedType = poco.Find( param.ParameterType ).Root.PocoClass;
+                        pocoMappedType = poco.Find( param.ParameterType ).Family.PocoClass;
                         if( pocoMappedType == null ) throw new Exception( $"Unmapped Poco for {param.ParameterType.FullName}." );
                         rawProperties = pocoMappedType.GetProperties();
                     }

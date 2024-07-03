@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, Assembly stobjAssembly, string defaultConnectionString = null, SimpleServiceContainer startupServices = null )
+        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, Assembly stobjAssembly, string? defaultConnectionString = null, SimpleServiceContainer? startupServices = null )
         {
             return CKDatabasify( services.AddStObjMap( monitor, stobjAssembly, startupServices ), defaultConnectionString );
         }
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// On NetCore runtime, Assembly.LoadFrom is used to resolves the assembly from its full path.
         /// </remarks>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, string assemblyName, string defaultConnectionString = null, SimpleServiceContainer startupServices = null )
+        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, string assemblyName, string? defaultConnectionString = null, SimpleServiceContainer? startupServices = null )
         {
             return CKDatabasify( services.AddStObjMap( monitor, assemblyName, startupServices ), defaultConnectionString );
         }
@@ -95,17 +95,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// any <see cref="StObjContextRoot.ConfigureServicesMethodName"/> methods by parameter injection.
         /// </param>
         /// <returns>This services collection.</returns>
-        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, IStObjMap map, string defaultConnectionString = null, SimpleServiceContainer startupServices = null )
+        public static IServiceCollection AddCKDatabase( this IServiceCollection services, IActivityMonitor monitor, IStObjMap map, string? defaultConnectionString = null, SimpleServiceContainer? startupServices = null )
         {
             return CKDatabasify( services.AddStObjMap( monitor, map, startupServices ), defaultConnectionString );
         }
 
-        static IServiceCollection CKDatabasify( IServiceCollection services, string defaultConnectionString )
+        static IServiceCollection CKDatabasify( IServiceCollection services, string? defaultConnectionString )
         {
             if( !String.IsNullOrEmpty( defaultConnectionString ) )
             {
-                var map = (IStObjMap)services.Last( d => d.ServiceType == typeof( IStObjMap ) ).ImplementationInstance;
-                map.StObjs.Obtain<SqlDefaultDatabase>().ConnectionString = defaultConnectionString;
+                var map = (IStObjMap?)services.Last( d => d.ServiceType == typeof( IStObjMap ) ).ImplementationInstance;
+                Throw.CheckState( map != null );
+                var db = map.StObjs.Obtain<SqlDefaultDatabase>();
+                Throw.CheckState( db != null );
+                db.ConnectionString = defaultConnectionString;
             }
             return services;
         }

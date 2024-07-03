@@ -4,13 +4,12 @@
     <Description>Contains NUnit test helpers.</Description>
     <LangVersion>9</LangVersion>
     <IsTestProject>False</IsTestProject>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Testing.DBSetup\CK.Testing.DBSetup.csproj" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="23.0.0" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="24.0.0" />
+    <PackageReference Include="NUnit" Version="4.1.0" />
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

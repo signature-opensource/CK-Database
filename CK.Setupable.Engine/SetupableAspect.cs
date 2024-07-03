@@ -69,7 +69,7 @@ namespace CK.Setup
             _versionedItemReader = context.ServiceContainer.GetRequiredService<IVersionedItemReader>();
             _versionedItemWriter = context.ServiceContainer.GetRequiredService<IVersionedItemWriter>();
             _setupSessionMemoryProvider = context.ServiceContainer.GetRequiredService<ISetupSessionMemoryProvider>();
-            _configBaseSHA1 = context.StObjEngineConfiguration.Configuration.BaseSHA1;
+            _configBaseSHA1 = context.EngineConfiguration.Configuration.BaseSHA1;
             if( context.CanSkipRun )
             {
                 Throw.CheckArgument( "Since CanSkipRun is true, a Configuration.BaseSHA1 must be set.", _configBaseSHA1 != SHA1Value.Zero && _configBaseSHA1 != SHA1Value.Empty );

@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Xml.Linq;
 
@@ -33,11 +34,13 @@ namespace CK.Setup
         /// <param name="e">The element.</param>
         public SqlDatabaseDescriptor( XElement e )
         {
-            LogicalDatabaseName = e.Element( xLogicalDatabaseName )?.Value ?? e.Attribute( xLogicalDatabaseName ).Value;
+            LogicalDatabaseName = e.Element( xLogicalDatabaseName )?.Value ?? e.AttributeRequired( xLogicalDatabaseName )!.Value;
+            var connection = e.Element( xConnectionString )?.Value;
+            if( connection == null ) throw new System.Xml.XmlException( "Missing required element \"ConnectionString\"." );
+            ConnectionString = connection;
             AutoCreate = (bool?)e.Element( xAutoCreate ) ?? (bool?)e.Attribute( xAutoCreate ) ?? false;
             HasCKCore = (bool?)e.Element( xHasCKCore ) ?? (bool?)e.Attribute( xHasCKCore ) ?? false;
             UseSnapshotIsolation = (bool?)e.Element( xUseSnapshotIsolation ) ?? (bool?)e.Attribute( xUseSnapshotIsolation ) ?? false;
-            ConnectionString = e.Element( xConnectionString ).Value;
         }
 
 

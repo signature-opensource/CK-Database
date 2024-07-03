@@ -5,14 +5,13 @@
       CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable or SqlPackage) implementations.
     </Description>
-    <Nullable>annotations</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="17.0.0" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="18.0.0" />
     <PackageReference Include="Yodii.Script" Version="0.8.1" />
     <PackageReference Include="CK.Reflection" Version="9.0.2" />
   </ItemGroup>

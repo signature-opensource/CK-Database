@@ -7,7 +7,7 @@ namespace CK.Setup
     /// <summary>
     /// Aspect configuration object.
     /// </summary>
-    public class SqlSetupAspectConfiguration : IStObjEngineAspectConfiguration
+    public class SqlSetupAspectConfiguration : EngineAspectConfiguration
     {
         /// <summary>
         /// Default database name is "db".
@@ -37,7 +37,7 @@ namespace CK.Setup
         public SqlSetupAspectConfiguration( XElement e )
         {
             _databases = e.Elements( xDatabases ).Elements( xDatabase ).Select( d => new SqlDatabaseDescriptor( d ) ).ToList();
-            DefaultDatabaseConnectionString = (string)e.Element( xDefaultDatabaseConnectionString );
+            DefaultDatabaseConnectionString = (string?)e.Element( xDefaultDatabaseConnectionString );
             GlobalResolution = (bool?)e.Element( xGlobalResolution ) ?? false;
             IgnoreMissingDependencyIsError = (bool?)e.Element( xIgnoreMissingDependencyIsError ) ?? false;
         }
@@ -48,7 +48,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="e">The element to populate.</param>
         /// <returns>The <paramref name="e"/> element.</returns>
-        public XElement SerializeXml( XElement e )
+        public override XElement SerializeXml( XElement e )
         {
             e.Add( new XElement( xDatabases, _databases.Select( d => d.Serialize( new XElement( xDatabase ) ) ) ),
                    new XElement( xDefaultDatabaseConnectionString, DefaultDatabaseConnectionString ),
@@ -59,7 +59,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets or sets the default database connection string.
         /// </summary>
-        public string DefaultDatabaseConnectionString { get; set; }
+        public string? DefaultDatabaseConnectionString { get; set; }
 
         /// <summary>
         /// Gets the list of available <see cref="SqlDatabaseDescriptor"/>.
@@ -72,7 +72,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="name">Logical name of the connection string to find.</param>
         /// <returns>Configured connection string or null if not found.</returns>
-        public string FindConnectionStringByName( string name )
+        public string? FindConnectionStringByName( string name )
         {
             if( name == DefaultDatabaseName ) return DefaultDatabaseConnectionString;
             foreach( var desc in Databases ) if( desc.LogicalDatabaseName == name ) return desc.ConnectionString;
@@ -85,8 +85,7 @@ namespace CK.Setup
         /// </summary>
         public bool GlobalResolution { get; set; }
 
-        string IStObjEngineAspectConfiguration.AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
-
+        public override string AspectType => "CK.SqlServer.Setup.SqlSetupAspect, CK.SqlServer.Setup.Engine"; 
         
         /// <summary>
         /// Gets or sets whether when installing, the informational message 'The module 'X' depends 

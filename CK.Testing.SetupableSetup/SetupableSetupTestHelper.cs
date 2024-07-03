@@ -20,12 +20,12 @@ namespace CK.Testing
 
         void OnStObjSetupRunning( object sender, StObjSetup.StObjSetupRunningEventArgs e )
         {
-            if( !e.StObjEngineConfiguration.Aspects.Any( c => c is SetupableAspectConfiguration ) )
+            if( !e.EngineConfiguration.Aspects.Any( c => c is SetupableAspectConfiguration ) )
             {
                 SetupableAspectConfiguration conf = new SetupableAspectConfiguration();
                 conf.RevertOrderingNames = _stObjSetup.StObjRevertOrderingNames;
                 conf.TraceDependencySorterInput = conf.TraceDependencySorterInput = _stObjSetup.StObjTraceGraphOrdering;
-                e.StObjEngineConfiguration.Aspects.Add( conf );
+                e.EngineConfiguration.AddAspect( conf );
             }
         }
 

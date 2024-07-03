@@ -1,5 +1,6 @@
 using System.Linq;
 using CK.Setup;
+using FluentAssertions;
 using NUnit.Framework;
 
 using static CK.Testing.MonitorTestHelper;
@@ -22,7 +23,21 @@ namespace CK.Setupable.Engine.Tests
             var sortResult = DependencySorter.OrderItems( TestHelper.Monitor, pB );
             Assert.That( sortResult.IsComplete );
             var sortedNames = sortResult.SortedItems.Select( i => i.FullName ).ToArray();
-            CollectionAssert.AreEqual( new[] { "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" }, sortedNames );
+            sortedNames.Should().BeEquivalentTo( new[]
+            {
+                "Model.A.Head",
+                "Model.A",
+                "A.Head",
+                "Model.B.Head",
+                "A",
+                "Model.B",
+                "B.Head",
+                "Objects.A.Head",
+                "B",
+                "Objects.A",
+                "Objects.B.Head",
+                "Objects.B"
+            }, o => o.WithStrictOrdering() );
         }
     }
 }

@@ -36,7 +36,7 @@ namespace CK.Testing
 
         void OnStObjSetupRunning( object sender, StObjSetup.StObjSetupRunningEventArgs e )
         {
-            if( !e.StObjEngineConfiguration.Aspects.Any( c => c is SqlSetupAspectConfiguration ) )
+            if( !e.EngineConfiguration.Aspects.Any( c => c is SqlSetupAspectConfiguration ) )
             {
                 SqlSetupAspectConfiguration conf = new SqlSetupAspectConfiguration();
                 conf.DefaultDatabaseConnectionString = _sqlServer.GetConnectionString();
@@ -46,7 +46,7 @@ namespace CK.Testing
                 // If the database has been created, we force CKSetup to run the engine
                 // even if the files are up to date.
                 if( _sqlServer.EnsureDatabase() ) e.ForceSetup = ForceSetupLevel.Engine;
-                e.StObjEngineConfiguration.Aspects.Add( conf );
+                e.EngineConfiguration.AddAspect( conf );
             }
         }
 
@@ -91,13 +91,13 @@ namespace CK.Testing
                     setupable.RevertOrderingNames = revertNames;
                     setupable.TraceDependencySorterInput = traceSetupGraphOrdering;
                     setupable.TraceDependencySorterOutput = traceSetupGraphOrdering;
-                    stObjConf.Configuration.Aspects.Add( setupable );
+                    stObjConf.Configuration.AddAspect( setupable );
 
                     var sqlServer = new SqlSetupAspectConfiguration();
                     sqlServer.DefaultDatabaseConnectionString = _sqlServer.GetConnectionString( db.DatabaseName );
                     sqlServer.GlobalResolution = false;
                     sqlServer.IgnoreMissingDependencyIsError = true;
-                    stObjConf.Configuration.Aspects.Add( sqlServer );
+                    stObjConf.Configuration.AddAspect( sqlServer );
 
                     return _setupableSetup.RunStObjSetup( stObjConf.Configuration, stObjConf.ForceSetup ); 
                 }
