@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Description>CK.Setupable.Runtime defines that aspect that supports Three Steps Setup.
     </Description>
   </PropertyGroup>

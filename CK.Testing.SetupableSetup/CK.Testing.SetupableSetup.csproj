@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Description>Enables three-steps setup support by hooking the CK.Testing.StObjSetup TestHelper: the SetupableAspectConfiguration is injected into the StObjEngineConfiguration.</Description>
   </PropertyGroup>
   <ItemGroup>
