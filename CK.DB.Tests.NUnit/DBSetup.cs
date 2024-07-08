@@ -1,13 +1,12 @@
 using CK.Core;
 using CK.Testing;
-using CKSetup;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.DB.Tests
 {
@@ -67,18 +66,6 @@ namespace CK.DB.Tests
         public void toggle_logging_to_console()
         {
             TestHelper.LogToConsole = !TestHelper.LogToConsole;
-        }
-
-        /// <summary>
-        /// Toggles <see cref="CK.Testing.CKSetup.ICKSetupDriver.DefaultLaunchDebug"/> value.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void toggle_CKSetup_LaunchDebug()
-        {
-            TestHelper.LogToConsole = true;
-            TestHelper.CKSetup.LaunchDebug = !TestHelper.CKSetup.LaunchDebug;
-            TestHelper.Monitor.Info( $"CKSetup/DefaultLaunchDebug is {TestHelper.CKSetup.LaunchDebug}." );
         }
 
         /// <summary>
