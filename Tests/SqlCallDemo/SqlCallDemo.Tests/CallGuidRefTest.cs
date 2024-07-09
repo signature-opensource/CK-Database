@@ -4,7 +4,8 @@ using NUnit.Framework;
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
+using CK.Testing;
 
 namespace SqlCallDemo.Tests
 {
@@ -17,7 +18,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void when_the_method_returns_a_new_SqlCommand_parameters_are_configured()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
             SqlCommand cmd = p.CmdGuidRefTest( true, Guid1, ref inOut, out result );
@@ -47,7 +48,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void all_value_types_parameters_can_be_nullable()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Nullable<bool> replaceInAndOut = true;
             Nullable<Guid> inOnly = null;
             Nullable<Guid> inOut = null;
@@ -80,7 +81,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void output_only_parameters_are_optionals_in_signature_but_such_parameters_have_to_be_in_the_SqlCommand_to_be_able_to_execute_it()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             SqlCommand cmd = p.CmdGuidRefTestWithoutTextResult( false, Guid1, ref inOut );
             Assert.That( cmd.Parameters.Count, Is.EqualTo( 4 ) );
@@ -108,10 +109,10 @@ namespace SqlCallDemo.Tests
         [Test]
         public void SqlCommand_by_reference_must_be_the_first_parameter_and_passed_in_as_null_to_initialize_it_then_it_can_be_reused()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
-            SqlCommand cmd = null;
+            SqlCommand? cmd = null;
             p.CmdGuidRefTest( ref cmd, false, Guid1, ref inOut, out result );
             p.Database.ExecuteNonQuery( cmd );
             Assert.That( cmd.Parameters[2].Value, Is.EqualTo( Guid2 ), "Since ReplaceInAndOut was false." );
@@ -126,7 +127,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void using_a_ISqlCallContext_parameter_to_provide_values_to_input_parameters()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             var ctx = new GuidRefTestPackage.GuidRefTestContext() { ReplaceInAndOut = false, InOnly = Guid1 };
             string result;
             Guid inOut = Guid2;
@@ -139,7 +140,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void using_a_ISqlCallContext_parameter_to_provide_values_to_input_and_input_output_parameters()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             var ctx = new GuidRefTestPackage.GuidRefTestInOutContext() { ReplaceInAndOut = false, InOnly = Guid1, InAndOut = Guid2 };
             string result;
             var cmd = p.CmdGuidRefTest( ctx, out result );
@@ -151,7 +152,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void since_output_are_optionals_using_a_unique_ISqlCallContext_parameter_works_as_long_as_it_provides_all_the_required_input_values()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             var ctx = new GuidRefTestPackage.GuidRefTestInOutContext() { ReplaceInAndOut = false, InOnly = Guid1, InAndOut = Guid2 };
             var cmd = p.CmdGuidRefTest( ctx );
             p.Database.ExecuteNonQuery( cmd );
@@ -162,7 +163,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void returning_a_wrapper_object_only_requires_it_to_have_a_public_constructor_with_a_SqlCommand_as_long_as_all_parameters_values_are_provided()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             var wrapper = p.CmdGuidRefTestReturnsWrapper( false, Guid1, ref inOut );
             p.Database.ExecuteNonQuery( wrapper.Command );
@@ -173,7 +174,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void returning_a_wrapper_object_with_extra_parameters()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             var wrapper = p.CmdGuidRefTestReturnsWrapperWithParameters( false, "This is a parameter for the wrapper!", Guid1, "Another", 3712, ref inOut );
             p.Database.ExecuteNonQuery( wrapper.Command );
@@ -187,7 +188,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void returning_a_wrapper_object_can_also_capture_the_instance_object_that_defines_the_procedure()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<GuidRefTestPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             var ctx = new GuidRefTestPackage.GuidRefTestInOutContext() { ReplaceInAndOut = false, InOnly = Guid1, InAndOut = Guid2 };
             var wrapper = p.CmdGuidRefTestReturnsWrapperWithContext( ctx );
             p.Database.ExecuteNonQuery( wrapper.Command );

@@ -1,7 +1,8 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using NUnit.Framework;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlTransform.Tests
 {
@@ -11,9 +12,9 @@ namespace SqlTransform.Tests
         [Test]
         public void vDependent_requires_an_intermediate_concretisation_of_vBase()
         {
-            var p1 = TestHelper.StObjMap.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package1>();
-            var p2 = TestHelper.StObjMap.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package2>();
-            var p3 = TestHelper.StObjMap.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package3>();
+            var p1 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package1>();
+            var p2 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package2>();
+            var p3 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package3>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 Assert.That( p1.ReadViewBase( ctx ).Count, Is.GreaterThan( 0 ) );

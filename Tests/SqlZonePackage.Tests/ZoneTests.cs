@@ -1,10 +1,11 @@
 using CK.Core;
+using CK.Testing;
 using FluentAssertions;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System;
 using System.Collections.Generic;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlZonePackage.Tests
 {
@@ -14,7 +15,7 @@ namespace SqlZonePackage.Tests
         [Test]
         public void auto_header_injection_by_attribute_on_member()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
+            var a = SharedEngine.Map.StObjs.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
             textA.Should().StartWith(
@@ -33,27 +34,27 @@ namespace SqlZonePackage.Tests
         [Test]
         public void construct_injection_of_unresolved_RealObject_is_null()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
             Assert.That( a.UnexistingByConstructParam, Is.Null );
         }
 
         [Test]
         public void optional_property_InjectObject_of_resolved_RealObject()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
-            Assert.That( a.ZoneHome, Is.SameAs( TestHelper.StObjMap.StObjs.Obtain<Zone.SecurityZoneHome>() ) );
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
+            Assert.That( a.ZoneHome, Is.SameAs( SharedEngine.Map.StObjs.Obtain<Zone.SecurityZoneHome>() ) );
             Assert.That( a.UnexistingByInjectObject, Is.Null, "Remains null." );
         }
 
         [Test]
         public void Initialize_method_provides_a_way_to_register_multiple_services()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
             Assert.That( a.AllServices.Count, Is.EqualTo( 2 ) );
             a.AllServices.Should().BeEquivalentTo( new object[]
             {
-                TestHelper.StObjMap.StObjs.Obtain<Zone.GroupHome>(),
-                TestHelper.StObjMap.StObjs.Obtain<Zone.Package>()
+                SharedEngine.Map.StObjs.Obtain<Zone.GroupHome>(),
+                SharedEngine.Map.StObjs.Obtain<Zone.Package>()
             } );
         }
 

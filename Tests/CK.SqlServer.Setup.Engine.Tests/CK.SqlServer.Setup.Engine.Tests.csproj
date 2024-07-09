@@ -9,7 +9,6 @@
     <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
     <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
-    <ProjectReference Include="..\LocalTestHelper\LocalTestHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.StObj.Engine" Version="0.0.0--04yvw0m-develop" />

@@ -4,7 +4,7 @@ using CK.Core;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests

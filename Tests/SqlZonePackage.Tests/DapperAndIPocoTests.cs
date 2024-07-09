@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using Dapper;
 
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -55,7 +55,7 @@ namespace SqlZonePackage.Tests
             //    } );
             //}
 
-            var db = TestHelper.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
+            var db = SharedEngine.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var controller = ctx.GetConnectionController( db );
@@ -82,7 +82,7 @@ namespace SqlZonePackage.Tests
         [Test]
         public void Dapper_QueryFirstOrDefault_with_IPoco()
         {
-            var db = TestHelper.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
+            var db = SharedEngine.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var controller = ctx.GetConnectionController( db );

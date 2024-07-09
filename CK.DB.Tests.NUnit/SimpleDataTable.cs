@@ -5,6 +5,7 @@ using System.Text;
 
 namespace CK.Core
 {
+
     /// <summary>
     /// Small helper that helps handling data read and tests against them.
     /// </summary>

@@ -1,9 +1,10 @@
-using NUnit.Framework;
 using CK.Core;
 using CK.SqlServer;
-using static CK.Testing.DBSetupTestHelper;
+using CK.Testing;
 using FluentAssertions;
+using NUnit.Framework;
 using System.Data;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -13,7 +14,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void setting_an_isolation_level_is_scoped_to_a_stored_procedure()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<TransactionalPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<TransactionalPackage>();
             using( var ctx = new SqlTransactionCallContext( TestHelper.Monitor ) )
             {
                 var controller = ctx[p];

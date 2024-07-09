@@ -1,8 +1,8 @@
+using CK.Core;
+using CK.Testing;
+using FluentAssertions;
 using NUnit.Framework;
 using SqlCallDemo.ProviderDemo;
-using CK.Core;
-using static CK.Testing.DBSetupTestHelper;
-using FluentAssertions;
 using System;
 
 namespace SqlCallDemo.Tests.ProviderDemo
@@ -86,7 +86,8 @@ namespace SqlCallDemo.Tests.ProviderDemo
         [Test]
         public void using_a_provider()
         {
-            var demoPackage = TestHelper.StObjMap.StObjs.Obtain<ProviderDemoPackage>();
+            var demoPackage = SharedEngine.Map.StObjs.Obtain<ProviderDemoPackage>();
+            Throw.DebugAssert( demoPackage != null );
 
             var s1 = new ActorDependentOnlyService( _contextOdd, demoPackage );
             Assert.That( s1.DoSomething(), Is.True );

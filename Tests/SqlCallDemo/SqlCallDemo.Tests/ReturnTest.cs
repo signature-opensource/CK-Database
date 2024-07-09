@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using NUnit.Framework;
-using static CK.Testing.DBSetupTestHelper;
+using System.Threading.Tasks;
 
 namespace SqlCallDemo.Tests
 {
@@ -12,7 +12,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_string_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string t1 = await p.StringReturnAsync( ctx, 3712 ).ConfigureAwait( false );
@@ -25,7 +25,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_int_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 int iNull = await p.IntReturnAsync( ctx, null ).ConfigureAwait( false );
@@ -38,7 +38,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_returns_int_with_actor_context_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new TestActorContext( 3712 ) )
             {
                 int i = await p.IntReturnWithActorAsync( ctx ).ConfigureAwait( false );
@@ -51,7 +51,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_string()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 string t1 = p.StringReturn( ctx, 3712 );
@@ -64,7 +64,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_int()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 int iNull = p.IntReturn( ctx, null );
@@ -77,7 +77,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_returns_int_with_actor_context()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<ReturnPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
             using( var ctx = new TestActorContext( 3712 ) )
             {
                 int i = p.IntReturnWithActor( ctx );

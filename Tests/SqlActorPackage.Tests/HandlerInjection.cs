@@ -12,7 +12,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void auto_header_injection_by_attribute_on_class()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
+            var a = SharedEngine.Map.StObjs.Obtain<ActorHome>();
 
             var textA = a.Database.GetObjectDefinition( "CK.sActorCreate" );
             textA.Should().Contain( "--Injected From ActorHome - TestAutoHeaderAttribute." );
@@ -24,7 +24,7 @@ namespace SqlActorPackage.Tests
         [Test]
         public void auto_header_injection_by_attribute_on_member()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<ActorHome>();
+            var a = SharedEngine.Map.StObjs.Obtain<ActorHome>();
 
             var text = a.Database.GetObjectDefinition("CK.sActorGuidRefTest");
             text.Should().Contain( "--Injected From CmdGuidRefTest - TestAutoHeaderSPMember." );
@@ -33,14 +33,14 @@ namespace SqlActorPackage.Tests
         [Test]
         public void construct_injection_of_unresolved_RealObject_is_null()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
             a.UnexistingByConstructParam.Should().BeNull();
         }
 
         [Test]
         public void optional_property_InjectObject_of_unresolved_RealObject_is_null()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
             a.ZoneHome.Should().BeNull();
             a.UnexistingByInjectObject.Should().BeNull();
         }
@@ -48,9 +48,9 @@ namespace SqlActorPackage.Tests
         [Test]
         public void Initialize_method_provides_a_way_to_register_multiple_services()
         {
-            var a = TestHelper.StObjMap.StObjs.Obtain<Package>();
+            var a = SharedEngine.Map.StObjs.Obtain<Package>();
             a.AllServices.Should().HaveCount( 1 );
-            a.AllServices[0].Should().BeSameAs( TestHelper.StObjMap.StObjs.Obtain<GroupHome>() );
+            a.AllServices[0].Should().BeSameAs( SharedEngine.Map.StObjs.Obtain<GroupHome>() );
         }
     }
 

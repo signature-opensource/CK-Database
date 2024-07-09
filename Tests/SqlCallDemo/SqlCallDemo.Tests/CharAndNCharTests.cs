@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using FluentAssertions;
 using NUnit.Framework;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -13,7 +14,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_to_functions_returns_the_char_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<CharAndNCharPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 char c1 = await p.CharFunctionAsync( ctx, 'a' ).ConfigureAwait( false );
@@ -30,7 +31,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void call_to_sCharProc()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<CharAndNCharPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 p.CharProc( ctx, 'a', null, 'b', null, out var cO, out var cNO );
@@ -46,7 +47,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_to_sCharProc_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<CharAndNCharPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var r = await p.CharProcAsync( ctx, 'a', null, 'b', null );

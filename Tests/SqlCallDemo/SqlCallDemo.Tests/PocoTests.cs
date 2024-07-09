@@ -1,10 +1,11 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -14,9 +15,11 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_base_Write_actually_take_the_Poco_class()
         {
-            var factoryThing = TestHelper.StObjMap.StObjs.Obtain<IPocoFactory<IThing>>();
-            var factoryThingAH = TestHelper.StObjMap.StObjs.Obtain<IPocoFactory<PocoSupport.IThingWithAgeAndHeight>>();
-            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
+            var factoryThing = SharedEngine.Map.StObjs.Obtain<IPocoFactory<IThing>>();
+            var factoryThingAH = SharedEngine.Map.StObjs.Obtain<IPocoFactory<PocoSupport.IThingWithAgeAndHeight>>();
+            var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
+            Throw.DebugAssert( factoryThing != null && factoryThingAH != null && p != null );
+
             using( var ctx = new SqlStandardCallContext() )
             {
                 var t = factoryThing.Create( o => o.Name = "a thing" );
@@ -34,7 +37,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void reading_Poco_Thing_from_database()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var thing = p.ReadFromDatabase( ctx );
@@ -58,7 +61,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task reading_Poco_Thing_from_database_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PocoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var thing = await p.ReadFromDatabaseAsync( ctx );

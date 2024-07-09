@@ -1,12 +1,13 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using FluentAssertions;
 using NUnit.Framework;
 using SqlCallDemo.ComplexType;
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -16,7 +17,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_with_null_sql_default_fails()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<IOTypePackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<IOTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 // Here we COULD analyze the mapping and detect this: the sql default is null
@@ -30,7 +31,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_with_csharp_defaults()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<IOTypePackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<IOTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var r = p.GetWithCSharpDefault( ctx, 3712 );
@@ -44,7 +45,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_with_parameter_source()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<IOTypePackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<IOTypePackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 var r = p.GetWithInputType( ctx, new InputTypeCastWithDefault { ParamInt = 3712, ParamSmallInt = 37, ParamTinyInt = 12 } );

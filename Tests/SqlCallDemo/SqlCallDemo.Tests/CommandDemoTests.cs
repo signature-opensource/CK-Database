@@ -1,10 +1,11 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using NUnit.Framework;
 using SqlCallDemo.CommandDemo;
 using System;
 using System.Threading.Tasks;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -21,7 +22,7 @@ namespace SqlCallDemo.Tests
                 LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
-            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 CmdDemo.ResultPOCO r = await p.RunCommandAsync( ctx, cmd ).ConfigureAwait( false );
@@ -40,7 +41,7 @@ namespace SqlCallDemo.Tests
                 LaunchDate = new DateTime( 2016, 6, 30 )
             };
 
-            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 CmdDemo.ResultReadOnly r = await p.RunCommandROAsync( ctx, cmd ).ConfigureAwait( false );
@@ -53,7 +54,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void calling_with_a_data_object()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 int id = p.CreateProtoUser( ctx, 67893, new ProtoUserData() { UserName = "jj", Email = "@", Phone = "06" } );
@@ -64,7 +65,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void when_parameter_source_name_conflicts()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<CmdDemoPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 int id = p.ParameterSourceNamedTheSameAsOneOfTheActualParameters( ctx, 3712, new ProtoUserData() { UserName = "01234567", Email = "@", Phone = "06" } );

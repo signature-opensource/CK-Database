@@ -5,7 +5,8 @@ using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using FluentAssertions;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
+using CK.Testing;
 
 namespace SqlCallDemo.Tests
 {
@@ -15,7 +16,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_simple_log_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
@@ -27,7 +28,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_with_bit_parameter_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
@@ -47,7 +48,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public async Task async_call_with_the_default_value_for_bit_parameter_Async()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
@@ -60,7 +61,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void async_call_with_cancellation_token_works()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 {

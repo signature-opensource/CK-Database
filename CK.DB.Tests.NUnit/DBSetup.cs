@@ -1,6 +1,6 @@
 using CK.Core;
+using CK.Setup;
 using CK.Testing;
-using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
@@ -67,40 +67,6 @@ namespace CK.DB.Tests
         {
             TestHelper.LogToConsole = !TestHelper.LogToConsole;
         }
-
-        /// <summary>
-        /// Resets the <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.StObjMap"/> (and the <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.AutomaticServices"/>)
-        /// by calling <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.ResetStObjMap(bool)"/>
-        /// and <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.DeleteGeneratedAssemblies(string)"/>
-        /// in all the bin folders (<see cref="IBasicTestHelper.BinFolder"/> and all <see cref="CK.Testing.CKSetup.ICKSetupDriver.DefaultBinPaths"/>).
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void StObjMap_reset()
-        {
-            TestHelper.LogToConsole = true;
-            SharedEngine.
-            TestHelper.ResetStObjMap();
-            TestHelper.DeleteGeneratedAssemblies( TestHelper.BinFolder );
-            foreach( var p in TestHelper.CKSetup.DefaultBinPaths )
-            {
-                TestHelper.DeleteGeneratedAssemblies( p );
-            }
-        }
-
-        /// <summary>
-        /// Attempts to load the <see cref="CK.Testing.StObjMap.IStObjMapTestHelperCore.AutomaticServices"/> that
-        /// implies to load the StObjMap and to actually fully configure the Service provider. 
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void AutomaticServices_load()
-        {
-            TestHelper.LogToConsole = true;
-            TestHelper.StObjMap.Should().NotBeNull( "StObjMap loading failed." );
-            TestHelper.AutomaticServices.Should().NotBeNull( "AutomaticServices configuration failed." );
-        }
-
 
         /// <summary>
         /// Attaches the debugger to this test context (simply calls <see cref="Debugger.Launch()"/>).
@@ -174,44 +140,18 @@ namespace CK.DB.Tests
         }
 
         /// <summary>
-        /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/>
-        /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
+        /// Creates a <see cref="EngineConfiguration"/> with a default <see cref="SqlSetupAspectConfiguration"/> and runs it.
         /// </summary>
-        [Test]
+        [TestCase( "Random" )]
+        [TestCase( "OrderedNames" )]
+        [TestCase( "RevertOrderedNames" )]
         [Explicit]
-        public void db_setup()
+        public void db_setup( string mode )
         {
             TestHelper.LogToConsole = true;
-            var r = TestHelper.RunDBSetup();
-            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed.");
-        }
-
-        /// <summary>
-        /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/> with full
-        /// ordering traces.
-        /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void db_setup_with_StObj_and_Setup_graph_ordering_trace()
-        {
-            TestHelper.LogToConsole = true;
-            var r = TestHelper.RunDBSetup( null, true, true );
-            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
-        }
-
-        /// <summary>
-        /// Calls <see cref="CK.Testing.DBSetup.IDBSetupTestHelperCore.RunDBSetup"/> with full
-        /// ordering traces and reverse names.
-        /// ans checks that the result is <see cref="CKSetupRunResult.Succeed"/> or <see cref="CKSetupRunResult.UpToDate"/>.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace()
-        {
-            TestHelper.LogToConsole = true;
-            var r = TestHelper.RunDBSetup( null, true, true, true );
-            Assert.That( r == CKSetupRunResult.Succeed || r == CKSetupRunResult.UpToDate, "DBSetup failed." );
+            var engineConfiguration = TestHelper.CreateDefaultEngineConfiguration();
+            engineConfiguration.EnsureSqlServerConfigurationAspect( revertOrderingName: mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => null } );
+            engineConfiguration.RunSuccessfully();
         }
 
         /// <summary>

@@ -1,7 +1,10 @@
 using FluentAssertions;
 using NUnit.Framework;
 using Microsoft.Data.SqlClient;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
+using System.Configuration;
+using CK.Testing;
+using CK.Setup;
 
 namespace CK.SqlServer.Setup.Engine.Tests.Core
 {
@@ -21,7 +24,9 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
         public void DBSetup_can_not_touch_master_model_tempdb_or_msdb()
         {
             var badTarget = TestHelper.GetDatabaseOptions( "master" );
-            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+            var engineConfiguration = TestHelper.CreateDefaultEngineConfiguration();
+            engineConfiguration.EnsureSqlServerConfigurationAspect( badTarget );
+            engineConfiguration.Run().Status.Should().Be( RunStatus.Failed );
 
             using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
             {
@@ -34,14 +39,16 @@ namespace CK.SqlServer.Setup.Engine.Tests.Core
                 }
             }
 
-            badTarget = TestHelper.GetDatabaseOptions( "msdb" );
-            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+            var sqlAspectConfiguration = engineConfiguration.EnsureAspect<SqlSetupAspectConfiguration>();
 
-            badTarget = TestHelper.GetDatabaseOptions( "model" );
-            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+            sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "msdb" );
+            engineConfiguration.Run().Status.Should().Be( RunStatus.Failed );
 
-            badTarget = TestHelper.GetDatabaseOptions( "tempdb" );
-            TestHelper.RunDBSetup( badTarget ).Should().Be( CKSetup.CKSetupRunResult.Failed );
+            sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "model" );
+            engineConfiguration.Run().Status.Should().Be( RunStatus.Failed );
+
+            sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "tempdb" );
+            engineConfiguration.Run().Status.Should().Be( RunStatus.Failed );
         }
 
     }

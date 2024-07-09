@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests
 {

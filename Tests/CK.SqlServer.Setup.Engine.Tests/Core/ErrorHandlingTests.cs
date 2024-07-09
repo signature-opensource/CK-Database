@@ -3,7 +3,7 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 using FluentAssertions;
 
 namespace CK.SqlServer.Setup.Engine.Tests

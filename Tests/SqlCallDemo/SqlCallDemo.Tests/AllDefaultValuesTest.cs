@@ -1,8 +1,9 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
 using NUnit.Framework;
 using System;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -12,7 +13,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void all_default_values_at_work()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<AllDefaultValuesPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<AllDefaultValuesPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 Assert.That( p.AllDefaultValues( ctx ), 
@@ -37,7 +38,7 @@ namespace SqlCallDemo.Tests
         [Test]
         public void all_default_values_but_time_at_work()
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<AllDefaultValuesPackage>();
+            var p = SharedEngine.Map.StObjs.Obtain<AllDefaultValuesPackage>();
             using( var ctx = new SqlStandardCallContext() )
             {
                 Assert.That( p.AllDefaultValuesButTime( ctx, new TimeSpan( 0, 1, 2, 3, 40 ) ), 
