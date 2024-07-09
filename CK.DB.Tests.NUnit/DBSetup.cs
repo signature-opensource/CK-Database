@@ -79,6 +79,7 @@ namespace CK.DB.Tests
         public void StObjMap_reset()
         {
             TestHelper.LogToConsole = true;
+            SharedEngine.
             TestHelper.ResetStObjMap();
             TestHelper.DeleteGeneratedAssemblies( TestHelper.BinFolder );
             foreach( var p in TestHelper.CKSetup.DefaultBinPaths )

@@ -1,6 +1,7 @@
 using CK.Core;
 using CK.Setup;
 using CK.Testing.SqlServer;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.Testing
 {
@@ -8,13 +9,12 @@ namespace CK.Testing
     {
         /// <summary>
         /// Adds or configures the <see cref="SetupableAspectConfiguration"/> and <see cref="SqlSetupAspectConfiguration"/> in the
-        /// <see cref="StObjEngineConfiguration.Aspects"/>.
+        /// <see cref="EngineConfiguration.Aspects"/>.
         /// <para>
         /// The database is created if it doesn't exist.
         /// </para>
         /// </summary>
-        /// <param name="helper">This helper.</param>
-        /// <param name="engineConfiguration">The engine configuration to configure.</param>
+        /// <param name="engineConfiguration">This engine configuration to configure.</param>
         /// <param name="databaseOptions">Optional <see cref="ISqlServerDatabaseOptions"/>.</param>
         /// <param name="resetDatabase">True to reset the database even if its options match the <paramref name="databaseOptions"/>.</param>
         /// <param name="revertOrderingName">
@@ -25,8 +25,7 @@ namespace CK.Testing
         /// To disable the random behavior, set this to false.
         /// </para>
         /// </param>
-        public static void EnsureSqlServerConfigurationAspect( this ISqlServerTestHelper helper,
-                                                               EngineConfiguration engineConfiguration,
+        public static void EnsureSqlServerConfigurationAspect( this EngineConfiguration engineConfiguration,
                                                                ISqlServerDatabaseOptions? databaseOptions = null,
                                                                bool resetDatabase = false,
                                                                bool? revertOrderingName = null )
@@ -34,15 +33,10 @@ namespace CK.Testing
             bool revertOrdering = revertOrderingName ?? (Environment.TickCount % 2) == 0;
             if( revertOrdering )
             {
-                helper.Monitor.Info( "Reverting ordering names in both real objects and setupable items graphs." );
+                TestHelper.Monitor.Info( "Reverting ordering names in both real objects and setupable items graphs." );
             }
             engineConfiguration.RevertOrderingNames = revertOrdering;
-            var setupable = engineConfiguration.Aspects.OfType<SetupableAspectConfiguration>().FirstOrDefault();
-            if( setupable == null )
-            {
-                setupable = new SetupableAspectConfiguration();
-                engineConfiguration.AddAspect( setupable );
-            }
+            var setupable = engineConfiguration.EnsureAspect<SetupableAspectConfiguration>();
             setupable.RevertOrderingNames = revertOrdering;
 
             var sqlEngine = engineConfiguration.Aspects.OfType<SqlSetupAspectConfiguration>().FirstOrDefault();
@@ -53,8 +47,8 @@ namespace CK.Testing
                 sqlEngine.GlobalResolution = false;
                 engineConfiguration.AddAspect( sqlEngine );
             }
-            sqlEngine.DefaultDatabaseConnectionString = helper.GetConnectionString( databaseOptions?.DatabaseName );
-            helper.EnsureDatabase( databaseOptions, resetDatabase );
+            sqlEngine.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( databaseOptions?.DatabaseName );
+            TestHelper.EnsureDatabase( databaseOptions, resetDatabase );
         }
     }
 }
