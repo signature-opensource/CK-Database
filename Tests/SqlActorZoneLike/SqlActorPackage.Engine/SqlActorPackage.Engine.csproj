@@ -5,12 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\Tests\BasicModels\SqlActorPackage\SqlActorPackage.csproj" />
+    <ProjectReference Include="..\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Parser" Version="0.0.0--04ytqpm-develop" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

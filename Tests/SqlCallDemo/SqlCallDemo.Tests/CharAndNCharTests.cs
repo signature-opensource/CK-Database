@@ -15,7 +15,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_to_functions_returns_the_char_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 char c1 = await p.CharFunctionAsync( ctx, 'a' ).ConfigureAwait( false );
                 char c2 = await p.CharFunctionAsync( ctx, null ).ConfigureAwait( false );
@@ -32,7 +32,7 @@ namespace SqlCallDemo.Tests
         public void call_to_sCharProc()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 p.CharProc( ctx, 'a', null, 'b', null, out var cO, out var cNO );
                 cO.Should().Be( 'a' );
@@ -48,7 +48,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_to_sCharProc_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CharAndNCharPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var r = await p.CharProcAsync( ctx, 'a', null, 'b', null );
                 r.CO.Should().Be( 'a' );

@@ -16,7 +16,7 @@ namespace SqlCallDemo.Tests
         public async Task getting_a_totally_stupid_empty_object_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = await p.GetComplexTypeStupidEmptyAsync( ctx ).ConfigureAwait( false );
                 Assert.That( o, Is.Not.Null );
@@ -30,7 +30,7 @@ namespace SqlCallDemo.Tests
         public async Task getting_a_simple_complex_type_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 {
                     var o = await p.GetComplexTypeSimpleAsync( ctx ).ConfigureAwait( false );
@@ -54,7 +54,7 @@ namespace SqlCallDemo.Tests
         public async Task getting_a_simple_complex_typeWithCtor_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 {
                     var o = await p.GetComplexTypeSimpleWithCtorAsync( ctx ).ConfigureAwait( false );
@@ -75,7 +75,7 @@ namespace SqlCallDemo.Tests
         public async Task getting_a_simple_complex_type_with_extra_property_is_fine_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = await p.GetComplexTypeSimpleWithExtraPropertyAsync( ctx ).ConfigureAwait( false );
                 Assert.That( o.Id, Is.EqualTo( 0 ) );
@@ -89,7 +89,7 @@ namespace SqlCallDemo.Tests
         public async Task getting_a_simple_complex_type_with_missing_property_is_fine_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = await p.GetComplexTypeSimpleWithMissingPropertyAsync( ctx ).ConfigureAwait( false );
                 Assert.That( o.Name, Is.EqualTo( "The name...0" ) );

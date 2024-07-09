@@ -302,7 +302,7 @@ namespace CK.Setup
         /// even if requirements do not start from referenced objects.
         /// </summary>
         /// <returns>The transform target if it exists.</returns>
-        IEnumerable<ISetupItem> IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
+        IEnumerable<ISetupItem>? IDependentItemDiscoverer<ISetupItem>.GetOtherItemsToRegister()
         {
             return _transformTarget != null ? new[] { _transformTarget } : null;
         }

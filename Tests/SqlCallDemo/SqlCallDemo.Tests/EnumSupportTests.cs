@@ -16,7 +16,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_with_enum_values_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext(TestHelper.Monitor) )
             {
                 FunctionPackage.Power t1 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max ).ConfigureAwait( false );
                 FunctionPackage.Power t2 = await p.ProcWithEnumIOAsync( ctx, FunctionPackage.BPower.Two, FunctionPackage.Power.Min ).ConfigureAwait( false );
@@ -31,7 +31,7 @@ namespace SqlCallDemo.Tests
         public void call_with_enum_values()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext(TestHelper.Monitor) )
             {
                 FunctionPackage.Power t1 = p.ProcWithEnumIO( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max );
                 FunctionPackage.Power t2 = p.ProcWithEnumIO( ctx, FunctionPackage.BPower.Two, FunctionPackage.Power.Min );
@@ -48,7 +48,7 @@ namespace SqlCallDemo.Tests
         {
             FunctionPackage.Power? io;
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext(TestHelper.Monitor) )
             {
                 io = FunctionPackage.Power.Max;
                 p.ProcWithNullableEnumIOByRef( ctx, FunctionPackage.BPower.One, ref io );
@@ -72,7 +72,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_with_nullable_enum_values_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext(TestHelper.Monitor) )
             {
                 FunctionPackage.Power? t1 = await p.ProcWithNullableEnumIOAsync( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max ).ConfigureAwait( false );
                 FunctionPackage.Power? t2 = await p.ProcWithNullableEnumIOAsync( ctx, null, FunctionPackage.Power.Min ).ConfigureAwait( false );
@@ -87,7 +87,7 @@ namespace SqlCallDemo.Tests
         public void call_with_nullable_enum_values()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 FunctionPackage.Power? t1 = p.ProcWithNullableEnumIO( ctx, FunctionPackage.BPower.One, FunctionPackage.Power.Max );
                 FunctionPackage.Power? t2 = p.ProcWithNullableEnumIO( ctx, null, FunctionPackage.Power.Min );

@@ -6,8 +6,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\CK.SqlServer.Setup.Engine\CK.SqlServer.Setup.Engine.csproj" />
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
-    <ProjectReference Include="..\..\Tests\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Runtime.csproj" />
-    <ProjectReference Include="..\..\Tests\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Runtime.csproj" />
+    <ProjectReference Include="..\BasicModels\SqlActorPackage.Runtime\SqlActorPackage.Engine.csproj" />
+    <ProjectReference Include="..\BasicModels\SqlZonePackage.Runtime\SqlZonePackage.Engine.csproj" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
   </ItemGroup>
   <ItemGroup>

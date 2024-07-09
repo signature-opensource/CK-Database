@@ -75,9 +75,9 @@ namespace CK.Setup
                 _drivers = new List<SetupItemDriver>();
             }
 
-            public SetupItemDriver this[string fullName] => _baseList[fullName] as SetupItemDriver;
+            public SetupItemDriver? this[string fullName] => _baseList[fullName] as SetupItemDriver;
 
-            public SetupItemDriver this[IDependentItem item] => _baseList[item] as SetupItemDriver;
+            public SetupItemDriver? this[IDependentItem item] => _baseList[item] as SetupItemDriver;
 
             public SetupItemDriver this[int index] => _drivers[index];
 

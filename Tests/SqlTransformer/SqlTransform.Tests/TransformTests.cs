@@ -6,6 +6,7 @@ using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using static CK.Testing.SqlServerTestHelper;
+using CK.Testing;
 
 namespace SqlTransform.Tests
 {
@@ -43,7 +44,7 @@ namespace SqlTransform.Tests
         public void calling_SimpleReplaceTest_method()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CKLevel0.Package>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 SimpleReplaceTestGenerated( ctx, "Pouf!", p.Database.ConnectionString );
 
@@ -59,7 +60,7 @@ namespace SqlTransform.Tests
         {
             var p = SharedEngine.Map.StObjs.Obtain<CKLevel0.Package>();
             var p2 = SharedEngine.Map.StObjs.Obtain<CKLevel2.Package>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string s;
                 s = p.SimpleTransormTest( ctx );
@@ -73,7 +74,7 @@ namespace SqlTransform.Tests
         public void calling_SimplY4TemplateTest_method()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CKLevel0.Package>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string s = p.SimplY4TemplateTest( ctx );
                 s.Should().MatchRegex( @"HashCode = \d+" );

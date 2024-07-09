@@ -12,6 +12,7 @@ using static CK.Testing.SqlServerTestHelper;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using CK.Testing;
 
 namespace SqlZonePackage.Tests
 {
@@ -56,7 +57,7 @@ namespace SqlZonePackage.Tests
             //}
 
             var db = SharedEngine.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var controller = ctx.GetConnectionController( db );
                 var list = controller.Query<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" ).ToList();
@@ -83,7 +84,7 @@ namespace SqlZonePackage.Tests
         public void Dapper_QueryFirstOrDefault_with_IPoco()
         {
             var db = SharedEngine.AutomaticServices.GetRequiredService<SqlDefaultDatabase>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var controller = ctx.GetConnectionController( db );
                 var first = controller.QueryFirstOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );

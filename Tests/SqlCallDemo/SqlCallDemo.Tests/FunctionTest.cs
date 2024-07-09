@@ -14,7 +14,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_string_with_nullable_parameter_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string t1 = await p.StringFunctionAsync( ctx, 3712 ).ConfigureAwait( false );
                 string t2 = await p.StringFunctionAsync( ctx, 2173 ).ConfigureAwait( false );
@@ -29,7 +29,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_string_with_nullable_parameter()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string t1 = p.StringFunction( ctx, 3712 );
                 string t2 = p.StringFunction( ctx, 2173 );
@@ -44,7 +44,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_null_string_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string shouldBeNull = await p.StringFunctionAsync( ctx, -1 ).ConfigureAwait( false );
                 Assert.That( shouldBeNull, Is.Null );
@@ -55,7 +55,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_null_string()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string shouldBeNull = p.StringFunction( ctx, -1 );
                 Assert.That( shouldBeNull, Is.Null );
@@ -66,7 +66,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_byte_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 byte t1 = await p.ByteFunctionAsync( ctx, 2 ).ConfigureAwait( false );
                 byte t2 = await p.ByteFunctionAsync( ctx, 4 ).ConfigureAwait( false );
@@ -79,7 +79,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_byte()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 byte t1 = p.ByteFunction( ctx, 3 );
                 byte t2 = p.ByteFunction( ctx, 5 );
@@ -92,7 +92,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_null_nullable_byte_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 byte? b = await p.NullableByteFunctionAsync( ctx ).ConfigureAwait( false );
                 Assert.That( b, Is.Null );
@@ -103,7 +103,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_null_nullable_byte()
         {
             var p = SharedEngine.Map.StObjs.Obtain<FunctionPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 byte? b = p.NullableByteFunction( ctx );
                 Assert.That( b, Is.Null );

@@ -23,7 +23,7 @@ namespace SqlCallDemo.Tests
             };
 
             var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 CmdDemo.ResultPOCO r = await p.RunCommandAsync( ctx, cmd ).ConfigureAwait( false );
                 Assert.That( r.Delay, Is.LessThan( 0 ) );
@@ -42,7 +42,7 @@ namespace SqlCallDemo.Tests
             };
 
             var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 CmdDemo.ResultReadOnly r = await p.RunCommandROAsync( ctx, cmd ).ConfigureAwait( false );
                 Assert.That( r.Delay, Is.LessThan( 0 ) );
@@ -55,7 +55,7 @@ namespace SqlCallDemo.Tests
         public void calling_with_a_data_object()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 int id = p.CreateProtoUser( ctx, 67893, new ProtoUserData() { UserName = "jj", Email = "@", Phone = "06" } );
                 Assert.That( id, Is.EqualTo( 67893 + 2 ) );
@@ -66,7 +66,7 @@ namespace SqlCallDemo.Tests
         public void when_parameter_source_name_conflicts()
         {
             var p = SharedEngine.Map.StObjs.Obtain<CmdDemoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 int id = p.ParameterSourceNamedTheSameAsOneOfTheActualParameters( ctx, 3712, new ProtoUserData() { UserName = "01234567", Email = "@", Phone = "06" } );
                 Assert.That( id, Is.EqualTo( 3712 + 8 ) );

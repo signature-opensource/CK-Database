@@ -20,7 +20,7 @@ namespace SqlCallDemo.Tests
             var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
             Throw.DebugAssert( factoryThing != null && factoryThingAH != null && p != null );
 
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var t = factoryThing.Create( o => o.Name = "a thing" );
                 Assert.That( p.Write( ctx, t ), Is.EqualTo( "a thing P=0 A,H=0,0" ) );
@@ -38,7 +38,7 @@ namespace SqlCallDemo.Tests
         public void reading_Poco_Thing_from_database()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var thing = p.ReadFromDatabase( ctx );
                 thing.Should().NotBeNull()
@@ -62,7 +62,7 @@ namespace SqlCallDemo.Tests
         public async Task reading_Poco_Thing_from_database_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PocoPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var thing = await p.ReadFromDatabaseAsync( ctx );
                 thing.Should().NotBeNull()

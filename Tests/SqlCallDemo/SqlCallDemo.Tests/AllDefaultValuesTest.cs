@@ -14,7 +14,7 @@ namespace SqlCallDemo.Tests
         public void all_default_values_at_work()
         {
             var p = SharedEngine.Map.StObjs.Obtain<AllDefaultValuesPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 Assert.That( p.AllDefaultValues( ctx ), 
                     Is.EqualTo( "@NVarChar = All Defaults" 
@@ -39,7 +39,7 @@ namespace SqlCallDemo.Tests
         public void all_default_values_but_time_at_work()
         {
             var p = SharedEngine.Map.StObjs.Obtain<AllDefaultValuesPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 Assert.That( p.AllDefaultValuesButTime( ctx, new TimeSpan( 0, 1, 2, 3, 40 ) ), 
                     Is.EqualTo( "@NVarChar = All Defaults" 

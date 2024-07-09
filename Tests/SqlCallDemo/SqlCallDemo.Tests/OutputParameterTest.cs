@@ -14,7 +14,7 @@ namespace SqlCallDemo.Tests
         public void calling_an_input_output_with_default_parameter_value_uses_the_Sql_default_value()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.OutputInputParameterWithDefault( ctx );
                 Assert.That( result, Is.EqualTo( "Return: The Sql Default." ) );
@@ -25,7 +25,7 @@ namespace SqlCallDemo.Tests
         public void calling_an_input_output_with_default_parameter_value_can_also_specify_the_input_value()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.OutputInputParameterWithDefault( ctx, "It F... Works!" );
                 Assert.That( result, Is.EqualTo( "Return: It F... Works!" ) );
@@ -36,7 +36,7 @@ namespace SqlCallDemo.Tests
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_the_Sql_default_value_applies()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.OutputParameterWithDefault( ctx );
                 Assert.That( result, Is.EqualTo( "Return: The Sql Default." ) );
@@ -47,7 +47,7 @@ namespace SqlCallDemo.Tests
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_one_can_also_specify_the_input_value()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.OutputParameterWithDefault( ctx, "What a mess..." );
                 Assert.That( result, Is.EqualTo( "Return: What a mess..." ) );
@@ -58,7 +58,7 @@ namespace SqlCallDemo.Tests
         public void calling_a_pure_output_with_default_parameter_value_emits_a_warning_but_one_can_also_specify_the_input_value_that_is_null()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.OutputParameterWithDefault( ctx, null );
                 Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );
@@ -70,7 +70,7 @@ namespace SqlCallDemo.Tests
         public async Task async_calling_a_pure_output_with_default_parameter_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<OutputParameterPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = await p.OutputParameterWithDefaultAsync( ctx, null ).ConfigureAwait( false );
                 Assert.That( result, Is.EqualTo( "Return: NULL input for @TextResult!" ) );

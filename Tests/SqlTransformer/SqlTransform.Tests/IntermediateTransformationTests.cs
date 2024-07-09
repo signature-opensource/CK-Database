@@ -15,7 +15,7 @@ namespace SqlTransform.Tests
             var p1 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package1>();
             var p2 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package2>();
             var p3 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package3>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 Assert.That( p1.ReadViewBase( ctx ).Count, Is.GreaterThan( 0 ) );
                 var idAndNames = p2.ReadViewBase( ctx );

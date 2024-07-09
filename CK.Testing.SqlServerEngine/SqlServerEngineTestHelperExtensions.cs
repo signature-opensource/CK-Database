@@ -5,8 +5,21 @@ using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.Testing
 {
+
     public static class SqlServerEngineTestHelperExtensions
     {
+        /// <summary>
+        /// Ensures that the <see cref="SharedEngine.AutoConfigure"/> will apply <see cref="EnsureSqlServerConfigurationAspect"/>
+        /// on new engine configuration.
+        /// </summary>
+        /// <param name="helper">This helper.</param>
+        /// <returns>The helper.</returns>
+        public static IBasicTestHelper SharedEngineSqlSupport( this IBasicTestHelper helper )
+        {
+            helper.OnlyOnce( () => SharedEngine.AutoConfigure += c => c.EnsureSqlServerConfigurationAspect() );
+            return helper;
+        }
+
         /// <summary>
         /// Adds or configures the <see cref="SetupableAspectConfiguration"/> and <see cref="SqlSetupAspectConfiguration"/> in the
         /// <see cref="EngineConfiguration.Aspects"/>.

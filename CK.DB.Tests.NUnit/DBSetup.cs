@@ -10,6 +10,7 @@ using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.DB.Tests
 {
+
     /// <summary>
     /// Interactive tests that enable controls of test environment.
     /// </summary>

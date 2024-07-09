@@ -17,7 +17,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_simple_log_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
@@ -29,7 +29,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_with_bit_parameter_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
@@ -49,7 +49,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_with_the_default_value_for_bit_parameter_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
@@ -62,7 +62,7 @@ namespace SqlCallDemo.Tests
         public void async_call_with_cancellation_token_works()
         {
             var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 {
                     Task t = p.LogAsync( ctx, false, "Testing Cancellation." );

@@ -14,7 +14,7 @@ namespace SqlCallDemo
         public TestActorContext( int actorId )
         {
             _actorId = actorId;
-            _exec = new SqlStandardCallContext();
+            _exec = new SqlStandardCallContext( TestHelper.Monitor );
         }
 
         public ISqlConnectionController this[ISqlConnectionStringProvider p] => _exec[p];

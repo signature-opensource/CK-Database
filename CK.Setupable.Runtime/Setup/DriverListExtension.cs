@@ -19,7 +19,7 @@ namespace CK.Setup
         /// or is not of the expected type.
         /// </param>
         /// <returns>The typed driver or null if not found and <paramref name="throwIfNotFound"/> is false.</returns>
-        public static T Find<T>( this IDriverList @this, string fullName, bool throwIfNotFound = true )
+        public static T? Find<T>( this IDriverList @this, string fullName, bool throwIfNotFound = true )
             where T : SetupItemDriver
         {
             if( fullName == null )
@@ -27,7 +27,7 @@ namespace CK.Setup
                 if( throwIfNotFound ) throw new ArgumentNullException( nameof( fullName ) );
                 return null;
             }
-            T result = @this[fullName] as T;
+            T? result = @this[fullName] as T;
             if( result == null && throwIfNotFound )
             {
                 var existing = @this[fullName];

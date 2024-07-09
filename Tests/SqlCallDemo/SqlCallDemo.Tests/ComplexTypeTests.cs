@@ -15,7 +15,7 @@ namespace SqlCallDemo.Tests
         public void getting_a_totally_stupid_empty_object()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = p.GetComplexTypeStupidEmpty( ctx );
                 Assert.That( o, Is.Not.Null );
@@ -29,7 +29,7 @@ namespace SqlCallDemo.Tests
         public void getting_a_simple_complex_type()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 {
                     var o = p.GetComplexTypeSimple( ctx );
@@ -53,7 +53,7 @@ namespace SqlCallDemo.Tests
         public void getting_a_simple_complex_typeWithCtor()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 {
                     var o = p.GetComplexTypeSimpleWithCtor( ctx );
@@ -74,7 +74,7 @@ namespace SqlCallDemo.Tests
         public void getting_a_simple_complex_type_with_extra_property_is_fine()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = p.GetComplexTypeSimpleWithExtraProperty( ctx );
                 Assert.That( o.Id, Is.EqualTo( 0 ) );
@@ -88,7 +88,7 @@ namespace SqlCallDemo.Tests
         public void getting_a_simple_complex_type_with_missing_property_is_fine()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 var o = p.GetComplexTypeSimpleWithMissingProperty( ctx );
                 Assert.That( o.Name, Is.EqualTo( "The name...0" ) );

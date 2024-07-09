@@ -3,6 +3,7 @@ using CK.SqlServer;
 using CK.Testing;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -13,7 +14,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_string_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string t1 = await p.StringReturnAsync( ctx, 3712 ).ConfigureAwait( false );
                 string t2 = await p.StringReturnAsync( ctx, 2173 ).ConfigureAwait( false );
@@ -26,7 +27,7 @@ namespace SqlCallDemo.Tests
         public async Task async_call_returns_int_Async()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 int iNull = await p.IntReturnAsync( ctx, null ).ConfigureAwait( false );
                 int i = await p.IntReturnAsync( ctx, 3712 );
@@ -52,7 +53,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_string()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string t1 = p.StringReturn( ctx, 3712 );
                 string t2 = p.StringReturn( ctx, 2173 );
@@ -65,7 +66,7 @@ namespace SqlCallDemo.Tests
         public void call_returns_int()
         {
             var p = SharedEngine.Map.StObjs.Obtain<ReturnPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 int iNull = p.IntReturn( ctx, null );
                 int i = p.IntReturn( ctx, 3712 );

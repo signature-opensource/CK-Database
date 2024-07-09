@@ -3,6 +3,7 @@ using CK.Testing;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlCallDemo.Tests
 {
@@ -13,7 +14,7 @@ namespace SqlCallDemo.Tests
         public void timeout_configuration_is_available_on_callables()
         {
             var p = SharedEngine.AutomaticServices.GetRequiredService<MiscPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 p.Invoking( t => t.CanWaitForTheDefaultCommandTimeout( ctx, 2 ) ).Should().NotThrow();
                 p.Invoking( t => t.CanWaitOnlyForOneSecond( ctx, 2 ) ).Should().Throw<SqlDetailedException>();
@@ -27,7 +28,7 @@ namespace SqlCallDemo.Tests
         public void verbatim_parameter_names()
         {
             var p = SharedEngine.AutomaticServices.GetRequiredService<MiscPackage>();
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 int @this = 3700;
                 int @operator = 12;

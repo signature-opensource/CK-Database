@@ -41,7 +41,7 @@ namespace CK.Setup
         /// Otherwise, null is returned.
         /// Null has always the same semantics: the item is not versioned.
         /// </summary>
-        public Version ItemVersion => (_sortedItem.Item as IVersionedItem)?.Version;
+        public Version? ItemVersion => (_sortedItem.Item as IVersionedItem)?.Version;
 
         /// <summary>
         /// Gets the ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> 

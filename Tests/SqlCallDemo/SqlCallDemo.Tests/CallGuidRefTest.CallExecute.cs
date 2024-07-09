@@ -18,7 +18,7 @@ namespace SqlCallDemo.Tests
             var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 p.GuidRefTest( ctx, true, Guid1, ref inOut, out result );
             }
@@ -31,7 +31,7 @@ namespace SqlCallDemo.Tests
         {
             var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 string result = p.GuidRefTestReturn( ctx, true, Guid1, ref inOut );
                 Assert.That( inOut, Is.Not.EqualTo( Guid2 ), "Since ReplaceInAndOut was true." );
@@ -45,7 +45,7 @@ namespace SqlCallDemo.Tests
             var p = SharedEngine.Map.StObjs.Obtain<GuidRefTestPackage>();
             Guid inOut = Guid2;
             string result;
-            using( var ctx = new SqlStandardCallContext() )
+            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
                 inOut = p.GuidRefTestReturnInOut( ctx, true, Guid1, inOut, out result );
                 Assert.That( inOut, Is.Not.EqualTo( Guid2 ), "Since ReplaceInAndOut was true." );

@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\Tests\BasicModels\SqlZonePackage\SqlZonePackage.csproj" />
+    <ProjectReference Include="..\SqlZonePackage\SqlZonePackage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.SqlServer.Parser" Version="0.0.0--04ytqpm-develop" />

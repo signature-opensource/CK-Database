@@ -7,7 +7,8 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using CK.Testing;
-using static CK.Testing.MonitorTestHelper;
+using CK.Setup;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlActorPackage.Tests
 {
@@ -44,8 +45,8 @@ namespace SqlActorPackage.Tests
             using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (1/2)" ) )
             {
                 File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
-                SharedEngine.SetEngineConfiguration( null );
-                TestHelper.RunDBSetup().Should().Be( CKSetup.CKSetupRunResult.Failed );
+                SharedEngine.Reset();
+                SharedEngine.EngineResult.Status.Should().Be( RunStatus.Failed );
                 using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
                 {
                     var con = ctx[TestHelper.GetConnectionString()];
@@ -59,9 +60,8 @@ namespace SqlActorPackage.Tests
 
             using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (2/2)" ) )
             {
-                var map = TestHelper.StObjMap;
-                map.Should().NotBeNull();
-                var p = map.StObjs.Obtain<BuggyPackage>();
+                SharedEngine.Reset();
+                var p = SharedEngine.Map.StObjs.Obtain<BuggyPackage>();
                 using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
                 {
                     var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
