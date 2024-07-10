@@ -150,6 +150,8 @@ namespace CK.DB.Tests
         public void db_setup( string mode )
         {
             TestHelper.LogToConsole = true;
+            var config = SharedEngine.GetEngineConfiguration();
+
             var engineConfiguration = TestHelper.CreateDefaultEngineConfiguration();
             engineConfiguration.EnsureSqlServerConfigurationAspect( revertOrderingName: mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => null } );
             engineConfiguration.RunSuccessfully();

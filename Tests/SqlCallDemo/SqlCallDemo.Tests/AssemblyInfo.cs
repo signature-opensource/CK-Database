@@ -1,2 +1,2 @@
 
-[assembly: CK.DB.Tests.CKTestSupport]
+[assembly: CK.DB.Tests.NUnit.CKTestSupport, CK.DB.Tests.NUnit.SqlServerConfigurationAspect]
