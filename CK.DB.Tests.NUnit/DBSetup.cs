@@ -1,6 +1,7 @@
 using CK.Core;
 using CK.Setup;
 using CK.Testing;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
@@ -143,18 +144,20 @@ namespace CK.DB.Tests
         /// <summary>
         /// Creates a <see cref="EngineConfiguration"/> with a default <see cref="SqlSetupAspectConfiguration"/> and runs it.
         /// </summary>
+        [Explicit]
         [TestCase( "Random" )]
         [TestCase( "OrderedNames" )]
         [TestCase( "RevertOrderedNames" )]
-        [Explicit]
         public void db_setup( string mode )
         {
             TestHelper.LogToConsole = true;
-            var config = SharedEngine.GetEngineConfiguration();
 
-            var engineConfiguration = TestHelper.CreateDefaultEngineConfiguration();
-            engineConfiguration.EnsureSqlServerConfigurationAspect( revertOrderingName: mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => null } );
-            engineConfiguration.RunSuccessfully();
+            bool revertOrderingName = mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => (Environment.TickCount % 2) == 0 };
+
+            var config = SharedEngine.GetEngineConfiguration( reset: true );
+            config.RevertOrderingNames = revertOrderingName;
+            config.EnsureAspect<SetupableAspectConfiguration>().RevertOrderingNames = revertOrderingName;
+            SharedEngine.EngineResult.Status.Should().NotBe( RunStatus.Failed );
         }
 
         /// <summary>

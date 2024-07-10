@@ -31,7 +31,7 @@ namespace CK.DB.Tests.NUnit
 
         void ITestAction.AfterTest( ITest test ) { }
 
-        ActionTargets ITestAction.Targets => ActionTargets.Test | ActionTargets.Suite;
+        ActionTargets ITestAction.Targets => ActionTargets.Default;
 
     }
 }

@@ -4,9 +4,18 @@
     <Description>Contains NUnit test helpers.</Description>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="CK.Testing.NUnit" Version="0.0.0--04yy09q-develop" />
     <PackageReference Include="CK.Testing.SqlTransform" Version="0.0.0--04yy0m0-develop" />
     <ProjectReference Include="..\CK.Testing.SqlServerEngine\CK.Testing.SqlServerEngine.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MSBuild/CK.DB.Tests.NUnit.props">
+      <Pack>true</Pack>
+      <PackagePath>buildTransitive\CK.DB.Tests.NUnit.props</PackagePath>
+    </Content>
+  </ItemGroup>
+  
 </Project>

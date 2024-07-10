@@ -1,0 +1,5 @@
+  <Project>
+    <PropertyGroup>
+      <CKTestingNUnit>$(CKTestingNUnit), CK.DB.Tests.NUnit.SqlServerConfigurationAspect</CKTestingNUnit>
+    </PropertyGroup>
+  </Project>
