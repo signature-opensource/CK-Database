@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace SqlActorPackage.Runtime
+namespace SqlActorPackage.Engine
 {
     public class BuggyPackageDriver : SqlPackageBaseItemDriver
     {
@@ -21,13 +21,13 @@ namespace SqlActorPackage.Runtime
             using( monitor.OpenInfo( $"Reading BuggyPackageDriver.xml from AppContext.BaseDirectory = {AppContext.BaseDirectory}" ) )
             {
                 NormalizedPath path = AppContext.BaseDirectory;
-                var cfgFile = path.PathsToFirstPart( new NormalizedPath[] { "Tests/BasicModels/SqlActorPackage.Runtime" }, new[] { "BuggyPackageDriver.xml" } )
+                var cfgFile = path.PathsToFirstPart( ["Tests/SqlActorZoneLike/SqlActorPackage.Engine"], ["BuggyPackageDriver.xml"] )
                                   .FirstOrDefault( p => File.Exists( p ) );
                 if( !cfgFile.IsEmptyPath )
                 {
                     monitor.Info( $"File BuggyPackageDriver.xml found: {cfgFile}" );
                     ReturnError = true;
-                    XElement c = XDocument.Load( cfgFile ).Root;
+                    XElement c = XDocument.Load( cfgFile ).Root!;
                     ErrorStep = c.AttributeEnum( "ErrorStep", SetupCallGroupStep.None );
                     ErrorBeforeHandlers = (bool?)c.Attribute( "ErrorBeforeHandlers" ) ?? false;
                     ErrorFromOnStep = (bool?)c.Attribute( "ErrorFromOnStep" ) ?? false;

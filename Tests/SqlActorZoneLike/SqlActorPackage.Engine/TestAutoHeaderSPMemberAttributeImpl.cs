@@ -1,7 +1,7 @@
 using CK.Setup;
 using CK.Core;
 
-namespace SqlActorPackage.Runtime
+namespace SqlActorPackage.Engine
 {
     public class TestAutoHeaderSPMemberAttributeImpl : SetupObjectItemRefMemberAttributeImplBase, ISetupItemDriverAware
     {

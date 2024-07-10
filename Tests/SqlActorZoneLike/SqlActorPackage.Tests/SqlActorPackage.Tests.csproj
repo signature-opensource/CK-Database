@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
+    <ProjectReference Include="..\SqlActorPackage.Engine\SqlActorPackage.Engine.csproj" />
     <ProjectReference Include="..\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
   <ItemGroup>

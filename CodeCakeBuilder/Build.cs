@@ -29,7 +29,6 @@ namespace CodeCake
                  {
                      globalInfo.GetDotnetSolution().Clean();
                      Cake.CleanDirectories( globalInfo.ReleasesFolder.ToString() );
-                     Cake.CleanDirectory( "Tests/LocalTestHelper/LocalTestStore" );
                     
                  } );
 

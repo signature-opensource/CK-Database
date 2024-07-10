@@ -20,7 +20,7 @@ namespace SqlActorPackage.Tests
         static BuggyPackageTests()
         {
             _configFile = TestHelper.TestProjectFolder
-                            .Combine( "../BasicModels/SqlActorPackage.Runtime/BuggyPackageDriver.xml" )
+                            .Combine( "../SqlActorPackage.Engine/BuggyPackageDriver.xml" )
                             .ResolveDots();
         }
 

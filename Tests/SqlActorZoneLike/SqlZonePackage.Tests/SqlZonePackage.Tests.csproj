@@ -5,13 +5,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
+    <ProjectReference Include="..\SqlZonePackage.Engine\SqlZonePackage.Engine.csproj" />
     <ProjectReference Include="..\SqlZonePackage\SqlZonePackage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- This tests the CK.Dapper support with IPoco. -->
-    <PackageReference Include="CK.SqlServer.Dapper" Version="0.0.0--04yw01x-develop" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-    <PackageReference Include="NUnit" Version="4.1.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
   </ItemGroup>

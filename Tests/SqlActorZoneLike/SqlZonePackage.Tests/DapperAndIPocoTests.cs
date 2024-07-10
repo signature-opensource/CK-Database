@@ -1,28 +1,15 @@
 using CK.Core;
 using CK.SqlServer;
+using CK.Testing;
+using Dapper;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using SqlActorPackage.Basic;
-using System;
-using System.Collections.Generic;
-using Dapper;
-
-using static CK.Testing.SqlServerTestHelper;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
-using CK.Testing;
+using static CK.Testing.SqlServerTestHelper;
 
 namespace SqlZonePackage.Tests
 {
-    public interface ISimpleInfo : IPoco
-    {
-        string Name { get; set; }
-
-        int Power { get; set; }
-    }
-
     [TestFixture]
     public class DapperAndIPocoTests
     {

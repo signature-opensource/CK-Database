@@ -10,7 +10,7 @@ namespace SqlActorPackage
     public class TestAutoHeaderSPAttribute : CK.Setup.SetupItemSelectorBaseAttribute
     {
         public TestAutoHeaderSPAttribute( string headerComment, string commaSeparatedNames )
-            : base( "SqlActorPackage.Runtime.TestAutoHeaderSPAttributeImpl, SqlActorPackage.Runtime", commaSeparatedNames, CK.Core.SetupItemSelectorScope.All )
+            : base( "SqlActorPackage.Engine.TestAutoHeaderSPAttributeImpl, SqlActorPackage.Engine", commaSeparatedNames, CK.Core.SetupItemSelectorScope.All )
         {
             HeaderComment = headerComment;
         }

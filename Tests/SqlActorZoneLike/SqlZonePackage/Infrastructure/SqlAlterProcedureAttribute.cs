@@ -7,7 +7,7 @@ namespace CK.SqlServer.Setup
     public sealed class SqlAlterProcedureAttribute : SetupObjectItemRefMemberAttributeBase
     {
         public SqlAlterProcedureAttribute()
-            : base( "CK.SqlServer.Setup.SqlAlterProcedureAttributeImpl, SqlZonePackage.Runtime" )
+            : base( "CK.SqlServer.Setup.SqlAlterProcedureAttributeImpl, SqlZonePackage.Engine" )
         {
         }
 

@@ -9,7 +9,7 @@ namespace SqlActorPackage.Basic
 
     [SqlPackage( Schema = "CK", Package = typeof( Package )/*, Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res"*/ )]
     [Versions( "1.0.0" )]
-    [Setup( DriverTypeName = "SqlActorPackage.Runtime.BuggyPackageDriver, SqlActorPackage.Runtime" )]
+    [Setup( DriverTypeName = "SqlActorPackage.Engine.BuggyPackageDriver, SqlActorPackage.Engine" )]
     public abstract class BuggyPackage : SqlPackage
     {
         void StObjConstruct( IActivityMonitor monitor )

@@ -21,9 +21,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlCallDemo", "SqlCallDemo", "{5EC943B9-9907-4B3B-A5CD-9155F23E2D6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlTransformer", "SqlTransformer", "{CBCECF22-8C57-45FB-BD64-93C2E23331F8}"
-	ProjectSection(SolutionItems) = preProject
-		Tests\SqlTransformer\TestHelper.config = Tests\SqlTransformer\TestHelper.config
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Model", "Model", "{68CE5112-727D-4462-9359-3557B8A8A7F6}"
 EndProject

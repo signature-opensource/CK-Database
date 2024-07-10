@@ -2,6 +2,7 @@ using CK.Core;
 using CK.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using static CK.Testing.MonitorTestHelper;
@@ -31,12 +32,24 @@ namespace CK.DB.Tests
 
         public void BeforeTest( ITest test )
         {
-            _groups.Push( TestHelper.Monitor.OpenInfo( $"Running '{test.Name}'." ) );
+            _groups.Push( TestHelper.Monitor.UnfilteredOpenGroup( LogLevel.Info|LogLevel.IsFiltered, null, $"Running '{test.Name}'.", null ) );
         }
 
         public void AfterTest( ITest test )
         {
-            _groups.Pop().Dispose();
+            var result = TestExecutionContext.CurrentContext.CurrentResult;
+            var g = _groups.Pop();
+            if( result.ResultState.Status != TestStatus.Passed )
+            {
+                g.ConcludeWith( () => result.ResultState.Status.ToString() );
+                var message = result.Message;
+                if( !string.IsNullOrWhiteSpace( message ) )
+                {
+                    TestHelper.Monitor.OpenError( message );
+                    if( result.StackTrace != null ) TestHelper.Monitor.Trace( result.StackTrace );
+                }
+            }
+            g.Dispose();
         }
 
         public ActionTargets Targets => ActionTargets.Test | ActionTargets.Suite;

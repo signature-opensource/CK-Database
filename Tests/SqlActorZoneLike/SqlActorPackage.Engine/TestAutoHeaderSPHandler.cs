@@ -3,7 +3,7 @@ using CK.SqlServer.Setup;
 using CK.SqlServer.Parser;
 using CK.Core;
 
-namespace SqlActorPackage.Runtime
+namespace SqlActorPackage.Engine
 {
     class TestAutoHeaderSPHandler : SetupHandler
     {

@@ -7,7 +7,7 @@ namespace SqlActorPackage
     public class TestAutoHeaderSPMemberAttribute : SetupObjectItemRefMemberAttributeBase
     {
         public TestAutoHeaderSPMemberAttribute( string headerComment )
-            : base( "SqlActorPackage.Runtime.TestAutoHeaderSPMemberAttributeImpl, SqlActorPackage.Runtime" )
+            : base( "SqlActorPackage.Engine.TestAutoHeaderSPMemberAttributeImpl, SqlActorPackage.Engine" )
         {
             HeaderComment = headerComment;
         }

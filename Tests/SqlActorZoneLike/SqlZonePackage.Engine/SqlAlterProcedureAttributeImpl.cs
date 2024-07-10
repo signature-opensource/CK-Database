@@ -29,21 +29,21 @@ namespace CK.SqlServer.Setup
 
         void DoTransform( IStObjSetupDynamicInitializerState state, IMutableSetupItem item, IStObjResult stObj )
         {
-            object transformer = GetTransformerObject( state, stObj.ClassType );
+            object? transformer = GetTransformerObject( state, stObj.ClassType );
             if( transformer != null )
             {
-                MethodInfo m = transformer.GetType().GetMethod( Member.Name );
+                MethodInfo? m = transformer.GetType().GetMethod( Member.Name );
                 if( m == null )
                 {
                     state.Monitor.Fatal( $"Unable to find transformer method '{Member.Name}' on '{transformer.GetType().AssemblyQualifiedName}'." );
                     return;
                 }
                 SqlPackageBaseItem container = (SqlPackageBaseItem)item;
-                m.Invoke( transformer, new object[] { new SqlTransformContext( state.Monitor, container, (SqlProcedureItem)SetupObjectItem ) } );
+                m.Invoke( transformer, [new SqlTransformContext( state.Monitor, container, (SqlProcedureItem)SetupObjectItem )] );
             }
         }
 
-        object GetTransformerObject( IStObjSetupDynamicInitializerState state, Type holderType )
+        object? GetTransformerObject( IStObjSetupDynamicInitializerState state, Type holderType )
         {
             string cacheKey = "Transformer\\" + holderType.AssemblyQualifiedName;
             object transformer = state.Memory[cacheKey];
@@ -51,12 +51,12 @@ namespace CK.SqlServer.Setup
             if( transformer == null )
             {
                 AssemblyName a = holderType.Assembly.GetName();
-                a.Name += ".Runtime";
+                a.Name += ".Engine";
                 string transformerTypeName = holderType.FullName + ", " + a.FullName;
                 Type transformerType = SimpleTypeFinder.WeakResolver( transformerTypeName, false );
                 if( transformerType == null )
                 {
-                    string altTypeName = "Runtime." + transformerTypeName;
+                    string altTypeName = "Engine." + transformerTypeName;
                     transformerType = SimpleTypeFinder.WeakResolver( altTypeName, false );
                     if( transformerType == null )
                     {

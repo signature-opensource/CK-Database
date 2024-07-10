@@ -1,6 +1,6 @@
-﻿using CK.SqlServer.Setup;
+using CK.SqlServer.Setup;
 
-namespace Runtime.SqlZonePackage.Zone
+namespace Engine.SqlZonePackage.Zone
 {
     public class GroupHome
     {

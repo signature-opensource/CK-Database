@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace SqlActorPackage.Runtime
+namespace SqlActorPackage.Engine
 {
     public class SpecialTableBaseItem : SqlTableItem, IStObjSetupDynamicInitializer, ISetupItemDriverAware
     {

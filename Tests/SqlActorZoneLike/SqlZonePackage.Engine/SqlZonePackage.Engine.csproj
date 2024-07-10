@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
+    <ProjectReference Include="..\SqlActorPackage.Engine\SqlActorPackage.Engine.csproj" />
     <ProjectReference Include="..\SqlZonePackage\SqlZonePackage.csproj" />
   </ItemGroup>
   <ItemGroup>
