@@ -19,9 +19,12 @@ namespace SqlActorPackage.Tests
 
         static BuggyPackageTests()
         {
-            _configFile = TestHelper.TestProjectFolder
-                            .Combine( "../SqlActorPackage.Engine/BuggyPackageDriver.xml" )
-                            .ResolveDots();
+            // This file MUST NOT be "shared" by different running test assemblies.
+            // "dotnet test" runs the test assemblies in parallel, such files must simply
+            // be in the AppContext.BaseDirectory or the TestHelper.TestProjectFolder.
+            // But here, this file is read by the SUT project (that doesn't depend on the TestHelper)
+            // so we use the AppContext.BaseDirectory here.
+            _configFile = Path.Combine( AppContext.BaseDirectory, "BuggyPackageDriver.xml" );
         }
 
         [Test]

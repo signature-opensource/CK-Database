@@ -18,16 +18,14 @@ namespace SqlActorPackage.Engine
         public BuggyPackageDriver( BuildInfo info, IActivityMonitor monitor )
             : base( info )
         {
-            using( monitor.OpenInfo( $"Reading BuggyPackageDriver.xml from AppContext.BaseDirectory = {AppContext.BaseDirectory}" ) )
+            using( monitor.OpenInfo( $"Reading '{AppContext.BaseDirectory}\\BuggyPackageDriver.xml'." ) )
             {
-                NormalizedPath path = AppContext.BaseDirectory;
-                var cfgFile = path.PathsToFirstPart( ["Tests/SqlActorZoneLike/SqlActorPackage.Engine"], ["BuggyPackageDriver.xml"] )
-                                  .FirstOrDefault( p => File.Exists( p ) );
-                if( !cfgFile.IsEmptyPath )
+                var path = Path.Combine( AppContext.BaseDirectory, "BuggyPackageDriver.xml" );
+                if( File.Exists( path ) )
                 {
-                    monitor.Info( $"File BuggyPackageDriver.xml found: {cfgFile}" );
+                    monitor.Info( "File BuggyPackageDriver.xml found." );
                     ReturnError = true;
-                    XElement c = XDocument.Load( cfgFile ).Root!;
+                    XElement c = XDocument.Load( path ).Root!;
                     ErrorStep = c.AttributeEnum( "ErrorStep", SetupCallGroupStep.None );
                     ErrorBeforeHandlers = (bool?)c.Attribute( "ErrorBeforeHandlers" ) ?? false;
                     ErrorFromOnStep = (bool?)c.Attribute( "ErrorFromOnStep" ) ?? false;
