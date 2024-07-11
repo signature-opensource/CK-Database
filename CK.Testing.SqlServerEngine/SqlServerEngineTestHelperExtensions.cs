@@ -6,20 +6,11 @@ using static CK.Testing.SqlServerTestHelper;
 namespace CK.Testing
 {
 
+    /// <summary>
+    /// Provides EngineConfiguration.EnsureSqlServerConfigurationAspect() helper.
+    /// </summary>
     public static class SqlServerEngineTestHelperExtensions
     {
-        /// <summary>
-        /// Ensures that the <see cref="SharedEngine.AutoConfigure"/> will apply <see cref="EnsureSqlServerConfigurationAspect"/>
-        /// on new engine configuration.
-        /// </summary>
-        /// <param name="helper">This helper.</param>
-        /// <returns>The helper.</returns>
-        public static IBasicTestHelper SharedEngineSqlSupport( this IBasicTestHelper helper )
-        {
-            helper.OnlyOnce( () => SharedEngine.AutoConfigure += c => c.EnsureSqlServerConfigurationAspect() );
-            return helper;
-        }
-
         /// <summary>
         /// Adds or configures the <see cref="SetupableAspectConfiguration"/> and <see cref="SqlSetupAspectConfiguration"/> in the
         /// <see cref="EngineConfiguration.Aspects"/>.
@@ -35,7 +26,7 @@ namespace CK.Testing
         /// items in the same rank with their ascending or descending names. This helps find missing constraints
         /// in the graphs.
         /// <para>
-        /// To disable the random behavior, set this to false.
+        /// To disable the random behavior, set this to false or true.
         /// </para>
         /// </param>
         public static void EnsureSqlServerConfigurationAspect( this EngineConfiguration engineConfiguration,

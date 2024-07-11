@@ -82,11 +82,10 @@ namespace CK.SqlServer.Setup
             return _runSignature.Value;
         }
 
-        /// <summary>
-        /// Gets the versions stored in the database.
-        /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <returns>The set of original versions.</returns>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Reads the CKCore.tItemVersionStore table.
+        /// </remarks>
         public OriginalReadInfo GetOriginalVersions( IActivityMonitor monitor )
         {
             var result = new List<VersionedTypedName>();
@@ -122,18 +121,8 @@ namespace CK.SqlServer.Setup
             return new OriginalReadInfo( result, fResult );
         }
 
-        /// <summary>
-        /// Called by the engine when the version is not found for the item before using the <see cref="IVersionedItem.PreviousNames"/>.
-        /// This is a "first chance" optional hook.
-        /// This enables any possible mapping and fallback to take place.
-        /// </summary>
-        /// <param name="item">The item for which no direct version has been found.</param>
-        /// <param name="originalVersions">
-        /// A getter for original versions. This can help the implementation to avoid duplicating its own version
-        /// of <see cref="GetOriginalVersions"/>.
-        /// </param>
-        /// <returns>A <see cref="VersionedName"/> with the mapped name or null if not found.</returns>
-        public VersionedName OnVersionNotFound( IVersionedItem item, Func<string, VersionedTypedName> originalVersions )
+        /// <inheritdoc />
+        public VersionedName? OnVersionNotFound( IVersionedItem item, Func<string, VersionedTypedName> originalVersions )
         {
             // Maps "Model.XXX" to "XXX" versions for default context and database.
             if( item.FullName.StartsWith( "[]db^Model.", StringComparison.Ordinal ) )
@@ -146,18 +135,8 @@ namespace CK.SqlServer.Setup
                     : null;
         }
 
-        /// <summary>
-        /// Called by the engine when a previous version is not found for the item
-        /// This is an optional hook.
-        /// </summary>
-        /// <param name="item">Item for which a version should be found.</param>
-        /// <param name="prevVersion">The not found previous version.</param>
-        /// <param name="originalVersions">
-        /// A getter for original versions. This can help the implementation to avoid duplicating its own version
-        /// of <see cref="GetOriginalVersions"/>.
-        /// </param>
-        /// <returns>A <see cref="VersionedName"/> with the mapped name or null if not found.</returns>
-        public VersionedName OnPreviousVersionNotFound( IVersionedItem item, VersionedName prevVersion, Func<string, VersionedTypedName> originalVersions )
+        /// <inheritdoc />
+        public VersionedName? OnPreviousVersionNotFound( IVersionedItem item, VersionedName prevVersion, Func<string, VersionedTypedName> originalVersions )
         {
             // Maps "Model.XXX" to "XXX" versions for default context and database.
             if( prevVersion.FullName.StartsWith( "[]db^Model.", StringComparison.Ordinal ) )
