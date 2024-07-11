@@ -1,6 +1,5 @@
 using CK.CodeGen;
 using CK.Core;
-using CK.Reflection;
 using CK.Setup;
 using CK.SqlServer.Parser;
 using System;
@@ -108,18 +107,18 @@ namespace CK.SqlServer.Setup
                 bool needExecutor = !isParameterSourcePoco && ( _gType & GenerationType.IsCall) != 0 && _sqlCallContextParameter == null;
                 if( isParameterSource || needExecutor )
                 {
-                    Type pocoMappedType = null;
-                    IEnumerable<PropertyInfo> rawProperties = null;
+                    Type? pocoMappedType = null;
+                    IEnumerable<PropertyInfo>? rawProperties = null;
                     if( isParameterSourcePoco )
                     {
-                        pocoMappedType = poco.Find( param.ParameterType ).Family.PocoClass;
+                        pocoMappedType = poco.Find( param.ParameterType )?.Family.PocoClass;
                         if( pocoMappedType == null ) throw new Exception( $"Unmapped Poco for {param.ParameterType.FullName}." );
                         rawProperties = pocoMappedType.GetProperties();
                     }
                     else
                     {
                         rawProperties = paramType.IsInterface
-                                                ? ReflectionHelper.GetFlattenProperties( param.ParameterType )
+                                                ? GetFlattenProperties( param.ParameterType )
                                                 : param.ParameterType.GetProperties();
                     }
                     var allProperties = rawProperties.Select( p => new Property( param, p, pocoMappedType ) ).ToList();
@@ -138,6 +137,17 @@ namespace CK.SqlServer.Setup
                     }
                 }
                 return isParameterSource;
+
+                static IEnumerable<PropertyInfo> GetFlattenProperties( Type interfaceType )
+                {
+                    foreach( var item in interfaceType.GetProperties() )
+                        yield return item;
+
+                    foreach( var type in interfaceType.GetInterfaces() )
+                        foreach( var item in type.GetProperties() )
+                            yield return item;
+                }
+
             }
 
             public bool MatchPropertyToSqlParameter( SqlParameterHandlerList.SqlParamHandler setter, IActivityMonitor monitor )
