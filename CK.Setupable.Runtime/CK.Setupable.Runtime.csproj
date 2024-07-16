@@ -6,8 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.StObj.Runtime" Version="0.0.0--04z7c07-develop" />
-    <PackageReference Include="CK.Setup.Dependency" Version="0.0.0--04z7c04-develop" />
+    <PackageReference Include="CK.StObj.Runtime" Version="0.0.0--04z8lm3-develop" />
+    <PackageReference Include="CK.Setup.Dependency" Version="0.0.0--04z8lm0-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
