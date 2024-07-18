@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.SqlServer" Version="0.0.0--04z92fn-develop" />
+    <PackageReference Include="CK.SqlServer" Version="0.0.0--04zc9l7-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
