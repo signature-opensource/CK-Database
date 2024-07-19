@@ -8,10 +8,11 @@
     <ProjectReference Include="..\..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
     <ProjectReference Include="..\SqlActorZoneLike\SqlActorPackage.Engine\SqlActorPackage.Engine.csproj" />
     <ProjectReference Include="..\SqlActorZoneLike\SqlZonePackage.Engine\SqlZonePackage.Engine.csproj" />
-    <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CK.StObj.Engine" Version="0.0.0--04zcmkc-develop" />
+
+    <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
