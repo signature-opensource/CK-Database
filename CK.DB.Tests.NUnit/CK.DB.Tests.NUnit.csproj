@@ -5,8 +5,8 @@
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Testing.NUnit" Version="0.0.0--053bujb-develop" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="0.0.0--053bujb-develop" />
+    <PackageReference Include="CK.Testing.NUnit" Version="0.0.0--053czwo-develop" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="0.0.0--053czwq-develop" />
     <ProjectReference Include="..\CK.Testing.SqlServerEngine\CK.Testing.SqlServerEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
