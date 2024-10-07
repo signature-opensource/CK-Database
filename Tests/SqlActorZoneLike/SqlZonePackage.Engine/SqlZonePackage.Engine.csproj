@@ -9,7 +9,7 @@
     <ProjectReference Include="..\SqlZonePackage\SqlZonePackage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser" Version="0.0.0--053i1zb-develop" />
+    <PackageReference Include="CK.SqlServer.Parser" Version="0.0.0--053ij2e-develop" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
