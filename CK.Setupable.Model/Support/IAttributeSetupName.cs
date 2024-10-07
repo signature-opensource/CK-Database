@@ -6,17 +6,16 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Enables any attributes other than <see cref="Core.SetupAttribute"/> and <see cref="Core.SetupNameAttribute"/> 
+/// to carry the full name of a setup object.
+/// </summary>
+public interface IAttributeSetupName
 {
     /// <summary>
-    /// Enables any attributes other than <see cref="Core.SetupAttribute"/> and <see cref="Core.SetupNameAttribute"/> 
-    /// to carry the full name of a setup object.
+    /// Gets the full name of the setup object.
     /// </summary>
-    public interface IAttributeSetupName
-    {
-        /// <summary>
-        /// Gets the full name of the setup object.
-        /// </summary>
-        string FullName { get; }
-    }
+    string FullName { get; }
 }

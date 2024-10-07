@@ -1,13 +1,12 @@
-﻿using System;
+using System;
 
-namespace SqlCallDemo.ComplexType
+namespace SqlCallDemo.ComplexType;
+
+
+public class ComplexTypeSimpleWithExtraProperty
 {
-
-    public class ComplexTypeSimpleWithExtraProperty
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime CreationDate { get; set; }
-        public string ExtraProperty { get; set; }
-    }
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public DateTime CreationDate { get; set; }
+    public string ExtraProperty { get; set; }
 }

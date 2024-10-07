@@ -6,28 +6,27 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Base class for attributes that define a SetupObjectItem.
+/// </summary>
+public abstract class SetupObjectItemMemberAttributeBase : ContextBoundDelegationAttribute
 {
     /// <summary>
-    /// Base class for attributes that define a SetupObjectItem.
+    /// Initializes this attribute with the name of the SetupItem (like "sUserCreate" or "CK.sUserCreate").
     /// </summary>
-    public abstract class SetupObjectItemMemberAttributeBase : ContextBoundDelegationAttribute
+    /// <param name="objectName">Name of the object.</param>
+    /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
+    protected SetupObjectItemMemberAttributeBase( string objectName, string actualAttributeTypeAssemblyQualifiedName )
+        : base( actualAttributeTypeAssemblyQualifiedName )
     {
-        /// <summary>
-        /// Initializes this attribute with the name of the SetupItem (like "sUserCreate" or "CK.sUserCreate").
-        /// </summary>
-        /// <param name="objectName">Name of the object.</param>
-        /// <param name="actualAttributeTypeAssemblyQualifiedName">Assembly Qualified Name of the object that will replace this attribute during setup.</param>
-        protected SetupObjectItemMemberAttributeBase( string objectName, string actualAttributeTypeAssemblyQualifiedName )
-            : base( actualAttributeTypeAssemblyQualifiedName )
-        {
-            ObjectName = objectName;
-        }
-
-        /// <summary>
-        /// Gets the object name (for instance "sUserCreate" or "CK.sUserCreate").
-        /// </summary>
-        public string ObjectName { get; private set; }
-
+        ObjectName = objectName;
     }
+
+    /// <summary>
+    /// Gets the object name (for instance "sUserCreate" or "CK.sUserCreate").
+    /// </summary>
+    public string ObjectName { get; private set; }
+
 }

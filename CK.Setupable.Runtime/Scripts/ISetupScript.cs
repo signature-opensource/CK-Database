@@ -1,20 +1,19 @@
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// A <see cref="ParsedFileName"/> associated to a way to read its content and a script source name.
+/// The <see cref="SourceCodeSetupScript"/> helper can be used to easily create script directly from the source code.
+/// </summary>
+public interface ISetupScript
 {
     /// <summary>
-    /// A <see cref="ParsedFileName"/> associated to a way to read its content and a script source name.
-    /// The <see cref="SourceCodeSetupScript"/> helper can be used to easily create script directly from the source code.
+    /// Gets the name of this script. Never null.
     /// </summary>
-    public interface ISetupScript
-    {
-        /// <summary>
-        /// Gets the name of this script. Never null.
-        /// </summary>
-        ParsedFileName Name { get; }
+    ParsedFileName Name { get; }
 
-        /// <summary>
-        /// Gets the script itself. Never null.
-        /// </summary>
-        /// <returns>The script text.</returns>
-        string GetScript();
-    }
+    /// <summary>
+    /// Gets the script itself. Never null.
+    /// </summary>
+    /// <returns>The script text.</returns>
+    string GetScript();
 }

@@ -3,27 +3,26 @@ using CK.Setup;
 using CK.SqlServer.Setup;
 using CK.Core;
 
-namespace SqlActorPackage.Engine
+namespace SqlActorPackage.Engine;
+
+public class TestAutoHeaderSPAttributeImpl : SetupItemSelectorBaseAttributeImpl<SqlProcedureItem>
 {
-    public class TestAutoHeaderSPAttributeImpl : SetupItemSelectorBaseAttributeImpl<SqlProcedureItem>
+    public TestAutoHeaderSPAttributeImpl( TestAutoHeaderSPAttribute a )
+        : base( a )
     {
-        public TestAutoHeaderSPAttributeImpl( TestAutoHeaderSPAttribute a )
-            : base( a )
-        {
-        }
+    }
 
-        protected new TestAutoHeaderSPAttribute Attribute
-        {
-            get { return (TestAutoHeaderSPAttribute)base.Attribute; }
-        }
+    protected new TestAutoHeaderSPAttribute Attribute
+    {
+        get { return (TestAutoHeaderSPAttribute)base.Attribute; }
+    }
 
-        protected override bool OnDriverCreated( IActivityMonitor m, SetupItemDriver driver, IEnumerable<SqlProcedureItem> items )
+    protected override bool OnDriverCreated( IActivityMonitor m, SetupItemDriver driver, IEnumerable<SqlProcedureItem> items )
+    {
+        foreach( var sp in items )
         {
-            foreach( var sp in items )
-            {
-                new TestAutoHeaderSPHandler( driver.Drivers[sp], Attribute.HeaderComment );
-            }
-            return true;
+            new TestAutoHeaderSPHandler( driver.Drivers[sp], Attribute.HeaderComment );
         }
+        return true;
     }
 }

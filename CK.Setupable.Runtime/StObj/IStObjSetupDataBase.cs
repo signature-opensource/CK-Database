@@ -8,33 +8,32 @@
 using System;
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Base contract for <see cref="IStObjSetupData"/> and <see cref="IMutableStObjSetupData"/>.
+/// </summary>
+public interface IStObjSetupDataBase
 {
     /// <summary>
-    /// Base contract for <see cref="IStObjSetupData"/> and <see cref="IMutableStObjSetupData"/>.
+    /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
+    /// Null if this object corresponds to the first (root) <see cref="IRealObject"/> of the inheritance chain.
     /// </summary>
-    public interface IStObjSetupDataBase
-    {
-        /// <summary>
-        /// Gets the parent setup data if it exists (this is to manage attribute properties "inheritance"). 
-        /// Null if this object corresponds to the first (root) <see cref="IRealObject"/> of the inheritance chain.
-        /// </summary>
-        IStObjSetupData Generalization { get; }
+    IStObjSetupData Generalization { get; }
 
-        /// <summary>
-        /// Gets the associated <see cref="IStObjResult"/>.
-        /// Never null.
-        /// </summary>
-        IStObjResult StObj { get; }
+    /// <summary>
+    /// Gets the associated <see cref="IStObjResult"/>.
+    /// Never null.
+    /// </summary>
+    IStObjResult StObj { get; }
 
-        /// <summary>
-        /// Gets the [contextualized] full name of the object.
-        /// </summary>
-        string FullName { get; }
+    /// <summary>
+    /// Gets the [contextualized] full name of the object.
+    /// </summary>
+    string FullName { get; }
 
-        /// <summary>
-        /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObj.ClassType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
-        /// </summary>
-        bool IsDefaultFullNameWithoutContext { get; }
-    }
+    /// <summary>
+    /// Gets whether the <see cref="FullName"/> is the default one (default full name is the <see cref="IStObj.ClassType">StObj.ObjectType</see>.<see cref="Type.FullName">FullName</see>).
+    /// </summary>
+    bool IsDefaultFullNameWithoutContext { get; }
 }

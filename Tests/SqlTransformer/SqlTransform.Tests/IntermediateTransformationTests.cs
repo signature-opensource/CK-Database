@@ -4,27 +4,26 @@ using CK.Testing;
 using NUnit.Framework;
 using static CK.Testing.SqlServerTestHelper;
 
-namespace SqlTransform.Tests
+namespace SqlTransform.Tests;
+
+[TestFixture]
+public class IntermediateTransformationTests
 {
-    [TestFixture]
-    public class IntermediateTransformationTests
+    [Test]
+    public void vDependent_requires_an_intermediate_concretisation_of_vBase()
     {
-        [Test]
-        public void vDependent_requires_an_intermediate_concretisation_of_vBase()
+        var p1 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package1>();
+        var p2 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package2>();
+        var p3 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package3>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p1 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package1>();
-            var p2 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package2>();
-            var p3 = SharedEngine.Map.StObjs.Obtain<CKLevel2.IntermediateTransformation.Package3>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
-            {
-                Assert.That( p1.ReadViewBase( ctx ).Count, Is.GreaterThan( 0 ) );
-                var idAndNames = p2.ReadViewBase( ctx );
-                Assert.That( idAndNames.Count, Is.GreaterThan( 0 ) );
-                Assert.That( idAndNames.FindIndex( kv => kv.Value == "tSystem" ) >= 0 );
-                var idNameAndTypes = p3.ReadViewBase( ctx );
-                Assert.That( idNameAndTypes.Count, Is.GreaterThan( 0 ) );
-                Assert.That( idNameAndTypes.FindIndex( t => t.Item2 == "tSystem" && t.Item3 == "USER_TABLE" ) >= 0 );
-            }
+            Assert.That( p1.ReadViewBase( ctx ).Count, Is.GreaterThan( 0 ) );
+            var idAndNames = p2.ReadViewBase( ctx );
+            Assert.That( idAndNames.Count, Is.GreaterThan( 0 ) );
+            Assert.That( idAndNames.FindIndex( kv => kv.Value == "tSystem" ) >= 0 );
+            var idNameAndTypes = p3.ReadViewBase( ctx );
+            Assert.That( idNameAndTypes.Count, Is.GreaterThan( 0 ) );
+            Assert.That( idNameAndTypes.FindIndex( t => t.Item2 == "tSystem" && t.Item3 == "USER_TABLE" ) >= 0 );
         }
     }
 }

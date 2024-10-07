@@ -1,35 +1,34 @@
 using System.Collections.Generic;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Specialized list of <see cref="IDependentItemRef"/> that can handle named items (ie. <see cref="NamedDependentItemRef"/>) transparently.
+/// Instances can be created by <see cref="DependentItemListFactory"/>.
+/// </summary>
+public interface IDependentItemList : IList<IDependentItemRef>
 {
     /// <summary>
-    /// Specialized list of <see cref="IDependentItemRef"/> that can handle named items (ie. <see cref="NamedDependentItemRef"/>) transparently.
-    /// Instances can be created by <see cref="DependentItemListFactory"/>.
+    /// Adds a full name (that may starts with '?') as a <see cref="NamedDependentItemRef"/>.
     /// </summary>
-    public interface IDependentItemList : IList<IDependentItemRef>
-    {
-        /// <summary>
-        /// Adds a full name (that may starts with '?') as a <see cref="NamedDependentItemRef"/>.
-        /// </summary>
-        /// <param name="fullName">Full name of the dependency. When null or empty, nothing is added.</param>
-        void Add( string fullName );
+    /// <param name="fullName">Full name of the dependency. When null or empty, nothing is added.</param>
+    void Add( string fullName );
 
-        /// <summary>
-        /// Removes a full name (that may starts with '?').
-        /// </summary>
-        /// <param name="fullName">Full name of the dependency. When null or empty, nothing is removed.</param>
-        void Remove( string fullName );
+    /// <summary>
+    /// Removes a full name (that may starts with '?').
+    /// </summary>
+    /// <param name="fullName">Full name of the dependency. When null or empty, nothing is removed.</param>
+    void Remove( string fullName );
 
-        /// <summary>
-        /// <see cref="Add(string)">Adds</see> multiple full names.
-        /// </summary>
-        /// <param name="fullNames">The list of full names to add. When null or empty, nothing is added.</param>
-        void Add( IEnumerable<string> fullNames );
+    /// <summary>
+    /// <see cref="Add(string)">Adds</see> multiple full names.
+    /// </summary>
+    /// <param name="fullNames">The list of full names to add. When null or empty, nothing is added.</param>
+    void Add( IEnumerable<string> fullNames );
 
-        /// <summary>
-        /// Splits the parameter on the comma and <see cref="Add(string)">adds</see> the multiple full names.
-        /// </summary>
-        /// <param name="commaSeparatedRequires">Comma separated full names. When null or empty, nothing is added.</param>
-        void AddCommaSeparatedString( string commaSeparatedRequires );
-    }
+    /// <summary>
+    /// Splits the parameter on the comma and <see cref="Add(string)">adds</see> the multiple full names.
+    /// </summary>
+    /// <param name="commaSeparatedRequires">Comma separated full names. When null or empty, nothing is added.</param>
+    void AddCommaSeparatedString( string commaSeparatedRequires );
 }

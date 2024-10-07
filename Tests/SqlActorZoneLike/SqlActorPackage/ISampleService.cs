@@ -1,10 +1,9 @@
 using CK.Core;
 using CK.SqlServer;
 
-namespace SqlActorPackage
+namespace SqlActorPackage;
+
+public interface ISampleService : IAutoService
 {
-    public interface ISampleService : IAutoService
-    {
-        int CreateGroup( string groupName );
-    }
+    int CreateGroup( string groupName );
 }

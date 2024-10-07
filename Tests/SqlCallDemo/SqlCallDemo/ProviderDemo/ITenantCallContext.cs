@@ -1,13 +1,12 @@
-﻿using CK.SqlServer;
+using CK.SqlServer;
 
-namespace SqlCallDemo
+namespace SqlCallDemo;
+
+public interface ITenantCallContext : ISqlCallContext
 {
-    public interface ITenantCallContext : ISqlCallContext
-    {
-        int TenantId { get; }
-    }
+    int TenantId { get; }
+}
 
-    public interface IDisposableTenantCallContext : ITenantCallContext, IDisposableSqlCallContext 
-    {
-    }
+public interface IDisposableTenantCallContext : ITenantCallContext, IDisposableSqlCallContext
+{
 }

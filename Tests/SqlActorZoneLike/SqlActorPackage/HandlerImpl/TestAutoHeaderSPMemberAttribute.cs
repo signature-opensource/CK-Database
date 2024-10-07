@@ -1,18 +1,17 @@
-﻿using System;
+using System;
 using CK.Setup;
 
-namespace SqlActorPackage
+namespace SqlActorPackage;
+
+[AttributeUsage( AttributeTargets.Method, AllowMultiple = true, Inherited = false )]
+public class TestAutoHeaderSPMemberAttribute : SetupObjectItemRefMemberAttributeBase
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple=true, Inherited=false)]
-    public class TestAutoHeaderSPMemberAttribute : SetupObjectItemRefMemberAttributeBase
+    public TestAutoHeaderSPMemberAttribute( string headerComment )
+        : base( "SqlActorPackage.Engine.TestAutoHeaderSPMemberAttributeImpl, SqlActorPackage.Engine" )
     {
-        public TestAutoHeaderSPMemberAttribute( string headerComment )
-            : base( "SqlActorPackage.Engine.TestAutoHeaderSPMemberAttributeImpl, SqlActorPackage.Engine" )
-        {
-            HeaderComment = headerComment;
-        }
-
-        public string HeaderComment { get; set;}
-
+        HeaderComment = headerComment;
     }
+
+    public string HeaderComment { get; set; }
+
 }

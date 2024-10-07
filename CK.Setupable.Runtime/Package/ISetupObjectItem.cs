@@ -6,18 +6,17 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// A <see cref="ISetupItem"/> that exposes its associate model object .
+/// This interface should be implemented by concrete classes when they are 
+/// actually in charge of an associated object.
+/// </summary>
+public interface ISetupObjectItem : ISetupItem
 {
     /// <summary>
-    /// A <see cref="ISetupItem"/> that exposes its associate model object .
-    /// This interface should be implemented by concrete classes when they are 
-    /// actually in charge of an associated object.
+    /// Gets the associated model object.
     /// </summary>
-    public interface ISetupObjectItem : ISetupItem
-    { 
-        /// <summary>
-        /// Gets the associated model object.
-        /// </summary>
-        object ActualObject { get; }               
-    }
+    object ActualObject { get; }
 }

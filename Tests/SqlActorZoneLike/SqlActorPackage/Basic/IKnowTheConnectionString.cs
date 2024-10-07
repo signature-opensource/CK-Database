@@ -6,13 +6,12 @@
 #endregion
 
 
-namespace SqlActorPackage.Basic
+namespace SqlActorPackage.Basic;
+
+/// <summary>
+/// This interface is implemented by Basic.Package to show the injection of the declaring type into the command wrapper constructor.
+/// </summary>
+public interface IKnowTheConnectionString
 {
-    /// <summary>
-    /// This interface is implemented by Basic.Package to show the injection of the declaring type into the command wrapper constructor.
-    /// </summary>
-    public interface IKnowTheConnectionString
-    {
-        string GetConnectionString();
-    }
+    string GetConnectionString();
 }

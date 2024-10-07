@@ -6,16 +6,15 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// A mutable version of an <see cref="ISetupItem"/> that is a <see cref="IDependentItemGroup"/>.
+/// </summary>
+public interface IMutableSetupItemGroup : IMutableSetupItem, IDependentItemGroup
 {
     /// <summary>
-    /// A mutable version of an <see cref="ISetupItem"/> that is a <see cref="IDependentItemGroup"/>.
+    /// Gets a mutable list of items that this item requires.
     /// </summary>
-    public interface IMutableSetupItemGroup : IMutableSetupItem, IDependentItemGroup
-    {
-        /// <summary>
-        /// Gets a mutable list of items that this item requires.
-        /// </summary>
-        new IDependentItemList Children { get; }
-    }
+    new IDependentItemList Children { get; }
 }

@@ -7,24 +7,23 @@
 
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+sealed class GroupHeadSetupDriver : DriverBase
 {
-    sealed class GroupHeadSetupDriver : DriverBase
+    internal GroupHeadSetupDriver( IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
+        : base( drivers, allDrivers, sortedItem, externalVersion )
     {
-        internal GroupHeadSetupDriver( IDriverList drivers, IDriverBaseList allDrivers, ISortedItem<ISetupItem> sortedItem, VersionedName externalVersion )
-            : base( drivers, allDrivers, sortedItem, externalVersion )
-        {
-        }
-
-        internal override bool IsGroupHead => true;
-
-        internal SetupItemDriver GroupOrContainer;
-
-        internal override sealed bool ExecuteInit( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInit( m );
-
-        internal override sealed bool ExecuteInstall( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInstall( m );
-
-        internal override sealed bool ExecuteSettle( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadSettle( m );
-
     }
+
+    internal override bool IsGroupHead => true;
+
+    internal SetupItemDriver GroupOrContainer;
+
+    internal override sealed bool ExecuteInit( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInit( m );
+
+    internal override sealed bool ExecuteInstall( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadInstall( m );
+
+    internal override sealed bool ExecuteSettle( IActivityMonitor m ) => GroupOrContainer.ExecuteHeadSettle( m );
+
 }

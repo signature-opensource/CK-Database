@@ -7,22 +7,21 @@
 
 using System;
 
-namespace CK.Core
+namespace CK.Core;
+
+/// <summary>
+/// Simple attributes to define reverted requirements of a class by names.
+/// </summary>
+[AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
+public class RequiredByAttribute : Setup.BaseItemNamesAttribute
 {
     /// <summary>
-    /// Simple attributes to define reverted requirements of a class by names.
+    /// Defines reverse requirements by their names.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = false )]
-    public class RequiredByAttribute : Setup.BaseItemNamesAttribute
+    /// <param name="requires">Comma separated list of item names that require this object.</param>
+    public RequiredByAttribute( string requires )
+        : base( requires )
     {
-        /// <summary>
-        /// Defines reverse requirements by their names.
-        /// </summary>
-        /// <param name="requires">Comma separated list of item names that require this object.</param>
-        public RequiredByAttribute( string requires )
-            : base( requires )
-        {            
-        }
-
     }
+
 }

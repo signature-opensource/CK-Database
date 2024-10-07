@@ -6,94 +6,93 @@ using SqlCallDemo.ComplexType;
 using System;
 using static CK.Testing.SqlServerTestHelper;
 
-namespace SqlCallDemo.Tests
+namespace SqlCallDemo.Tests;
+
+[TestFixture]
+public class ComplexTypeTests
 {
-    [TestFixture]
-    public class ComplexTypeTests
+    [Test]
+    public void getting_a_totally_stupid_empty_object()
     {
-        [Test]
-        public void getting_a_totally_stupid_empty_object()
+        var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
-            {
-                var o = p.GetComplexTypeStupidEmpty( ctx );
-                Assert.That( o, Is.Not.Null );
-                var o2 = p.GetComplexTypeStupidEmpty( ctx );
-                Assert.That( o2, Is.Not.Null );
-                Assert.That( o2, Is.Not.SameAs( o ) );
-            }
+            var o = p.GetComplexTypeStupidEmpty( ctx );
+            Assert.That( o, Is.Not.Null );
+            var o2 = p.GetComplexTypeStupidEmpty( ctx );
+            Assert.That( o2, Is.Not.Null );
+            Assert.That( o2, Is.Not.SameAs( o ) );
         }
+    }
 
-        [Test]
-        public void getting_a_simple_complex_type()
+    [Test]
+    public void getting_a_simple_complex_type()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
-                {
-                    var o = p.GetComplexTypeSimple( ctx );
-                    Assert.That( o.Id, Is.EqualTo( 0 ) );
-                    Assert.That( o.Name, Is.EqualTo( "The name...0" ) );
-                    Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
-                    Assert.That( o.NullableInt, Is.Null );
-                }
-                {
-                    var o = p.GetComplexTypeSimple( ctx, 1 );
-                    Assert.That( o.Id, Is.EqualTo( 3712 ) );
-                    Assert.That( o.Name, Is.EqualTo( "The name...3712" ) );
-                    Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
-                    Assert.That( o.NullableInt.HasValue );
-                    Assert.That( o.NullableInt.Value, Is.EqualTo( 1 ) );
-                }
-            }
-        }
-
-        [Test]
-        public void getting_a_simple_complex_typeWithCtor()
-        {
-            var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
-            {
-                {
-                    var o = p.GetComplexTypeSimpleWithCtor( ctx );
-                    Assert.That( o.Id, Is.EqualTo( 100000 ) );
-                    Assert.That( o.Name, Is.EqualTo( "From Ctor: The name...0" ) );
-                    Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
-                }
-                {
-                    var o = p.GetComplexTypeSimpleWithCtor( ctx, 1 );
-                    Assert.That( o.Id, Is.EqualTo( 100000 + 3712 ) );
-                    Assert.That( o.Name, Is.EqualTo( "From Ctor: The name...3712" ) );
-                    Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
-                }
-            }
-        }
-
-        [Test]
-        public void getting_a_simple_complex_type_with_extra_property_is_fine()
-        {
-            var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
-            {
-                var o = p.GetComplexTypeSimpleWithExtraProperty( ctx );
+                var o = p.GetComplexTypeSimple( ctx );
                 Assert.That( o.Id, Is.EqualTo( 0 ) );
                 Assert.That( o.Name, Is.EqualTo( "The name...0" ) );
                 Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
-                Assert.That( o.ExtraProperty, Is.Null );
+                Assert.That( o.NullableInt, Is.Null );
             }
-        }
-
-        [Test]
-        public void getting_a_simple_complex_type_with_missing_property_is_fine()
-        {
-            var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
-            using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
             {
-                var o = p.GetComplexTypeSimpleWithMissingProperty( ctx );
-                Assert.That( o.Name, Is.EqualTo( "The name...0" ) );
+                var o = p.GetComplexTypeSimple( ctx, 1 );
+                Assert.That( o.Id, Is.EqualTo( 3712 ) );
+                Assert.That( o.Name, Is.EqualTo( "The name...3712" ) );
+                Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
+                Assert.That( o.NullableInt.HasValue );
+                Assert.That( o.NullableInt.Value, Is.EqualTo( 1 ) );
             }
         }
-
     }
+
+    [Test]
+    public void getting_a_simple_complex_typeWithCtor()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+        {
+            {
+                var o = p.GetComplexTypeSimpleWithCtor( ctx );
+                Assert.That( o.Id, Is.EqualTo( 100000 ) );
+                Assert.That( o.Name, Is.EqualTo( "From Ctor: The name...0" ) );
+                Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
+            }
+            {
+                var o = p.GetComplexTypeSimpleWithCtor( ctx, 1 );
+                Assert.That( o.Id, Is.EqualTo( 100000 + 3712 ) );
+                Assert.That( o.Name, Is.EqualTo( "From Ctor: The name...3712" ) );
+                Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
+            }
+        }
+    }
+
+    [Test]
+    public void getting_a_simple_complex_type_with_extra_property_is_fine()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+        {
+            var o = p.GetComplexTypeSimpleWithExtraProperty( ctx );
+            Assert.That( o.Id, Is.EqualTo( 0 ) );
+            Assert.That( o.Name, Is.EqualTo( "The name...0" ) );
+            Assert.That( o.CreationDate, Is.GreaterThan( DateTime.UtcNow.AddSeconds( -1 ) ).And.LessThan( DateTime.UtcNow.AddSeconds( 1 ) ) );
+            Assert.That( o.ExtraProperty, Is.Null );
+        }
+    }
+
+    [Test]
+    public void getting_a_simple_complex_type_with_missing_property_is_fine()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<ComplexTypePackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
+        {
+            var o = p.GetComplexTypeSimpleWithMissingProperty( ctx );
+            Assert.That( o.Name, Is.EqualTo( "The name...0" ) );
+        }
+    }
+
 }

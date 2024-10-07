@@ -1,14 +1,13 @@
 using CK.Core;
 
-namespace SqlCallDemo
-{
+namespace SqlCallDemo;
 
-    [SqlPackage( Schema = "CK", ResourcePath = "Res.Poco" ), Versions( "1.0.0" )]
-    [SqlObjectItem( "transform:sPocoThingRead" )]
-    public class PocoPackageWithIntProp : SqlPackage
+
+[SqlPackage( Schema = "CK", ResourcePath = "Res.Poco" ), Versions( "1.0.0" )]
+[SqlObjectItem( "transform:sPocoThingRead" )]
+public class PocoPackageWithIntProp : SqlPackage
+{
+    void StObjConstruct( PocoPackage p )
     {
-        void StObjConstruct( PocoPackage p )
-        {
-        }
     }
 }

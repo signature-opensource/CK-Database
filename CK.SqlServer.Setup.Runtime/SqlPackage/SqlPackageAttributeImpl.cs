@@ -8,55 +8,54 @@
 using CK.Core;
 using CK.Setup;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+/// <summary>
+/// Implements <see cref="SqlPackageAttribute"/> attribute.
+/// </summary>
+public class SqlPackageAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
 {
     /// <summary>
-    /// Implements <see cref="SqlPackageAttribute"/> attribute.
+    /// Initializes a new <see cref="SqlPackageAttribute"/>.
     /// </summary>
-    public class SqlPackageAttributeImpl : SqlPackageAttributeImplBase, IStObjSetupConfigurator
+    /// <param name="a">The attribute.</param>
+    public SqlPackageAttributeImpl( SqlPackageAttribute a )
+        : base( a )
     {
-        /// <summary>
-        /// Initializes a new <see cref="SqlPackageAttribute"/>.
-        /// </summary>
-        /// <param name="a">The attribute.</param>
-        public SqlPackageAttributeImpl( SqlPackageAttribute a )
-            : base( a )
-        {
-        }
-
-        /// <summary>
-        /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribute type.
-        /// </summary>
-        protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute;
-
-        /// <summary>
-        /// Transfers <see cref="SqlPackageAttribute.HasModel"/> to "HasModel" stobj property.
-        /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
-        /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <param name="o">The configured object.</param>
-        protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
-        {
-            o.SetStObjPropertyValue( monitor, "HasModel", Attribute.HasModel );
-        }
-
-        void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
-        {
-            if( data.IsDefaultFullNameWithoutContext )
-            {
-                monitor.Info( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
-            }
-            // Since we are THE SqlPackage attribute, if a SetupItem or a Driver has been configured 
-            // we consider that the configuration must be specific: this acts as a kind of default.
-            if( data.ItemType == null && data.ItemTypeName == null )
-            {
-                data.ItemType = typeof( SqlPackageBaseItem );
-            }
-            if( data.DriverType == null && data.DriverTypeName == null )
-            {
-                data.DriverType = typeof( SqlPackageBaseItemDriver );
-            }
-        }
-
     }
+
+    /// <summary>
+    /// Masked to be formally associated to the <see cref="SqlPackageAttribute"/> attribute type.
+    /// </summary>
+    protected new SqlPackageAttribute Attribute => (SqlPackageAttribute)base.Attribute;
+
+    /// <summary>
+    /// Transfers <see cref="SqlPackageAttribute.HasModel"/> to "HasModel" stobj property.
+    /// This is called from <see cref="IStObjStructuralConfigurator.Configure"/> parent implementation.
+    /// </summary>
+    /// <param name="monitor">The monitor to use.</param>
+    /// <param name="o">The configured object.</param>
+    protected override void ConfigureMutableItem( IActivityMonitor monitor, IStObjMutableItem o )
+    {
+        o.SetStObjPropertyValue( monitor, "HasModel", Attribute.HasModel );
+    }
+
+    void IStObjSetupConfigurator.ConfigureDependentItem( IActivityMonitor monitor, IMutableStObjSetupData data )
+    {
+        if( data.IsDefaultFullNameWithoutContext )
+        {
+            monitor.Info( $"SqlPackage '{data.FullNameWithoutContext}' uses its own full name as its SetupName." );
+        }
+        // Since we are THE SqlPackage attribute, if a SetupItem or a Driver has been configured 
+        // we consider that the configuration must be specific: this acts as a kind of default.
+        if( data.ItemType == null && data.ItemTypeName == null )
+        {
+            data.ItemType = typeof( SqlPackageBaseItem );
+        }
+        if( data.DriverType == null && data.DriverTypeName == null )
+        {
+            data.DriverType = typeof( SqlPackageBaseItemDriver );
+        }
+    }
+
 }

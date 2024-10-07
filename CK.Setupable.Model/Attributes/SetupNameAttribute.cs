@@ -7,28 +7,27 @@
 
 using System;
 
-namespace CK.Core
+namespace CK.Core;
+
+/// <summary>
+/// Basic attribute that defines the Setup name of an object.
+/// </summary>
+[AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
+public class SetupNameAttribute : Attribute, Setup.IAttributeSetupName
 {
     /// <summary>
-    /// Basic attribute that defines the Setup name of an object.
+    /// Initializes a new <see cref="SetupNameAttribute"/> with a name.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = false )]
-    public class SetupNameAttribute : Attribute, Setup.IAttributeSetupName
+    /// <param name="fullName">Name of the object.</param>
+    public SetupNameAttribute( string fullName )
     {
-        /// <summary>
-        /// Initializes a new <see cref="SetupNameAttribute"/> with a name.
-        /// </summary>
-        /// <param name="fullName">Name of the object.</param>
-        public SetupNameAttribute( string fullName )
-        {
-            if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException();
-            FullName = fullName;
-        }
-
-        /// <summary>
-        /// Gets the full name of the setup object.
-        /// </summary>
-        public string FullName { get; } 
-
+        if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException();
+        FullName = fullName;
     }
+
+    /// <summary>
+    /// Gets the full name of the setup object.
+    /// </summary>
+    public string FullName { get; }
+
 }

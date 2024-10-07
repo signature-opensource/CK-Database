@@ -7,27 +7,26 @@
 
 using System.Collections.Generic;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// An ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> or 
+/// by the <see cref="IDependentItem"/> object instance itself.
+/// </summary>
+public interface IDriverList : IReadOnlyList<SetupItemDriver>
 {
     /// <summary>
-    /// An ordered list of <see cref="SetupItemDriver"/> indexed by the <see cref="IDependentItem.FullName"/> or 
-    /// by the <see cref="IDependentItem"/> object instance itself.
+    /// Gets a <see cref="SetupItemDriver"/> by its name.
     /// </summary>
-    public interface IDriverList : IReadOnlyList<SetupItemDriver>
-    {
-        /// <summary>
-        /// Gets a <see cref="SetupItemDriver"/> by its name.
-        /// </summary>
-        /// <param name="fullName">The item full name. Can be null: null is returned.</param>
-        /// <returns>The associated driver or null if the driver does not exist.</returns>
-        SetupItemDriver this[string fullName] { get; }
+    /// <param name="fullName">The item full name. Can be null: null is returned.</param>
+    /// <returns>The associated driver or null if the driver does not exist.</returns>
+    SetupItemDriver this[string fullName] { get; }
 
-        /// <summary>
-        /// Gets a <see cref="SetupItemDriver"/> associated to a <see cref="IDependentItem"/>.
-        /// </summary>
-        /// <param name="item">The item. Can be null: null is returned.</param>
-        /// <returns>The associated driver or null if the driver does not exist.</returns>
-        SetupItemDriver this[IDependentItem item] { get; }
+    /// <summary>
+    /// Gets a <see cref="SetupItemDriver"/> associated to a <see cref="IDependentItem"/>.
+    /// </summary>
+    /// <param name="item">The item. Can be null: null is returned.</param>
+    /// <returns>The associated driver or null if the driver does not exist.</returns>
+    SetupItemDriver this[IDependentItem item] { get; }
 
-    }
 }

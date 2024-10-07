@@ -1,16 +1,13 @@
 using CK.Core;
 
-namespace SqlZonePackage
+namespace SqlZonePackage;
+
+/// <summary>
+/// This tests the CK.SqlServer.Dapper interface support (Dapper.SqlMapper.AddAbstractTypeMap).
+/// </summary>
+public interface ISimpleInfo : IPoco
 {
-    /// <summary>
-    /// This tests the CK.SqlServer.Dapper interface support (Dapper.SqlMapper.AddAbstractTypeMap).
-    /// </summary>
-    public interface ISimpleInfo : IPoco
-    {
-        string Name { get; set; }
+    string Name { get; set; }
 
-        int Power { get; set; }
-    }
-
-
+    int Power { get; set; }
 }

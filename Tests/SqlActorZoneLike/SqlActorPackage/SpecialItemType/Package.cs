@@ -11,12 +11,11 @@ using Microsoft.Data.SqlClient;
 using System.Linq;
 using CK.Core;
 
-namespace SqlActorPackage.SpecialItemType
-{
+namespace SqlActorPackage.SpecialItemType;
 
-    [SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" )]
-    [Versions( "1.0.0" )]
-    public abstract class Package : SqlPackage
-    {
-    }
+
+[SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" )]
+[Versions( "1.0.0" )]
+public abstract class Package : SqlPackage
+{
 }

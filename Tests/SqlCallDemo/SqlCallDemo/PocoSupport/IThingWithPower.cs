@@ -1,7 +1,6 @@
-﻿namespace SqlCallDemo.PocoSupport
+namespace SqlCallDemo.PocoSupport;
+
+public interface IThingWithPower : IThing
 {
-    public interface IThingWithPower : IThing
-    {
-        int Power { get; set; }
-    }
+    int Power { get; set; }
 }

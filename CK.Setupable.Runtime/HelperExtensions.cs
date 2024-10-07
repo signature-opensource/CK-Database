@@ -1,21 +1,20 @@
 using System;
 
-namespace CK.Core
+namespace CK.Core;
+
+/// <summary>
+/// Extends <see cref="Attribute"/> type.
+/// </summary>
+public static class HelperExtensions
 {
     /// <summary>
-    /// Extends <see cref="Attribute"/> type.
+    /// Gets the name of this attribute's type without Attribute suffix.
     /// </summary>
-    public static class HelperExtensions
+    /// <param name="this">This </param>
+    /// <returns>The attribute's type name.</returns>
+    public static string GetShortTypeName( this Attribute @this )
     {
-        /// <summary>
-        /// Gets the name of this attribute's type without Attribute suffix.
-        /// </summary>
-        /// <param name="this">This </param>
-        /// <returns>The attribute's type name.</returns>
-        public static string GetShortTypeName( this Attribute @this )
-        {
-            return @this != null ? @this.GetType().Name.Replace( "Attribute", "" ) : String.Empty;
-        }
-
+        return @this != null ? @this.GetType().Name.Replace( "Attribute", "" ) : String.Empty;
     }
+
 }

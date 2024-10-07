@@ -1,14 +1,13 @@
 using CK.Core;
 
-namespace SqlActorPackage
-{
+namespace SqlActorPackage;
 
-    [SqlPackage( ResourcePath = "TransformPackageRes", Schema = "CK", Database = typeof( SqlDefaultDatabase ) )]
-    [SqlObjectItem( "transform:sGroupDestroy" )]
-    public class TransformPackageSample : SqlPackage
+
+[SqlPackage( ResourcePath = "TransformPackageRes", Schema = "CK", Database = typeof( SqlDefaultDatabase ) )]
+[SqlObjectItem( "transform:sGroupDestroy" )]
+public class TransformPackageSample : SqlPackage
+{
+    void StObjConstruct( SqlActorPackage.Basic.Package actorPackage )
     {
-        void StObjConstruct( SqlActorPackage.Basic.Package actorPackage )
-        {
-        }
     }
 }

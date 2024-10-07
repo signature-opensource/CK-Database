@@ -7,44 +7,43 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Associates a name and a version for which it is valid. It is an immutable object.
+/// </summary>
+public class VersionedName
 {
     /// <summary>
-    /// Associates a name and a version for which it is valid. It is an immutable object.
+    /// Initializes a new <see cref="VersionedName"/> with a <see cref="FullName"/> (must ne be null or empty) and 
+    /// a non null <see cref="Version"/>.
     /// </summary>
-    public class VersionedName
+    /// <param name="fullName">Name valid up to <see cref="Version"/>. It must be not null nor empty otherwise an exception is thrown.</param>
+    /// <param name="version">Version for the name. Must not be null.</param>
+    public VersionedName( string fullName, Version version )
     {
-        /// <summary>
-        /// Initializes a new <see cref="VersionedName"/> with a <see cref="FullName"/> (must ne be null or empty) and 
-        /// a non null <see cref="Version"/>.
-        /// </summary>
-        /// <param name="fullName">Name valid up to <see cref="Version"/>. It must be not null nor empty otherwise an exception is thrown.</param>
-        /// <param name="version">Version for the name. Must not be null.</param>
-        public VersionedName( string fullName, Version version )
-        {
-            if( version == null ) throw new ArgumentNullException( nameof( version ) );
-            if( string.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentNullException( nameof( fullName ) );
-            FullName = fullName;
-            Version = version;
-        }
-
-        /// <summary>
-        /// Gets the full name of a versionned name.
-        /// Never null or empty.
-        /// </summary>
-        public string FullName { get; }
-
-        /// <summary>
-        /// Gets the version associated to the <see cref="FullName"/>. 
-        /// Never null.
-        /// </summary>
-        public Version Version { get; }
-
-        /// <summary>
-        /// Overridden to return the "FullName - Version".
-        /// </summary>
-        /// <returns>The FullName - Version.</returns>
-        public override string ToString() => FullName + " - " + Version.ToString();
-
+        if( version == null ) throw new ArgumentNullException( nameof( version ) );
+        if( string.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentNullException( nameof( fullName ) );
+        FullName = fullName;
+        Version = version;
     }
+
+    /// <summary>
+    /// Gets the full name of a versionned name.
+    /// Never null or empty.
+    /// </summary>
+    public string FullName { get; }
+
+    /// <summary>
+    /// Gets the version associated to the <see cref="FullName"/>. 
+    /// Never null.
+    /// </summary>
+    public Version Version { get; }
+
+    /// <summary>
+    /// Overridden to return the "FullName - Version".
+    /// </summary>
+    /// <returns>The FullName - Version.</returns>
+    public override string ToString() => FullName + " - " + Version.ToString();
+
 }

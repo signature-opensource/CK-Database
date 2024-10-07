@@ -1,6 +1,5 @@
-﻿namespace SqlCallDemo.ComplexType
+namespace SqlCallDemo.ComplexType;
+
+public class ComplexTypeStupidEmpty
 {
-    public class ComplexTypeStupidEmpty
-    {
-    }
 }

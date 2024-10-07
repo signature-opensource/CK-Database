@@ -8,19 +8,18 @@
 using System;
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Factory for <see cref="SetupItemDriver"/>.
+/// </summary>
+public interface ISetupDriverFactory
 {
     /// <summary>
-    /// Factory for <see cref="SetupItemDriver"/>.
+    /// Creates a (potentially configured) instance of <see cref="SetupItemDriver"/> of a given <paramref name="driverType"/>.
     /// </summary>
-    public interface ISetupDriverFactory
-    {
-        /// <summary>
-        /// Creates a (potentially configured) instance of <see cref="SetupItemDriver"/> of a given <paramref name="driverType"/>.
-        /// </summary>
-        /// <param name="driverType">SetupDriver type to create.</param>
-        /// <param name="info">Internal constructor information.</param>
-        /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectCreate"/> will be used to create the driver).</returns>
-        SetupItemDriver? CreateDriver( Type driverType, SetupItemDriver.BuildInfo info );
-    }
+    /// <param name="driverType">SetupDriver type to create.</param>
+    /// <param name="info">Internal constructor information.</param>
+    /// <returns>A setup driver. Null if not able to create it (<see cref="ServiceProviderExtension.SimpleObjectCreate"/> will be used to create the driver).</returns>
+    SetupItemDriver? CreateDriver( Type driverType, SetupItemDriver.BuildInfo info );
 }

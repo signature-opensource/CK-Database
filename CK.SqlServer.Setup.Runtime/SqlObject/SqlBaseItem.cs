@@ -6,286 +6,285 @@ using CK.SqlServer.Parser;
 using System.Linq;
 using System.Diagnostics;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+
+/// <summary>
+/// Base class for <see cref="SqlObjectItem"/> and <see cref="SqlTransformerItem"/>.
+/// </summary>
+public abstract class SqlBaseItem : SetupObjectItem
 {
+    ISqlServerParsedText _sqlObject;
+    IReadOnlyList<SqlTransformerItem> _transformers;
 
     /// <summary>
-    /// Base class for <see cref="SqlObjectItem"/> and <see cref="SqlTransformerItem"/>.
+    /// Initializes a <see cref="SqlBaseItem"/>.
     /// </summary>
-    public abstract class SqlBaseItem : SetupObjectItem
+    /// <param name="name">The object name.</param>
+    /// <param name="itemType">The item type.</param>
+    /// <param name="parsed">The parsed text.</param>
+    protected SqlBaseItem( SqlContextLocName name, string itemType, ISqlServerParsedText parsed )
+        : base( name, itemType )
     {
-        ISqlServerParsedText _sqlObject;
-        IReadOnlyList<SqlTransformerItem> _transformers;
+        _sqlObject = parsed;
+    }
 
-        /// <summary>
-        /// Initializes a <see cref="SqlBaseItem"/>.
-        /// </summary>
-        /// <param name="name">The object name.</param>
-        /// <param name="itemType">The item type.</param>
-        /// <param name="parsed">The parsed text.</param>
-        protected SqlBaseItem( SqlContextLocName name, string itemType, ISqlServerParsedText parsed )
-            : base( name, itemType )
+    /// <summary>
+    /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
+    /// This object is created as a clone of this object by the first call 
+    /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
+    /// </summary>
+    public new SqlBaseItem TransformTarget => (SqlBaseItem)base.TransformTarget;
+
+    /// <summary>
+    /// Gets the source item if this item is a target, null otherwise.
+    /// </summary>
+    public new SqlBaseItem TransformSource => (SqlBaseItem)base.TransformSource;
+
+    /// <summary>
+    /// Gets the transformers that have been registered with <see cref="SetupObjectItem.AddTransformer">AddTransformer</see>.
+    /// Never null (empty when no transformers have been added yet).
+    /// </summary>
+    public new IReadOnlyList<SqlTransformerItem> Transformers => _transformers ?? (_transformers = CreateTypedTransformersWrapper<SqlTransformerItem>());
+
+    /// <summary>
+    /// Gets the <see cref="SqlContextLocName"/> name of this object.
+    /// </summary>
+    public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName;
+
+    /// <summary>
+    /// Gets or sets the <see cref="ISqlServerParsedText"/> associated object.
+    /// </summary>
+    public ISqlServerParsedText SqlObject
+    {
+        get { return _sqlObject; }
+        set { _sqlObject = value; }
+    }
+
+    /// <summary>
+    /// Initializes this item after its instanciation.
+    /// This default implementation reads the <see cref="SqlObject"/> header (the comments)
+    /// and uses <see cref="CreateConfigReader"/> to apply it.
+    /// </summary>
+    /// <param name="monitor">The monitor to use.</param>
+    /// <param name="firstContainer">
+    /// The first container that defined this object: it is different than the <paramref name="packageItem"/>
+    /// if it is a replacement.
+    /// On success, this will be the package of the item if the item does not specify a container.
+    /// </param>
+    /// <param name="packageItem">
+    /// The package that defined the item.
+    /// </param>
+    /// <returns>True on success, false on error.</returns>
+    protected virtual bool Initialize( IActivityMonitor monitor, IDependentItemContainer firstContainer, IDependentItemContainer packageItem )
+    {
+        bool foundConfig;
+        string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
+        var configReader = CreateConfigReader();
+        if( !configReader.Apply( monitor, h, out foundConfig ) ) return false;
+        if( !foundConfig )
         {
-            _sqlObject = parsed;
+            monitor.Warn( "Missing SetupConfig:{}. At least an empty one should appear in the header." );
         }
+        return true;
+    }
 
-        /// <summary>
-        /// Gets the transform target item if this item has associated <see cref="Transformers"/>.
-        /// This object is created as a clone of this object by the first call 
-        /// to this <see cref="SetupObjectItem.AddTransformer"/> method.
-        /// </summary>
-        public new SqlBaseItem TransformTarget => (SqlBaseItem)base.TransformTarget;
+    /// <summary>
+    /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used 
+    /// to initialize this object.
+    /// </summary>
+    /// <returns>The configuration reader to use.</returns>
+    public virtual SetupConfigReader CreateConfigReader() => new SetupConfigReader( this );
 
-        /// <summary>
-        /// Gets the source item if this item is a target, null otherwise.
-        /// </summary>
-        public new SqlBaseItem TransformSource => (SqlBaseItem)base.TransformSource;
-
-        /// <summary>
-        /// Gets the transformers that have been registered with <see cref="SetupObjectItem.AddTransformer">AddTransformer</see>.
-        /// Never null (empty when no transformers have been added yet).
-        /// </summary>
-        public new IReadOnlyList<SqlTransformerItem> Transformers => _transformers ?? (_transformers = CreateTypedTransformersWrapper<SqlTransformerItem>());
-
-        /// <summary>
-        /// Gets the <see cref="SqlContextLocName"/> name of this object.
-        /// </summary>
-        public new SqlContextLocName ContextLocName => (SqlContextLocName)base.ContextLocName; 
-
-        /// <summary>
-        /// Gets or sets the <see cref="ISqlServerParsedText"/> associated object.
-        /// </summary>
-        public ISqlServerParsedText SqlObject
+    /// <summary>
+    /// Builds a Sql context-location-name (with the <see cref="SqlContextLocName.Schema"/>) from a setup object 
+    /// name (typically from an attribute) and its <see cref="SqlPackageBaseItem"/> container that provides
+    /// ambient context, location and schema if the <paramref name="attributeName"/> does not define them.
+    /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/> and the name does not have
+    /// a transform argument, we consider it to be the default transformation of the (target) name by the container.
+    /// </summary>
+    /// <param name="container">The item's container.</param>
+    /// <param name="b">The behavior (define, replace or transform).</param>
+    /// <param name="attributeName">Name of the object defined in the attribute.</param>
+    /// <returns>The Sql context-location-name.</returns>
+    public static SqlContextLocName SqlBuildFullName( SqlPackageBaseItem container, SetupObjectItemBehavior b, string attributeName )
+    {
+        SqlContextLocName name = (SqlContextLocName)container.CombineName( attributeName );
+        if( name.TransformArg == null && b == SetupObjectItemBehavior.Transform )
         {
-            get { return _sqlObject; }
-            set { _sqlObject = value; }
+            // The name is not the name of a transformation however it should be:
+            // we consider it to be the default transformation of the (target) named by the container.
+            name = new SqlContextLocName( container.Context, container.Location, container.Name + '(' + name.FullName + ')' );
         }
+        return name;
+    }
 
-        /// <summary>
-        /// Initializes this item after its instanciation.
-        /// This default implementation reads the <see cref="SqlObject"/> header (the comments)
-        /// and uses <see cref="CreateConfigReader"/> to apply it.
-        /// </summary>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <param name="firstContainer">
-        /// The first container that defined this object: it is different than the <paramref name="packageItem"/>
-        /// if it is a replacement.
-        /// On success, this will be the package of the item if the item does not specify a container.
-        /// </param>
-        /// <param name="packageItem">
-        /// The package that defined the item.
-        /// </param>
-        /// <returns>True on success, false on error.</returns>
-        protected virtual bool Initialize( IActivityMonitor monitor, IDependentItemContainer firstContainer, IDependentItemContainer packageItem )
-        {
-            bool foundConfig;
-            string h = SqlObject.HeaderComments.Select( c => c.Text ).Concatenate( Environment.NewLine );
-            var configReader = CreateConfigReader();
-            if( !configReader.Apply( monitor, h, out foundConfig ) ) return false;
-            if( !foundConfig )
-            {
-                monitor.Warn( "Missing SetupConfig:{}. At least an empty one should appear in the header." );
-            }
-            return true;
-        }
+    /// <summary>
+    /// Builds a Sql context-location-name with a default schema and its <see cref="SqlPackageBaseItem"/> container
+    /// that provides ambient context and location.
+    /// If a schema exists, it is kept. Potential transform argument may exist and is left as-is.
+    /// It is up to the caller to check (if needed) that the resulting name is not a transformer name and/or
+    /// has the default (expected) schema.
+    /// </summary>
+    /// <param name="container">The item's container.</param>
+    /// <param name="attributeName">Name of the object (typically) defined in the attribute.</param>
+    /// <param name="defaultSchema">Default schema that will be set if none are specified.</param>
+    /// <returns>The Sql context-location-name.</returns>
+    static public SqlContextLocName SqlBuildFullNameWithDefaultSchema( SqlPackageBaseItem container, string attributeName, string defaultSchema )
+    {
+        var name = new SqlContextLocName( attributeName );
+        if( name.Context == null ) name.Context = container.Context;
+        if( name.Location == null ) name.Location = container.Location;
+        if( String.IsNullOrEmpty( name.Schema ) ) name.Schema = defaultSchema;
+        return name;
+    }
 
-        /// <summary>
-        /// Extension point that enables to substitute the default <see cref="SetupConfigReader"/> used 
-        /// to initialize this object.
-        /// </summary>
-        /// <returns>The configuration reader to use.</returns>
-        public virtual SetupConfigReader CreateConfigReader() => new SetupConfigReader( this );
-
-        /// <summary>
-        /// Builds a Sql context-location-name (with the <see cref="SqlContextLocName.Schema"/>) from a setup object 
-        /// name (typically from an attribute) and its <see cref="SqlPackageBaseItem"/> container that provides
-        /// ambient context, location and schema if the <paramref name="attributeName"/> does not define them.
-        /// When the behavior is <see cref="SetupObjectItemBehavior.Transform"/> and the name does not have
-        /// a transform argument, we consider it to be the default transformation of the (target) name by the container.
-        /// </summary>
-        /// <param name="container">The item's container.</param>
-        /// <param name="b">The behavior (define, replace or transform).</param>
-        /// <param name="attributeName">Name of the object defined in the attribute.</param>
-        /// <returns>The Sql context-location-name.</returns>
-        public static SqlContextLocName SqlBuildFullName( SqlPackageBaseItem container, SetupObjectItemBehavior b, string attributeName )
-        {
-            SqlContextLocName name = (SqlContextLocName)container.CombineName( attributeName );
-            if( name.TransformArg == null && b == SetupObjectItemBehavior.Transform )
-            {
-                // The name is not the name of a transformation however it should be:
-                // we consider it to be the default transformation of the (target) named by the container.
-                name = new SqlContextLocName( container.Context, container.Location, container.Name + '(' + name.FullName + ')' );
-            }
-            return name;
-        }
-
-        /// <summary>
-        /// Builds a Sql context-location-name with a default schema and its <see cref="SqlPackageBaseItem"/> container
-        /// that provides ambient context and location.
-        /// If a schema exists, it is kept. Potential transform argument may exist and is left as-is.
-        /// It is up to the caller to check (if needed) that the resulting name is not a transformer name and/or
-        /// has the default (expected) schema.
-        /// </summary>
-        /// <param name="container">The item's container.</param>
-        /// <param name="attributeName">Name of the object (typically) defined in the attribute.</param>
-        /// <param name="defaultSchema">Default schema that will be set if none are specified.</param>
-        /// <returns>The Sql context-location-name.</returns>
-        static public SqlContextLocName SqlBuildFullNameWithDefaultSchema( SqlPackageBaseItem container, string attributeName, string defaultSchema )
-        {
-            var name = new SqlContextLocName( attributeName );
-            if( name.Context == null ) name.Context = container.Context;
-            if( name.Location == null ) name.Location = container.Location;
-            if( String.IsNullOrEmpty(name.Schema) ) name.Schema = defaultSchema;
-            return name;
-        }
-
-        /// <summary>
-        /// Factory method that handles resource loading (based on name and containing package of the object),
-        /// parsing of the resource text and creation of a <see cref="SqlBaseItem"/> either from an optional 
-        /// factory method or based on the resource text content and its initialization thanks to <see cref="Initialize"/>.
-        /// </summary>
-        /// <param name="parser">The Sql parser to use.</param>
-        /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
-        /// <param name="name">Full name of the object to create.</param>
-        /// <param name="firstContainer">
-        /// The first container that defined this object.
-        /// Actual container if the object has been replaced is provided by 
-        /// the registerer (<see cref="SetupObjectItemAttributeRegisterer.Container" />).
-        /// </param>
-        /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
-        /// <param name="expectedItemTypes">Optional expected item types (can be null).</param>
-        /// <param name="factory">
-        /// Factory function for result. When null, standard items (views, functions, etc.) are
-        /// created based on the actual resource text.
-        /// </param>
-        /// <returns>The created object or null if an error occurred and has been logged.</returns>
-        public static SqlBaseItem CreateStandardSqlBaseItem(
-                ISqlServerParser parser,
-                SetupObjectItemAttributeRegisterer registerer,
-                SqlContextLocName name,
-                SqlPackageBaseItem firstContainer,
-                SqlBaseItem transformArgument,
-                IEnumerable<string> expectedItemTypes,
-                Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
-        {
-            Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
-            SqlPackageBaseItem packageItem = (SqlPackageBaseItem)registerer.Container;
-            using( registerer.Monitor.OpenTrace( $"Loading '{name}' of '{registerer.Container.FullName}'." ) )
-            {
-                string fileName;
-                string text = name.LoadTextResource( registerer.Monitor, packageItem, out fileName );
-                if( text == null ) return null;
-                SqlBaseItem result = ParseAndInitialize( registerer, name, parser, text, firstContainer, packageItem, transformArgument, expectedItemTypes, factory );
-                if( result != null )
-                {
-                    if( result.Container == null ) firstContainer.Children.Add( result );
-                    registerer.Monitor.CloseGroup( $"Loaded {result.ItemType} from file '{fileName}'." );
-                }
-                else registerer.Monitor.CloseGroup( $"Error while loading file '{fileName}'." );
-                return result;
-            }
-        }
-
-        static SqlBaseItem ParseAndInitialize(
+    /// <summary>
+    /// Factory method that handles resource loading (based on name and containing package of the object),
+    /// parsing of the resource text and creation of a <see cref="SqlBaseItem"/> either from an optional 
+    /// factory method or based on the resource text content and its initialization thanks to <see cref="Initialize"/>.
+    /// </summary>
+    /// <param name="parser">The Sql parser to use.</param>
+    /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+    /// <param name="name">Full name of the object to create.</param>
+    /// <param name="firstContainer">
+    /// The first container that defined this object.
+    /// Actual container if the object has been replaced is provided by 
+    /// the registerer (<see cref="SetupObjectItemAttributeRegisterer.Container" />).
+    /// </param>
+    /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
+    /// <param name="expectedItemTypes">Optional expected item types (can be null).</param>
+    /// <param name="factory">
+    /// Factory function for result. When null, standard items (views, functions, etc.) are
+    /// created based on the actual resource text.
+    /// </param>
+    /// <returns>The created object or null if an error occurred and has been logged.</returns>
+    public static SqlBaseItem CreateStandardSqlBaseItem(
+            ISqlServerParser parser,
             SetupObjectItemAttributeRegisterer registerer,
             SqlContextLocName name,
-            ISqlServerParser parser,
-            string text,
-            IDependentItemContainer firstContainer,
-            IDependentItemContainer packageItem,
+            SqlPackageBaseItem firstContainer,
             SqlBaseItem transformArgument,
             IEnumerable<string> expectedItemTypes,
             Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
+    {
+        Debug.Assert( (transformArgument != null) == (name.TransformArg != null) );
+        SqlPackageBaseItem packageItem = (SqlPackageBaseItem)registerer.Container;
+        using( registerer.Monitor.OpenTrace( $"Loading '{name}' of '{registerer.Container.FullName}'." ) )
         {
-            try
+            string fileName;
+            string text = name.LoadTextResource( registerer.Monitor, packageItem, out fileName );
+            if( text == null ) return null;
+            SqlBaseItem result = ParseAndInitialize( registerer, name, parser, text, firstContainer, packageItem, transformArgument, expectedItemTypes, factory );
+            if( result != null )
             {
-                var r = parser.Parse( text );
-                if( r.IsError )
-                {
-                    r.LogOnError( registerer.Monitor );
-                    return null;
-                }
-                if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
-                ISqlServerParsedText oText = r.Result;
-                bool factoryError = false;
-                SqlBaseItem result = null;
-                using( registerer.Monitor.OnError( () => factoryError = true ))
-                {
-                    result = factory( registerer, name, oText );
-                }
-                if( result == null )
-                {
-                    if( factoryError ) return null;
-                    result = DefaultFactory( name, oText );
-                }
-                if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
-                {
-                    registerer.Monitor.Error( $"Content is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
-                    return null;
-                }
-                SqlTransformerItem t = result as SqlTransformerItem;
-                if( t != null )
-                {
-                    if( transformArgument.AddTransformer( registerer.Monitor, t ) == null ) return null;
-                }
-                return result.Initialize( registerer.Monitor, firstContainer, packageItem ) ? result : null;
+                if( result.Container == null ) firstContainer.Children.Add( result );
+                registerer.Monitor.CloseGroup( $"Loaded {result.ItemType} from file '{fileName}'." );
             }
-            catch( Exception ex )
+            else registerer.Monitor.CloseGroup( $"Error while loading file '{fileName}'." );
+            return result;
+        }
+    }
+
+    static SqlBaseItem ParseAndInitialize(
+        SetupObjectItemAttributeRegisterer registerer,
+        SqlContextLocName name,
+        ISqlServerParser parser,
+        string text,
+        IDependentItemContainer firstContainer,
+        IDependentItemContainer packageItem,
+        SqlBaseItem transformArgument,
+        IEnumerable<string> expectedItemTypes,
+        Func<SetupObjectItemAttributeRegisterer, SqlContextLocName, ISqlServerParsedText, SqlBaseItem> factory = null )
+    {
+        try
+        {
+            var r = parser.Parse( text );
+            if( r.IsError )
             {
-                using( registerer.Monitor.OpenError( ex ) )
-                {
-                    registerer.Monitor.Info( text );
-                }
+                r.LogOnError( registerer.Monitor );
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Factory for <see cref="SqlBaseItem"/>.
-        /// Depending on the text type (<see cref="ISqlServerStoredProcedure"/> for instance), the
-        /// specialized <see cref="SqlBaseItem"/> is created (ie. <see cref="SqlProcedureItem"/>).
-        /// </summary>
-        /// <param name="name">The object name.</param>
-        /// <param name="oText">The parsed text.</param>
-        /// <returns>A Sql item.</returns>
-        static SqlBaseItem DefaultFactory( SqlContextLocName name, ISqlServerParsedText oText )
-        {
+            if( transformArgument != null ) expectedItemTypes = new[] { "Transformer" };
+            ISqlServerParsedText oText = r.Result;
+            bool factoryError = false;
             SqlBaseItem result = null;
-            if( oText is ISqlServerObject )
+            using( registerer.Monitor.OnError( () => factoryError = true ) )
             {
-                if( oText is ISqlServerCallableObject )
-                {
-                    if( oText is ISqlServerStoredProcedure )
-                    {
-                        result = new SqlProcedureItem( name, (ISqlServerStoredProcedure)oText );
-                    }
-                    else if( oText is ISqlServerFunctionScalar )
-                    {
-                        result = new SqlFunctionScalarItem( name, (ISqlServerFunctionScalar)oText );
-                    }
-                    else if( oText is ISqlServerFunctionInlineTable )
-                    {
-                        result = new SqlFunctionInlineTableItem( name, (ISqlServerFunctionInlineTable)oText );
-                    }
-                    else if( oText is ISqlServerFunctionTable )
-                    {
-                        result = new SqlFunctionTableItem( name, (ISqlServerFunctionTable)oText );
-                    }
-                }
-                else if( oText is ISqlServerView )
-                {
-                    result = new SqlViewItem( name, (ISqlServerView)oText );
-                }
-            }
-            else if( oText is ISqlServerTransformer )
-            {
-                result = new SqlTransformerItem( name, (ISqlServerTransformer)oText );
+                result = factory( registerer, name, oText );
             }
             if( result == null )
             {
-                throw new NotSupportedException( "Unhandled type of object: " + oText.ToString() );
+                if( factoryError ) return null;
+                result = DefaultFactory( name, oText );
             }
-            return result;
+            if( expectedItemTypes != null && !expectedItemTypes.Contains( result.ItemType ) )
+            {
+                registerer.Monitor.Error( $"Content is a '{result.ItemType}' whereas '{expectedItemTypes.Concatenate( "' or '" )}' is expected." );
+                return null;
+            }
+            SqlTransformerItem t = result as SqlTransformerItem;
+            if( t != null )
+            {
+                if( transformArgument.AddTransformer( registerer.Monitor, t ) == null ) return null;
+            }
+            return result.Initialize( registerer.Monitor, firstContainer, packageItem ) ? result : null;
         }
+        catch( Exception ex )
+        {
+            using( registerer.Monitor.OpenError( ex ) )
+            {
+                registerer.Monitor.Info( text );
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Factory for <see cref="SqlBaseItem"/>.
+    /// Depending on the text type (<see cref="ISqlServerStoredProcedure"/> for instance), the
+    /// specialized <see cref="SqlBaseItem"/> is created (ie. <see cref="SqlProcedureItem"/>).
+    /// </summary>
+    /// <param name="name">The object name.</param>
+    /// <param name="oText">The parsed text.</param>
+    /// <returns>A Sql item.</returns>
+    static SqlBaseItem DefaultFactory( SqlContextLocName name, ISqlServerParsedText oText )
+    {
+        SqlBaseItem result = null;
+        if( oText is ISqlServerObject )
+        {
+            if( oText is ISqlServerCallableObject )
+            {
+                if( oText is ISqlServerStoredProcedure )
+                {
+                    result = new SqlProcedureItem( name, (ISqlServerStoredProcedure)oText );
+                }
+                else if( oText is ISqlServerFunctionScalar )
+                {
+                    result = new SqlFunctionScalarItem( name, (ISqlServerFunctionScalar)oText );
+                }
+                else if( oText is ISqlServerFunctionInlineTable )
+                {
+                    result = new SqlFunctionInlineTableItem( name, (ISqlServerFunctionInlineTable)oText );
+                }
+                else if( oText is ISqlServerFunctionTable )
+                {
+                    result = new SqlFunctionTableItem( name, (ISqlServerFunctionTable)oText );
+                }
+            }
+            else if( oText is ISqlServerView )
+            {
+                result = new SqlViewItem( name, (ISqlServerView)oText );
+            }
+        }
+        else if( oText is ISqlServerTransformer )
+        {
+            result = new SqlTransformerItem( name, (ISqlServerTransformer)oText );
+        }
+        if( result == null )
+        {
+            throw new NotSupportedException( "Unhandled type of object: " + oText.ToString() );
+        }
+        return result;
     }
 }

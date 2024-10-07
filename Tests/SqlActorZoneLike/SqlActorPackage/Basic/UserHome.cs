@@ -8,31 +8,29 @@
 using Microsoft.Data.SqlClient;
 using CK.Core;
 
-namespace SqlActorPackage.Basic
+namespace SqlActorPackage.Basic;
+
+[SqlTable( "tUser", Package = typeof( Package ) ), Versions( "CK.tUser=2.12.9, 2.12.10" )]
+public abstract class UserHome : SqlTable
 {
-    [SqlTable( "tUser", Package = typeof( Package ) ), Versions( "CK.tUser=2.12.9, 2.12.10" )]
-    public abstract class UserHome : SqlTable
+    void StObjConstruct( ActorHome actor )
     {
-        void StObjConstruct( ActorHome actor )
-        {
-        }
-
-        [SqlProcedureNoExecute( "sUserCreate" )]
-        public abstract SqlCommand CmdCreate( string userName, out int userIdResult );
-
-        [SqlProcedureNoExecute( "sUserExists" )]
-        public abstract void CmdExists( ref SqlCommand cmdExists, string userName, out bool existsResult );
-
-        [SqlProcedureNoExecute( "sUserExists2" )]
-        public abstract void CmdExists2( ref SqlCommand cmdExists, int userPart1, int userPart2, out bool existsResult );
-
-        [SqlProcedureNoExecute( "sUserToBeOverriden" )]
-        [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverriden (n°1/2)." )]
-        public abstract void CmdUserToBeOverriden( ref SqlCommand cmdExists, int param1, out bool done );
-
-        [SqlProcedureNoExecute( "sUserToBeOverridenIndirect" )]
-        [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." )]
-        public abstract void CmdUserToBeOverridenIndirect( ref SqlCommand cmdExists, int param1, out bool done );
     }
-    
+
+    [SqlProcedureNoExecute( "sUserCreate" )]
+    public abstract SqlCommand CmdCreate( string userName, out int userIdResult );
+
+    [SqlProcedureNoExecute( "sUserExists" )]
+    public abstract void CmdExists( ref SqlCommand cmdExists, string userName, out bool existsResult );
+
+    [SqlProcedureNoExecute( "sUserExists2" )]
+    public abstract void CmdExists2( ref SqlCommand cmdExists, int userPart1, int userPart2, out bool existsResult );
+
+    [SqlProcedureNoExecute( "sUserToBeOverriden" )]
+    [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverriden (n°1/2)." )]
+    public abstract void CmdUserToBeOverriden( ref SqlCommand cmdExists, int param1, out bool done );
+
+    [SqlProcedureNoExecute( "sUserToBeOverridenIndirect" )]
+    [TestAutoHeaderSPMember( "Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." )]
+    public abstract void CmdUserToBeOverridenIndirect( ref SqlCommand cmdExists, int param1, out bool done );
 }

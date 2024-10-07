@@ -6,26 +6,25 @@
 #endregion
 
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+/// <summary>
+/// Driver for <see cref="SqlTableItem"/>.
+/// </summary>
+public class SqlTableItemDriver : SqlPackageBaseItemDriver
 {
     /// <summary>
-    /// Driver for <see cref="SqlTableItem"/>.
+    /// Initializes a new <see cref="SqlTableItemDriver"/>.
     /// </summary>
-    public class SqlTableItemDriver : SqlPackageBaseItemDriver
+    /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
+    public SqlTableItemDriver( BuildInfo info )
+        : base( info )
     {
-        /// <summary>
-        /// Initializes a new <see cref="SqlTableItemDriver"/>.
-        /// </summary>
-        /// <param name="info">Driver build information (required by base SetupItemDriver).</param>
-        public SqlTableItemDriver( BuildInfo info )
-            : base( info ) 
-        {
-        }
-
-        /// <summary>
-        /// Masked to formally associates a <see cref="SqlTableItem"/> type.
-        /// </summary>
-        public new SqlTableItem Item => (SqlTableItem)base.Item;
-
     }
+
+    /// <summary>
+    /// Masked to formally associates a <see cref="SqlTableItem"/> type.
+    /// </summary>
+    public new SqlTableItem Item => (SqlTableItem)base.Item;
+
 }

@@ -6,25 +6,24 @@
 #endregion
 
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Contains extension methods for <see cref="ISetupScript"/>.
+/// </summary>
+public static class SetupScriptExtensions
 {
     /// <summary>
-    /// Contains extension methods for <see cref="ISetupScript"/>.
+    /// Creates a new <see cref="ISetupScript"/> with a new script and extension.
     /// </summary>
-    public static class SetupScriptExtensions
+    /// <param name="this">This setup script.</param>
+    /// <param name="newScript">The new script text.</param>
+    /// <param name="newExtension">The new extension.</param>
+    /// <returns>A new setup script object.</returns>
+    public static ISetupScript SetScriptAndExtension( this ISetupScript @this, string newScript, string newExtension )
     {
-        /// <summary>
-        /// Creates a new <see cref="ISetupScript"/> with a new script and extension.
-        /// </summary>
-        /// <param name="this">This setup script.</param>
-        /// <param name="newScript">The new script text.</param>
-        /// <param name="newExtension">The new extension.</param>
-        /// <returns>A new setup script object.</returns>
-        public static ISetupScript SetScriptAndExtension( this ISetupScript @this, string newScript, string newExtension )
-        {
-            ParsedFileName newName = @this.Name.SetExtension( newExtension );
-            return new SetupScript( newName, newScript );
-        }
-
+        ParsedFileName newName = @this.Name.SetExtension( newExtension );
+        return new SetupScript( newName, newScript );
     }
+
 }

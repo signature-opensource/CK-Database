@@ -1,114 +1,113 @@
 using System;
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+internal class StObjSetupDataRootClass
 {
-    internal class StObjSetupDataRootClass
+    readonly IStObjSetupData _parent;
+
+    Type _itemType;
+    string _itemTypeName;
+    Type _driverType;
+    string _driverTypeName;
+    string _containerFullName;
+    IDependentItemList _requires;
+    IDependentItemList _requiredBy;
+    IDependentItemList _children;
+    IDependentItemGroupList _groups;
+
+    internal StObjSetupDataRootClass( IActivityMonitor monitor, Type t, StObjSetupDataRootClass parent = null )
     {
-        readonly IStObjSetupData _parent;
+        _parent = parent as IStObjSetupData;
+        bool isInRoot = _parent == null;
 
-        Type _itemType;
-        string _itemTypeName;
-        Type _driverType;
-        string _driverTypeName;
-        string _containerFullName;
-        IDependentItemList _requires;
-        IDependentItemList _requiredBy;
-        IDependentItemList _children;
-        IDependentItemGroupList _groups;
+        _requires = DependentItemListFactory.CreateItemList();
+        AttributesReader.CollectItemNames<RequiresAttribute>( t, _requires.AddCommaSeparatedString );
 
-        internal StObjSetupDataRootClass( IActivityMonitor monitor, Type t, StObjSetupDataRootClass parent = null )
+        _requiredBy = DependentItemListFactory.CreateItemList();
+        AttributesReader.CollectItemNames<RequiredByAttribute>( t, _requiredBy.AddCommaSeparatedString );
+
+        _children = DependentItemListFactory.CreateItemList();
+        AttributesReader.CollectItemNames<ChildrenAttribute>( t, _children.AddCommaSeparatedString );
+
+        _groups = DependentItemListFactory.CreateItemGroupList();
+        AttributesReader.CollectItemNames<GroupsAttribute>( t, _groups.AddCommaSeparatedString );
+
+        SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
+        if( setupAttr != null )
         {
-            _parent = parent as IStObjSetupData;
-            bool isInRoot = _parent == null;
-
-            _requires = DependentItemListFactory.CreateItemList();
-            AttributesReader.CollectItemNames<RequiresAttribute>( t, _requires.AddCommaSeparatedString );
-
-            _requiredBy = DependentItemListFactory.CreateItemList();
-            AttributesReader.CollectItemNames<RequiredByAttribute>( t, _requiredBy.AddCommaSeparatedString );
-
-            _children = DependentItemListFactory.CreateItemList();
-             AttributesReader.CollectItemNames<ChildrenAttribute>( t, _children.AddCommaSeparatedString );
-
-            _groups = DependentItemListFactory.CreateItemGroupList();
-            AttributesReader.CollectItemNames<GroupsAttribute>( t, _groups.AddCommaSeparatedString );
-
-            SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
-            if( setupAttr != null )
-            {
-                _containerFullName = setupAttr.ContainerFullName;
-                _itemType = setupAttr.ItemType;
-                _itemTypeName = setupAttr.ItemTypeName;
-                _driverType = setupAttr.DriverType;
-                _driverTypeName = setupAttr.DriverTypeName;
-            }
-            // Container full name, driver type & name inherit by default.
-            if( parent != null )
-            {
-                if( _itemType == null && _itemTypeName == null ) _itemType = parent.ItemType;
-                if( _itemTypeName == null ) _itemTypeName = parent.ItemTypeName;
-                if( _driverType == null && _driverTypeName == null ) _driverType = parent.DriverType;
-                if( _driverTypeName == null ) _driverTypeName = parent.DriverTypeName;
-                if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
-            }
-
-            // If we are the root of the real object, we consider that base classes
-            // preinitialize our value.
-            if( isInRoot && parent != null )
-            {
-                _requires.AddRange( parent.Requires );
-                _requiredBy.AddRange( parent.RequiredBy );
-                _children.AddRange( parent.Children );
-                _groups.AddRange( parent.Groups );
-            }
+            _containerFullName = setupAttr.ContainerFullName;
+            _itemType = setupAttr.ItemType;
+            _itemTypeName = setupAttr.ItemTypeName;
+            _driverType = setupAttr.DriverType;
+            _driverTypeName = setupAttr.DriverTypeName;
+        }
+        // Container full name, driver type & name inherit by default.
+        if( parent != null )
+        {
+            if( _itemType == null && _itemTypeName == null ) _itemType = parent.ItemType;
+            if( _itemTypeName == null ) _itemTypeName = parent.ItemTypeName;
+            if( _driverType == null && _driverTypeName == null ) _driverType = parent.DriverType;
+            if( _driverTypeName == null ) _driverTypeName = parent.DriverTypeName;
+            if( _containerFullName == null ) _containerFullName = parent.ContainerFullName;
         }
 
-        public IStObjSetupData Generalization => _parent; 
-        
-        public string ContainerFullName
+        // If we are the root of the real object, we consider that base classes
+        // preinitialize our value.
+        if( isInRoot && parent != null )
         {
-            get { return _containerFullName; }
-            set { _containerFullName = value; }
+            _requires.AddRange( parent.Requires );
+            _requiredBy.AddRange( parent.RequiredBy );
+            _children.AddRange( parent.Children );
+            _groups.AddRange( parent.Groups );
         }
+    }
 
-        public IDependentItemList Requires => _requires; 
+    public IStObjSetupData Generalization => _parent;
 
-        public IDependentItemList RequiredBy => _requiredBy; 
+    public string ContainerFullName
+    {
+        get { return _containerFullName; }
+        set { _containerFullName = value; }
+    }
 
-        public IDependentItemList Children => _children; 
+    public IDependentItemList Requires => _requires;
 
-        public IDependentItemGroupList Groups => _groups; 
+    public IDependentItemList RequiredBy => _requiredBy;
 
-        public Type ItemType
-        {
-            get { return _itemType; }
-            set { _itemType = value; }
-        }
+    public IDependentItemList Children => _children;
 
-        public string ItemTypeName
-        {
-            get { return _itemTypeName; }
-            set { _itemTypeName = value; }
-        }
+    public IDependentItemGroupList Groups => _groups;
 
-        public Type DriverType
-        {
-            get { return _driverType; }
-            set { _driverType = value; }
-        }
+    public Type ItemType
+    {
+        get { return _itemType; }
+        set { _itemType = value; }
+    }
 
-        public string DriverTypeName
-        {
-            get { return _driverTypeName; }
-            set { _driverTypeName = value; }
-        }
+    public string ItemTypeName
+    {
+        get { return _itemTypeName; }
+        set { _itemTypeName = value; }
+    }
 
-        internal static StObjSetupDataRootClass CreateRootData( IActivityMonitor monitor, Type t )
-        {
-            if( t == typeof( object ) ) return null;
-            StObjSetupDataRootClass b = CreateRootData( monitor, t.BaseType );
-            return new StObjSetupDataRootClass( monitor, t, b ); 
-        }
+    public Type DriverType
+    {
+        get { return _driverType; }
+        set { _driverType = value; }
+    }
+
+    public string DriverTypeName
+    {
+        get { return _driverTypeName; }
+        set { _driverTypeName = value; }
+    }
+
+    internal static StObjSetupDataRootClass CreateRootData( IActivityMonitor monitor, Type t )
+    {
+        if( t == typeof( object ) ) return null;
+        StObjSetupDataRootClass b = CreateRootData( monitor, t.BaseType );
+        return new StObjSetupDataRootClass( monitor, t, b );
     }
 }

@@ -1,18 +1,17 @@
-namespace CK.Core
+namespace CK.Core;
+
+/// <summary>
+/// Default <see cref="SqlDatabase"/>.
+/// </summary>
+public class SqlDefaultDatabase : SqlDatabase
 {
     /// <summary>
-    /// Default <see cref="SqlDatabase"/>.
+    /// Initializes the default database. Its name is <see cref="SqlDatabase.DefaultDatabaseName"/>
+    /// and <see cref="SqlDatabase.DefaultSchemaName"/> is registered.
     /// </summary>
-    public class SqlDefaultDatabase : SqlDatabase
+    public SqlDefaultDatabase()
+        : base( DefaultDatabaseName )
     {
-        /// <summary>
-        /// Initializes the default database. Its name is <see cref="SqlDatabase.DefaultDatabaseName"/>
-        /// and <see cref="SqlDatabase.DefaultSchemaName"/> is registered.
-        /// </summary>
-        public SqlDefaultDatabase()
-            : base( DefaultDatabaseName )
-        {
-            EnsureSchema( DefaultSchemaName );
-        }
+        EnsureSchema( DefaultSchemaName );
     }
 }

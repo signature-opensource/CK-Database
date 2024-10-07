@@ -7,23 +7,21 @@
 
 using CK.Core;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Factory for items associated to <see cref="IStObjResult"/>.
+/// </summary>
+public interface IStObjSetupItemFactory
 {
     /// <summary>
-    /// Factory for items associated to <see cref="IStObjResult"/>.
+    /// Creates an <see cref="IStObjSetupItem"/> from a <see cref="IStObjSetupData"/>.
+    /// Returning null here triggers an attempt to instantiate an object of the type <see cref="IStObjSetupData.ItemType"/>
+    /// with the same parameters as this method (the monitor and the data). If no <see cref="IStObjSetupData.ItemType"/> is set,
+    /// a <see cref="StObjDynamicPackageItem"/> is instantiated.
     /// </summary>
-    public interface IStObjSetupItemFactory
-    {
-        /// <summary>
-        /// Creates an <see cref="IStObjSetupItem"/> from a <see cref="IStObjSetupData"/>.
-        /// Returning null here triggers an attempt to instantiate an object of the type <see cref="IStObjSetupData.ItemType"/>
-        /// with the same parameters as this method (the monitor and the data). If no <see cref="IStObjSetupData.ItemType"/> is set,
-        /// a <see cref="StObjDynamicPackageItem"/> is instantiated.
-        /// </summary>
-        /// <param name="monitor">Monitor to use.</param>
-        /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
-        /// <returns>A <see cref="IStObjSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
-        IStObjSetupItem? CreateSetupItem( IActivityMonitor monitor, IStObjSetupData data );
-    }
-
+    /// <param name="monitor">Monitor to use.</param>
+    /// <param name="data">Descriptive data (initialized by attributes and other direct code-first approaches and configured by any <see cref="IStObjSetupConfigurator"/>).</param>
+    /// <returns>A <see cref="IStObjSetupItem"/> implementation that must be correctly initialized by the given data, or null to use the default <see cref="StObjDynamicPackageItem"/>.</returns>
+    IStObjSetupItem? CreateSetupItem( IActivityMonitor monitor, IStObjSetupData data );
 }

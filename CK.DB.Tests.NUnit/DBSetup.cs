@@ -9,25 +9,25 @@ using System.Linq;
 
 using static CK.Testing.SqlServerTestHelper;
 
-namespace CK.DB.Tests
+namespace CK.DB.Tests;
+
+
+/// <summary>
+/// Interactive tests that enable controls of test environment.
+/// </summary>
+[TestFixture]
+public abstract class DBSetup
 {
-
-    /// <summary>
-    /// Interactive tests that enable controls of test environment.
-    /// </summary>
-    [TestFixture]
-    public abstract class DBSetup
+    static DBSetup()
     {
-        static DBSetup()
-        {
-            var root = TestHelper.SolutionFolder.AppendPart( "Tests" );
+        var root = TestHelper.SolutionFolder.AppendPart( "Tests" );
 
-            void CheckFile( string testName, string? displayTestName = null )
+        void CheckFile( string testName, string? displayTestName = null )
+        {
+            var path = root.AppendPart( testName + ".playlist" );
+            if( !System.IO.File.Exists( path ) )
             {
-                var path = root.AppendPart( testName + ".playlist" );
-                if( !System.IO.File.Exists( path ) )
-                {
-                    System.IO.File.WriteAllText( path, $@"<Playlist Version=""2.0"">
+                System.IO.File.WriteAllText( path, $@"<Playlist Version=""2.0"">
   <Rule Name=""Includes"" Match=""Any"">
     <Rule Match=""All"">
       <Property Name=""Solution"" />
@@ -50,182 +50,181 @@ namespace CK.DB.Tests
     </Rule>
   </Rule>
 </Playlist>" );
-                }
-            }
-
-            CheckFile( "db_setup" );
-            CheckFile( "drop_database" );
-            CheckFile( "db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" );
-            CheckFile( "backup_create" );
-            CheckFile( "backup_restore", "backup_restore(&quot;0 - Most recent one.&quot;)" );
-        }
-
-        /// <summary>
-        /// Toggles <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.LogToConsole"/>.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void toggle_logging_to_console()
-        {
-            TestHelper.LogToConsole = !TestHelper.LogToConsole;
-        }
-
-        /// <summary>
-        /// Attaches the debugger to this test context (simply calls <see cref="Debugger.Launch()"/>).
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void attach_debugger()
-        {
-            TestHelper.LogToConsole = true;
-            if( !Debugger.IsAttached ) Debugger.Launch();
-            else TestHelper.Monitor.Info( "Debugger is already attached." );
-        }
-
-        /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase"/> on the
-        /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void drop_database()
-        {
-            TestHelper.LogToConsole = true;
-            TestHelper.DropDatabase();
-        }
-
-        /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
-        /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void backup_create()
-        {
-            Assert.That( TestHelper.Backup.CreateBackup() != null, "Backup should be possible." );
-        }
-
-        /// <summary>
-        /// Calls <see cref="CK.Testing.SqlServer.BackupManager.RestoreBackup(string?, int)"/> on the
-        /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
-        /// </summary>
-        [TestCase( "0 - Most recent one." )]
-        [TestCase( "1" )]
-        [TestCase( "2" )]
-        [TestCase( "3" )]
-        [TestCase( "4" )]
-        [TestCase( "5" )]
-        [TestCase( "X - Oldest one." )]
-        [Explicit]
-        public void backup_restore( string what )
-        {
-            if( !int.TryParse( what, out var index ) )
-            {
-                index = what[0] == 'X' ? Int32.MaxValue : 0;
-            }
-            Assert.That( TestHelper.Backup.RestoreBackup( null, index ) != null, "Restoring should be possible." );
-        }
-
-        /// <summary>
-        /// Dumps all the available backup files in <see cref="CK.Testing.SqlServer.BackupManager.BackupFolder"/>
-        /// as information into the <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.Monitor"/>.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void backup_list()
-        {
-            var all = TestHelper.Backup.GetAllBackups();
-            using( TestHelper.Monitor.OpenInfo( $"There is {all.Count} backups available in '{TestHelper.Backup.BackupFolder}'." ) )
-            {
-                TestHelper.Monitor.Info( all.Select( a => $"n° {a.Index} - {a.FileName}" ).Concatenate( Environment.NewLine ) );
             }
         }
 
-        /// <summary>
-        /// Creates a <see cref="EngineConfiguration"/> with a default <see cref="SqlSetupAspectConfiguration"/> and runs it.
-        /// </summary>
-        [Explicit]
-        [TestCase( "Random" )]
-        [TestCase( "OrderedNames" )]
-        [TestCase( "RevertOrderedNames" )]
-        public void db_setup( string mode )
+        CheckFile( "db_setup" );
+        CheckFile( "drop_database" );
+        CheckFile( "db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" );
+        CheckFile( "backup_create" );
+        CheckFile( "backup_restore", "backup_restore(&quot;0 - Most recent one.&quot;)" );
+    }
+
+    /// <summary>
+    /// Toggles <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.LogToConsole"/>.
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void toggle_logging_to_console()
+    {
+        TestHelper.LogToConsole = !TestHelper.LogToConsole;
+    }
+
+    /// <summary>
+    /// Attaches the debugger to this test context (simply calls <see cref="Debugger.Launch()"/>).
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void attach_debugger()
+    {
+        TestHelper.LogToConsole = true;
+        if( !Debugger.IsAttached ) Debugger.Launch();
+        else TestHelper.Monitor.Info( "Debugger is already attached." );
+    }
+
+    /// <summary>
+    /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase"/> on the
+    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void drop_database()
+    {
+        TestHelper.LogToConsole = true;
+        TestHelper.DropDatabase();
+    }
+
+    /// <summary>
+    /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
+    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void backup_create()
+    {
+        Assert.That( TestHelper.Backup.CreateBackup() != null, "Backup should be possible." );
+    }
+
+    /// <summary>
+    /// Calls <see cref="CK.Testing.SqlServer.BackupManager.RestoreBackup(string?, int)"/> on the
+    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// </summary>
+    [TestCase( "0 - Most recent one." )]
+    [TestCase( "1" )]
+    [TestCase( "2" )]
+    [TestCase( "3" )]
+    [TestCase( "4" )]
+    [TestCase( "5" )]
+    [TestCase( "X - Oldest one." )]
+    [Explicit]
+    public void backup_restore( string what )
+    {
+        if( !int.TryParse( what, out var index ) )
         {
-            TestHelper.LogToConsole = true;
-
-            bool revertOrderingName = mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => (Environment.TickCount % 2) == 0 };
-
-            var config = SharedEngine.GetEngineConfiguration( reset: true );
-            config.RevertOrderingNames = revertOrderingName;
-            config.EnsureAspect<SetupableAspectConfiguration>().RevertOrderingNames = revertOrderingName;
-            SharedEngine.EngineResult.Status.Should().NotBe( RunStatus.Failed );
+            index = what[0] == 'X' ? Int32.MaxValue : 0;
         }
+        Assert.That( TestHelper.Backup.RestoreBackup( null, index ) != null, "Restoring should be possible." );
+    }
 
-        /// <summary>
-        /// Dumps configuration information, assemblies conflicts and assemblies loaded.
-        /// </summary>
-        [Test]
-        [Explicit]
-        public void display_information()
+    /// <summary>
+    /// Dumps all the available backup files in <see cref="CK.Testing.SqlServer.BackupManager.BackupFolder"/>
+    /// as information into the <see cref="CK.Testing.Monitoring.IMonitorTestHelperCore.Monitor"/>.
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void backup_list()
+    {
+        var all = TestHelper.Backup.GetAllBackups();
+        using( TestHelper.Monitor.OpenInfo( $"There is {all.Count} backups available in '{TestHelper.Backup.BackupFolder}'." ) )
         {
-            Console.WriteLine( "------------ Configuration ------------" );
-            var conf = TestHelperResolver.Default.Resolve<TestHelperConfiguration>();
-            Console.WriteLine( "- Configuration:" );
-            foreach( var v in conf.DeclaredValues.OrderBy( u => u.Key ) )
+            TestHelper.Monitor.Info( all.Select( a => $"n° {a.Index} - {a.FileName}" ).Concatenate( Environment.NewLine ) );
+        }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="EngineConfiguration"/> with a default <see cref="SqlSetupAspectConfiguration"/> and runs it.
+    /// </summary>
+    [Explicit]
+    [TestCase( "Random" )]
+    [TestCase( "OrderedNames" )]
+    [TestCase( "RevertOrderedNames" )]
+    public void db_setup( string mode )
+    {
+        TestHelper.LogToConsole = true;
+
+        bool revertOrderingName = mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => (Environment.TickCount % 2) == 0 };
+
+        var config = SharedEngine.GetEngineConfiguration( reset: true );
+        config.RevertOrderingNames = revertOrderingName;
+        config.EnsureAspect<SetupableAspectConfiguration>().RevertOrderingNames = revertOrderingName;
+        SharedEngine.EngineResult.Status.Should().NotBe( RunStatus.Failed );
+    }
+
+    /// <summary>
+    /// Dumps configuration information, assemblies conflicts and assemblies loaded.
+    /// </summary>
+    [Test]
+    [Explicit]
+    public void display_information()
+    {
+        Console.WriteLine( "------------ Configuration ------------" );
+        var conf = TestHelperResolver.Default.Resolve<TestHelperConfiguration>();
+        Console.WriteLine( "- Configuration:" );
+        foreach( var v in conf.DeclaredValues.OrderBy( u => u.Key ) )
+        {
+            if( v.IsEditable )
             {
-                if( v.IsEditable )
+                if( v.ConfiguredValue != v.CurrentValue )
                 {
-                    if( v.ConfiguredValue != v.CurrentValue )
-                    {
-                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', CurrentValue: '{v.CurrentValue}'" );
-                    }
-                    else
-                    {
-                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [Editable]" );
-                    }
+                    Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', CurrentValue: '{v.CurrentValue}'" );
                 }
                 else
                 {
-                    if( v.ConfiguredValue != v.CurrentValue )
-                    {
-                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', DefaultValue: '{v.CurrentValue}'" );
-                    }
-                    else
-                    {
-                        Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [DefaultValue]" );
-                    }
+                    Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [Editable]" );
                 }
-                if( !v.ObsoleteKeyUsed.IsEmptyPath )
+            }
+            else
+            {
+                if( v.ConfiguredValue != v.CurrentValue )
                 {
-                    Console.WriteLine( $" *** Obsolete key name: '{v.ObsoleteKeyUsed}'. Configuration should be updated to use '{v.Key}'." );
+                    Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}', DefaultValue: '{v.CurrentValue}'" );
                 }
-                Console.Write( "   - " );
-                Console.WriteLine( v.Description );
-            }
-            if( conf.UselessValues.Any() )
-            {
-                Console.WriteLine( "- Useless configuration keys:" );
-                foreach( var u in conf.UselessValues.OrderBy( u => u.UnusedKey ) )
+                else
                 {
-                    Console.WriteLine( $" - {u.UnusedKey} = {u.ConfiguredValue}" );
+                    Console.WriteLine( $"   {v.Key}: Configured: '{v.ConfiguredValue}' [DefaultValue]" );
                 }
             }
-            Console.WriteLine();
-            Console.WriteLine( "---------- Assembly conflicts ----------" );
-            AssemblyLoadConflict[] currents = WeakAssemblyNameResolver.GetAssemblyConflicts();
-            Console.WriteLine( $"{currents.Length} assembly load conflicts occurred:" );
-            foreach( var c in currents )
+            if( !v.ObsoleteKeyUsed.IsEmptyPath )
             {
-                Console.Write( ">>> " );
-                Console.WriteLine( c.ToString() );
+                Console.WriteLine( $" *** Obsolete key name: '{v.ObsoleteKeyUsed}'. Configuration should be updated to use '{v.Key}'." );
             }
-            Console.WriteLine();
-            Console.WriteLine( "---------- Loaded Assemblies ----------" );
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Console.WriteLine( $"{assemblies.Length} assemblies loaded:" );
-            foreach( var a in assemblies )
+            Console.Write( "   - " );
+            Console.WriteLine( v.Description );
+        }
+        if( conf.UselessValues.Any() )
+        {
+            Console.WriteLine( "- Useless configuration keys:" );
+            foreach( var u in conf.UselessValues.OrderBy( u => u.UnusedKey ) )
             {
-                Console.WriteLine( a.ToString() );
+                Console.WriteLine( $" - {u.UnusedKey} = {u.ConfiguredValue}" );
             }
+        }
+        Console.WriteLine();
+        Console.WriteLine( "---------- Assembly conflicts ----------" );
+        AssemblyLoadConflict[] currents = WeakAssemblyNameResolver.GetAssemblyConflicts();
+        Console.WriteLine( $"{currents.Length} assembly load conflicts occurred:" );
+        foreach( var c in currents )
+        {
+            Console.Write( ">>> " );
+            Console.WriteLine( c.ToString() );
+        }
+        Console.WriteLine();
+        Console.WriteLine( "---------- Loaded Assemblies ----------" );
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        Console.WriteLine( $"{assemblies.Length} assemblies loaded:" );
+        foreach( var a in assemblies )
+        {
+            Console.WriteLine( a.ToString() );
         }
     }
 }
