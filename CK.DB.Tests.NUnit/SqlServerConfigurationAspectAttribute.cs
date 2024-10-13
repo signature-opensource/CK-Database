@@ -11,8 +11,7 @@ using static CK.Testing.MonitorTestHelper;
 namespace CK.DB.Tests.NUnit;
 
 /// <summary>
-/// Ensures that the <see cref="CK.Setup.SqlSetupAspectConfiguration"/> is availble for the <see cref="SharedEngine"/>.
-/// Makes each NUnit tests log as groups.
+/// Ensures that the <see cref="CK.Setup.SqlSetupAspectConfiguration"/> is available for the <see cref="SharedEngine"/>.
 /// </summary>
 [AttributeUsage( AttributeTargets.Assembly, AllowMultiple = false )]
 public class SqlServerConfigurationAspectAttribute : Attribute, ITestAction
