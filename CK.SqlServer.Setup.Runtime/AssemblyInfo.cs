@@ -1,3 +1,2 @@
 
-[assembly: CK.Setup.IsSetupDependency()]
-[assembly: CK.Setup.RequiredSetupDependency( "CK.SqlServer.Setup.Engine" )]
+[assembly: CK.Setup.RequiredEngine( "CK.SqlServer.Setup.Engine" )]

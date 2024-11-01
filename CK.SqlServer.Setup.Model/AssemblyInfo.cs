@@ -1,3 +1,2 @@
 
-[assembly: CK.Setup.IsModel()]
-[assembly: CK.Setup.RequiredSetupDependency( "CK.SqlServer.Setup.Runtime" )]
+[assembly: CK.Setup.RequiredEngine( "CK.SqlServer.Setup.Runtime" )]
