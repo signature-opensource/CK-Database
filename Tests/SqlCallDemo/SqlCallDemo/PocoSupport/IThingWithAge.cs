@@ -1,7 +1,6 @@
-﻿namespace SqlCallDemo.PocoSupport
+namespace SqlCallDemo.PocoSupport;
+
+public interface IThingWithAge : IThing
 {
-    public interface IThingWithAge : IThing
-    {
-        int Age { get; set; }
-    }
+    int Age { get; set; }
 }

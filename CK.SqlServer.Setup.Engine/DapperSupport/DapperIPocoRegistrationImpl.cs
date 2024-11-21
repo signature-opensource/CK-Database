@@ -7,27 +7,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CK.SqlServer.Setup.Engine
-{
-    /// <summary>
-    /// Implements IPoco registration for CK.Dapper.
-    /// This is triggered by the static extension class of CK.SqlServer.Dapper.
-    /// </summary>
-    public sealed class DapperIPocoRegistrationImpl : ICSCodeGenerator
-    {
-        CSCodeGenerationResult ICSCodeGenerator.Implement( IActivityMonitor monitor, ICSCodeGenerationContext ctx )
-        {
-            var rootCtor = ctx.Assembly.Code.Global.FindOrCreateNamespace( "CK.StObj" )
-                                                   .FindType( StObjContextRoot.RootContextTypeName )?
-                                                   .FindFunction( $"{StObjContextRoot.RootContextTypeName}(IActivityMonitor)", false );
+namespace CK.SqlServer.Setup.Engine;
 
-            if( rootCtor == null )
-            {
-                Throw.InvalidOperationException( $"Unable to find the '{StObjContextRoot.RootContextTypeName}(IActivityMonitor)' constructor." );
-            }
-            var dapperSupport = rootCtor.CreatePart();
-            dapperSupport.GeneratedByComment()
-                         .Append( @"
+/// <summary>
+/// Implements IPoco registration for CK.Dapper.
+/// This is triggered by the static extension class of CK.SqlServer.Dapper.
+/// </summary>
+public sealed class DapperIPocoRegistrationImpl : ICSCodeGenerator
+{
+    CSCodeGenerationResult ICSCodeGenerator.Implement( IActivityMonitor monitor, ICSCodeGenerationContext ctx )
+    {
+        var rootCtor = ctx.Assembly.Code.Global.FindOrCreateNamespace( "CK.StObj" )
+                                               .FindType( StObjContextRoot.RootContextTypeName )?
+                                               .FindFunction( $"{StObjContextRoot.RootContextTypeName}(IActivityMonitor)", false );
+
+        if( rootCtor == null )
+        {
+            Throw.InvalidOperationException( $"Unable to find the '{StObjContextRoot.RootContextTypeName}(IActivityMonitor)' constructor." );
+        }
+        var dapperSupport = rootCtor.CreatePart();
+        dapperSupport.GeneratedByComment()
+                     .Append( @"
         // Since Dapper uses static fields to be configured, this cannot support
         // multiple StObjMap to be loaded with a common IPoco since Dapper's query cache captures
         // the mapping once for all the first time it sees a Type.
@@ -51,7 +51,6 @@ namespace CK.SqlServer.Setup.Engine
                 return m;
             };
         } );" );
-            return CSCodeGenerationResult.Success;
-        }
+        return CSCodeGenerationResult.Success;
     }
 }

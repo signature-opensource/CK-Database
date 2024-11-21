@@ -1,7 +1,6 @@
-namespace SqlCallDemo.PocoSupport
+namespace SqlCallDemo.PocoSupport;
+
+public interface IThingIntProp : IThing
 {
-    public interface IThingIntProp : IThing
-    {
-        int IntProp { get; set; }
-    }
+    int IntProp { get; set; }
 }

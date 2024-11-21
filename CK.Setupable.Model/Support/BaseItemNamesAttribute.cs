@@ -7,27 +7,25 @@
 
 using System;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Base attribute that carries a comma separated list of item names.
+/// </summary>
+public abstract class BaseItemNamesAttribute : Attribute
 {
     /// <summary>
-    /// Base attribute that carries a comma separated list of item names.
+    /// Initializes the names.
     /// </summary>
-    public abstract class BaseItemNamesAttribute : Attribute
+    /// <param name="names">Comma separated list of item names. Must not be null.</param>
+    protected BaseItemNamesAttribute( string names )
     {
-        /// <summary>
-        /// Initializes the names.
-        /// </summary>
-        /// <param name="names">Comma separated list of item names. Must not be null.</param>
-        protected BaseItemNamesAttribute( string names )
-        {
-            if( names == null ) throw new ArgumentNullException( nameof( names ) );
-            ItemNames = names;
-        }
-
-        /// <summary>
-        /// Gets a comma separated list of item names.
-        /// </summary>
-        public string ItemNames { get; }
+        if( names == null ) throw new ArgumentNullException( nameof( names ) );
+        ItemNames = names;
     }
 
+    /// <summary>
+    /// Gets a comma separated list of item names.
+    /// </summary>
+    public string ItemNames { get; }
 }

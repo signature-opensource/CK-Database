@@ -1,0 +1,314 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+using System.Linq;
+using CK.Core;
+
+namespace SqlActorPackage.Basic;
+
+[SqlPackage( Schema = "CK", Database = typeof( SqlDefaultDatabase ), ResourcePath = "Res" ), Versions( "2.11.25" )]
+[SqlObjectItem( "OneActorView" )]
+[SqlObjectItem( "fUserIsInGroup" )]
+public abstract class Package : SqlPackage, IKnowTheConnectionString
+{
+    IUnknownAbstraction _unexistingByConstructParam;
+    IReadOnlyList<IAnyService> _allServices;
+
+    void StObjConstruct( IUnknownAbstraction zone = null )
+    {
+        _unexistingByConstructParam = zone;
+    }
+
+    public IUnknownAbstraction UnexistingByConstructParam => _unexistingByConstructParam;
+
+
+    [InjectObject( IsOptional = true )]
+    public IUnknownAbstraction UnexistingByInjectObject { get; private set; }
+
+    [InjectObject( IsOptional = true )]
+    public ISecurityZoneAbstraction ZoneHome { get; private set; }
+
+    /// <summary>
+    /// Interface IAnyService is supported by SqlActorPackage.GroupHome 
+    /// and SqlZonePackage.Zone.Package.
+    /// </summary>
+    public IReadOnlyList<IAnyService> AllServices => _allServices;
+
+    void StObjInitialize( IActivityMonitor m, IStObjObjectMap map )
+    {
+        _allServices = map.FinalImplementations.Select( i => i.Implementation ).OfType<IAnyService>().ToArray();
+    }
+
+    [InjectObject]
+    public UserHome UserHome { get; protected set; }
+
+    [InjectObject]
+    public GroupHome GroupHome { get; protected set; }
+
+    [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
+    public abstract SqlCommand SimpleProcedureNaked( int index, string name, out string result );
+
+    #region Command injection (Connection & transaction)
+
+    /// <summary>
+    /// When a SqlConnection appears, it is set onto the SqlCommand.
+    /// Only the first SqlConnection is considered: if two connection parameters exist, this will raise an error since we return a
+    /// simple SqlCommand object.
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
+    public abstract SqlCommand SimpleProcedureWithConnection( SqlConnection c, int index, string name, out string result );
+
+    /// <summary>
+    /// When a SqlTransaction appears, it is set onto the SqlCommand, and its Connection is also automatically sets onto the SqlCommand.
+    /// Only the first SqlTransaction is considered: if two transaction parameters exist, this will raise an error since we return a
+    /// simple SqlCommand object.
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
+    public abstract SqlCommand SimpleProcedureWithTransaction( SqlTransaction t, int index, string name, out string result );
+
+    /// <summary>
+    /// The transaction and/or connection can appear anywhere: only the first of them are set onto the SqlCommand.
+    /// When the connection parameter is null, the one of the transaction is automatically used.
+    /// If both are null, the SqlCommand.Connection and Transaction properties are let to null (and set to null if the SqlCommand 
+    /// is the first parameter by reference).
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleProcedure" )]
+    public abstract SqlCommand SimpleProcedureWithConnectionAndTransaction( int index, SqlTransaction t, string name, out string result, SqlConnection c );
+
+    #endregion
+
+    string IKnowTheConnectionString.GetConnectionString() => Database.ConnectionString;
+
+    #region Command Wrapper
+
+    public class SimplestScalarCmd<T> : IDisposable
+    {
+        readonly SqlCommand _cmd;
+
+        public SimplestScalarCmd( SqlCommand cmd )
+        {
+            _cmd = cmd;
+        }
+
+        public T Execute()
+        {
+            return (T)_cmd.ExecuteScalar();
+        }
+
+        public void Dispose()
+        {
+            _cmd.Dispose();
+        }
+    }
+
+    public class ScalarCmdWithAccessToHome<T> : IDisposable
+    {
+        readonly SqlCommand _cmd;
+        readonly Package _package;
+
+        public ScalarCmdWithAccessToHome( SqlCommand cmd, Package package )
+        {
+            _cmd = cmd;
+            _package = package;
+        }
+
+        public T Execute()
+        {
+            using( var c = new SqlConnection( _package.Database.ConnectionString ) )
+            {
+                c.Open();
+                _cmd.Connection = c;
+                return (T)_cmd.ExecuteScalar();
+            }
+        }
+
+        public void Dispose()
+        {
+            _cmd.Dispose();
+        }
+    }
+
+    public class ScalarCmdWithAccessToABaseOfTheHome<T> : IDisposable
+    {
+        readonly SqlCommand _cmd;
+        readonly SqlPackage _package;
+
+        public ScalarCmdWithAccessToABaseOfTheHome( SqlCommand cmd, SqlPackage package )
+        {
+            _cmd = cmd;
+            _package = package;
+        }
+
+        public T Execute()
+        {
+            using( var c = new SqlConnection( _package.Database.ConnectionString ) )
+            {
+                c.Open();
+                _cmd.Connection = c;
+                return (T)_cmd.ExecuteScalar();
+            }
+        }
+
+        public void Dispose()
+        {
+            _cmd.Dispose();
+        }
+    }
+
+    public class ScalarCmdWithAccessToInterfaceOnHome<T> : IDisposable
+    {
+        readonly SqlCommand _cmd;
+        readonly IKnowTheConnectionString _c;
+
+        public readonly int Timeout;
+
+        public readonly string LogMessage1;
+        public readonly string LogMessage2;
+
+        public ScalarCmdWithAccessToInterfaceOnHome( SqlCommand cmd, IKnowTheConnectionString c )
+        {
+            _cmd = cmd;
+            _c = c;
+            Timeout = -1;
+        }
+
+        public ScalarCmdWithAccessToInterfaceOnHome( SqlCommand cmd, IKnowTheConnectionString c, int msTimeout )
+        {
+            _cmd = cmd;
+            _c = c;
+            Timeout = msTimeout;
+        }
+
+        public ScalarCmdWithAccessToInterfaceOnHome( SqlCommand cmd, IKnowTheConnectionString c, int msTimeout, string logMsg1, string logMsg2 )
+        {
+            _cmd = cmd;
+            _c = c;
+            Timeout = msTimeout;
+            LogMessage1 = logMsg1;
+            LogMessage2 = logMsg2;
+        }
+
+        public T Execute()
+        {
+            using( var c = new SqlConnection( _c.GetConnectionString() ) )
+            {
+                c.Open();
+                _cmd.Connection = c;
+                return (T)_cmd.ExecuteScalar();
+            }
+        }
+
+        public void Dispose()
+        {
+            _cmd.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// The SqlConnection is set onto the SqlCommand.
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract SimplestScalarCmd<string> SimplestScalar( SqlConnection c, int index, string name );
+
+    /// <summary>
+    /// The SqlConnection is built by the wrapper bases on the Package.Database.ConnectionString property.
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract ScalarCmdWithAccessToHome<string> SimplestScalarWithAccessToHome( int index, string name );
+
+    /// <summary>
+    /// Base classes are compatible (here again the SqlConnection is built by the wrapper bases on the SqlPackageBase.Database.ConnectionString property).
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract ScalarCmdWithAccessToABaseOfTheHome<string> SimplestScalarAccessToABaseOfTheHome( int index, string name );
+
+    /// <summary>
+    /// Supported interfaces are compatible (here again the SqlConnection is built by the wrapper bases on the IKnowTheConnectionString interface that is implemented by this package).
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract ScalarCmdWithAccessToInterfaceOnHome<string> SimplestScalarAccessToInterfaceHome( int index, string name );
+
+    /// <summary>
+    /// Parameters that do not match the stored procedures are mapped (if possible) to the wrapper constructor.
+    /// Name is used to disambiguate only if needed. Here, there is only one 'int' in the longest constructor, so exact naming is not required (this only generates a warning). 
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract ScalarCmdWithAccessToInterfaceOnHome<string> SimplestScalarWithTimeout( int index, string name, int noAmbiguityTimeoutIsNamedAsYouLike );
+
+    /// <summary>
+    /// Parameters that do not match the stored procedures are mapped (if possible) to the wrapper constructor.
+    /// Extra parameters (the ones that are not mapped to sql stored procedure) can appear in any order. 
+    /// Only sql parameters must respect the order stored procedure definition. 
+    /// </summary>
+    [SqlProcedureNoExecute( "sBasicSimpleScalar" )]
+    public abstract ScalarCmdWithAccessToInterfaceOnHome<string> SimplestScalarWithLogParams( string logMsg1, int index, string name, int msTimeout, string logMsg2 );
+
+
+    #endregion
+
+    #region SqlCallContext
+
+    public interface IAmHereToTestPropertyMasking
+    {
+        int ActorId { get; set; }
+    }
+
+    public interface IBasicAuthContext : IAmHereToTestPropertyMasking, IDisposable
+    {
+        new int ActorId { get; set; }
+    }
+
+    public interface IAuthContext : IBasicAuthContext
+    {
+        int SecurityZoneId { get; set; }
+    }
+
+    public class BasicAuthContext : IAuthContext
+    {
+        public int ActorId { get; set; }
+
+        public int SecurityZoneId { get; set; }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    public class OutputCmd<T> : IDisposable
+    {
+        readonly SqlCommand _cmd;
+        readonly SqlPackage _p;
+
+        public OutputCmd( SqlCommand cmd, SqlPackage p )
+        {
+            _cmd = cmd;
+            _p = p;
+        }
+
+        public T Call()
+        {
+            using( var c = new SqlConnection( _p.Database.ConnectionString ) )
+            {
+                c.Open();
+                _cmd.Connection = c;
+                _cmd.ExecuteNonQuery();
+                var outP = _cmd.Parameters.Cast<SqlParameter>().Single( p => p.Direction == System.Data.ParameterDirection.Output );
+                return (T)outP.Value;
+            }
+        }
+
+        public void Dispose()
+        {
+            _cmd.Dispose();
+        }
+    }
+
+
+    [SqlProcedureNoExecute( "sBasicProcedureWithAuth" )]
+    public abstract OutputCmd<string> CallWithAuth( [ParameterSource] IAuthContext c, int index, string name, out string result );
+
+    [SqlProcedureNoExecute( "sBasicProcedureWithAuth" )]
+    public abstract OutputCmd<string> CallWithAuth( [ParameterSource] IBasicAuthContext c, int index, string name );
+
+    #endregion
+}

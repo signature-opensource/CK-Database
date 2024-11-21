@@ -3,19 +3,18 @@ using CK.SqlServer;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 
-namespace CKLevel2.IntermediateTransformation
+namespace CKLevel2.IntermediateTransformation;
+
+[SqlPackage( ResourcePath = "Res", Schema = "ITrans" )]
+[Versions( "0.0.0" )]
+[SqlObjectItem( "vBase" )]
+public abstract class Package1 : SqlPackage
 {
-    [SqlPackage( ResourcePath = "Res", Schema = "ITrans" )]
-    [Versions("0.0.0")]
-    [SqlObjectItem("vBase")]
-    public abstract class Package1 : SqlPackage
+    public List<int> ReadViewBase( ISqlCallContext ctx )
     {
-        public List<int> ReadViewBase( ISqlCallContext ctx )
+        using( var cmd = new SqlCommand( "select KeyValue from ITrans.vBase" ) )
         {
-            using( var cmd = new SqlCommand("select KeyValue from ITrans.vBase"))
-            {
-                return ctx[Database].ExecuteReader( cmd, r => r.GetInt32( 0 ) );
-            }
+            return ctx[Database].ExecuteReader( cmd, r => r.GetInt32( 0 ) );
         }
     }
 }

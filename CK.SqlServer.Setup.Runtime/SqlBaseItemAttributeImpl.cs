@@ -3,90 +3,88 @@ using CK.Setup;
 using CK.SqlServer.Parser;
 using System.Collections.Generic;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+
+/// <summary>
+/// Implementation for <see cref="SqlObjectItemAttribute"/> or other specialization of <see cref="SetupObjectItemAttributeImplBase"/>.
+/// Any kind of <see cref="SqlBaseItem"/> can be handled by this base class thanks to the 
+/// overridable <see cref="CreateSqlBaseItem"/> factory method.
+/// </summary>
+public class SqlBaseItemAttributeImpl : SetupObjectItemAttributeImplBase
 {
+    readonly ISqlServerParser _parser;
 
     /// <summary>
-    /// Implementation for <see cref="SqlObjectItemAttribute"/> or other specialization of <see cref="SetupObjectItemAttributeImplBase"/>.
-    /// Any kind of <see cref="SqlBaseItem"/> can be handled by this base class thanks to the 
-    /// overridable <see cref="CreateSqlBaseItem"/> factory method.
+    /// Initializes a new <see cref="SqlBaseItemAttributeImpl"/>.
     /// </summary>
-    public class SqlBaseItemAttributeImpl : SetupObjectItemAttributeImplBase
+    /// <param name="a">The attribute.</param>
+    /// <param name="parser">Required parser service.</param>
+    public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a, ISqlServerParser parser )
+        : base( a )
     {
-        readonly ISqlServerParser _parser;
-
-        /// <summary>
-        /// Initializes a new <see cref="SqlBaseItemAttributeImpl"/>.
-        /// </summary>
-        /// <param name="a">The attribute.</param>
-        /// <param name="parser">Required parser service.</param>
-        public SqlBaseItemAttributeImpl( SetupObjectItemAttributeBase a, ISqlServerParser parser )
-            : base( a )
-        {
-            _parser = parser;
-        }
-
-        /// <summary>
-        /// Must build the full name of the item based on the raw attribute name, whether this is
-        /// a definition, a replacement or a transformation and the container of the item.
-        /// This method simply calls the <see cref="SqlBaseItem.SqlBuildFullName"/> static helper.
-        /// </summary>
-        /// <param name="container">The item's container.</param>
-        /// <param name="b">The behavior (Define, Replace or Transform).</param>
-        /// <param name="attributeName">The raw attribute name.</param>
-        /// <returns>The context-location-name for the item.</returns>
-        protected override IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string attributeName )
-        {
-            return SqlBaseItem.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
-        }
-
-        /// <summary>
-        /// When overridden, can return a non null list of item type names.
-        /// Item types can not be null nor longer than 16 characters. For Sql Server, standard types are
-        /// "Function" (covers ITVF, table and scalar function), "Procedure", "View" and "Transformer".
-        /// </summary>
-        protected virtual IEnumerable<string> ExpectedItemTypes => null;
-
-        /// <summary>
-        /// Creates the <see cref="SetupObjectItem"/>.
-        /// This is called only once the potential replacements have been analysed and resolved.
-        /// This implementation simply calls the centralized <see cref="SqlBaseItem.CreateStandardSqlBaseItem"/> helper.
-        /// </summary>
-        /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
-        /// <param name="firstContainer">
-        /// The first container that defined this object.
-        /// Actual container if the object has been replaced is provided by 
-        /// the registerer's <see cref="SetupObjectItemAttributeRegisterer.Container" />.
-        /// </param>
-        /// <param name="name">Full name of the object to create.</param>
-        /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
-        /// <returns>The created object or null if an error occurred and has been logged.</returns>
-        protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer registerer, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
-        {
-            return SqlBaseItem.CreateStandardSqlBaseItem(
-                _parser, 
-                registerer, 
-                (SqlContextLocName)name, 
-                (SqlPackageBaseItem)firstContainer, 
-                (SqlBaseItem)transformArgument, 
-                ExpectedItemTypes,
-                CreateSqlBaseItem );
-        }
-
-        /// <summary>
-        /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
-        /// or <see cref="SqlProcedureItem"/>).
-        /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
-        /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the monitor stops the process.
-        /// </summary>
-        /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
-        /// <param name="name">The item name.</param>
-        /// <param name="text">The parsed text.</param>
-        /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
-        protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeRegisterer r, SqlContextLocName name, ISqlServerParsedText text )
-        {
-            return null;
-        }
+        _parser = parser;
     }
 
+    /// <summary>
+    /// Must build the full name of the item based on the raw attribute name, whether this is
+    /// a definition, a replacement or a transformation and the container of the item.
+    /// This method simply calls the <see cref="SqlBaseItem.SqlBuildFullName"/> static helper.
+    /// </summary>
+    /// <param name="container">The item's container.</param>
+    /// <param name="b">The behavior (Define, Replace or Transform).</param>
+    /// <param name="attributeName">The raw attribute name.</param>
+    /// <returns>The context-location-name for the item.</returns>
+    protected override IContextLocNaming BuildFullName( ISetupItem container, SetupObjectItemBehavior b, string attributeName )
+    {
+        return SqlBaseItem.SqlBuildFullName( (SqlPackageBaseItem)container, b, attributeName );
+    }
+
+    /// <summary>
+    /// When overridden, can return a non null list of item type names.
+    /// Item types can not be null nor longer than 16 characters. For Sql Server, standard types are
+    /// "Function" (covers ITVF, table and scalar function), "Procedure", "View" and "Transformer".
+    /// </summary>
+    protected virtual IEnumerable<string> ExpectedItemTypes => null;
+
+    /// <summary>
+    /// Creates the <see cref="SetupObjectItem"/>.
+    /// This is called only once the potential replacements have been analysed and resolved.
+    /// This implementation simply calls the centralized <see cref="SqlBaseItem.CreateStandardSqlBaseItem"/> helper.
+    /// </summary>
+    /// <param name="registerer">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+    /// <param name="firstContainer">
+    /// The first container that defined this object.
+    /// Actual container if the object has been replaced is provided by 
+    /// the registerer's <see cref="SetupObjectItemAttributeRegisterer.Container" />.
+    /// </param>
+    /// <param name="name">Full name of the object to create.</param>
+    /// <param name="transformArgument">Optional transform argument if this object is a transformer.</param>
+    /// <returns>The created object or null if an error occurred and has been logged.</returns>
+    protected override SetupObjectItem CreateSetupObjectItem( SetupObjectItemAttributeRegisterer registerer, IMutableSetupItem firstContainer, IContextLocNaming name, SetupObjectItem transformArgument )
+    {
+        return SqlBaseItem.CreateStandardSqlBaseItem(
+            _parser,
+            registerer,
+            (SqlContextLocName)name,
+            (SqlPackageBaseItem)firstContainer,
+            (SqlBaseItem)transformArgument,
+            ExpectedItemTypes,
+            CreateSqlBaseItem );
+    }
+
+    /// <summary>
+    /// Extension point to create specialized <see cref="SqlBaseItem"/> (other than the standard objects like <see cref="SqlViewItem"/>,
+    /// or <see cref="SqlProcedureItem"/>).
+    /// Returns null by default: returning null triggers the use of a default factory that handles the standard items.
+    /// This can also be used to inspect/validate the <paramref name="text"/> since error or fatal logged to the monitor stops the process.
+    /// </summary>
+    /// <param name="r">The registerer that gives access to the <see cref="IStObjSetupDynamicInitializerState"/>.</param>
+    /// <param name="name">The item name.</param>
+    /// <param name="text">The parsed text.</param>
+    /// <returns>A new <see cref="SqlBaseItem"/> or null (if an error occured or the default factory must be used).</returns>
+    protected virtual SqlBaseItem CreateSqlBaseItem( SetupObjectItemAttributeRegisterer r, SqlContextLocName name, ISqlServerParsedText text )
+    {
+        return null;
+    }
 }

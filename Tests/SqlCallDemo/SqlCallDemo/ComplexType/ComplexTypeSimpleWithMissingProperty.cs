@@ -1,8 +1,7 @@
-﻿namespace SqlCallDemo.ComplexType
-{
+namespace SqlCallDemo.ComplexType;
 
-    public class ComplexTypeSimpleWithMissingProperty
-    {
-        public string Name { get; set; }
-    }
+
+public class ComplexTypeSimpleWithMissingProperty
+{
+    public string Name { get; set; }
 }

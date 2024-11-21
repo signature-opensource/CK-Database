@@ -5,113 +5,112 @@ using CK.SqlServer.Parser;
 using System;
 using System.Collections.Generic;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+public partial class SqlCallableItem<T>
 {
-    public partial class SqlCallableItem<T>
+    IFunctionScope ISqlCallableItem.AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
     {
-        IFunctionScope ISqlCallableItem.AssumeSourceCommandBuilder( IActivityMonitor monitor, IDynamicAssembly dynamicAssembly )
+        if( SqlObject == null ) return null;
+        INamespaceScope ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
+
+        //            ns.Append( @"
+        //internal static class Helper
+        //{
+        //    public static T GetWithNullToDefault<T>( object o ) => DBNull.Value == o ? default( T ) : (T)o;
+        //}
+        //" );
+
+        ITypeScope tB = ns.FindType( "static class CreatorForSqlCommand" );
+        if( tB == null )
         {
-            if( SqlObject == null ) return null;
-            INamespaceScope ns = dynamicAssembly.Code.Global.FindOrCreateNamespace( "SqlGen" );
+            tB = ns.EnsureUsing( "System.Data" )
+                   .EnsureUsing( "Microsoft.Data.SqlClient" )
+                   .EnsureUsing( "CK.SqlServer" )
+                   .CreateType( "static class CreatorForSqlCommand" ).GeneratedByComment();
+        }
 
-//            ns.Append( @"
-//internal static class Helper
-//{
-//    public static T GetWithNullToDefault<T>( object o ) => DBNull.Value == o ? default( T ) : (T)o;
-//}
-//" );
-
-            ITypeScope tB = ns.FindType( "static class CreatorForSqlCommand" );
-            if( tB == null )
+        string methodKey = "CreatorForSqlCommand" + '.' + FullName;
+        var m = (IFunctionScope?)dynamicAssembly.Memory.GetValueOrDefault( methodKey, null );
+        if( m == null )
+        {
+            using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )
             {
-                tB = ns.EnsureUsing( "System.Data" )
-                       .EnsureUsing( "Microsoft.Data.SqlClient" )
-                       .EnsureUsing( "CK.SqlServer" )
-                       .CreateType( "static class CreatorForSqlCommand" ).GeneratedByComment();
-            }
-            
-            string methodKey = "CreatorForSqlCommand" + '.' + FullName;
-            var m = (IFunctionScope?)dynamicAssembly.Memory.GetValueOrDefault( methodKey, null );
-            if( m == null )
-            {
-                using( monitor.OpenTrace( $"Low level SqlCommand create method for: '{SqlObject.ToStringSignature( true )}'." ) )
+                try
                 {
-                    try
+                    m = GenerateCreateSqlCommand( tB, FullName, $"Cmd{dynamicAssembly.NextUniqueNumber()}", SqlObject );
+                    dynamicAssembly.Memory[methodKey] = m;
+                    foreach( var p in SqlObject.Parameters )
                     {
-                        m = GenerateCreateSqlCommand( tB, FullName, $"Cmd{dynamicAssembly.NextUniqueNumber()}", SqlObject );
-                        dynamicAssembly.Memory[methodKey] = m;
-                        foreach( var p in SqlObject.Parameters )
+                        if( p.IsPureOutput && p.DefaultValue != null )
                         {
-                            if( p.IsPureOutput && p.DefaultValue != null )
-                            {
-                                monitor.Warn( $"Sql parameter '{p.Name}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output." );
-                            }
+                            monitor.Warn( $"Sql parameter '{p.Name}' is an output parameter but has a default value: if it is used as an input parameter it should be marked as /*input*/output." );
                         }
                     }
-                    catch( Exception ex )
-                    {
-                        monitor.Error( ex );
-                    }
                 }
-            }
-            return m;
-        }
-
-        private IFunctionScope GenerateCreateSqlCommand( ITypeScope tB, string fullName, string name, T sqlObject )
-        {
-            IFunctionScope mB = tB.CreateFunction( t => t.Append( "public static SqlCommand " ).Append( name ).Append( "()" ) );
-            mB.Append( $"var cmd = new SqlCommand(" ).Append( sqlObject.SchemaName.ToSourceString() ).Append( ");" ).NewLine()
-              .Append( "cmd.CommandType = CommandType.StoredProcedure;" ).NewLine();
-            ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
-            if( func != null )
-            {
-                GenerateCreateSqlParameter( mB, "pR", new SqlParameterReturnedValue( func.ReturnType ) );
-                mB.Append( "cmd.Parameters.Add( pR ).Direction = ParameterDirection.ReturnValue;" ).NewLine();
-            }
-            int idxP = 0;
-            foreach( ISqlServerParameter p in sqlObject.Parameters )
-            {
-                var pName = GenerateCreateSqlParameter( mB, $"p{++idxP}", p );
-                if( p.IsOutput )
+                catch( Exception ex )
                 {
-                    mB.Append( pName )
-                       .Append( ".Direction = ParameterDirection." )
-                       .Append( p.IsInputOutput ? "InputOutput" : "Output" )
-                       .Append( ";" )
-                       .NewLine();
+                    monitor.Error( ex );
                 }
-                mB.Append( "cmd.Parameters.Add(").Append( pName ).Append( ");" ).NewLine();
             }
-            mB.Append( "return cmd;" ).NewLine();
-            return mB;
         }
+        return m;
+    }
 
-        static string GenerateCreateSqlParameter( IFunctionScope b, string name, ISqlServerParameter p )
+    private IFunctionScope GenerateCreateSqlCommand( ITypeScope tB, string fullName, string name, T sqlObject )
+    {
+        IFunctionScope mB = tB.CreateFunction( t => t.Append( "public static SqlCommand " ).Append( name ).Append( "()" ) );
+        mB.Append( $"var cmd = new SqlCommand(" ).Append( sqlObject.SchemaName.ToSourceString() ).Append( ");" ).NewLine()
+          .Append( "cmd.CommandType = CommandType.StoredProcedure;" ).NewLine();
+        ISqlServerFunctionScalar func = sqlObject as ISqlServerFunctionScalar;
+        if( func != null )
         {
-            int size = p.SqlType.SyntaxSize;
-            if( size == 0 ) size = 1;
-            b.Append( "var " )
-             .Append( name )
-             .Append( " = new SqlParameter( " )
-             .AppendSourceString( p.Name )
-             .Append( ", SqlDbType." )
-             .Append( p.SqlType.DbType.ToString() );
-            if( size != 0 && size != -2 )
-            {
-                b.Append( ", " ).Append( size );
-            }
-            b.Append( ");" ).NewLine();
-            var precision = p.SqlType.SyntaxPrecision;
-            if( precision != 0 )
-            {
-                b.Append( name ).Append( ".Precision = " ).Append( precision ).Append( ";" ).NewLine();
-                var scale = p.SqlType.SyntaxScale;
-                if( scale != 0 )
-                {
-                    b.Append( name ).Append( ".Scale = " ).Append( scale ).Append( ";" ).NewLine();
-                }
-            }
-            return name;
+            GenerateCreateSqlParameter( mB, "pR", new SqlParameterReturnedValue( func.ReturnType ) );
+            mB.Append( "cmd.Parameters.Add( pR ).Direction = ParameterDirection.ReturnValue;" ).NewLine();
         }
+        int idxP = 0;
+        foreach( ISqlServerParameter p in sqlObject.Parameters )
+        {
+            var pName = GenerateCreateSqlParameter( mB, $"p{++idxP}", p );
+            if( p.IsOutput )
+            {
+                mB.Append( pName )
+                   .Append( ".Direction = ParameterDirection." )
+                   .Append( p.IsInputOutput ? "InputOutput" : "Output" )
+                   .Append( ";" )
+                   .NewLine();
+            }
+            mB.Append( "cmd.Parameters.Add(" ).Append( pName ).Append( ");" ).NewLine();
+        }
+        mB.Append( "return cmd;" ).NewLine();
+        return mB;
+    }
+
+    static string GenerateCreateSqlParameter( IFunctionScope b, string name, ISqlServerParameter p )
+    {
+        int size = p.SqlType.SyntaxSize;
+        if( size == 0 ) size = 1;
+        b.Append( "var " )
+         .Append( name )
+         .Append( " = new SqlParameter( " )
+         .AppendSourceString( p.Name )
+         .Append( ", SqlDbType." )
+         .Append( p.SqlType.DbType.ToString() );
+        if( size != 0 && size != -2 )
+        {
+            b.Append( ", " ).Append( size );
+        }
+        b.Append( ");" ).NewLine();
+        var precision = p.SqlType.SyntaxPrecision;
+        if( precision != 0 )
+        {
+            b.Append( name ).Append( ".Precision = " ).Append( precision ).Append( ";" ).NewLine();
+            var scale = p.SqlType.SyntaxScale;
+            if( scale != 0 )
+            {
+                b.Append( name ).Append( ".Scale = " ).Append( scale ).Append( ";" ).NewLine();
+            }
+        }
+        return name;
     }
 }

@@ -2,54 +2,54 @@ using System;
 using System.Linq;
 using CK.Core;
 
-namespace CK.SqlServer.Setup
+namespace CK.SqlServer.Setup;
+
+sealed class SqlCKCoreInstaller
 {
-    sealed class SqlCKCoreInstaller
+    public readonly static short CurrentVersion = 17;
+
+    /// <summary>
+    /// Installs the kernel.
+    /// </summary>
+    /// <param name="manager">The manager that will be used.</param>
+    /// <param name="monitor">The monitor to use.</param>
+    /// <param name="forceInstall">True to force the installation even if Ver column of CKCore.tSystem where Id = 1 is the same as <see cref="CurrentVersion"/>.</param>
+    /// <returns>True on success.</returns>
+    public static bool Install( SqlManager manager, IActivityMonitor monitor, bool forceInstall = false )
     {
-        public readonly static short CurrentVersion = 17;
+        Throw.CheckNotNullArgument( monitor );
 
-        /// <summary>
-        /// Installs the kernel.
-        /// </summary>
-        /// <param name="manager">The manager that will be used.</param>
-        /// <param name="monitor">The monitor to use.</param>
-        /// <param name="forceInstall">True to force the installation even if Ver column of CKCore.tSystem where Id = 1 is the same as <see cref="CurrentVersion"/>.</param>
-        /// <returns>True on success.</returns>
-        public static bool Install( SqlManager manager, IActivityMonitor monitor, bool forceInstall = false )
+        using( monitor.OpenTrace( $"Installing CKCore kernel (v{CurrentVersion})." ) )
         {
-            Throw.CheckNotNullArgument( monitor );
-
-            using( monitor.OpenTrace( $"Installing CKCore kernel (v{CurrentVersion})." ) )
+            short ver = 0;
+            if( !forceInstall && (ver = (short)manager.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
             {
-                short ver = 0;
-                if( !forceInstall && (ver = (short)manager.ExecuteScalar( "if object_id('CKCore.tSystem') is not null select Ver from CKCore.tSystem where Id=1 else select cast(0 as smallint);" )) == CurrentVersion )
-                {
-                    monitor.CloseGroup( "Already installed." );
-                }
-                else
-                {
-                    monitor.MinimalFilter = LogFilter.Terse;
-                    SimpleScriptTagHandler s = new SimpleScriptTagHandler( _script.Replace( "$Ver$", CurrentVersion.ToString() ) );
-                    if( !s.Expand( monitor, false ) ) return false;
-                    if( !manager.ExecuteScripts( s.SplitScript().Select( one => one.Body ), monitor ) ) return false;
-                    if( ver == 0 ) monitor.CloseGroup( String.Format( "Installed in version {0}.", CurrentVersion ) );
-                    else monitor.CloseGroup( String.Format( "Installed in version {0} (was {1}).", CurrentVersion, ver ) );
-                }
+                monitor.CloseGroup( "Already installed." );
             }
-            return true;
+            else
+            {
+                monitor.MinimalFilter = LogFilter.Terse;
+                SimpleScriptTagHandler s = new SimpleScriptTagHandler( _script.Replace( "$Ver$", CurrentVersion.ToString() ) );
+                if( !s.Expand( monitor, false ) ) return false;
+                if( !manager.ExecuteScripts( s.SplitScript().Select( one => one.Body ), monitor ) ) return false;
+                if( ver == 0 ) monitor.CloseGroup( String.Format( "Installed in version {0}.", CurrentVersion ) );
+                else monitor.CloseGroup( String.Format( "Installed in version {0} (was {1}).", CurrentVersion, ver ) );
+            }
         }
+        return true;
+    }
 
-        /// <summary>
-        /// Exposes the script fragment that tests for CKCore schema and creates it if needed.
-        /// </summary>
-        public static readonly string EnsureCKCoreSchemaScript = @"
+    /// <summary>
+    /// Exposes the script fragment that tests for CKCore schema and creates it if needed.
+    /// </summary>
+    public static readonly string EnsureCKCoreSchemaScript = @"
 if not exists(select 1 from sys.schemas where name = 'CKCore')
 begin
     exec( 'create schema CKCore' );
 end
 ";
 
-        static readonly string _script = EnsureCKCoreSchemaScript + @"
+    static readonly string _script = EnsureCKCoreSchemaScript + @"
 else
 begin
     if object_id('CKCore.sErrorRethrow') is not null drop procedure CKCore.sErrorRethrow;
@@ -746,5 +746,4 @@ begin
     update CKCore.tSystem set Ver = $Ver$ where Id=1;
 end
 ";
-    }
 }

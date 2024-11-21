@@ -8,82 +8,81 @@
 using System;
 using System.Collections.Generic;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Factory for <see cref="IDependentItemList"/> and <see cref="IDependentItemGroupList"/>.
+/// </summary>
+public static class DependentItemListFactory
 {
-    /// <summary>
-    /// Factory for <see cref="IDependentItemList"/> and <see cref="IDependentItemGroupList"/>.
-    /// </summary>
-    public static class DependentItemListFactory
+    abstract class L<T> : List<T> where T : IDependentItemRef
     {
-        abstract class L<T> : List<T> where T : IDependentItemRef
+        public void Add( string fullName )
         {
-            public void Add( string fullName )
+            if( !String.IsNullOrWhiteSpace( fullName ) )
             {
-                if( !String.IsNullOrWhiteSpace( fullName ) )
-                {
-                    Add( CreateNamed( fullName ) );
-                }
+                Add( CreateNamed( fullName ) );
             }
-
-            protected abstract T CreateNamed( string fullName );
-
-            public void Remove( string fullName )
-            {
-                if( !String.IsNullOrWhiteSpace( fullName ) )
-                {
-                    bool opt = fullName[0] == '?';
-                    if( opt ) fullName = fullName.Substring( 1 );
-
-                    int i = 0;
-                    while( (i = FindIndex( i, d => d.Optional == opt && d.FullName == fullName )) >= 0 )
-                    {
-                        RemoveAt( i );
-                    }
-                }
-            }
-
-            public void Add( IEnumerable<string> fullNames )
-            {
-                if( fullNames != null )
-                {
-                    foreach( var s in fullNames )
-                    {
-                        if( !String.IsNullOrWhiteSpace( s ) ) Add( CreateNamed( s ) );
-                    }
-                }
-            }
-
-            public void AddCommaSeparatedString( string commaSeparatedRequires )
-            {
-                if( !String.IsNullOrWhiteSpace( commaSeparatedRequires ) )
-                {
-                    Add( commaSeparatedRequires.Split( new[] { ',', ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries ) );
-                }
-            }
-
         }
 
-        class ItemList : L<IDependentItemRef>, IDependentItemList
+        protected abstract T CreateNamed( string fullName );
+
+        public void Remove( string fullName )
         {
-            protected override IDependentItemRef CreateNamed( string fullName ) => new NamedDependentItemRef( fullName );
+            if( !String.IsNullOrWhiteSpace( fullName ) )
+            {
+                bool opt = fullName[0] == '?';
+                if( opt ) fullName = fullName.Substring( 1 );
+
+                int i = 0;
+                while( (i = FindIndex( i, d => d.Optional == opt && d.FullName == fullName )) >= 0 )
+                {
+                    RemoveAt( i );
+                }
+            }
         }
 
-        class GroupList : L<IDependentItemGroupRef>, IDependentItemGroupList
+        public void Add( IEnumerable<string> fullNames )
         {
-            protected override IDependentItemGroupRef CreateNamed( string fullName ) => new NamedDependentItemGroupRef( fullName );
+            if( fullNames != null )
+            {
+                foreach( var s in fullNames )
+                {
+                    if( !String.IsNullOrWhiteSpace( s ) ) Add( CreateNamed( s ) );
+                }
+            }
         }
 
-        /// <summary>
-        /// Creates a new, empty, instance of the mutable <see cref="IDependentItemList"/>.
-        /// </summary>
-        /// <returns>A new depdendent item list.</returns>
-        public static IDependentItemList CreateItemList() => new ItemList();
-
-        /// <summary>
-        /// Creates a new, empty, instance of the mutable <see cref="IDependentItemGroupList"/>.
-        /// </summary>
-        /// <returns>A new depdendent item group list.</returns>
-        public static IDependentItemGroupList CreateItemGroupList() => new GroupList();
+        public void AddCommaSeparatedString( string commaSeparatedRequires )
+        {
+            if( !String.IsNullOrWhiteSpace( commaSeparatedRequires ) )
+            {
+                Add( commaSeparatedRequires.Split( new[] { ',', ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries ) );
+            }
+        }
 
     }
+
+    class ItemList : L<IDependentItemRef>, IDependentItemList
+    {
+        protected override IDependentItemRef CreateNamed( string fullName ) => new NamedDependentItemRef( fullName );
+    }
+
+    class GroupList : L<IDependentItemGroupRef>, IDependentItemGroupList
+    {
+        protected override IDependentItemGroupRef CreateNamed( string fullName ) => new NamedDependentItemGroupRef( fullName );
+    }
+
+    /// <summary>
+    /// Creates a new, empty, instance of the mutable <see cref="IDependentItemList"/>.
+    /// </summary>
+    /// <returns>A new depdendent item list.</returns>
+    public static IDependentItemList CreateItemList() => new ItemList();
+
+    /// <summary>
+    /// Creates a new, empty, instance of the mutable <see cref="IDependentItemGroupList"/>.
+    /// </summary>
+    /// <returns>A new depdendent item group list.</returns>
+    public static IDependentItemGroupList CreateItemGroupList() => new GroupList();
+
 }

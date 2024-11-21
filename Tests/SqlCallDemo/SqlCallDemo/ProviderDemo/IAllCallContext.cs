@@ -1,10 +1,9 @@
-﻿namespace SqlCallDemo
-{
-    public interface IAllCallContext : IActorCallContext, ICultureCallContext, ITenantCallContext, IActorCultureCallContext
-    {
-    }
+namespace SqlCallDemo;
 
-    public interface IDisposableAllCallContext : IAllCallContext, IDisposableActorCallContext, IDisposableCultureCallContext, IDisposableTenantCallContext, IDisposableActorCultureCallContext
-    {
-    }
+public interface IAllCallContext : IActorCallContext, ICultureCallContext, ITenantCallContext, IActorCultureCallContext
+{
+}
+
+public interface IDisposableAllCallContext : IAllCallContext, IDisposableActorCallContext, IDisposableCultureCallContext, IDisposableTenantCallContext, IDisposableActorCultureCallContext
+{
 }

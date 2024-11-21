@@ -5,102 +5,102 @@ using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using FluentAssertions;
-using static CK.Testing.DBSetupTestHelper;
+using static CK.Testing.SqlServerTestHelper;
+using CK.Testing;
 
-namespace SqlCallDemo.Tests
+namespace SqlCallDemo.Tests;
+
+[TestFixture]
+public class PurelyInputLogTest
 {
-    [TestFixture]
-    public class PurelyInputLogTest
+    [Test]
+    public async Task async_call_simple_log_Async()
     {
-        [Test]
-        public async Task async_call_simple_log_Async()
+        var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
-            {
-                await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
-                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "First async test call ever. - SimpleLog" );
-            }
+            await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
+            p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                        .Should().Be( "First async test call ever. - SimpleLog" );
         }
+    }
 
-        [Test]
-        public async Task async_call_with_bit_parameter_Async()
+    [Test]
+    public async Task async_call_with_bit_parameter_Async()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
-            {
-                await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
-                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "Second async test call ever. - @OneMore = 0" );
+            await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
+            p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                        .Should().Be( "Second async test call ever. - @OneMore = 0" );
 
-                await p.LogAsync( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
-                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "Second n°2 async test call ever. - @OneMore = 1" );
+            await p.LogAsync( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
+            p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                        .Should().Be( "Second n°2 async test call ever. - @OneMore = 1" );
 
-                await p.LogAsync( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
-                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "Second n°3 async test call ever. - @OneMore is null" );
-            }
+            await p.LogAsync( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
+            p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                        .Should().Be( "Second n°3 async test call ever. - @OneMore is null" );
         }
+    }
 
-        [Test]
-        public async Task async_call_with_the_default_value_for_bit_parameter_Async()
+    [Test]
+    public async Task async_call_with_the_default_value_for_bit_parameter_Async()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
-            {
-                await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
-                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "Third async test call ever. - @OneMore = 1" );
-            }
+            await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
+            p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                        .Should().Be( "Third async test call ever. - @OneMore = 1" );
         }
+    }
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        [Test]
-        public void async_call_with_cancellation_token_works()
+    [Test]
+    public void async_call_with_cancellation_token_works()
+    {
+        var p = SharedEngine.Map.StObjs.Obtain<PurelyInputLogPackage>();
+        using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            var p = TestHelper.StObjMap.StObjs.Obtain<PurelyInputLogPackage>();
-            using( var ctx = new SqlStandardCallContext() )
             {
+                Task t = p.LogAsync( ctx, false, "Testing Cancellation." );
+                t.Wait();
+                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                            .Should().Be( "Testing Cancellation. - @OneMore = 0" );
+            }
+            {
+                CancellationTokenSource source = new CancellationTokenSource();
+                source.CancelAfter( 1500 );
+                Task t = p.LogWaitAsync( ctx, "This one must pass.", 10, source.Token );
+                t.Wait();
+                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                            .Should().Be( "This one must pass. - @OneMore = 1" );
+            }
+            {
+                CancellationTokenSource source = new CancellationTokenSource();
+                source.CancelAfter( 100 );
+                Task t = null;
+                try
                 {
-                    Task t = p.LogAsync( ctx, false, "Testing Cancellation." );
+                    t = p.LogWaitAsync( ctx, "This will never be logged...", 1000, source.Token );
                     t.Wait();
-                    p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                                .Should().Be( "Testing Cancellation. - @OneMore = 0" );
                 }
+                catch( AggregateException ex )
                 {
-                    CancellationTokenSource source = new CancellationTokenSource();
-                    source.CancelAfter( 1500 );
-                    Task t = p.LogWaitAsync( ctx, "This one must pass.", 10, source.Token );
-                    t.Wait();
-                    p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                                .Should().Be( "This one must pass. - @OneMore = 1" );
+                    ex.InnerException.Should().BeOfType<SqlDetailedException>();
+                    // Does someone has a better (yet simple) solution?
+                    ex.InnerException.InnerException.Message
+                           .Should().Match( m => m.EndsWith( "Operation cancelled by user." )
+                                                 || m.EndsWith( "Opération annulée par l'utilisateur." ) );
+                    TestHelper.Monitor.Info( "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix.", ex );
                 }
-                {
-                    CancellationTokenSource source = new CancellationTokenSource();
-                    source.CancelAfter( 100 );
-                    Task t = null;
-                    try
-                    {
-                        t = p.LogWaitAsync( ctx, "This will never be logged...", 1000, source.Token );
-                        t.Wait();
-                    }
-                    catch( AggregateException ex )
-                    {
-                        ex.InnerException.Should().BeOfType<SqlDetailedException>();
-                        // Does someone has a better (yet simple) solution?
-                        ex.InnerException.InnerException.Message
-                               .Should().Match( m => m.EndsWith( "Operation cancelled by user." )
-                                                     || m.EndsWith( "Opération annulée par l'utilisateur." ) );
-                        TestHelper.Monitor.Info( "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix.", ex );
-                    }
-                    p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                                .Should().Be( "This one must pass. - @OneMore = 1" );
-                }
+                p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
+                            .Should().Be( "This one must pass. - @OneMore = 1" );
             }
         }
+    }
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
-    }
 }

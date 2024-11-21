@@ -1,17 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>False</IsPackable>
+    <!-- This test doesn't follow the pattern with the SUT project: no "SqlTransform" project exists,
+         the "Model/CKLevel0" and "Model/CKLevel2" are the projects to analyze (kind of SUT). 
+         This SqlTransform.Tests is is its own SUT: to be able to discover the PFeatures in
+         its AppContext, CopyLocalLockFileAssemblies must be set to true.
+    -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\LocalTestHelper\LocalTestHelper.csproj" />
     <ProjectReference Include="..\..\SqlTransformer\Model\CKLevel0\CKLevel0.csproj" />
     <ProjectReference Include="..\..\SqlTransformer\Model\CKLevel2\CKLevel2.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-    <PackageReference Include="NUnit" Version="4.1.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <ProjectReference Include="..\..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
 </Project>

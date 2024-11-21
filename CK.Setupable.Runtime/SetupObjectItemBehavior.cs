@@ -1,25 +1,24 @@
-﻿namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Qualifies the reference to a dynamic item.
+/// </summary>
+public enum SetupObjectItemBehavior
 {
     /// <summary>
-    /// Qualifies the reference to a dynamic item.
+    /// Defaults when nothing is specified.
+    /// The item is defined: it must not be already defined.
     /// </summary>
-    public enum SetupObjectItemBehavior
-    {
-        /// <summary>
-        /// Defaults when nothing is specified.
-        /// The item is defined: it must not be already defined.
-        /// </summary>
-        Define,
+    Define,
 
-        /// <summary>
-        /// Replaces the item.
-        /// The item must be already defined.
-        /// </summary>
-        Replace,
+    /// <summary>
+    /// Replaces the item.
+    /// The item must be already defined.
+    /// </summary>
+    Replace,
 
-        /// <summary>
-        /// Transforms an already existing item.
-        /// </summary>
-        Transform
-    }
+    /// <summary>
+    /// Transforms an already existing item.
+    /// </summary>
+    Transform
 }

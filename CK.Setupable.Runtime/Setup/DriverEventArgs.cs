@@ -8,45 +8,44 @@
 using CK.Core;
 using System;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Event argument for the <see cref="ISetupableAspect.DriverEvent"/>.
+/// </summary>
+public class DriverEventArgs : EventArgs
 {
     /// <summary>
-    /// Event argument for the <see cref="ISetupableAspect.DriverEvent"/>.
+    /// Gets the current step. See remarks.
     /// </summary>
-    public class DriverEventArgs : EventArgs
+    /// <remarks>
+    /// the step <see cref="SetupStep.PreInit"/> is used during registration (right after <see cref="DriverBase"/> object 
+    /// instanciation: its dependencies' drivers are available but not the whole set of drivers).
+    /// </remarks>
+    public SetupStep Step { get; private set; }
+
+    /// <summary>
+    /// The <see cref="DriverBase"/> that has been registered, initialized,
+    /// installed or settled.
+    /// </summary>
+    public DriverBase Driver { get; internal set; }
+
+    /// <summary>
+    /// Gets the current monitor to use.
+    /// </summary>
+    public IActivityMonitor Monitor { get; private set; }
+
+    /// <summary>
+    /// Gets or sets a flag to stop the setup process. 
+    /// This should be set to true after at least one fatal error has been 
+    /// logged with a detailed explanation. 
+    /// </summary>
+    public bool CancelSetup { get; set; }
+
+    internal DriverEventArgs( IActivityMonitor m, SetupStep step )
     {
-        /// <summary>
-        /// Gets the current step. See remarks.
-        /// </summary>
-        /// <remarks>
-        /// the step <see cref="SetupStep.PreInit"/> is used during registration (right after <see cref="DriverBase"/> object 
-        /// instanciation: its dependencies' drivers are available but not the whole set of drivers).
-        /// </remarks>
-        public SetupStep Step { get; private set; }
-        
-        /// <summary>
-        /// The <see cref="DriverBase"/> that has been registered, initialized,
-        /// installed or settled.
-        /// </summary>
-        public DriverBase Driver { get; internal set; }
-
-        /// <summary>
-        /// Gets the current monitor to use.
-        /// </summary>
-        public IActivityMonitor Monitor { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a flag to stop the setup process. 
-        /// This should be set to true after at least one fatal error has been 
-        /// logged with a detailed explanation. 
-        /// </summary>
-        public bool CancelSetup { get; set; }
-
-        internal DriverEventArgs( IActivityMonitor m, SetupStep step )
-        {
-            Monitor = m;
-            Step = step;
-        }
-
+        Monitor = m;
+        Step = step;
     }
+
 }

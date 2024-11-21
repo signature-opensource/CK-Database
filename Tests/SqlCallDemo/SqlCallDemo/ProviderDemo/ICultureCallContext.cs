@@ -1,13 +1,12 @@
-﻿using CK.SqlServer;
+using CK.SqlServer;
 
-namespace SqlCallDemo
+namespace SqlCallDemo;
+
+public interface ICultureCallContext : ISqlCallContext
 {
-    public interface ICultureCallContext : ISqlCallContext
-    {
-        int CultureId { get; }
-    }
+    int CultureId { get; }
+}
 
-    public interface IDisposableCultureCallContext : ICultureCallContext, IDisposableSqlCallContext 
-    {
-    }
+public interface IDisposableCultureCallContext : ICultureCallContext, IDisposableSqlCallContext
+{
 }

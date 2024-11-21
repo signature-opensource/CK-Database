@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -13,9 +12,6 @@
     <EmbeddedResource Include="Res\sSimpleTransformTest.tql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <ProjectReference Include="..\CKLevel0\CKLevel0.csproj" />
   </ItemGroup>
 </Project>

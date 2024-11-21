@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Description>
       CK-Database helps to setup, construct, manages and build modular relational databases upon SqlServer.
       CK.SqlServer.Setup.Runtime contains objects that generate StObj (like SqlTable or SqlPackage) implementations.
@@ -11,9 +11,8 @@
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="18.0.0" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="19.0.0" />
     <PackageReference Include="Yodii.Script" Version="0.8.1" />
-    <PackageReference Include="CK.Reflection" Version="9.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
