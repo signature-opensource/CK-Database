@@ -8,6 +8,6 @@
     <ProjectReference Include="..\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser" Version="25.0.0" />
+    <PackageReference Include="CK.SqlServer.Parser" Version="25.0.1--0001-develop" />
   </ItemGroup>
 </Project>
