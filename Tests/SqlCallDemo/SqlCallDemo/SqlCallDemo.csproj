@@ -12,6 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CK.SqlServer.Setup.Model\CK.SqlServer.Setup.Model.csproj" />
-    <PackageReference Include="CK.SqlServer.Transaction" Version="8.0.1--0005-develop" />
+    <PackageReference Include="CK.SqlServer.Transaction" Version="8.0.0" />
   </ItemGroup>
 </Project>

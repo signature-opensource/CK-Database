@@ -10,7 +10,7 @@
     <ProjectReference Include="..\SqlActorZoneLike\SqlZonePackage.Engine\SqlZonePackage.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Engine" Version="27.0.1--0012-develop" />
+    <PackageReference Include="CK.StObj.Engine" Version="28.0.0" />
     <ProjectReference Include="..\..\CK.DB.Tests.NUnit\CK.DB.Tests.NUnit.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
