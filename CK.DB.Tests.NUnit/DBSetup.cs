@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Threading.Tasks;
 using static CK.Testing.SqlServerTestHelper;
 
 namespace CK.DB.Tests;
@@ -148,13 +148,14 @@ public abstract class DBSetup
     [TestCase( "Random" )]
     [TestCase( "OrderedNames" )]
     [TestCase( "RevertOrderedNames" )]
-    public void db_setup( string mode )
+    public async Task db_setup_Async( string mode )
     {
         TestHelper.LogToConsole = true;
 
         bool revertOrderingName = mode switch { "RevertOrderedNames" => true, "OrderedNames" => false, _ => (Environment.TickCount % 2) == 0 };
 
-        var config = SharedEngine.GetEngineConfiguration( reset: true );
+        await SharedEngine.ResetAsync();
+        var config = SharedEngine.GetEngineConfiguration();
         config.RevertOrderingNames = revertOrderingName;
         config.EnsureAspect<SetupableAspectConfiguration>().RevertOrderingNames = revertOrderingName;
         SharedEngine.EngineResult.Status.Should().NotBe( RunStatus.Failed );
