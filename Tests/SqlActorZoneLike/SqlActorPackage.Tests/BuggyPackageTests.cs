@@ -9,6 +9,7 @@ using System.IO;
 using CK.Testing;
 using CK.Setup;
 using static CK.Testing.SqlServerTestHelper;
+using System.Threading.Tasks;
 
 namespace SqlActorPackage.Tests;
 
@@ -43,14 +44,14 @@ public class BuggyPackageTests
 
 
     [Test]
-    public void failing_db_setup_does_not_execute_SettleContent()
+    public async Task failing_db_setup_does_not_execute_SettleContent_Async()
     {
         try
         {
             using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (1/2)" ) )
             {
                 File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
-                SharedEngine.Reset();
+                await SharedEngine.ResetAsync();
                 SharedEngine.EngineResult.Status.Should().Be( RunStatus.Failed );
                 using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
                 {
@@ -65,7 +66,7 @@ public class BuggyPackageTests
 
             using( TestHelper.Monitor.OpenInfo( "failing_db_setup_does_not_execute_SettleContent (2/2)" ) )
             {
-                SharedEngine.Reset();
+                await SharedEngine.ResetAsync();
                 var p = SharedEngine.Map.StObjs.Obtain<BuggyPackage>();
                 using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
                 {
