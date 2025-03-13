@@ -2,7 +2,7 @@ using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
 using Dapper;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Linq;
@@ -48,22 +48,22 @@ public class DapperAndIPocoTests
         {
             var controller = ctx.GetConnectionController( db );
             var list = controller.Query<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" ).ToList();
-            list.Should().HaveCount( 2 );
-            list[0].Name.Should().Be( "Albert" );
-            list[0].Power.Should().Be( 42 );
-            list[1].Name.Should().Be( "Einstein" );
-            list[1].Power.Should().Be( 3712 );
+            list.Count.ShouldBe( 2 );
+            list[0].Name.ShouldBe( "Albert" );
+            list[0].Power.ShouldBe( 42 );
+            list[1].Name.ShouldBe( "Einstein" );
+            list[1].Power.ShouldBe( 3712 );
 
             var listFromC = controller.Connection.Query<ISimpleInfo>( "select Name = 'Hip', Power = 42 union select Name = 'Hop', Power = 3712;" ).ToList();
-            listFromC.Should().HaveCount( 2 );
-            listFromC[0].Name.Should().Be( "Hip" );
-            listFromC[0].Power.Should().Be( 42 );
-            listFromC[1].Name.Should().Be( "Hop" );
-            listFromC[1].Power.Should().Be( 3712 );
+            listFromC.Count.ShouldBe( 2 );
+            listFromC[0].Name.ShouldBe( "Hip" );
+            listFromC[0].Power.ShouldBe( 42 );
+            listFromC[1].Name.ShouldBe( "Hop" );
+            listFromC[1].Power.ShouldBe( 3712 );
 
             var first = controller.QueryFirstOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );
-            first.Name.Should().Be( "Albert" );
-            first.Power.Should().Be( 42 );
+            first.Name.ShouldBe( "Albert" );
+            first.Power.ShouldBe( 42 );
         }
     }
 
@@ -75,8 +75,8 @@ public class DapperAndIPocoTests
         {
             var controller = ctx.GetConnectionController( db );
             var first = controller.QueryFirstOrDefault<ISimpleInfo>( "select Name = 'Albert', Power = 42 union select Name = 'Einstein', Power = 3712;" );
-            first.Name.Should().Be( "Albert" );
-            first.Power.Should().Be( 42 );
+            first.Name.ShouldBe( "Albert" );
+            first.Power.ShouldBe( 42 );
         }
     }
 

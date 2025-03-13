@@ -1,6 +1,6 @@
 using System.Linq;
 using CK.Setup;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 
 using static CK.Testing.MonitorTestHelper;
@@ -21,10 +21,10 @@ public class DynamicPackageItemTests
         var pBModel = pB.EnsureModelPackage();
         pB.Requires.Add( pA );
         var sortResult = DependencySorter.OrderItems( TestHelper.Monitor, pB );
-        Assert.That( sortResult.IsComplete );
+        sortResult.IsComplete.ShouldBeTrue();
         var sortedNames = sortResult.SortedItems.Select( i => i.FullName ).ToArray();
-        sortedNames.Should().BeEquivalentTo( new[]
-        {
+        sortedNames.ShouldBe(
+        [
             "Model.A.Head",
             "Model.A",
             "A.Head",
@@ -37,6 +37,6 @@ public class DynamicPackageItemTests
             "Objects.A",
             "Objects.B.Head",
             "Objects.B"
-        }, o => o.WithStrictOrdering() );
+        ] );
     }
 }

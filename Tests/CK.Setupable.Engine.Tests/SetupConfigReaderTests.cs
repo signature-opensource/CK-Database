@@ -1,5 +1,5 @@
 using CK.Setup;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using static CK.Testing.MonitorTestHelper;
 
@@ -19,11 +19,11 @@ public class SetupConfigReaderTests
     {
         var o = new DynamicContainerItem();
         var reader = new SetupConfigReader( o );
-        reader.Apply( TestHelper.Monitor, text, out bool isHere ).Should().Be( success );
-        isHere.Should().Be( found );
+        reader.Apply( TestHelper.Monitor, text, out bool isHere ).ShouldBe( success );
+        isHere.ShouldBe( found );
         if( success && o.Generalization != null )
         {
-            o.Generalization.FullName.Should().Be( "A full name" );
+            o.Generalization.FullName.ShouldBe( "A full name" );
         }
     }
 }

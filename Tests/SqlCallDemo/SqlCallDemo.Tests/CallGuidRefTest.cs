@@ -1,5 +1,5 @@
 using CK.Core;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Data;
@@ -22,27 +22,27 @@ public partial class CallGuidRefTest
         Guid inOut = Guid2;
         string result;
         SqlCommand cmd = p.CmdGuidRefTest( true, Guid1, ref inOut, out result );
-        cmd.Parameters.Count.Should().Be( 4 );
+        cmd.Parameters.Count.ShouldBe( 4 );
 
-        cmd.Parameters[0].ParameterName.Should().Be( "@ReplaceInAndOut" );
-        cmd.Parameters[0].Direction.Should().Be( ParameterDirection.Input );
-        cmd.Parameters[0].Value.Should().Be( true );
+        cmd.Parameters[0].ParameterName.ShouldBe( "@ReplaceInAndOut" );
+        cmd.Parameters[0].Direction.ShouldBe( ParameterDirection.Input );
+        cmd.Parameters[0].Value.ShouldBe( true );
 
-        cmd.Parameters[1].ParameterName.Should().Be( "@InOnly" );
-        cmd.Parameters[1].Direction.Should().Be( ParameterDirection.Input );
-        cmd.Parameters[1].Value.Should().Be( Guid1 );
+        cmd.Parameters[1].ParameterName.ShouldBe( "@InOnly" );
+        cmd.Parameters[1].Direction.ShouldBe( ParameterDirection.Input );
+        cmd.Parameters[1].Value.ShouldBe( Guid1 );
 
-        cmd.Parameters[2].ParameterName.Should().Be( "@InAndOut" );
-        cmd.Parameters[2].Direction.Should().Be( ParameterDirection.InputOutput );
-        cmd.Parameters[2].Value.Should().Be( Guid2 );
+        cmd.Parameters[2].ParameterName.ShouldBe( "@InAndOut" );
+        cmd.Parameters[2].Direction.ShouldBe( ParameterDirection.InputOutput );
+        cmd.Parameters[2].Value.ShouldBe( Guid2 );
 
-        cmd.Parameters[3].ParameterName.Should().Be( "@TextResult" );
-        cmd.Parameters[3].Direction.Should().Be( ParameterDirection.Output );
-        cmd.Parameters[3].Value.Should().BeNull();
+        cmd.Parameters[3].ParameterName.ShouldBe( "@TextResult" );
+        cmd.Parameters[3].Direction.ShouldBe( ParameterDirection.Output );
+        cmd.Parameters[3].Value.ShouldBeNull();
 
         p.Database.ExecuteNonQuery( cmd );
-        cmd.Parameters[2].Value.Should().NotBe( Guid2, "Since ReplaceInAndOut was true." );
-        cmd.Parameters[3].Value.Should().Be( "@InOnly is not null, @InAndOut is not null." );
+        cmd.Parameters[2].Value.ShouldNotBe( Guid2, "Since ReplaceInAndOut was true." );
+        cmd.Parameters[3].Value.ShouldBe( "@InOnly is not null, @InAndOut is not null." );
     }
 
     [Test]

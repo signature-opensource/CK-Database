@@ -1,6 +1,6 @@
 using CK.Core;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
@@ -15,7 +15,8 @@ public class SpecialTableTests
     {
         var a = SharedEngine.AutomaticServices.GetRequiredService<ActorHome>();
         var text = a.Database.GetObjectDefinition( "CK.sActorCreate" );
-        text.Should().Contain( "--FirstSpecialTable" ).And.Contain( "--SecondSpecialTable" );
+        text.ShouldContain( "--FirstSpecialTable" );
+        text.ShouldContain( "--SecondSpecialTable" );
     }
 
     [Test]
@@ -23,7 +24,7 @@ public class SpecialTableTests
     {
         var t1 = SharedEngine.AutomaticServices.GetRequiredService<SpecialItemType.FirstSpecialTable>();
         var t2 = SharedEngine.AutomaticServices.GetRequiredService<SpecialItemType.SecondSpecialTable>();
-        t1.SpecialName.Should().Be( "First" );
-        t2.SpecialName.Should().Be( "Second" );
+        t1.SpecialName.ShouldBe( "First" );
+        t2.SpecialName.ShouldBe( "Second" );
     }
 }

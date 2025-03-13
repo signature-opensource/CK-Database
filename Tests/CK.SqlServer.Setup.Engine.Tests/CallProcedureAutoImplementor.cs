@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
 using static CK.Testing.SqlServerTestHelper;
-using FluentAssertions;
+using Shouldly;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
 
@@ -121,11 +121,11 @@ public class CallProcedureAutoImplementor
     {
         using( SqlManager m = new SqlManager( TestHelper.Monitor ) )
         {
-            m.OpenFromConnectionString( ConnectionString, true ).Should().BeTrue( $"Unable to open or create test database on local server: {ConnectionString}." );
+            m.OpenFromConnectionString( ConnectionString, true ).ShouldBeTrue( $"Unable to open or create test database on local server: {ConnectionString}." );
             var install = SqlHelper.SplitGoSeparator( File.ReadAllText( Path.Combine( TestHelper.TestProjectFolder, "Scripts/CallProcedureAutoImplementor.sql" ) ) );
 
             m.ExecuteScripts( install, TestHelper.Monitor )
-                .Should().BeTrue();
+                .ShouldBeTrue();
 
             SqlCallContext c = new SqlCallContext( m );
             ManualCall manual = new ManualCall();

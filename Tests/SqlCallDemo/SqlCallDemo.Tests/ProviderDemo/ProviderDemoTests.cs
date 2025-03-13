@@ -1,6 +1,6 @@
 using CK.Core;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using SqlCallDemo.ProviderDemo;
 using System;
@@ -45,7 +45,7 @@ public class ProviderDemoTests
 
     static bool CallActorOnly( string s )
     {
-        s.Should().MatchRegex( "@ActorId = (1|2)" );
+        s.ShouldMatch( "@ActorId = (1|2)" );
         return s == "@ActorId = 1";
     }
 
@@ -79,7 +79,7 @@ public class ProviderDemoTests
 
     static bool CallCultureOnly( string s )
     {
-        s.Should().MatchRegex( "@CultureId = (3|4)" );
+        s.ShouldMatch( "@CultureId = (3|4)" );
         return s == "@CultureId = 3";
     }
 

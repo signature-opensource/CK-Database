@@ -1,6 +1,6 @@
 using CK.Core;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System;
@@ -18,13 +18,13 @@ public class ZoneTests
         var a = SharedEngine.Map.StObjs.Obtain<ActorHome>();
 
         var textA = a.Database.GetObjectDefinition( "CK.sUserToBeOverriden" );
-        textA.Should().StartWith(
+        textA.ShouldStartWith(
             "--Injected from SqlZonePackage.Zone.UserHome.CmdUserToBeOverriden (n°2/2)."
             + Environment.NewLine
             + "--Injected from UserHome.CmdUserToBeOverriden (n°1/2)." );
 
         var textB = a.Database.GetObjectDefinition( "CK.sUserToBeOverridenIndirect" );
-        textB.Should().StartWith(
+        textB.ShouldStartWith(
             "--Injected from SqlZonePackage.Zone.Package.TestAutoHeaderSP attribute (n°2/2)."
             + Environment.NewLine
             + "--Injected from UserHome.CmdUserToBeOverridenIndirect (n°1/2)." );
@@ -51,11 +51,11 @@ public class ZoneTests
     {
         var a = SharedEngine.Map.StObjs.Obtain<Package>();
         Assert.That( a.AllServices.Count, Is.EqualTo( 2 ) );
-        a.AllServices.Should().BeEquivalentTo( new object[]
+        a.AllServices.ShouldBe( new object[]
         {
             SharedEngine.Map.StObjs.Obtain<Zone.GroupHome>(),
             SharedEngine.Map.StObjs.Obtain<Zone.Package>()
-        } );
+        }, ignoreOrder: true );
     }
 
 }

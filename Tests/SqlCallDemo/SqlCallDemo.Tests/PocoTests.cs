@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
@@ -41,19 +41,19 @@ public class PocoTests
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             var thing = p.ReadFromDatabase( ctx );
-            thing.Should().NotBeNull()
-                    .And.BeAssignableTo<PocoSupport.IThingWithAgeAndHeight>()
-                    .And.BeAssignableTo<PocoSupport.IThingWithPower>()
-                    .And.BeAssignableTo<PocoSupport.IThingIntProp>();
-            thing.Name.Should().Be( "ReadFromDatabase" );
-            thing.UniqueId.Should().NotBe( Guid.Empty );
+            thing.ShouldNotBeNull()
+                    .ShouldBeAssignableTo<PocoSupport.IThingWithAgeAndHeight>()
+                    .ShouldBeAssignableTo<PocoSupport.IThingWithPower>()
+                    .ShouldBeAssignableTo<PocoSupport.IThingIntProp>();
+            thing.Name.ShouldBe( "ReadFromDatabase" );
+            thing.UniqueId.ShouldNotBe( Guid.Empty );
             var p1 = (PocoSupport.IThingWithAgeAndHeight)thing;
-            p1.Age.Should().Be( 12 );
-            p1.Height.Should().Be( 154 );
+            p1.Age.ShouldBe( 12 );
+            p1.Height.ShouldBe( 154 );
             var p2 = (PocoSupport.IThingWithPower)thing;
-            p2.Power.Should().Be( 872 );
+            p2.Power.ShouldBe( 872 );
             var p3 = (PocoSupport.IThingIntProp)thing;
-            p3.IntProp.Should().Be( 3712 );
+            p3.IntProp.ShouldBe( 3712 );
         }
     }
 
@@ -65,19 +65,19 @@ public class PocoTests
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             var thing = await p.ReadFromDatabaseAsync( ctx );
-            thing.Should().NotBeNull()
-                    .And.BeAssignableTo<PocoSupport.IThingWithAgeAndHeight>()
-                    .And.BeAssignableTo<PocoSupport.IThingWithPower>()
-                    .And.BeAssignableTo<PocoSupport.IThingIntProp>();
-            thing.Name.Should().Be( "ReadFromDatabase" );
-            thing.UniqueId.Should().NotBe( Guid.Empty );
+            thing.ShouldNotBeNull()
+                    .ShouldBeAssignableTo<PocoSupport.IThingWithAgeAndHeight>()
+                    .ShouldBeAssignableTo<PocoSupport.IThingWithPower>()
+                    .ShouldBeAssignableTo<PocoSupport.IThingIntProp>();
+            thing.Name.ShouldBe( "ReadFromDatabase" );
+            thing.UniqueId.ShouldNotBe( Guid.Empty );
             var p1 = (PocoSupport.IThingWithAgeAndHeight)thing;
-            p1.Age.Should().Be( 12 );
-            p1.Height.Should().Be( 154 );
+            p1.Age.ShouldBe( 12 );
+            p1.Height.ShouldBe( 154 );
             var p2 = (PocoSupport.IThingWithPower)thing;
-            p2.Power.Should().Be( 872 );
+            p2.Power.ShouldBe( 872 );
             var p3 = (PocoSupport.IThingIntProp)thing;
-            p3.IntProp.Should().Be( 3712 );
+            p3.IntProp.ShouldBe( 3712 );
         }
     }
 }

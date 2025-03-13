@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using static CK.Testing.SqlServerTestHelper;
 
@@ -21,10 +21,10 @@ public class CharAndNCharTest
             char c2 = await p.CharFunctionAsync( ctx, null ).ConfigureAwait( false );
             char cN1 = await p.NCharFunctionAsync( ctx, 'n' ).ConfigureAwait( false );
             char cN2 = await p.NCharFunctionAsync( ctx, null ).ConfigureAwait( false );
-            c1.Should().Be( 'a' );
-            c2.Should().Be( '~' );
-            cN1.Should().Be( 'n' );
-            cN2.Should().Be( '~' );
+            c1.ShouldBe( 'a' );
+            c2.ShouldBe( '~' );
+            cN1.ShouldBe( 'n' );
+            cN2.ShouldBe( '~' );
         }
     }
 
@@ -35,12 +35,12 @@ public class CharAndNCharTest
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             p.CharProc( ctx, 'a', null, 'b', null, out var cO, out var cNO );
-            cO.Should().Be( 'a' );
-            cNO.Should().Be( 'b' );
+            cO.ShouldBe( 'a' );
+            cNO.ShouldBe( 'b' );
 
             p.CharProc( ctx, 'a', 'A', 'b', 'B', out cO, out cNO );
-            cO.Should().Be( 'A' );
-            cNO.Should().Be( 'B' );
+            cO.ShouldBe( 'A' );
+            cNO.ShouldBe( 'B' );
         }
     }
 
@@ -51,16 +51,16 @@ public class CharAndNCharTest
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             var r = await p.CharProcAsync( ctx, 'a', null, 'b', null );
-            r.CO.Should().Be( 'a' );
-            r.CNO.Should().Be( 'b' );
+            r.CO.ShouldBe( 'a' );
+            r.CNO.ShouldBe( 'b' );
 
             r = await p.CharProcAsync( ctx, 'a', 'A', 'b', 'B' );
-            r.CO.Should().Be( 'A' );
-            r.CNO.Should().Be( 'B' );
+            r.CO.ShouldBe( 'A' );
+            r.CNO.ShouldBe( 'B' );
 
             r = await p.CharProcAsync( ctx, 'X', null, 'Y', null );
-            r.CO.Should().Be( 'X' );
-            r.CNO.Should().Be( 'Y' );
+            r.CO.ShouldBe( 'X' );
+            r.CNO.ShouldBe( 'Y' );
         }
     }
 

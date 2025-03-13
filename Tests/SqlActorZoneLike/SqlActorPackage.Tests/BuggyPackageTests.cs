@@ -1,6 +1,6 @@
 using CK.Core;
 using CK.SqlServer;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System;
@@ -38,7 +38,7 @@ public class BuggyPackageTests
         {
             var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
             var times = p.ReadSettleContentInfo( ctx );
-            times[0].SetupTime.Should().Be( lastSetup );
+            times[0].SetupTime.ShouldBe( lastSetup );
         }
     }
 
@@ -52,13 +52,13 @@ public class BuggyPackageTests
             {
                 File.WriteAllText( _configFile, @"<Error ErrorStep=""Install"" />" );
                 await SharedEngine.ResetAsync();
-                SharedEngine.EngineResult.Status.Should().Be( RunStatus.Failed );
+                SharedEngine.EngineResult.Status.ShouldBe( RunStatus.Failed );
                 using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
                 {
                     var con = ctx[TestHelper.GetConnectionString()];
                     var lastSetup = (DateTime)con.ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
                     var times = BuggyPackage.ReadSettleContentInfo( con );
-                    if( times.Count > 0 ) times[0].SetupTime.Should().BeBefore( lastSetup );
+                    if( times.Count > 0 ) times[0].SetupTime.ShouldBeLessThan( lastSetup );
                 }
             }
             // Removed config file and runs a new setup.
@@ -72,7 +72,7 @@ public class BuggyPackageTests
                 {
                     var lastSetup = (DateTime)ctx[p.Database].ExecuteScalar( new SqlCommand( "select LastStartDate from CKCore.tSetupMemory where SurrogateId=0" ) );
                     var times = p.ReadSettleContentInfo( ctx );
-                    times[0].SetupTime.Should().Be( lastSetup );
+                    times[0].SetupTime.ShouldBe( lastSetup );
                 }
             }
         }
