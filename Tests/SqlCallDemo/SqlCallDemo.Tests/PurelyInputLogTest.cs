@@ -91,8 +91,8 @@ public class PurelyInputLogTest
                 {
                     ex.InnerException.ShouldBeOfType<SqlDetailedException>();
                     // Does someone has a better (yet simple) solution?
-                    ex.InnerException.InnerException.Message
-                           .ShouldBe( m => m.EndsWith( "Operation cancelled by user." )
+                    ex.InnerException.InnerException.ShouldNotBeNull().Message
+                           .ShouldMatch( m => m.EndsWith( "Operation cancelled by user." )
                                            || m.EndsWith( "Opération annulée par l'utilisateur." ) );
                     TestHelper.Monitor.Info( "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix.", ex );
                 }
