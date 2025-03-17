@@ -1,9 +1,10 @@
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using static CK.Testing.MonitorTestHelper;
+using CK.Core;
 
 namespace SqlCallDemo.Tests;
 
@@ -16,11 +17,11 @@ public class MiscTest
         var p = SharedEngine.AutomaticServices.GetRequiredService<MiscPackage>();
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
-            p.Invoking( t => t.CanWaitForTheDefaultCommandTimeout( ctx, 2 ) ).Should().NotThrow();
-            p.Invoking( t => t.CanWaitOnlyForOneSecond( ctx, 2 ) ).Should().Throw<SqlDetailedException>();
+            Util.Invokable( () => p.CanWaitForTheDefaultCommandTimeout( ctx, 2 ) ).ShouldNotThrow();
+            Util.Invokable( () => p.CanWaitOnlyForOneSecond( ctx, 2 ) ).ShouldThrow<SqlDetailedException>();
 
             SqlHelper.CommandTimeoutFactor = 3;
-            p.Invoking( t => t.CanWaitOnlyForOneSecond( ctx, 2 ) ).Should().NotThrow();
+            Util.Invokable(() => p.CanWaitOnlyForOneSecond(ctx, 2)).ShouldNotThrow();
         }
     }
 
@@ -32,7 +33,7 @@ public class MiscTest
         {
             int @this = 3700;
             int @operator = 12;
-            p.VerbatimParameterAtWork( ctx, @this, @operator ).Should().Be( 3712 );
+            p.VerbatimParameterAtWork( ctx, @this, @operator ).ShouldBe( 3712 );
         }
     }
 

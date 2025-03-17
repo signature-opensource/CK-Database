@@ -2,7 +2,7 @@ using CK.Core;
 using CK.Setup;
 using CK.Testing;
 using CSemVer;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -24,15 +24,15 @@ public class VersionManagementTests
     {
         TestHelper.OnlyOnce( () =>
         {
-            TestHelper.EnsureDatabase( _db, reset: true ).Should().BeTrue();
-            _manager.OpenFromConnectionString( TestHelper.GetConnectionString( _db.DatabaseName ) ).Should().BeTrue();
+            TestHelper.EnsureDatabase( _db, reset: true ).ShouldBeTrue();
+            _manager.OpenFromConnectionString( TestHelper.GetConnectionString( _db.DatabaseName ) ).ShouldBeTrue();
             // Triggers a Initialize. Required for tests
             // that start with a write to the same database.
             _reader.GetOriginalVersions( TestHelper.Monitor );
         } );
         if( _manager.Connection == null )
         {
-            _manager.OpenFromConnectionString( TestHelper.GetConnectionString( _db.DatabaseName ) ).Should().BeTrue();
+            _manager.OpenFromConnectionString( TestHelper.GetConnectionString( _db.DatabaseName ) ).ShouldBeTrue();
         }
     }
 
@@ -64,7 +64,7 @@ public class VersionManagementTests
         {
             _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
         }
-        hasLoggedError.Should().BeFalse();
+        hasLoggedError.ShouldBeFalse();
         CheckVersions( "A - 1.0.1 - ChangingType, B - 1.1.2 - T2Bis" );
 
         versions = oVersions.Select( v => new VersionedNameTracked( v ) ).ToArray();
@@ -75,7 +75,7 @@ public class VersionManagementTests
         {
             _writer.SetVersions( TestHelper.Monitor, _reader, versions, true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
         }
-        hasLoggedError.Should().BeFalse();
+        hasLoggedError.ShouldBeFalse();
         CheckVersions( "A - 1.0.1 - ChangingType, B - 1.0.0 - VersionRegr" );
     }
 
@@ -145,7 +145,7 @@ public class VersionManagementTests
         back.OrderBy( v => v.FullName )
             .Select( v => v.ToString() )
             .Concatenate()
-            .Should().Be( versions );
+            .ShouldBe( versions );
     }
 
     void CheckFeatures( string features )
@@ -154,9 +154,9 @@ public class VersionManagementTests
         back.OrderBy( v => v.Name )
             .Select( v => v.ToString() )
             .Concatenate()
-            .Should().Be( features );
+            .ShouldBe( features );
         int fromView = (int)_manager.ExecuteScalar( "select count(*) from CKCore.vVFeature" );
-        back.Should().HaveCount( fromView );
+        back.Count.ShouldBe( fromView );
     }
 
 }

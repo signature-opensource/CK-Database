@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.Setup;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
@@ -158,7 +158,7 @@ public abstract class DBSetup
         var config = SharedEngine.GetEngineConfiguration();
         config.RevertOrderingNames = revertOrderingName;
         config.EnsureAspect<SetupableAspectConfiguration>().RevertOrderingNames = revertOrderingName;
-        SharedEngine.EngineResult.Status.Should().NotBe( RunStatus.Failed );
+        SharedEngine.EngineResult.Status.ShouldNotBe( RunStatus.Failed );
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 using CK.Core;
 using CK.SqlServer;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Data;
@@ -77,7 +77,7 @@ public class TransformTests
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             string s = p.SimplY4TemplateTest( ctx );
-            s.Should().MatchRegex( @"HashCode = \d+" );
+            s.ShouldMatch( @"HashCode = \d+" );
         }
     }
 }

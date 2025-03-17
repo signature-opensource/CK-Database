@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
-using FluentAssertions;
+using Shouldly;
 using static CK.Testing.SqlServerTestHelper;
 using CK.Testing;
 
@@ -21,7 +21,7 @@ public class PurelyInputLogTest
         {
             await p.SimpleLogAsync( ctx, "First async test call ever." ).ConfigureAwait( false );
             p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                        .Should().Be( "First async test call ever. - SimpleLog" );
+                        .ShouldBe( "First async test call ever. - SimpleLog" );
         }
     }
 
@@ -33,15 +33,15 @@ public class PurelyInputLogTest
         {
             await p.LogAsync( ctx, false, "Second async test call ever." ).ConfigureAwait( false );
             p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                        .Should().Be( "Second async test call ever. - @OneMore = 0" );
+                        .ShouldBe( "Second async test call ever. - @OneMore = 0" );
 
             await p.LogAsync( ctx, true, "Second n°2 async test call ever." ).ConfigureAwait( false );
             p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                        .Should().Be( "Second n°2 async test call ever. - @OneMore = 1" );
+                        .ShouldBe( "Second n°2 async test call ever. - @OneMore = 1" );
 
             await p.LogAsync( ctx, null, "Second n°3 async test call ever." ).ConfigureAwait( false );
             p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                        .Should().Be( "Second n°3 async test call ever. - @OneMore is null" );
+                        .ShouldBe( "Second n°3 async test call ever. - @OneMore is null" );
         }
     }
 
@@ -53,7 +53,7 @@ public class PurelyInputLogTest
         {
             await p.LogWithDefaultBitValueAsync( ctx, "Third async test call ever." ).ConfigureAwait( false );
             p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                        .Should().Be( "Third async test call ever. - @OneMore = 1" );
+                        .ShouldBe( "Third async test call ever. - @OneMore = 1" );
         }
     }
 
@@ -68,7 +68,7 @@ public class PurelyInputLogTest
                 Task t = p.LogAsync( ctx, false, "Testing Cancellation." );
                 t.Wait();
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "Testing Cancellation. - @OneMore = 0" );
+                            .ShouldBe( "Testing Cancellation. - @OneMore = 0" );
             }
             {
                 CancellationTokenSource source = new CancellationTokenSource();
@@ -76,7 +76,7 @@ public class PurelyInputLogTest
                 Task t = p.LogWaitAsync( ctx, "This one must pass.", 10, source.Token );
                 t.Wait();
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "This one must pass. - @OneMore = 1" );
+                            .ShouldBe( "This one must pass. - @OneMore = 1" );
             }
             {
                 CancellationTokenSource source = new CancellationTokenSource();
@@ -89,15 +89,15 @@ public class PurelyInputLogTest
                 }
                 catch( AggregateException ex )
                 {
-                    ex.InnerException.Should().BeOfType<SqlDetailedException>();
+                    ex.InnerException.ShouldBeOfType<SqlDetailedException>();
                     // Does someone has a better (yet simple) solution?
-                    ex.InnerException.InnerException.Message
-                           .Should().Match( m => m.EndsWith( "Operation cancelled by user." )
-                                                 || m.EndsWith( "Opération annulée par l'utilisateur." ) );
+                    ex.InnerException.InnerException.ShouldNotBeNull().Message
+                           .ShouldMatch( m => m.EndsWith( "Operation cancelled by user." )
+                                           || m.EndsWith( "Opération annulée par l'utilisateur." ) );
                     TestHelper.Monitor.Info( "Cancellation: the inner exception is a SqlException with a message that contains 'Operation cancelled by user.' suffix.", ex );
                 }
                 p.Database.ExecuteScalar( "select top 1 LogText from CK.tPurelyInputLog order by Id desc" )
-                            .Should().Be( "This one must pass. - @OneMore = 1" );
+                            .ShouldBe( "This one must pass. - @OneMore = 1" );
             }
         }
     }

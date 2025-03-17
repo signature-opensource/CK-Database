@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using SqlCallDemo.ComplexType;
 using System;
@@ -24,7 +24,7 @@ public class IOTypeTests
             // AND the sql parameter is not "output" => We can conclude that since the mapped
             // property is not nullable, this will fail!
             // But for the moment, we don't.
-            p.Invoking( _ => _.GetWithSqlDefault( ctx ) ).Should().Throw<InvalidCastException>();
+            Util.Invokable( () => p.GetWithSqlDefault( ctx ) ).ShouldThrow<InvalidCastException>();
         }
     }
 
@@ -35,10 +35,10 @@ public class IOTypeTests
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             var r = p.GetWithCSharpDefault( ctx, 3712 );
-            r.ParamInt.Should().Be( 3712 );
-            r.ParamSmallInt.Should().Be( 37 );
-            r.ParamTinyInt.Should().Be( 12 );
-            r.Result.Should().Be( "ParamInt: 3712, ParamSmallInt: 37, ParamTinyInt: 12." );
+            r.ParamInt.ShouldBe( 3712 );
+            r.ParamSmallInt.ShouldBe( 37 );
+            r.ParamTinyInt.ShouldBe( 12 );
+            r.Result.ShouldBe( "ParamInt: 3712, ParamSmallInt: 37, ParamTinyInt: 12." );
         }
     }
 
@@ -49,7 +49,7 @@ public class IOTypeTests
         using( var ctx = new SqlStandardCallContext( TestHelper.Monitor ) )
         {
             var r = p.GetWithInputType( ctx, new InputTypeCastWithDefault { ParamInt = 3712, ParamSmallInt = 37, ParamTinyInt = 12 } );
-            r.Should().Be( "ParamInt: 3712, ParamSmallInt: 37, ParamTinyInt: 12." );
+            r.ShouldBe( "ParamInt: 3712, ParamSmallInt: 37, ParamTinyInt: 12." );
         }
     }
 }

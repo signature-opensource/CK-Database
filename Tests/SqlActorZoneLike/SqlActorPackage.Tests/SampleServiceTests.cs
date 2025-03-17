@@ -1,6 +1,6 @@
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
@@ -15,10 +15,10 @@ public class SampleServiceTests
     {
         var sample = SharedEngine.AutomaticServices.GetRequiredService<ISampleService>();
         var id = sample.CreateGroup( Guid.NewGuid().ToString() );
-        id.Should().BePositive();
+        id.ShouldBePositive();
 
         // This "pollutes" the root TestHelper.AutomaticServices with the resolved scoped services.
         var sharedContext = SharedEngine.AutomaticServices.GetRequiredService<ISqlCallContext>();
-        sharedContext.Should().BeSameAs( SharedEngine.AutomaticServices.GetRequiredService<SampleService>().SqlCallContext );
+        sharedContext.ShouldBeSameAs( SharedEngine.AutomaticServices.GetRequiredService<SampleService>().SqlCallContext );
     }
 }

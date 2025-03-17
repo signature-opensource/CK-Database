@@ -4,7 +4,8 @@ using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using static CK.Testing.SqlServerTestHelper;
-using FluentAssertions;
+using Shouldly;
+using CK.Core;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
 
@@ -45,7 +46,7 @@ public class ErrorHandlingTests
                 }
                 else
                 {
-                    FluentActions.Invoking( () => m.ExecuteOneScript( s, null ) ).Should().NotThrow();
+                    Util.Invokable( () => m.ExecuteOneScript( s, null ) ).ShouldNotThrow();
                 }
                 string error = (string)m.ExecuteScalar( "select Error from CKCoreTests.tTestErrorLogTestResult" );
                 Assert.That( error, Is.EqualTo( String.Empty ), "No micro test should set an error." );

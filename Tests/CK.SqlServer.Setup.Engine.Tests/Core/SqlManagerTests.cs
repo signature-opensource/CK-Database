@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using Microsoft.Data.SqlClient;
 using static CK.Testing.SqlServerTestHelper;
@@ -27,29 +27,29 @@ public class SqlManagerTests
         var badTarget = TestHelper.GetDatabaseOptions( "master" );
         var engineConfiguration = TestHelper.CreateDefaultEngineConfiguration();
         engineConfiguration.EnsureSqlServerConfigurationAspect( badTarget );
-        (await engineConfiguration.RunAsync()).Status.Should().Be( RunStatus.Failed );
+        (await engineConfiguration.RunAsync()).Status.ShouldBe( RunStatus.Failed );
 
         using( var db = new SqlConnection( TestHelper.MasterConnectionString ) )
         {
             await db.OpenAsync();
             using( var cmd = new SqlCommand( "select DB_Name()", db ) )
             {
-                (await cmd.ExecuteScalarAsync()).Should().Be( "master" );
+                (await cmd.ExecuteScalarAsync()).ShouldBe( "master" );
                 cmd.CommandText = "select count(*) from sys.tables where name = 'tSystem';";
-                (await cmd.ExecuteScalarAsync()).Should().Be( 0 );
+                (await cmd.ExecuteScalarAsync()).ShouldBe( 0 );
             }
         }
 
         var sqlAspectConfiguration = engineConfiguration.EnsureAspect<SqlSetupAspectConfiguration>();
 
         sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "msdb" );
-        (await engineConfiguration.RunAsync()).Status.Should().Be( RunStatus.Failed );
+        (await engineConfiguration.RunAsync()).Status.ShouldBe( RunStatus.Failed );
 
         sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "model" );
-        (await engineConfiguration.RunAsync()).Status.Should().Be( RunStatus.Failed );
+        (await engineConfiguration.RunAsync()).Status.ShouldBe( RunStatus.Failed );
 
         sqlAspectConfiguration.DefaultDatabaseConnectionString = TestHelper.GetConnectionString( "tempdb" );
-        (await engineConfiguration.RunAsync()).Status.Should().Be( RunStatus.Failed );
+        (await engineConfiguration.RunAsync()).Status.ShouldBe( RunStatus.Failed );
     }
 
 }

@@ -20,13 +20,13 @@ public interface IDriverBaseList : IReadOnlyList<DriverBase>
     /// </summary>
     /// <param name="fullName">The item full name. Can be null: null is returned.</param>
     /// <returns>The associated driver or null if the driver does not exist.</returns>
-    DriverBase this[string fullName] { get; }
+    DriverBase? this[string? fullName] { get; }
 
     /// <summary>
     /// Gets a <see cref="DriverBase"/> associated to a <see cref="IDependentItem"/>.
     /// </summary>
     /// <param name="item">The item. Can be null: null is returned.</param>
     /// <returns>The associated driver or null if the driver does not exist.</returns>
-    DriverBase this[IDependentItem item] { get; }
+    DriverBase? this[IDependentItem? item] { get; }
 
 }

@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System.Data;
 using static CK.Testing.SqlServerTestHelper;
@@ -20,10 +20,10 @@ public class TransactionalTests
             var controller = ctx[p];
             using( var tran = controller.BeginTransaction( IsolationLevel.RepeatableRead ) )
             {
-                controller.GetCurrentIsolationLevel().Should().Be( IsolationLevel.RepeatableRead );
+                controller.GetCurrentIsolationLevel().ShouldBe( IsolationLevel.RepeatableRead );
                 string previous = p.TransactSetLevelNotWorking( ctx );
-                previous.Should().Be( "REPEATABLE READ" );
-                controller.GetCurrentIsolationLevel().Should().Be( IsolationLevel.RepeatableRead );
+                previous.ShouldBe( "REPEATABLE READ" );
+                controller.GetCurrentIsolationLevel().ShouldBe( IsolationLevel.RepeatableRead );
             }
         }
     }
