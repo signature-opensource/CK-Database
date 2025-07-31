@@ -8,6 +8,6 @@
 
     -->
     <PropertyGroup>
-      <CKTestingNUnit>$(CKTestingNUnit), CK.DB.Tests.NUnit.SqlServerConfigurationAspect</CKTestingNUnit>
+      <CKTestingNUnit>$(CKTestingNUnit), CK.DB.Tests.NUnit.SqlServerConfigurationAspectAndCrisExecutionContext</CKTestingNUnit>
     </PropertyGroup>
   </Project>
