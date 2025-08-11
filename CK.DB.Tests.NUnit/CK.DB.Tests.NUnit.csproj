@@ -5,10 +5,10 @@
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Testing.NUnit" Version="13.0.1--0007-develop" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="27.0.1--0008-develop" />
+    <PackageReference Include="CK.Testing.NUnit" Version="13.0.1--0008-develop" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="27.0.1--0009-develop" />
     <ProjectReference Include="..\CK.Testing.SqlServerEngine\CK.Testing.SqlServerEngine.csproj" />
-    <PackageReference Include="CK.Cris.Executor.Engine" Version="0.39.2--0013-develop" />
+    <PackageReference Include="CK.Cris.Executor.Engine" Version="0.39.2--0014-develop" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="MSBuild/CK.DB.Tests.NUnit.props">
