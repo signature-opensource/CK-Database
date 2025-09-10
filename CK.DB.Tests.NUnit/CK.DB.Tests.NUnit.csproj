@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CK.Testing.NUnit" Version="13.0.1--0019-develop" />
-    <PackageReference Include="CK.Testing.SqlTransform" Version="27.0.1--0019-develop" />
+    <PackageReference Include="CK.Testing.SqlTransform" Version="27.0.1--0020-develop" />
     <ProjectReference Include="..\CK.Testing.SqlServerEngine\CK.Testing.SqlServerEngine.csproj" />
     <PackageReference Include="CK.Cris.Executor.Engine" Version="0.39.2--0038-develop" />
   </ItemGroup>
