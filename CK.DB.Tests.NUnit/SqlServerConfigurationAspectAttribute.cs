@@ -28,6 +28,7 @@ public class SqlServerConfigurationAspectAndCrisExecutionContext : Attribute, IT
         {
             c.EnsureSqlServerConfigurationAspect();
             c.GlobalTypes.Add( typeof( CrisExecutionContext ) );
+            c.GlobalTypes.Add( typeof( RawCrisReceiver ) );
         };
         SharedEngine.AutoConfigureServices += s =>
         {
