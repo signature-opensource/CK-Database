@@ -7,7 +7,7 @@
     </Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="30.0.0" />
+    <PackageReference Include="CK.StObj.Model" Version="31.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

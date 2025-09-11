@@ -125,7 +125,7 @@ public class SetupConfigReader
                 && !m.Head.TryMatch( '}' ) )
         {
             string propName;
-            if( !m.TryMatchJSONQuotedString( out propName )
+            if( !m.TryMatchJsonQuotedString( out propName )
                 || !m.Head.SkipWhiteSpacesAndJSComments()
                 || !m.Head.TryMatch( ':' )
                 || !m.Head.SkipWhiteSpacesAndJSComments() ) m.AddExpectation( @"""Identifier"" : ..." );
@@ -163,7 +163,7 @@ public class SetupConfigReader
     internal void ApplyProperties( ref ROSpanCharMatcher m, Action<string> a )
     {
         string content;
-        if( m.TryMatchJSONQuotedString( out content ) )
+        if( m.TryMatchJsonQuotedString( out content ) )
         {
             a( content );
         }
@@ -173,7 +173,7 @@ public class SetupConfigReader
             {
                 m.Head.SkipWhiteSpacesAndJSComments();
                 if( m.Head.TryMatch( ']' ) ) break;
-                if( !m.TryMatchJSONQuotedString( out content ) ) m.AddExpectation( @"""full name"" in [""full name 1"", ...]." );
+                if( !m.TryMatchJsonQuotedString( out content ) ) m.AddExpectation( @"""full name"" in [""full name 1"", ...]." );
                 else
                 {
                     a( content );
@@ -190,7 +190,7 @@ public class SetupConfigReader
     internal void ApplyProperty( ref ROSpanCharMatcher m, Action<string> a )
     {
         string s;
-        if( !m.TryMatchJSONQuotedString( out s, allowNull: true ) ) m.AddExpectation( @"Expected ""full name""." );
+        if( !m.TryMatchJsonQuotedString( out s, allowNull: true ) ) m.AddExpectation( @"Expected ""full name""." );
         else a( s );
     }
 }

@@ -10,6 +10,6 @@
     <ProjectReference Include="..\CK.SqlServer.Setup.Runtime\CK.SqlServer.Setup.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Transform" Version="27.0.0" />
+    <PackageReference Include="CK.SqlServer.Transform" Version="28.0.0" />
   </ItemGroup>
 </Project>

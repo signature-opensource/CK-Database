@@ -7,17 +7,6 @@ namespace CK.Setup;
 
 internal class AttributesReader
 {
-    static internal void CollectItemNames<TAttr>( Type t, Action<string> collector ) where TAttr : BaseItemNamesAttribute
-    {
-        Debug.Assert( t != null && collector != null );
-        foreach( var n in t.GetCustomAttributesData()
-                            .Where( d => d.AttributeType is TAttr )
-                            .Select( d => (string)d.ConstructorArguments[0].Value ) )
-        {
-            collector( n );
-        }
-    }
-
     static internal SetupAttribute GetSetupAttribute( Type t )
     {
         return (SetupAttribute)t.GetCustomAttributes( typeof( SetupAttribute ), false ).SingleOrDefault();

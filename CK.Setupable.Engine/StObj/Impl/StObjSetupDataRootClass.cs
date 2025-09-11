@@ -1,5 +1,8 @@
-using System;
 using CK.Core;
+using CommunityToolkit.HighPerformance;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace CK.Setup;
 
@@ -23,16 +26,38 @@ internal class StObjSetupDataRootClass
         bool isInRoot = _parent == null;
 
         _requires = DependentItemListFactory.CreateItemList();
-        AttributesReader.CollectItemNames<RequiresAttribute>( t, _requires.AddCommaSeparatedString );
-
         _requiredBy = DependentItemListFactory.CreateItemList();
-        AttributesReader.CollectItemNames<RequiredByAttribute>( t, _requiredBy.AddCommaSeparatedString );
-
-        _children = DependentItemListFactory.CreateItemList();
-        AttributesReader.CollectItemNames<ChildrenAttribute>( t, _children.AddCommaSeparatedString );
-
         _groups = DependentItemListFactory.CreateItemGroupList();
-        AttributesReader.CollectItemNames<GroupsAttribute>( t, _groups.AddCommaSeparatedString );
+        _children = DependentItemListFactory.CreateItemList();
+        foreach( var a in t.CustomAttributes )
+        {
+            Type aType = a.AttributeType;
+            if( aType == typeof( RequiresAttribute ) )
+            {
+                HandleMultiName( a, _requires.AddCommaSeparatedString );
+            }
+            else if( aType == typeof( RequiredByAttribute ) )
+            {
+                HandleMultiName( a, _requiredBy.AddCommaSeparatedString );
+            }
+            else if( aType == typeof( GroupsAttribute ) )
+            {
+                HandleMultiName( a, _groups.AddCommaSeparatedString );
+            }
+            else if( aType == typeof( ChildrenAttribute ) )
+            {
+                HandleMultiName( a, _children.AddCommaSeparatedString );
+            }
+        }
+
+        static void HandleMultiName( CustomAttributeData a, Action<string> c )
+        {
+            var commaSeparatedPackageFullnames = (string[])a.ConstructorArguments[0].Value!;
+            foreach( var n in commaSeparatedPackageFullnames )
+            {
+                c( n );
+            }
+        }
 
         SetupAttribute setupAttr = AttributesReader.GetSetupAttribute( t );
         if( setupAttr != null )

@@ -1,4 +1,4 @@
 
 [assembly: CK.Setup.RequiredEngine( "SqlZonePackage.Engine" )]
-[assembly: CK.Core.PreserveAssemblyReference( typeof( Dapper.SqlConnectionControllerExtension ) )]
+[assembly: CK.Setup.PreserveAssemblyReference( typeof( Dapper.SqlConnectionControllerExtension ) )]
 
