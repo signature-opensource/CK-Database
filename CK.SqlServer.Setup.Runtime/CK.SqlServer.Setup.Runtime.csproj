@@ -11,7 +11,7 @@
     <ProjectReference Include="..\CK.Setupable.Runtime\CK.Setupable.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CK.SqlServer.Parser.Model" Version="22.0.0" />
+    <PackageReference Include="CK.SqlServer.Parser.Model" Version="22.0.1--0001-develop" />
     <PackageReference Include="Yodii.Script" Version="0.8.1" />
   </ItemGroup>
   <ItemGroup>
