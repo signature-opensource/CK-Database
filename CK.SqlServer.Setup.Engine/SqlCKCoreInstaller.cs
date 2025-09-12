@@ -341,6 +341,7 @@ GO
 --      @ExistingValue = '2'    -- The value to update. This must be provided as a the string representation of the value.
 --      @NewValue = '3712'      -- The new value (also its string representation). 
 --                                 This has typically been ""allocated"" before the call: it must exist in the target table.
+--      @EnableWithCheck        -- Whether ""with check"" should be used when restoring the constraints.
 --
 -- The name of this procedure is intentionally stupid.
 -- The violence implied by this neologism should dissuade pusillanimous users from using it.
@@ -351,7 +352,7 @@ create procedure CKCore.sRefBazookation
     @ColumnName sysname,
     @ExistingValue nvarchar(max),
     @NewValue nvarchar(max),
-	@EnableWithCheck bit = 0
+	@EnableWithCheck bit
 as
 begin
     declare @DisableC nvarchar(max);
@@ -431,7 +432,7 @@ begin
     return 0;
 end
 GO
--- This stored procedure changes an source column of all bound table by another one.
+-- This stored procedure changes a source column of all bound table by another one.
 -- Firstly we getting all PK Composite, all constraints.
 -- After that we craft for each actions the SQL request that will do actions for each bound table of the source column
 -- For each tables we have these actions : 
