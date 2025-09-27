@@ -12,7 +12,7 @@
         Unfortunaltely, we must also [assembly: CK.Core.PreserveAssemblyReference( typeof(Dapper.SqlConnectionControllerExtension) )]
         in the AssemblyInfo.cs.
     -->
-    <PackageReference Include="CK.SqlServer.Dapper" Version="13.0.0" />
+    <PackageReference Include="CK.SqlServer.Dapper" Version="13.0.1" />
     <ProjectReference Include="..\SqlActorPackage\SqlActorPackage.csproj" />
   </ItemGroup>
 </Project>
