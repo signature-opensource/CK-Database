@@ -1,0 +1,46 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="Mixed Platforms" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="appveyor.yml" />
+    <File Path="Conception.docx" />
+    <File Path="Directory.Build.props" />
+    <File Path="NuGet.config" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/CK.Setupable.Engine.Tests/CK.Setupable.Engine.Tests.csproj" />
+    <Project Path="Tests/CK.SqlServer.Setup.Engine.Tests/CK.SqlServer.Setup.Engine.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SqlActorZoneLike/">
+    <Project Path="Tests/SqlActorZoneLike/SqlActorPackage.Engine/SqlActorPackage.Engine.csproj" />
+    <Project Path="Tests/SqlActorZoneLike/SqlActorPackage.Tests/SqlActorPackage.Tests.csproj" />
+    <Project Path="Tests/SqlActorZoneLike/SqlActorPackage/SqlActorPackage.csproj" />
+    <Project Path="Tests/SqlActorZoneLike/SqlZonePackage.Engine/SqlZonePackage.Engine.csproj" />
+    <Project Path="Tests/SqlActorZoneLike/SqlZonePackage.Tests/SqlZonePackage.Tests.csproj" />
+    <Project Path="Tests/SqlActorZoneLike/SqlZonePackage/SqlZonePackage.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SqlCallDemo/">
+    <Project Path="Tests/SqlCallDemo/SqlCallDemo.Tests/SqlCallDemo.Tests.csproj" />
+    <Project Path="Tests/SqlCallDemo/SqlCallDemo/SqlCallDemo.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SqlTransformer/">
+    <Project Path="Tests/SqlTransformer/SqlTransform.Tests/SqlTransform.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SqlTransformer/Model/">
+    <Project Path="Tests/SqlTransformer/Model/CKLevel0/CKLevel0.csproj" />
+    <Project Path="Tests/SqlTransformer/Model/CKLevel2/CKLevel2.csproj" />
+  </Folder>
+  <Project Path="CK.DB.Tests.NUnit/CK.DB.Tests.NUnit.csproj" />
+  <Project Path="CK.Setupable.Engine/CK.Setupable.Engine.csproj" />
+  <Project Path="CK.Setupable.Model/CK.Setupable.Model.csproj" />
+  <Project Path="CK.Setupable.Runtime/CK.Setupable.Runtime.csproj" />
+  <Project Path="CK.SqlServer.Setup.Engine/CK.SqlServer.Setup.Engine.csproj" />
+  <Project Path="CK.SqlServer.Setup.Model/CK.SqlServer.Setup.Model.csproj" />
+  <Project Path="CK.SqlServer.Setup.Runtime/CK.SqlServer.Setup.Runtime.csproj" />
+  <Project Path="CK.Testing.SqlServerEngine/CK.Testing.SqlServerEngine.csproj" />
+</Solution>
