@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CK.Testing.SqlServer" Version="15.0.1--ci.1" />
-    <PackageReference Include="CK.Testing.StObjEngine" Version="33.0.1--ci.1" />
+    <PackageReference Include="CK.Testing.StObjEngine" Version="33.0.1--ci.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />
