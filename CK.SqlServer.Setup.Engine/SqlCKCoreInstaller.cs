@@ -6,7 +6,7 @@ namespace CK.SqlServer.Setup;
 
 sealed class SqlCKCoreInstaller
 {
-    public readonly static short CurrentVersion = 17;
+    public readonly static short CurrentVersion = 18;
 
     /// <summary>
     /// Installs the kernel.
