@@ -6,7 +6,7 @@ namespace CK.SqlServer.Setup;
 
 sealed class SqlCKCoreInstaller
 {
-    public readonly static short CurrentVersion = 18;
+    public readonly static short CurrentVersion = 19;
 
     /// <summary>
     /// Installs the kernel.
@@ -355,81 +355,102 @@ create procedure CKCore.sRefBazookation
 	@EnableWithCheck bit
 as
 begin
-    declare @DisableC nvarchar(max);
-    declare @SetValue nvarchar(max);
-    declare @EnableC nvarchar(max);
+ declare @DisableC nvarchar(max);
+declare @SetValue nvarchar(max);
+declare @EnableC nvarchar(max);
 
-    with rec as ( select 
-                       -- We aggregate the constraint identifier in a string to skip cycles.
-                       CCId =  ';' + cast( fc.constraint_object_id as varchar(max)) + ';',
-                       STId = fc.parent_object_id,
-                       SCId = fc.parent_column_id,
-                       TTId = fc.referenced_object_id,
-                       TCId = fc.referenced_column_id,
-                       CName = QUOTENAME( f.name ),
-                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
-                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
-                   from sys.foreign_key_columns as fc
-                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
-                   inner join sys.objects oS on oS.object_id = fc.parent_object_id
-                   inner join sys.objects oT on oT.object_id = f.referenced_object_id
-                   inner join sys.columns cT on cT.object_id = f.referenced_object_id and cT.column_id = fc.referenced_column_id
-                   where oT.schema_id = SCHEMA_ID(@SchemaName) and oT.name = @TableName and cT.name = @ColumnName
-                 
-              union all
-                
-                select CCId = r.CCId + cast( fc.constraint_object_id as varchar ) + ';',
-                       STId = fc.parent_object_id,
-                       SCId = fc.parent_column_id,
-                       TTId = fc.referenced_object_id,
-                       TCId = fc.referenced_column_id,
-                       CName = QUOTENAME( f.name ),
-                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
-                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
-                   from rec r
-                   inner join sys.foreign_key_columns as fc on fc.referenced_object_id = r.STId and fc.referenced_column_id = r.SCId 
-                                                                -- This is where cycles are handled.
-                                                                and r.CCId  not like '%;' + cast( fc.constraint_object_id as varchar ) + ';%' 
-                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
-                   inner join sys.objects oS on oS.object_id = fc.parent_object_id ),
-        scripts as (
-            select DisableConstraint = N'alter table ' + STable + N' nocheck constraint ' + CName + N';',
-                   SetValue = N'update ' + STable + N' set ' + SColumn + N' = ' + @NewValue + N' where ' + SColumn + N' = ' + @ExistingValue + N';',
-                   EnableConstraint = N'alter table ' + STable + IIF(@EnableWithCheck = 0,'','with check ') + N'check constraint ' + CName + N';'
-                from rec ),
-        finalConstraints as (
-            select D = STRING_AGG( DisableConstraint, N'' ),
-                   E = STRING_AGG( EnableConstraint, N'' ) 
-                from scripts ),
-        finalSetter as (
-            select S = STRING_AGG( s.SetValue, N'' ) from (select distinct SetValue from scripts) s )
-    select @DisableC = c.D, @SetValue = s.S, @EnableC = c.E 
-        from finalConstraints c 
-        cross join finalSetter s;
-    
-    -- We use the ""Atomic"" transaction trick. 
-    set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
-    beginsp:
-    if @SPCallTC = 0 begin tran;
-    else
-    begin
-        set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar);
-        save transaction @SPCallId;
-    end
-    begin try
-        exec sp_executesql @DisableC;
-        exec sp_executesql @SetValue;
-        exec sp_executesql @EnableC;
-    end try
-    begin catch
-        if @SPCallTC = 0 rollback;
-        else if XACT_STATE() = 1 rollback transaction @SPCallId;
-        exec CKCore.sErrorRethrow @@ProcId;
-        return -1;
-    end catch;
-    endsp:
-    if @SPCallTC = 0 commit;
-    return 0;
+with rec as ( select 
+                   -- We aggregate the constraint identifier in a string to skip cycles.
+                   CCId =  ';' + cast( fc.constraint_object_id as varchar(max)) + ';',
+                   STId = fc.parent_object_id,
+                   SCId = fc.parent_column_id,
+                   TTId = fc.referenced_object_id,
+                   TCId = fc.referenced_column_id,
+                   CName = QUOTENAME( f.name ),
+                   STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
+                   SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
+               from sys.foreign_key_columns as fc
+               inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
+               inner join sys.objects oS on oS.object_id = fc.parent_object_id
+               inner join sys.objects oT on oT.object_id = f.referenced_object_id
+               inner join sys.columns cT on cT.object_id = f.referenced_object_id and cT.column_id = fc.referenced_column_id
+               where oT.schema_id = SCHEMA_ID(@SchemaName) and oT.name = @TableName and cT.name = @ColumnName
+             
+          union all
+            
+            select CCId = r.CCId + cast( fc.constraint_object_id as varchar ) + ';',
+                   STId = fc.parent_object_id,
+                   SCId = fc.parent_column_id,
+                   TTId = fc.referenced_object_id,
+                   TCId = fc.referenced_column_id,
+                   CName = QUOTENAME( f.name ),
+                   STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
+                   SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) )
+               from rec r
+               inner join sys.foreign_key_columns as fc on fc.referenced_object_id = r.STId and fc.referenced_column_id = r.SCId 
+                                                            -- This is where cycles are handled.
+                                                            and r.CCId  not like '%;' + cast( fc.constraint_object_id as varchar ) + ';%' 
+               inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
+               inner join sys.objects oS on oS.object_id = fc.parent_object_id ),
+    allConstraints as (
+        -- FK trouvees par la recursion
+        select distinct
+            STable,
+            ConstraintName = CName
+        from rec
+
+        union
+
+        -- Check constraints column-level sur les colonnes touchees
+        select distinct
+            r.STable,
+            QUOTENAME(cc.name)
+        from rec r
+        inner join sys.check_constraints cc
+            on cc.parent_object_id = r.STId and cc.parent_column_id = r.SCId
+    ),
+    constraintScripts as (
+        select
+            DisableConstraint = N'alter table ' + STable + N' nocheck constraint ' + ConstraintName + N';',
+            EnableConstraint  = N'alter table ' + STable + IIF(@EnableWithCheck = 0, '', 'with check ') + N'check constraint ' + ConstraintName + N';'
+        from allConstraints
+    ),
+    setterScripts as (
+        select distinct
+            SetValue = N'update ' + STable + N' set ' + SColumn + N' = ' + @NewValue + N' where ' + SColumn + N' = ' + @ExistingValue + N';'
+        from rec
+    ),
+    finalParts as (
+        select D = (select STRING_AGG(DisableConstraint, N'') from constraintScripts),
+               E = (select STRING_AGG(EnableConstraint,  N'') from constraintScripts),
+               S = (select STRING_AGG(SetValue,          N'') from setterScripts)
+    )
+select @DisableC = D, @SetValue = S, @EnableC = E
+from finalParts;
+
+-- We use the ""Atomic"" transaction trick. 
+set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
+beginsp:
+if @SPCallTC = 0 begin tran;
+else
+begin
+    set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar);
+    save transaction @SPCallId;
+end
+begin try
+    exec sp_executesql @DisableC;
+    exec sp_executesql @SetValue;
+    exec sp_executesql @EnableC;
+end try
+begin catch
+    if @SPCallTC = 0 rollback;
+    else if XACT_STATE() = 1 rollback transaction @SPCallId;
+    exec CKCore.sErrorRethrow @@ProcId;
+    return -1;
+end catch;
+endsp:
+if @SPCallTC = 0 commit;
+return 0;
 end
 GO
 -- This stored procedure changes a source column of all bound table by another one.
@@ -472,133 +493,179 @@ create procedure CKCore.sColumnBazookation
     @NewConstraintPattern nvarchar(max) = null
 as
 begin
-   declare @DisableC nvarchar(max),
-        @InsertNewColumn nvarchar(max),
-        @TransfertOldColumnValueToNew nvarchar(max),
-        @DeleteOldColumn nvarchar(max),
-        @DropConstraint nvarchar(max),
-        @AddNewColumnConstraint nvarchar(max),
-        @AddNullableType nvarchar(max),
-		@DropPKCompositeConstraintsAndReAddWithNewColumn nvarchar(max),
-	    @NewColumnType nvarchar(64),
-	    @NewColumnTypeIsNull bit;
+      declare @DisableC nvarchar(max),
+            @InsertNewColumn nvarchar(max),
+            @TransfertOldColumnValueToNew nvarchar(max),
+            @DeleteOldColumn nvarchar(max),
+            @DropConstraint nvarchar(max),
+            @AddNewColumnConstraint nvarchar(max),
+            @AddNullableType nvarchar(max),
+            @DropPKCompositeConstraintsAndReAddWithNewColumn nvarchar(max),
+            @SwapFKDrop nvarchar(max),
+            @SwapFKAdd nvarchar(max),
+            @DropOldDefault nvarchar(max),
+            @AddNewDefault nvarchar(max),
+            @EnsureTargetKey nvarchar(max),
+            @NewColumnType nvarchar(64),
+            @NewColumnTypeIsNull bit;
 
-select 
-    @NewColumnType = t.name,
-    @NewColumnTypeIsNull = c.is_nullable
-from sys.columns c
-inner join sys.types t ON c.user_type_id = t.user_type_id
-where 
-    c.object_id = OBJECT_ID(CONCAT(@NewSchemaName,'.',@NewTableName))  and c.name = @NewColumnName;
+    -- Type / nullabilite de la NOUVELLE colonne
+    select
+        @NewColumnType       = t.name,
+        @NewColumnTypeIsNull = c.is_nullable
+    from sys.columns c
+    inner join sys.types t on c.user_type_id = t.user_type_id
+    where c.object_id = OBJECT_ID(CONCAT(@NewSchemaName, '.', @NewTableName))
+      and c.name = @NewColumnName;
 
--- Specific request for PK Composite
-select @DropPKCompositeConstraintsAndReAddWithNewColumn  = string_agg(
-    'alter table ' + PKInfo.FullTableName + ' drop constraint ' + PKInfo.PKName + ';
-     alter table ' + PKInfo.FullTableName + ' add constraint ' + PKInfo.PKName + ' primary key (' + 
-        PKInfo.OtherColumns + ', ' + @NewColumnName + ');'
-    , char(13) + char(10))
-from (
-select 
-    kc.name as PKName,
-	s.name + '.' + t.name as FullTableName,
-    STRING_AGG(case when c.name <> @ColumnName then c.name  end, ',') 
-        within group (order by ic.key_ordinal) as OtherColumns
-from sys.key_constraints kc
-	inner join sys.index_columns ic on kc.parent_object_id = ic.object_id  and kc.unique_index_id = ic.index_id
-	inner join sys.columns c on c.object_id = ic.object_id and c.column_id = ic.column_id
-	inner join sys.tables t  on t.object_id = kc.parent_object_id
-	inner join sys.schemas s on s.schema_id = t.schema_id
-where kc.type = 'pk' 
-  and exists (
-      select 1
-      from sys.columns c2
-      inner join sys.index_columns ic2  on c2.object_id = ic2.object_id  and c2.column_id = ic2.column_id
-      where ic2.object_id = kc.parent_object_id and ic2.index_id = kc.unique_index_id and c2.name = @ColumnName
-  )
-  and t.name != @TableName
-group by kc.name,s.name, t.name
-) as PKInfo;
+    ;with directFK as (
+        -- Enfants DIRECTS de la colonne racine uniquement (pas de cascade).
+        select distinct
+            STId      = fc.parent_object_id,
+            SCId      = fc.parent_column_id,
+            CName     = QUOTENAME(f.name),
+            STable    = QUOTENAME(SCHEMA_NAME(oS.schema_id)) + '.' + QUOTENAME(OBJECT_NAME(f.parent_object_id)),
+            SColumn   = QUOTENAME(COL_NAME(fc.parent_object_id, fc.parent_column_id)),
+            TableName = REPLACE(REPLACE(QUOTENAME(OBJECT_NAME(f.parent_object_id)), '[', ''), ']', ''),
+            -- 1 = la colonne migree est referencee par des FK d'autres tables => SWAP only.
+            IsReferenced = convert(bit, case when exists (
+                select 1 from sys.foreign_key_columns rfc
+                where rfc.referenced_object_id = fc.parent_object_id
+                  and rfc.referenced_column_id = fc.parent_column_id
+            ) then 1 else 0 end)
+        from sys.foreign_key_columns as fc
+        inner join sys.foreign_keys   as f  on f.object_id = fc.constraint_object_id
+        inner join sys.objects        oS    on oS.object_id = fc.parent_object_id
+        inner join sys.objects        oT    on oT.object_id = f.referenced_object_id
+        inner join sys.columns        cT    on cT.object_id = f.referenced_object_id
+                                           and cT.column_id = fc.referenced_column_id
+        where oT.schema_id = SCHEMA_ID(@SchemaName)
+          and oT.name      = @TableName
+          and cT.name      = @ColumnName
+    ),
+    renameFK as ( select * from directFK where IsReferenced = 0 ),  -- add/copy/drop
+    swapFK   as ( select * from directFK where IsReferenced = 1 ),  -- remplacement de FK seul
+    perConstraint as ( select distinct STable, CName from renameFK ),
+    perTable      as (
+        select distinct
+            rf.STId, rf.SCId, rf.STable, rf.SColumn, rf.TableName,
+            -- la colonne migree participe-t-elle a une PK de sa table ?
+            InPK = convert(bit, case when exists (
+                select 1
+                from sys.index_columns ic
+                inner join sys.key_constraints kc
+                    on kc.parent_object_id = ic.object_id and kc.unique_index_id = ic.index_id and kc.type = 'pk'
+                where ic.object_id = rf.STId and ic.column_id = rf.SCId
+            ) then 1 else 0 end)
+        from renameFK rf
+    ),
+    oldDefaults as (
+        select
+            pt.STable,
+            DFName = QUOTENAME(dc.name),
+            DFDef  = dc.definition
+        from perTable pt
+        inner join sys.default_constraints dc
+            on dc.parent_object_id = pt.STId and dc.parent_column_id = pt.SCId
+    ),
+    pkComposite as (
+        select
+            kc.name                                       as PKName,
+            QUOTENAME(s.name) + '.' + QUOTENAME(t.name)   as FullTableName,
+            STRING_AGG(case when ic.column_id <> pt.SCId then QUOTENAME(c.name) end, ',')
+                within group (order by ic.key_ordinal)    as OtherColumns
+        from perTable pt
+        inner join sys.key_constraints kc on kc.parent_object_id = pt.STId and kc.type = 'pk'
+        inner join sys.index_columns   ic on kc.parent_object_id = ic.object_id and kc.unique_index_id = ic.index_id
+        inner join sys.columns         c  on c.object_id = ic.object_id and c.column_id = ic.column_id
+        inner join sys.tables          t  on t.object_id = kc.parent_object_id
+        inner join sys.schemas         s  on s.schema_id = t.schema_id
+        where exists (
+            select 1 from sys.index_columns ic2
+            where ic2.object_id = kc.parent_object_id
+              and ic2.index_id  = kc.unique_index_id
+              and ic2.column_id = pt.SCId )
+        group by kc.name, s.name, t.name, pt.SCId
+    ),
+    agg as (
+        select
+            DisableC = (select STRING_AGG(N'alter table ' + STable + N' nocheck constraint ' + CName + N';', N'') from perConstraint),
+            DropConstraint = (select STRING_AGG(N'alter table ' + STable + N' drop constraint ' + CName + N';', N'') from perConstraint),
+            InsertNewColumn = (select STRING_AGG(N'alter table ' + STable + N' add ' + @NewColumnName + N' ' + @NewColumnType + N';', N'') from perTable),
+            TransfertOldColumnValueToNew = (select STRING_AGG(N'update ' + STable + N' set ' + @NewColumnName + N' = ' + SColumn + N';', N'') from perTable),
+            DeleteOldColumn = (select STRING_AGG(N'alter table ' + STable + N' drop column ' + SColumn + N';', N'') from perTable),
+            AddNewColumnConstraint = (select STRING_AGG(IIF(@NewConstraintPattern is null, null, N'alter table ' + STable + N' add constraint ' + REPLACE(REPLACE(@NewConstraintPattern, '{SOURCETABLE}', TableName), '{SOURCECOLUMN}', @NewColumnName) + N';'), N'') from perTable),
+            AddNullableType = (select STRING_AGG(IIF(@NewColumnTypeIsNull = 0 or InPK = 1, N'alter table ' + STable + N' alter column ' + @NewColumnName + N' ' + @NewColumnType + N' not null;', null), N'') from perTable),
+            DropPK = (select STRING_AGG(
+                N'alter table ' + FullTableName + N' drop constraint ' + QUOTENAME(PKName) + N';'
+              + N'alter table ' + FullTableName + N' add constraint ' + QUOTENAME(PKName)
+              + N' primary key (' + ISNULL(OtherColumns + N', ', N'') + @NewColumnName + N');', N'') from pkComposite),
+            -- DEFAULT : on drope sur l'ancienne colonne, on recree a l'identique sur la nouvelle.
+            DropOldDef = (select STRING_AGG(N'alter table ' + STable + N' drop constraint ' + DFName + N';', N'') from oldDefaults),
+            AddNewDef  = (select STRING_AGG(N'alter table ' + STable + N' add constraint ' + DFName + N' default ' + DFDef + N' for ' + @NewColumnName + N';', N'') from oldDefaults),
+            -- SWAP : colonne conservee. On drope la FK ; on la recree QUE si un pattern est
+            --        fourni (= intention de recreer les FK). La FK est construite depuis les
+            --        metadonnees : colonne locale reelle -> cible. Pas besoin de {SOURCECOLUMN}.
+            SwapDrop = (select STRING_AGG(N'alter table ' + STable + N' drop constraint ' + CName + N';', N'') from swapFK),
+            SwapAdd  = (select STRING_AGG(IIF(@NewConstraintPattern is null, null,
+                N'alter table ' + STable + N' add constraint ' + CName
+              + N' foreign key (' + SColumn + N') references '
+              + QUOTENAME(@NewSchemaName) + N'.' + QUOTENAME(@NewTableName)
+              + N' (' + QUOTENAME(@NewColumnName) + N');'), N'') from swapFK)
+    )
+    select
+        @DisableC                                          = DisableC,
+        @DropConstraint                                    = DropConstraint,
+        @InsertNewColumn                                   = InsertNewColumn,
+        @TransfertOldColumnValueToNew                      = TransfertOldColumnValueToNew,
+        @DeleteOldColumn                                   = DeleteOldColumn,
+        @AddNewColumnConstraint                            = AddNewColumnConstraint,
+        @AddNullableType                                   = AddNullableType,
+        @DropPKCompositeConstraintsAndReAddWithNewColumn   = DropPK,
+        @DropOldDefault                                    = DropOldDef,
+        @AddNewDefault                                     = AddNewDef,
+        @SwapFKDrop                                        = SwapDrop,
+        @SwapFKAdd                                         = SwapAdd
+    from agg;
 
-    with rec as ( select 
-                       -- We aggregate the constraint identifier in a string to skip cycles.
-                       CCId =  ';' + cast( fc.constraint_object_id as varchar(max)) + ';',
-                       STId = fc.parent_object_id,
-                       SCId = fc.parent_column_id,
-                       TTId = fc.referenced_object_id,
-                       TCId = fc.referenced_column_id,
-                       CName = QUOTENAME( f.name ),
-                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
-                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) ),
-					   TableName = REPLACE(REPLACE(QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),'[',''),']','')
-                   from sys.foreign_key_columns as fc
-                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
-                   inner join sys.objects oS on oS.object_id = fc.parent_object_id
-                   inner join sys.objects oT on oT.object_id = f.referenced_object_id
-                   inner join sys.columns cT on cT.object_id = f.referenced_object_id and cT.column_id = fc.referenced_column_id
-                   where oT.schema_id = SCHEMA_ID(@SchemaName) and oT.name = @TableName and cT.name = @ColumnName
-                 
-              union all
-                
-                select CCId = r.CCId + cast( fc.constraint_object_id as varchar ) + ';',
-                       STId = fc.parent_object_id,
-                       SCId = fc.parent_column_id,
-                       TTId = fc.referenced_object_id,
-                       TCId = fc.referenced_column_id,
-                       CName = QUOTENAME( f.name ),
-                       STable = QUOTENAME( SCHEMA_NAME( oS.schema_id ) ) + '.' + QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),
-                       SColumn = QUOTENAME( COL_NAME( fc.parent_object_id, fc.parent_column_id ) ),
-					   TableName = REPLACE(REPLACE(QUOTENAME( OBJECT_NAME( f.parent_object_id ) ),'[',''),']','')
-                   from rec r
-                   inner join sys.foreign_key_columns as fc on fc.referenced_object_id = r.STId and fc.referenced_column_id = r.SCId 
-                                                                -- This is where cycles are handled.
-                                                                and r.CCId  not like '%;' + cast( fc.constraint_object_id as varchar ) + ';%' 
-                   inner join sys.foreign_keys as f on f.object_id = fc.constraint_object_id
-                   inner join sys.objects oS on oS.object_id = fc.parent_object_id ),
-        scripts as (
-            select 
-				   DisableConstraint = N'alter table ' + STable + N' nocheck constraint ' + CName + N';',
-				   InsertNewColumn = N'alter table '  + STable + N' add ' + @NewColumnName + N' ' + @NewColumnType + N';' ,
-				   TransfertOldColumnValueToNew = N'update '  + STable + N' set ' + @NewColumnName + N' = ' + @ColumnName + N';' ,
-				   DeleteOldColumn = N'alter table '  + STable  + N' drop column ' + @ColumnName + N';' ,
-                   DropConstraint = N'alter table ' + STable + N' drop constraint ' + CName + N';',
-                   AddNewColumnConstraint = IIF(@NewConstraintPattern is null,null, N'alter table ' + STable + N' add constraint ' + REPLACE(@NewConstraintPattern,'{SOURCETABLE}',TableName) + N';'),
-				   AddNullableType = IIF(@NewColumnTypeIsNull = 0,N'alter table ' + STable + N' alter column ' + @NewColumnName + N' ' + @NewColumnType + N' not null' +  N';',null)
-                from rec ),
-        finalConstraints as (
-            select D = STRING_AGG( DisableConstraint, N'' ),
-                   I = STRING_AGG( InsertNewColumn, N'' ),
-                   TOCVTN = STRING_AGG( TransfertOldColumnValueToNew, N'' ),
-                   DO = STRING_AGG( DeleteOldColumn, N'' ),
-                   DC = STRING_AGG( DropConstraint, N'' ),
-                   ANCC = STRING_AGG( AddNewColumnConstraint, N'' ),
-                   ANT = STRING_AGG( AddNullableType, N'' )
-                from scripts )
-    select @DisableC = c.D,
-           @InsertNewColumn = c.I,
-           @TransfertOldColumnValueToNew = c.TOCVTN,
-           @DeleteOldColumn = c.DO,
-           @DropConstraint = c.DC,
-           @AddNewColumnConstraint = c.ANCC,
-           @AddNullableType = c.ANT
-        from finalConstraints c;
+    if @NewConstraintPattern is not null
+       and not exists (
+           select 1
+           from sys.indexes i
+           inner join sys.index_columns ic on i.object_id = ic.object_id and i.index_id = ic.index_id
+           inner join sys.columns c on c.object_id = ic.object_id and c.column_id = ic.column_id
+           where i.object_id = OBJECT_ID(CONCAT(@NewSchemaName, '.', @NewTableName))
+             and c.name = @NewColumnName
+             and (i.is_primary_key = 1 or i.is_unique = 1)
+       )
+        set @EnsureTargetKey =
+            N'alter table ' + QUOTENAME(@NewSchemaName) + N'.' + QUOTENAME(@NewTableName)
+          + N' add constraint ' + QUOTENAME(N'UQ_' + @NewTableName + N'_' + @NewColumnName)
+          + N' unique (' + QUOTENAME(@NewColumnName) + N');';
 
-		    set nocount on; declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname; 
+    set nocount on;
+    declare @SPCallTC int = @@TRANCOUNT, @SPCallId sysname;
     beginsp:
     if @SPCallTC = 0 begin tran;
     else
     begin
-        set @SPCallId = cast(32*cast(@@PROCID as bigint)+@@NESTLEVEL as varchar);
+        set @SPCallId = cast(32 * cast(@@PROCID as bigint) + @@NESTLEVEL as varchar);
         save transaction @SPCallId;
     end
     begin try
-         	exec sp_executesql @DisableC;
-			exec sp_executesql @InsertNewColumn;
-			exec sp_executesql @TransfertOldColumnValueToNew;
-			exec sp_executesql @DropConstraint;
-			exec sp_executesql @AddNewColumnConstraint;
-			exec sp_executesql @AddNullableType;
-			exec sp_executesql @DropPKCompositeConstraintsAndReAddWithNewColumn;
-			exec sp_executesql @DeleteOldColumn;
+        if @DisableC                                        is not null exec sp_executesql @DisableC;
+        if @InsertNewColumn                                 is not null exec sp_executesql @InsertNewColumn;
+        if @DropOldDefault                                  is not null exec sp_executesql @DropOldDefault;
+        if @AddNewDefault                                   is not null exec sp_executesql @AddNewDefault;
+        if @TransfertOldColumnValueToNew                    is not null exec sp_executesql @TransfertOldColumnValueToNew;
+        if @DropConstraint                                  is not null exec sp_executesql @DropConstraint;
+        if @EnsureTargetKey                                 is not null exec sp_executesql @EnsureTargetKey;
+        if @AddNewColumnConstraint                          is not null exec sp_executesql @AddNewColumnConstraint;
+        if @AddNullableType                                 is not null exec sp_executesql @AddNullableType;
+        if @DropPKCompositeConstraintsAndReAddWithNewColumn is not null exec sp_executesql @DropPKCompositeConstraintsAndReAddWithNewColumn;
+        if @DeleteOldColumn                                 is not null exec sp_executesql @DeleteOldColumn;
+        if @SwapFKDrop                                      is not null exec sp_executesql @SwapFKDrop;
+        if @SwapFKAdd                                       is not null exec sp_executesql @SwapFKAdd;
     end try
     begin catch
         if @SPCallTC = 0 rollback;
