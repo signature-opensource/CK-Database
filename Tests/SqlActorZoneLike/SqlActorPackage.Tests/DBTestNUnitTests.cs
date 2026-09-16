@@ -4,6 +4,7 @@ using SqlActorPackage.Basic;
 using Microsoft.Data.SqlClient;
 using CK.Testing;
 using static CK.Testing.SqlServerTestHelper;
+using Shouldly;
 
 namespace SqlActorPackage.Tests;
 
@@ -36,7 +37,7 @@ FakeForTestOnly | select @Count = count(*) from sys.tables | Failed
                 a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly', null;" );
                 a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly2', 'from sys.tables';" );
                 a.Database.ExecuteNonQuery( "exec CKCore.sInvariantRegister 'FakeForTestOnly3', 'from sys.XXXXXX';" );
-                Assert.Throws<SqlException>( () => a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly" ) );
+                Should.Throw<SqlException>( () => a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly" ) );
                 a.Database.GetCKCoreInvariantsViolations( "FakeForTestOnly2" );
             }
             catch( AssertionException ex )

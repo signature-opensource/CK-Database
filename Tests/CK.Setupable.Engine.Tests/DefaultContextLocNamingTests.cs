@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using CK.Setup;
 using System;
+using Shouldly;
 
 namespace CK.Setupable.Engine.Tests;
 
@@ -238,11 +239,11 @@ public class DefaultContextLocNamingTests
     [TestCase( "--^H", "nimp", "oneLoc" )]
     public void ResolveException( string input, string curContext, string curLoc )
     {
-        Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
-        Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
-        Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
-        Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
-        Assert.Throws<Exception>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
+        Should.Throw<Exception>( () => DefaultContextLocNaming.Resolve( input, curContext, curLoc ) );
+        Should.Throw<Exception>( () => DefaultContextLocNaming.Resolve( "?" + input, 1, curContext, curLoc ) );
+        Should.Throw<Exception>( () => DefaultContextLocNaming.Resolve( "??" + input, 2, curContext, curLoc ) );
+        Should.Throw<Exception>( () => DefaultContextLocNaming.Resolve( input + "pouf", 0, input.Length, curContext, curLoc ) );
+        Should.Throw<Exception>( () => DefaultContextLocNaming.Resolve( "pif" + input + "pouf", 3, input.Length, curContext, curLoc ) );
     }
 
     [Test]

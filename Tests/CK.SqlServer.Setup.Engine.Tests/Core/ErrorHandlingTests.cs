@@ -40,7 +40,7 @@ public class ErrorHandlingTests
                 if( errorExpected )
                 {
                     // Checks that an exception is raised since there is no monitor.
-                    Assert.Throws<SqlException>( () => m.ExecuteOneScript( s, null ), s );
+                    Should.Throw<SqlException>( () => m.ExecuteOneScript( s, null ), s );
                     // Dump to console.
                     Assert.That( m.ExecuteOneScript( s, TestHelper.Monitor ), Is.False, s );
                 }
