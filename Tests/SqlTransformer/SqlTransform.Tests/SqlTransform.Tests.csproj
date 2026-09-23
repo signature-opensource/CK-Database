@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <!-- This test doesn't follow the pattern with the SUT project: no "SqlTransform" project exists,
          the "Model/CKLevel0" and "Model/CKLevel2" are the projects to analyze (kind of SUT). 

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Description>NUnit test helpers with SharedEngine, SqlTransform, CK.Testing.SqlServerEngine and CK.Cris.Executor.Engine.</Description>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
