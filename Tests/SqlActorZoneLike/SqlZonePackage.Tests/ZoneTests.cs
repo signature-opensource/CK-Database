@@ -5,7 +5,7 @@ using NUnit.Framework;
 using SqlActorPackage.Basic;
 using System;
 using System.Collections.Generic;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlZonePackage.Tests;
 

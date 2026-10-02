@@ -8,7 +8,7 @@ using Microsoft.Data.SqlClient;
 using System.IO;
 using CK.Testing;
 using CK.Setup;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 using System.Threading.Tasks;
 
 namespace SqlActorPackage.Tests;

@@ -6,7 +6,7 @@ using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Linq;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlZonePackage.Tests;
 
@@ -16,7 +16,7 @@ public class DapperAndIPocoTests
     [Test]
     public void Dapper_Query_with_IPoco()
     {
-        //// Since we are in the Engine context, we can use 
+        //// Since we are in the Engine context, we can use
         //SqlMapper.SetAbstractTypeMap( type =>
         //{
         //    var f = PocoDirectory_CK.Instance.Find( type );

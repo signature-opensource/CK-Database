@@ -4,7 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
 
@@ -138,9 +138,9 @@ go  n°3
     --[beginscript]
     n°1
 go
-go   
+go
 
-  
+
 go
     n°2
 go  n°3
@@ -187,7 +187,7 @@ go
         }
         {
             var p = new SimpleScriptTagHandler(
-@"  
+@"
 
 go" );
             p.Expand( TestHelper.Monitor, true ).ShouldBeTrue();
@@ -196,11 +196,11 @@ go" );
         }
         {
             var p = new SimpleScriptTagHandler(
-@"  
+@"
 
-go  
+go
 
-go 
+go
 go
 
 " );

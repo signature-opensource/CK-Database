@@ -5,7 +5,7 @@ using CK.Core;
 using CK.SqlServer;
 using NUnit.Framework;
 using Shouldly;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 using CK.Testing;
 
 namespace SqlCallDemo.Tests;

@@ -3,7 +3,7 @@ using NUnit.Framework;
 using SqlActorPackage.Basic;
 using Microsoft.Data.SqlClient;
 using CK.Testing;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 using Shouldly;
 
 namespace SqlActorPackage.Tests;
@@ -29,7 +29,7 @@ public class DBTestNUnitTests
                 Assert.That( ex.Message, Is.EqualTo( @"
 InvariantKey    | CountSelect                              | RunStatus
 ----------------------------------------------------------------------
-FakeForTestOnly | select @Count = count(*) from sys.tables | Failed   
+FakeForTestOnly | select @Count = count(*) from sys.tables | Failed
 ".Substring( 2 ) ) );
             }
             try
@@ -46,7 +46,7 @@ FakeForTestOnly | select @Count = count(*) from sys.tables | Failed
                 Assert.That( ex.Message, Is.EqualTo( @"
 InvariantKey     | CountSelect                              | RunStatus
 -----------------------------------------------------------------------
-FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed   
+FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed
 ".Substring( 2 ) ) );
             }
             try
@@ -57,9 +57,9 @@ FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed
             {
                 TestHelper.Monitor.Trace( ex.Message );
                 Assert.That( ex.Message, Is.EqualTo( @"
-InvariantKey     | CountSelect                              | RunStatus  
+InvariantKey     | CountSelect                              | RunStatus
 -------------------------------------------------------------------------
-FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed     
+FakeForTestOnly2 | select @Count = count(*) from sys.tables | Failed
 FakeForTestOnly3 | select @Count = count(*) from sys.XXXXXX | Fatal Error
 ".Substring( 2 ) ) );
             }

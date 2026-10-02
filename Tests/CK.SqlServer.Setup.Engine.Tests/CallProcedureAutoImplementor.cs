@@ -4,7 +4,8 @@ using CK.Core;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
-using static CK.Testing.SqlServerTestHelper;
+using CK.Testing;
+using static CK.Testing.MonitorTestHelper;
 using Shouldly;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
