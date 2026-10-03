@@ -1,7 +1,7 @@
 using CK.Core;
 using CK.Setup;
 using CK.Testing.SqlServer;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Testing;
 

@@ -1,7 +1,7 @@
 using Shouldly;
 using NUnit.Framework;
 using Microsoft.Data.SqlClient;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 using System.Configuration;
 using CK.Testing;
 using CK.Setup;

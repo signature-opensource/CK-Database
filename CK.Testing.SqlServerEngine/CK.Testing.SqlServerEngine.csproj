@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Testing.SqlServer" Version="16.0.0" />
+    <PackageReference Include="CK.Testing.SqlServer" Version="17.0.0-mike.0.ci.17" />
     <PackageReference Include="CK.Testing.StObjEngine" Version="35.0.0-juliet.0.ci.6" />
   </ItemGroup>
   <ItemGroup>

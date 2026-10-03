@@ -2,7 +2,7 @@ using CK.Core;
 using CK.SqlServer;
 using CK.Testing;
 using NUnit.Framework;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlTransform.Tests;
 

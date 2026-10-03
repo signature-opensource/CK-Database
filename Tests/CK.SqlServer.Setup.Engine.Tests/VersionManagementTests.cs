@@ -7,14 +7,14 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
 
 [TestFixture]
 public class VersionManagementTests
 {
-    static SqlServerDatabaseOptions _db = new SqlServerDatabaseOptions( "TEST_SetupEngine_Version" );
+    static SqlServerDatabaseOptions _db = new SqlServerDatabaseOptions( TestHelper.GetScopedDatabaseName( "TEST_SetupEngine_Version" ) );
     static SqlManager _manager = new SqlManager( TestHelper.Monitor );
     static SqlVersionedItemReader _reader = new SqlVersionedItemReader( _manager );
     static SqlVersionedItemWriter _writer = new SqlVersionedItemWriter( _manager );

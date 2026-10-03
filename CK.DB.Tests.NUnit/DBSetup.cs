@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.DB.Tests;
 
@@ -83,8 +83,8 @@ public abstract class DBSetup
     }
 
     /// <summary>
-    /// Calls <see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DropDatabase"/> on the
-    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// Calls <see cref="CK.Testing.SqlServer.IMonitorTestHelperCore.DropDatabase"/> on the
+    /// default database (<see cref="CK.Testing.SqlServer.IMonitorTestHelperCore.DefaultDatabaseOptions"/>).
     /// </summary>
     [Test]
     [Explicit]
@@ -96,7 +96,7 @@ public abstract class DBSetup
 
     /// <summary>
     /// Calls <see cref="CK.Testing.SqlServer.BackupManager.CreateBackup(string?)"/> on the
-    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// default database (<see cref="CK.Testing.SqlServer.IMonitorTestHelperCore.DefaultDatabaseOptions"/>).
     /// </summary>
     [Test]
     [Explicit]
@@ -107,7 +107,7 @@ public abstract class DBSetup
 
     /// <summary>
     /// Calls <see cref="CK.Testing.SqlServer.BackupManager.RestoreBackup(string?, int)"/> on the
-    /// default database (<see cref="CK.Testing.SqlServer.ISqlServerTestHelperCore.DefaultDatabaseOptions"/>).
+    /// default database (<see cref="CK.Testing.SqlServer.IMonitorTestHelperCore.DefaultDatabaseOptions"/>).
     /// </summary>
     [TestCase( "0 - Most recent one." )]
     [TestCase( "1" )]

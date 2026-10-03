@@ -3,9 +3,10 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 using Shouldly;
 using CK.Core;
+using CK.Testing;
 
 namespace CK.SqlServer.Setup.Engine.Tests;
 

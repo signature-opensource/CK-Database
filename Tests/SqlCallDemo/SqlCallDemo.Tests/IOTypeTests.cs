@@ -7,7 +7,7 @@ using SqlCallDemo.ComplexType;
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using static CK.Testing.SqlServerTestHelper;
+using static CK.Testing.MonitorTestHelper;
 
 namespace SqlCallDemo.Tests;
 
