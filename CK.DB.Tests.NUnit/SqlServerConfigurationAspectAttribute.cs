@@ -27,7 +27,10 @@ public class SqlServerConfigurationAspectAndCrisExecutionContext : Attribute, IT
         SharedEngine.AutoConfigure += c =>
         {
             c.EnsureSqlServerConfigurationAspect();
+            // The tests resolve the CrisExecutionContext: it is registered with its constructor dependencies.
             c.GlobalTypes.Add( typeof( CrisExecutionContext ) );
+            c.GlobalTypes.Add( typeof( RawCrisExecutor ) );
+            c.GlobalTypes.Add( typeof( DarkSideCrisEventHub ) );
             c.GlobalTypes.Add( typeof( RawCrisReceiver ) );
         };
         SharedEngine.AutoConfigureServices += s =>
