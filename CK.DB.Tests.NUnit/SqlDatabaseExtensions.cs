@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using System.Text;
 using CK.SqlServer;
 using CK.Testing;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Core;
 
@@ -46,7 +47,7 @@ public static class SqlDatabaseExtensions
     /// <returns>A disposable object that will restore the original object.</returns>
     public static IDisposable TemporaryTransform( this SqlDatabase @this, string transformer )
     {
-        return SqlTransformTestHelper.TestHelper.TemporaryTransform( @this.ConnectionString, transformer );
+        return TestHelper.TemporaryTransform( @this.ConnectionString, transformer );
     }
 
     /// <summary>
@@ -129,7 +130,7 @@ public static class SqlDatabaseExtensions
     /// <returns>The text.</returns>
     public static string GetObjectDefinition( this SqlDatabase @this, string schemaName )
     {
-        return SqlTransformTestHelper.TestHelper.GetObjectDefinition( @this.ConnectionString, schemaName );
+        return TestHelper.GetObjectDefinition( @this.ConnectionString, schemaName );
     }
 
     /// <summary>
