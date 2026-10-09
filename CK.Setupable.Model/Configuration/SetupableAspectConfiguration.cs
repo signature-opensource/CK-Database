@@ -76,6 +76,7 @@ public class SetupableAspectConfiguration : EngineAspectConfiguration
     /// <summary>
     /// Gets whether version of items that have not been accessed during the setup are
     /// removed from the version tracking store (whatever its implementation is).
+    /// When true, objects that are no more defined are not marked as being unseen.
     /// Defaults to false.
     /// </summary>
     public bool KeepUnaccessedItemsVersion { get; set; }
