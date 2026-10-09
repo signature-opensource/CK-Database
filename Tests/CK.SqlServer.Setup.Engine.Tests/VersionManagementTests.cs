@@ -139,6 +139,68 @@ public class VersionManagementTests
         CheckVersions( "" );
     }
 
+    [Test]
+    public void unaccessed_sql_objects_are_kept_and_marked_as_unseen()
+    {
+        // This test needs to start without versions.
+        _manager.ExecuteNonQuery( "delete from CKCore.tItemVersionStore where FullName <> N'CK.SqlVersionedItemRepository'" );
+
+        var oVersions = new VersionedTypedName[]
+        {
+            new VersionedTypedName( "[]db^CK.sProc", "Procedure", new Version(0,0) ),
+            new VersionedTypedName( "[]db^CK.fFunc", "Function", new Version(0,0) ),
+            new VersionedTypedName( "[]db^CK.vView", "View", new Version(0,0) ),
+            new VersionedTypedName( "[]db^CK.Package", "StObjPackage", new Version(1,0,0) )
+        };
+        var versions = oVersions.Select( v => new VersionedNameTracked( v ) ).ToArray();
+        _writer.SetVersions( TestHelper.Monitor, null, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+        CheckUnseen( "" );
+
+        // When unaccessed items are not deleted (KeepUnaccessedItemsVersion or setup failure), objects are not marked.
+        _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: false, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+        CheckUnseen( "" );
+
+        // Only the View is seen: the unaccessed Procedure and Function are kept and marked, the Package is deleted.
+        versions[2].Accessed = true;
+        using( TestHelper.Monitor.CollectEntries( out var entries, LogLevelFilter.Warn ) )
+        {
+            _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+            entries.Select( e => e.Text ).ShouldBe( [
+                "Procedure '[]db^CK.sProc' has been created by a previous setup but is no more defined.",
+                "Function '[]db^CK.fFunc' has been created by a previous setup but is no more defined."] );
+        }
+        CheckVersions( "[]db^CK.fFunc - 0.0 - Function, []db^CK.sProc - 0.0 - Procedure, []db^CK.vView - 0.0 - View" );
+        CheckUnseen( "[]db^CK.fFunc, []db^CK.sProc" );
+
+        // The first unseen date is kept.
+        _manager.ExecuteNonQuery( "update CKCore.tItemVersionStore set UnseenSince = '2000-01-01' where FullName = N'[]db^CK.sProc'" );
+        _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+        _manager.ExecuteScalar( "select UnseenSince from CKCore.tItemVersionStore where FullName = N'[]db^CK.sProc'" )
+                .ShouldBe( new DateTime( 2000, 1, 1 ) );
+        CheckUnseen( "[]db^CK.fFunc, []db^CK.sProc" );
+
+        // The Function is back.
+        versions[1].Accessed = true;
+        _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+        CheckUnseen( "[]db^CK.sProc" );
+
+        // All objects are back.
+        versions[0].Accessed = true;
+        _writer.SetVersions( TestHelper.Monitor, _reader, versions, deleteUnaccessedItems: true, Array.Empty<VFeature>(), Array.Empty<VFeature>(), SHA1Value.Zero );
+        CheckUnseen( "" );
+    }
+
+    void CheckUnseen( string fullNames )
+    {
+        var unseen = new List<string>();
+        using( var c = new Microsoft.Data.SqlClient.SqlCommand( "select FullName from CKCore.tItemVersionStore where UnseenSince <> '0001-01-01' order by FullName" ) { Connection = _manager.Connection } )
+        using( var r = c.ExecuteReader() )
+        {
+            while( r.Read() ) unseen.Add( r.GetString( 0 ) );
+        }
+        unseen.Concatenate().ShouldBe( fullNames );
+    }
+
     void CheckVersions( string versions )
     {
         IEnumerable<VersionedTypedName> back = _reader.GetOriginalVersions( TestHelper.Monitor ).Items;

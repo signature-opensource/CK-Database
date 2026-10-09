@@ -209,6 +209,19 @@ class VersionedItemTracker
     }
 
     /// <summary>
+    /// Tracks a non versioned object (a <see cref="SetupObjectItem"/> like a procedure or a view) with
+    /// a fixed 0.0 version so that the repository knows the objects that have been created by the setup.
+    /// </summary>
+    /// <param name="fullName">The object's full name.</param>
+    /// <param name="itemType">The object's <see cref="SetupObjectItem.ItemType"/>.</param>
+    public void SetCurrentObject( string fullName, string itemType )
+    {
+        _tracker.SetVersion( fullName, _objectVersion, itemType );
+    }
+
+    static readonly Version _objectVersion = new Version( 0, 0 );
+
+    /// <summary>
     /// Deletes the given item from the repository.
     /// Version is not required here: the item with the provided name will 
     /// be deleted regardless of its version.

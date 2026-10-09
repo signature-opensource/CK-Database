@@ -488,6 +488,14 @@ sealed class SetupCoreEngine : IDisposable
                     {
                         IVersionedItem versioned = d.Item as IVersionedItem;
                         if( versioned != null ) _versionTracker.SetCurrent( versioned );
+                        // A transformer is not an object and a transformation target is not installed:
+                        // the object is the one of the transformation source.
+                        else if( d.Item is SetupObjectItem o
+                                 && o is not ISetupObjectTransformerItem
+                                 && o.TransformSource == null )
+                        {
+                            _versionTracker.SetCurrentObject( o.FullName, o.ItemType );
+                        }
                         else _versionTracker.Delete( d.FullName );
                     }
                 }

@@ -192,6 +192,12 @@ as
     const string _update3 = @"
   alter table CKCore.tItemVersionStore alter column ItemVersion varchar(64) not null;
 ";
-    readonly static string[] _upgradeScripts = new[] { _update1, _update2, _update3 };
+    // Sql objects (procedures, functions, views) are tracked: when an object is no more defined,
+    // its row is kept and UnseenSince is the date of the first setup that didn't see it.
+    // It is '0001-01-01' for objects that are defined (and for any other kind of items).
+    const string _update4 = @"
+  alter table CKCore.tItemVersionStore add UnseenSince datetime2(0) not null constraint CKCore_DF_tItemVersionStore_UnseenSince default( '0001-01-01' );
+";
+    readonly static string[] _upgradeScripts = new[] { _update1, _update2, _update3, _update4 };
 
 }

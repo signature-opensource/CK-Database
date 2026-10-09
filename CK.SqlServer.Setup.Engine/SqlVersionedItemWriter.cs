@@ -10,6 +10,11 @@ namespace CK.SqlServer.Setup;
 
 /// <summary>
 /// Implements <see cref="IVersionedItemWriter"/> on a Sql Server database.
+/// <para>
+/// Sql objects (see <see cref="IsSqlObjectType(string)"/>) are tracked but are never deleted from the CKCore.tItemVersionStore
+/// when they have not been accessed: their UnseenSince column is set to the date of the first setup that didn't see them.
+/// It is '0001-01-01' when the object is defined (and for any other kind of items).
+/// </para>
 /// </summary>
 public class SqlVersionedItemWriter : IVersionedItemWriter
 {
@@ -45,6 +50,7 @@ public class SqlVersionedItemWriter : IVersionedItemWriter
         StringBuilder delete = null;
         StringBuilder deleteTrace = null;
         StringBuilder update = null;
+        StringBuilder unseen = null;
 
         void Delete( string fullName, bool hasBeenAccessed, string type, string version )
         {
@@ -83,7 +89,16 @@ public class SqlVersionedItemWriter : IVersionedItemWriter
 
         foreach( VersionedNameTracked t in trackedItems )
         {
-            bool mustDelete = t.Deleted || (deleteUnaccessedItems && !t.Accessed);
+            // Unaccessed objects are not deleted: they are marked as unseen.
+            bool isUnseenObject = deleteUnaccessedItems && !t.Accessed && IsSqlObjectType( t.Original.Type );
+            bool mustDelete = t.Deleted || (deleteUnaccessedItems && !t.Accessed && !isUnseenObject);
+            if( isUnseenObject )
+            {
+                monitor.Warn( $"{t.Original.Type} '{t.FullName}' has been created by a previous setup but is no more defined." );
+                if( unseen == null ) unseen = new StringBuilder();
+                else unseen.Append( ',' );
+                unseen.Append( "N'" ).Append( SqlHelper.SqlEncodeStringContent( t.FullName ) ).Append( '\'' );
+            }
             if( mustDelete )
             {
                 Delete( t.FullName, t.Accessed, t.Original.Type, t.Original.Version.ToString() );
@@ -169,5 +184,32 @@ public class SqlVersionedItemWriter : IVersionedItemWriter
                 throw new Exception( $"Unable to apply required updates. Detailed error (including failing script) has been logged." );
             }
         }
+        // Only when unaccessed items are really gone: the unseen objects are marked (keeping the date
+        // of the first setup that didn't see them) and the objects that are back are reset.
+        if( deleteUnaccessedItems )
+        {
+            string script = unseen == null
+                            ? "update CKCore.tItemVersionStore set UnseenSince = '0001-01-01' where UnseenSince <> '0001-01-01';"
+                            : $"""
+                              update CKCore.tItemVersionStore
+                                  set UnseenSince = case when FullName in ({unseen})
+                                                         then iif( UnseenSince = '0001-01-01', sysutcdatetime(), UnseenSince )
+                                                         else '0001-01-01'
+                                                    end
+                                  where FullName in ({unseen}) or UnseenSince <> '0001-01-01';
+                              """;
+            if( !_manager.ExecuteOneScript( script, monitor ) )
+            {
+                throw new Exception( $"Unable to update unseen objects. Detailed error (including failing script) has been logged." );
+            }
+        }
     }
+
+    /// <summary>
+    /// Gets whether the item type is a Sql object type ("Procedure", "Function" or "View").
+    /// Unaccessed objects are not deleted from the CKCore.tItemVersionStore, they are marked as unseen.
+    /// </summary>
+    /// <param name="itemType">The item type.</param>
+    /// <returns>True if this item type is the one of a Sql object.</returns>
+    public static bool IsSqlObjectType( string itemType ) => itemType is "Procedure" or "Function" or "View";
 }
