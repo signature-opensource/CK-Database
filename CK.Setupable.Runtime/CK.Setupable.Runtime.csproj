@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.StObj.Runtime" Version="36.0.0-0.cris-auth.0.ci.9" />
+    <PackageReference Include="CK.StObj.Runtime" Version="36.0.0-0.cris-auth.0.ci.10" />
     <PackageReference Include="CK.Setup.Dependency" Version="26.0.0-0.cris-auth.0.ci.3" />
   </ItemGroup>
   <ItemGroup>
