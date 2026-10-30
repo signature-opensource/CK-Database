@@ -7,7 +7,7 @@
     </Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="36.0.0-0.cris-auth.0.ci.13" />
+    <PackageReference Include="CK.StObj.Model" Version="36.0.0-0.cris-auth.0.ci.14" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
