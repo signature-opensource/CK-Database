@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+
 namespace CK.Core;
 
 /// <summary>
@@ -13,5 +15,15 @@ public class SqlDefaultDatabase : SqlDatabase
         : base( DefaultDatabaseName )
     {
         EnsureSchema( DefaultSchemaName );
+    }
+
+    // Temporary workaround, waiting for the Unified Configuration.
+    void ConfigureServices( StObjContextRoot.ServiceRegister r, SqlDefaultDatabase defaultDatabase, IConfiguration? configuration = null )
+    {
+        var cs = configuration?["AppIdentity:Local:SqlServer:DefaultDatabaseConnectionString"];
+        if( cs != null )
+        {
+            defaultDatabase.ConnectionString = cs;
+        }
     }
 }
