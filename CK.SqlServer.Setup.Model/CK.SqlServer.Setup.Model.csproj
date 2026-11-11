@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.SqlServer" Version="15.0.0-0.cris-auth.1.ci.9" />
+    <PackageReference Include="CK.SqlServer" Version="15.0.0-0.cris-auth.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
