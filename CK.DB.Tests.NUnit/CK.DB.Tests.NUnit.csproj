@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Description>NUnit test helpers with SharedEngine, SqlTransform, CK.Testing.SqlServerEngine and CK.Cris.Executor.Engine.</Description>
+    <Description>NUnit test helpers with SharedEngine, SqlTransform, CK.Testing.Engine.SqlServer and CK.Cris.Executor.Engine.</Description>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CK.Testing.NUnit" Version="18.0.0-0.cris-auth.0.ci.8" />
     <PackageReference Include="CK.Testing.SqlTransform" Version="32.0.0-0.cris-auth.0.ci.8" />
-    <ProjectReference Include="..\CK.Testing.SqlServerEngine\CK.Testing.SqlServerEngine.csproj" />
+    <ProjectReference Include="..\CK.Testing.Engine.SqlServer\CK.Testing.Engine.SqlServer.csproj" />
     <PackageReference Include="CK.Cris.Executor.Engine" Version="3.0.0-0.uc.0.ci.144" />
   </ItemGroup>
   <ItemGroup>

@@ -42,5 +42,5 @@
   <Project Path="CK.SqlServer.Setup.Engine/CK.SqlServer.Setup.Engine.csproj" />
   <Project Path="CK.SqlServer.Setup.Model/CK.SqlServer.Setup.Model.csproj" />
   <Project Path="CK.SqlServer.Setup.Runtime/CK.SqlServer.Setup.Runtime.csproj" />
-  <Project Path="CK.Testing.SqlServerEngine/CK.Testing.SqlServerEngine.csproj" />
+  <Project Path="CK.Testing.Engine.SqlServer/CK.Testing.Engine.SqlServer.csproj" />
 </Solution>
