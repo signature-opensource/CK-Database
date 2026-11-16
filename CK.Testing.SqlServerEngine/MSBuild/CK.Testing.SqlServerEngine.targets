@@ -1,0 +1,6 @@
+<Project>
+  <Target Name="CK_Testing_SqlServerEngine_IsDeprecated" BeforeTargets="ResolveAssemblyReferences">
+    <Error Code="CKDEPRECATED"
+           Text="Package 'CK.Testing.SqlServerEngine' is deprecated and must be replaced by 'CK.Testing.Engine.SqlServer': see https://github.com/signature-opensource/CK-Database/blob/stable/CK.Testing.Engine.SqlServer/README.md." />
+  </Target>
+</Project>

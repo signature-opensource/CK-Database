@@ -12,3 +12,6 @@ Software or database architects, SQL or .NET developers, CK-Database is made for
 ### SQL Fragment injection to tackle modularity ###
 
 ### Database setup phases - no more runtime issues thanks to SQL parsing ###
+
+## Deprecated packages
+- [CK.Testing.SqlServerEngine](CK.Testing.SqlServerEngine/README.md): **Deprecated**: replaced by [CK.Testing.Engine.SqlServer](CK.Testing.Engine.SqlServer/README.md).
