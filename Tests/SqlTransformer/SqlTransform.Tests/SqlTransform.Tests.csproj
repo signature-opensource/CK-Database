@@ -4,7 +4,7 @@
     <IsPackable>False</IsPackable>
     <!-- This test doesn't follow the pattern with the SUT project: no "SqlTransform" project exists,
          the "Model/CKLevel0" and "Model/CKLevel2" are the projects to analyze (kind of SUT). 
-         This SqlTransform.Tests is is its own SUT: to be able to discover the PFeatures in
+         This SqlTransform.Tests is is its own SUT: to be able to discover the Models in
          its AppContext, CopyLocalLockFileAssemblies must be set to true.
     -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
