@@ -53,7 +53,7 @@ public class SqlSetupAspectConfiguration : EngineAspectConfiguration
         e.Add( new XElement( xDatabases, _databases.Select( d => d.Serialize( new XElement( xDatabase ) ) ) ),
                new XElement( xDefaultDatabaseConnectionString, DefaultDatabaseConnectionString ),
                GlobalResolution ? new XElement( xGlobalResolution, true ) : null,
-               IgnoreMissingDependencyIsError ? new XElement( xGlobalResolution, true ) : null );
+               IgnoreMissingDependencyIsError ? new XElement( xIgnoreMissingDependencyIsError, true ) : null );
         return e;
     }
     /// <summary>

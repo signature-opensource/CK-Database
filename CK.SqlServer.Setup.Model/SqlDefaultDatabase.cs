@@ -17,10 +17,11 @@ public class SqlDefaultDatabase : SqlDatabase
         EnsureSchema( DefaultSchemaName );
     }
 
-    // Temporary workaround, waiting for the Unified Configuration.
+    // The run time default connection string: "SqlServer:DefaultDatabaseConnectionString" of the host, projected by the
+    // "SqlServer" aspect of the builder (SqlServerAspect).
     void ConfigureServices( StObjContextRoot.ServiceRegister r, SqlDefaultDatabase defaultDatabase, IConfiguration? configuration = null )
     {
-        var cs = configuration?["AppIdentity:Local:SqlServer:DefaultDatabaseConnectionString"];
+        var cs = configuration?["SqlServer:DefaultDatabaseConnectionString"];
         if( cs != null )
         {
             defaultDatabase.ConnectionString = cs;
