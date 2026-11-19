@@ -43,6 +43,8 @@ public sealed class SqlServerAspect : IAppBuilderAspect
             CheckKeys( configuration, _keys, "" );
             var cs = configuration["DefaultDatabaseConnectionString"];
             DefaultDatabaseConnectionString = string.IsNullOrWhiteSpace( cs ) ? null : cs;
+            // The origin of the projected value: a "$LOCK" on it burns the value instead of projecting it.
+            if( configuration is IConfigurationSection originSection ) _connectionStringOrigin = $"{originSection.Path}:DefaultDatabaseConnectionString";
             GlobalResolution = ReadBool( configuration, "GlobalResolution" );
             IgnoreMissingDependencyIsError = ReadBool( configuration, "IgnoreMissingDependencyIsError" );
             foreach( var d in configuration.GetSection( "Databases" ).GetChildren() )
@@ -84,6 +86,8 @@ public sealed class SqlServerAspect : IAppBuilderAspect
     /// </summary>
     public string? DefaultDatabaseConnectionString { get; }
 
+    readonly string? _connectionStringOrigin;
+
     /// <summary>
     /// Gets the other databases.
     /// </summary>
@@ -120,7 +124,14 @@ public sealed class SqlServerAspect : IAppBuilderAspect
         }
         foreach( var a in apps )
         {
-            a.ProjectValue( "SqlServer:DefaultDatabaseConnectionString", sql.DefaultDatabaseConnectionString );
+            if( _connectionStringOrigin != null && sql.DefaultDatabaseConnectionString == DefaultDatabaseConnectionString )
+            {
+                a.ProjectValue( "SqlServer:DefaultDatabaseConnectionString", sql.DefaultDatabaseConnectionString, _connectionStringOrigin );
+            }
+            else
+            {
+                a.ProjectValue( "SqlServer:DefaultDatabaseConnectionString", sql.DefaultDatabaseConnectionString );
+            }
         }
         return true;
     }
