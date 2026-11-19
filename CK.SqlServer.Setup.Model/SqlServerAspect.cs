@@ -24,6 +24,11 @@ namespace CK.Setup;
 /// its defaults, <see cref="SqlSetupAspectConfiguration"/>) and projects <c>"SqlServer": { "DefaultDatabaseConnectionString" }</c>
 /// in the "appsettings.json" of the hosts of the Apps: the run time default database (<see cref="SqlDefaultDatabase"/>)
 /// reads it. An invalid configuration throws.
+/// <para>
+/// A connection string can be a secret handle (<c>{ "$SECRET": "&lt;Name&gt;" }</c>, see <see cref="ConfigurationSecret"/>):
+/// its value is resolved from the development secrets for the setup, and the handle is projected in the hosts (they
+/// resolve it when they start).
+/// </para>
 /// </summary>
 [AppBuilderAspect( "SqlServer", TypeActivation.ByDefault )]
 public sealed class SqlServerAspect : IAppBuilderAspect
@@ -37,12 +42,11 @@ public sealed class SqlServerAspect : IAppBuilderAspect
     /// <param name="configuration">The "SqlServer" section. Null when the aspect has no section.</param>
     public SqlServerAspect( IConfiguration? configuration )
     {
-        var databases = new List<SqlDatabaseDescriptor>();
+        var databases = new List<DatabaseConfiguration>();
         if( configuration != null )
         {
             CheckKeys( configuration, _keys, "" );
-            var cs = configuration["DefaultDatabaseConnectionString"];
-            DefaultDatabaseConnectionString = string.IsNullOrWhiteSpace( cs ) ? null : cs;
+            (DefaultDatabaseConnectionString, DefaultDatabaseConnectionStringSecret) = ReadConnectionString( configuration, "DefaultDatabaseConnectionString", "" );
             // The origin of the projected value: a "$LOCK" on it burns the value instead of projecting it.
             if( configuration is IConfigurationSection originSection ) _connectionStringOrigin = $"{originSection.Path}:DefaultDatabaseConnectionString";
             GlobalResolution = ReadBool( configuration, "GlobalResolution" );
@@ -50,13 +54,13 @@ public sealed class SqlServerAspect : IAppBuilderAspect
             foreach( var d in configuration.GetSection( "Databases" ).GetChildren() )
             {
                 CheckKeys( d, _databaseKeys, $"Databases:{d.Key}:" );
-                var dbCs = d["ConnectionString"];
-                if( string.IsNullOrWhiteSpace( dbCs ) ) Throw.CKException( $"\"Databases:{d.Key}:ConnectionString\" is required." );
+                var (dbCs, dbSecret) = ReadConnectionString( d, "ConnectionString", $"Databases:{d.Key}:" );
+                if( dbCs == null && dbSecret == null ) Throw.CKException( $"\"Databases:{d.Key}:ConnectionString\" is required." );
                 if( d.Key == SqlSetupAspectConfiguration.DefaultDatabaseName )
                 {
                     Throw.CKException( $"The database '{d.Key}' is the default one: its connection string is \"DefaultDatabaseConnectionString\"." );
                 }
-                databases.Add( new SqlDatabaseDescriptor( d.Key, dbCs, ReadBool( d, "AutoCreate" ) ) );
+                databases.Add( new DatabaseConfiguration( d.Key, dbCs, dbSecret, ReadBool( d, "AutoCreate" ) ) );
             }
         }
         Databases = databases;
@@ -72,6 +76,21 @@ public sealed class SqlServerAspect : IAppBuilderAspect
             }
         }
 
+        // A plain value, or the name of a secret ({ "$SECRET": "<Name>" }).
+        static (string? Value, string? Secret) ReadConnectionString( IConfiguration c, string key, string prefix )
+        {
+            var v = c[key];
+            if( !string.IsNullOrWhiteSpace( v ) ) return (v, null);
+            var s = c.GetSection( key );
+            var secret = s[ConfigurationSecret.HandleKey];
+            if( secret == null ) return (null, null);
+            if( !ConfigurationSecret.IsValidName( secret ) || s.GetChildren().Skip( 1 ).Any() )
+            {
+                Throw.CKException( $"Invalid \"{prefix}{key}\": a connection string or a secret handle {{ \"{ConfigurationSecret.HandleKey}\": \"<Name>\" }} is expected." );
+            }
+            return (null, secret);
+        }
+
         static bool ReadBool( IConfiguration c, string key )
         {
             var v = c[key];
@@ -82,16 +101,30 @@ public sealed class SqlServerAspect : IAppBuilderAspect
     }
 
     /// <summary>
-    /// Gets the connection string of the default database ("db"). Null when not configured.
+    /// Gets the connection string of the default database ("db"). Null when not configured or when it is a secret.
     /// </summary>
     public string? DefaultDatabaseConnectionString { get; }
+
+    /// <summary>
+    /// Gets the name of the secret that is the connection string of the default database. Null when it is not a secret.
+    /// </summary>
+    public string? DefaultDatabaseConnectionStringSecret { get; }
 
     readonly string? _connectionStringOrigin;
 
     /// <summary>
     /// Gets the other databases.
     /// </summary>
-    public IReadOnlyList<SqlDatabaseDescriptor> Databases { get; }
+    public IReadOnlyList<DatabaseConfiguration> Databases { get; }
+
+    /// <summary>
+    /// The configuration of another database: its connection string is a value or the name of a secret.
+    /// </summary>
+    /// <param name="LogicalDatabaseName">The logical name of the database.</param>
+    /// <param name="ConnectionString">The connection string. Null when it is a secret.</param>
+    /// <param name="ConnectionStringSecret">The name of the secret that is the connection string. Null when it is not a secret.</param>
+    /// <param name="AutoCreate">Whether the database is created when it doesn't exist.</param>
+    public sealed record DatabaseConfiguration( string LogicalDatabaseName, string? ConnectionString, string? ConnectionStringSecret, bool AutoCreate );
 
     /// <summary>
     /// Gets <see cref="SqlSetupAspectConfiguration.GlobalResolution"/>.
@@ -109,11 +142,19 @@ public sealed class SqlServerAspect : IAppBuilderAspect
         // The 3 steps setup is an implementation detail of SQL Server: it has no configuration of its own.
         context.EngineConfiguration.EnsureAspect<SetupableAspectConfiguration>();
         var sql = context.EngineConfiguration.EnsureAspect<SqlSetupAspectConfiguration>();
-        if( DefaultDatabaseConnectionString != null ) sql.DefaultDatabaseConnectionString = DefaultDatabaseConnectionString;
+        // The setup needs the values: a secret is resolved from the development secrets.
+        var defaultConnectionString = DefaultDatabaseConnectionString;
+        if( DefaultDatabaseConnectionStringSecret != null && !context.TryResolveSecret( monitor, DefaultDatabaseConnectionStringSecret, out defaultConnectionString ) )
+        {
+            return false;
+        }
+        if( defaultConnectionString != null ) sql.DefaultDatabaseConnectionString = defaultConnectionString;
         foreach( var d in Databases )
         {
+            var cs = d.ConnectionString;
+            if( d.ConnectionStringSecret != null && !context.TryResolveSecret( monitor, d.ConnectionStringSecret, out cs ) ) return false;
             sql.Databases.RemoveAll( x => x.LogicalDatabaseName == d.LogicalDatabaseName );
-            sql.Databases.Add( d );
+            sql.Databases.Add( new SqlDatabaseDescriptor( d.LogicalDatabaseName, cs!, d.AutoCreate ) );
         }
         sql.GlobalResolution |= GlobalResolution;
         sql.IgnoreMissingDependencyIsError |= IgnoreMissingDependencyIsError;
@@ -122,11 +163,25 @@ public sealed class SqlServerAspect : IAppBuilderAspect
             monitor.Error( $"The \"SqlServer\" aspect has no \"DefaultDatabaseConnectionString\" (in the \"Aspects\" of the builder): {apps.Select( a => a.ToString() ).Concatenate()} need a database." );
             return false;
         }
+        // The value configured here (not one of a "CKSetup.xml") is projected from its origin: a "$LOCK" on it applies.
+        bool fromHere = _connectionStringOrigin != null && sql.DefaultDatabaseConnectionString == defaultConnectionString;
+        if( fromHere && DefaultDatabaseConnectionStringSecret == null )
+        {
+            // The development configuration accepts it (an Integrated Security connection string).
+            monitor.Info( $"\"{_connectionStringOrigin}\" is a secret (the \"SqlServer\" aspect) whose value is in the configuration: a handle keeps it out of the files ({{ \"{ConfigurationSecret.HandleKey}\": \"<Name>\" }})." );
+        }
         foreach( var a in apps )
         {
-            if( _connectionStringOrigin != null && sql.DefaultDatabaseConnectionString == DefaultDatabaseConnectionString )
+            if( fromHere && DefaultDatabaseConnectionStringSecret != null )
             {
-                a.ProjectValue( "SqlServer:DefaultDatabaseConnectionString", sql.DefaultDatabaseConnectionString, _connectionStringOrigin );
+                // The hosts resolve the secret when they start.
+                a.ProjectValue( $"SqlServer:DefaultDatabaseConnectionString:{ConfigurationSecret.HandleKey}",
+                                DefaultDatabaseConnectionStringSecret,
+                                $"{_connectionStringOrigin}:{ConfigurationSecret.HandleKey}" );
+            }
+            else if( fromHere )
+            {
+                a.ProjectValue( "SqlServer:DefaultDatabaseConnectionString", sql.DefaultDatabaseConnectionString, _connectionStringOrigin! );
             }
             else
             {
