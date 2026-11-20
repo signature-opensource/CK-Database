@@ -139,6 +139,13 @@ public sealed class SqlServerAspect : IAppBuilderAspect
     /// <inheritdoc />
     public bool Apply( IActivityMonitor monitor, AppBuilderContext context, IReadOnlyList<AppConfiguration> apps )
     {
+        // The setup of the database is done by the build (the legacy SQL layer can't generate the scripts): the build of a
+        // deployment can't do it (its database is not the one of the build machine, and a build never changes it).
+        if( context.Deployment != null )
+        {
+            monitor.Error( $"The database of the deployment '{context.Deployment.Name}' can't be set up by its build: the SqlServer aspect sets up the database at build time (the SQL layer can't generate the scripts yet). Leave this builder out of the deployment (\"Deployment\": {{ \"Builders\": [...] }})." );
+            return false;
+        }
         // The 3 steps setup is an implementation detail of SQL Server: it has no configuration of its own.
         context.EngineConfiguration.EnsureAspect<SetupableAspectConfiguration>();
         var sql = context.EngineConfiguration.EnsureAspect<SqlSetupAspectConfiguration>();
