@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.Testing.SqlServer" Version="18.0.0-0.uc.0.ci.12" />
-    <PackageReference Include="CK.Testing.Engine" Version="37.0.0-0.uc.2.ci.66" />
+    <PackageReference Include="CK.Testing.SqlServer" Version="18.0.0-0.uc.1" />
+    <PackageReference Include="CK.Testing.Engine" Version="37.0.0-0.uc.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Engine\CK.Setupable.Engine.csproj" />

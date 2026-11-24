@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.StObj.Model" Version="37.0.0-0.uc.2.ci.66" />
+    <PackageReference Include="CK.StObj.Model" Version="37.0.0-0.uc.3" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
