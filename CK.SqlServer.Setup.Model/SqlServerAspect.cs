@@ -31,7 +31,7 @@ namespace CK.Setup;
 /// </para>
 /// </summary>
 [AppBuilderAspect( "SqlServer", TypeActivation.ByDefault )]
-public sealed class SqlServerAspect : IAppBuilderAspect
+public sealed class SqlServerAspect : IAppBuilderAspectApply
 {
     static readonly string[] _keys = ["DefaultDatabaseConnectionString", "Databases", "GlobalResolution", "IgnoreMissingDependencyIsError"];
     static readonly string[] _databaseKeys = ["ConnectionString", "AutoCreate"];
