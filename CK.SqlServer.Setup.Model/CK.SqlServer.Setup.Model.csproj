@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.Setupable.Model\CK.Setupable.Model.csproj" />
-    <PackageReference Include="CK.SqlServer" Version="15.0.0-0.uc.3" />
+    <PackageReference Include="CK.SqlServer" Version="15.0.0-0.uc.3.ci.34" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
