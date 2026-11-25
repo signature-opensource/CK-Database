@@ -12,37 +12,59 @@ namespace CK.SqlServer.Setup.Engine.Tests;
 [TestFixture]
 public class SqlServerAspectTests
 {
-    static IConfiguration Section( string json )
+    static ImmutableConfigurationSection Section( string json )
     {
         return ImmutableConfigurationSection.CreateFromJson( "Aspects", "SqlServer", json );
+    }
+
+    static UserMessageCollector Collector() => new UserMessageCollector( new CurrentCultureInfo( new TranslationService(), NormalizedCultureInfo.CodeDefault ) );
+
+    // Reads the model as the App builder does, then creates the aspect.
+    static SqlServerAspect Create( string? json )
+    {
+        var section = json != null ? Section( json ) : null;
+        var c = Collector();
+        ConfigurationModelReader.TryRead<SqlServerConfiguration>( section, "Aspects:SqlServer", c, out var m )
+            .ShouldBeTrue( string.Join( ", ", c.UserMessages.Select( x => x.Text ) ) );
+        return new SqlServerAspect( m!, section );
+    }
+
+    static string[] Errors( string json )
+    {
+        var c = Collector();
+        ConfigurationModelReader.TryRead<SqlServerConfiguration>( Section( json ), "Aspects:SqlServer", c, out _ ).ShouldBeFalse();
+        return c.UserMessages.Where( m => m.Level == UserMessageLevel.Error ).Select( m => m.Text ).ToArray();
     }
 
     [Test]
     public void the_section_is_read()
     {
-        var a = new SqlServerAspect( Section( """
+        var a = Create( """
             {
               "DefaultDatabaseConnectionString": "Server=.;Database=Db",
               "Databases": { "histoDB": { "ConnectionString": "Server=.;Database=Histo", "AutoCreate": true } },
               "GlobalResolution": true
             }
-            """ ) );
-        a.DefaultDatabaseConnectionString.ShouldBe( "Server=.;Database=Db" );
-        a.Databases.Single().LogicalDatabaseName.ShouldBe( "histoDB" );
-        a.Databases.Single().AutoCreate.ShouldBeTrue();
+            """ ).Configuration;
+        a.DefaultDatabaseConnectionString!.Value.Value.ShouldBe( "Server=.;Database=Db" );
+        a.Databases.Single().Key.ShouldBe( "histoDB" );
+        a.Databases.Single().Value.AutoCreate.ShouldBeTrue();
         a.GlobalResolution.ShouldBeTrue();
         a.IgnoreMissingDependencyIsError.ShouldBeFalse();
-        new SqlServerAspect( null ).DefaultDatabaseConnectionString.ShouldBeNull();
+        Create( null ).Configuration.DefaultDatabaseConnectionString.ShouldBeNull();
     }
 
-    [TestCase( """{ "DefaultConnectionString": "x" }""", "Unknown \"DefaultConnectionString\"" )]
-    [TestCase( """{ "Databases": { "h": { "AutoCreate": true } } }""", "\"Databases:h:ConnectionString\" is required." )]
-    [TestCase( """{ "Databases": { "h": { "ConnectionString": "x", "Size": 1 } } }""", "Unknown \"Databases:h:Size\"" )]
+    [TestCase( """{ "DefaultConnectionString": "x" }""", "Unknown key 'Aspects:SqlServer:DefaultConnectionString'" )]
+    [TestCase( """{ "Databases": { "h": { "AutoCreate": true } } }""", "'Aspects:SqlServer:Databases:h:ConnectionString' is required." )]
+    [TestCase( """{ "Databases": { "h": { "ConnectionString": "x", "Size": 1 } } }""", "Unknown key 'Aspects:SqlServer:Databases:h:Size'" )]
     [TestCase( """{ "Databases": { "db": { "ConnectionString": "x" } } }""", "is the default one" )]
-    [TestCase( """{ "GlobalResolution": "yes" }""", "Invalid \"GlobalResolution\"" )]
-    public void an_invalid_section_throws( string json, string message )
+    [TestCase( """{ "Databases": { "h": { "ConnectionString": " " } } }""", "'Aspects:SqlServer:Databases:h:ConnectionString' must not be empty." )]
+    [TestCase( """{ "GlobalResolution": "yes" }""", "'Aspects:SqlServer:GlobalResolution' = 'yes'" )]
+    [TestCase( """{ "DefaultDatabaseConnectionString": { "$SECRET": "Bad Name" } }""", "a value or a secret handle" )]
+    [TestCase( """{ "DefaultDatabaseConnectionString": { "$SECRET": "A", "Other": 1 } }""", "a value or a secret handle" )]
+    public void an_invalid_section_is_an_error( string json, string message )
     {
-        Util.Invokable( () => new SqlServerAspect( Section( json ) ) ).ShouldThrow<CKException>().Message.ShouldContain( message );
+        Errors( json ).ShouldContain( e => e.Contains( message ) );
     }
 
     [Test]
@@ -55,7 +77,7 @@ public class SqlServerAspectTests
                                         ImmutableConfigurationSection.CreateFromJson( "Apps", "Back", "{}" ),
                                         engine.FirstBinPath );
         var context = new AppBuilderContext( engine, [app] );
-        var a = new SqlServerAspect( Section( """{ "DefaultDatabaseConnectionString": "Server=.;Database=Db" }""" ) );
+        var a = Create( """{ "DefaultDatabaseConnectionString": "Server=.;Database=Db" }""" );
 
         a.Apply( TestHelper.Monitor, context, [app] ).ShouldBeTrue();
 
@@ -71,15 +93,14 @@ public class SqlServerAspectTests
         var app = new AppConfiguration( "Back", "C:/Back.App", "C:/Back.Host", ImmutableConfigurationSection.CreateFromJson( "Apps", "Back", "{}" ), engine.FirstBinPath );
         var secrets = new Dictionary<string, string> { { "Back:Db", "Server=.;Database=Db" }, { "Histo", "Server=.;Database=Histo" } };
         var context = new AppBuilderContext( engine, [app], null, secrets );
-        var a = new SqlServerAspect( Section( """
+        var a = Create( """
             {
               "DefaultDatabaseConnectionString": { "$SECRET": "Back:Db" },
               "Databases": { "histoDB": { "ConnectionString": { "$SECRET": "Histo" } } }
             }
-            """ ) );
-        a.DefaultDatabaseConnectionString.ShouldBeNull();
-        a.DefaultDatabaseConnectionStringSecret.ShouldBe( "Back:Db" );
-        a.Databases.Single().ConnectionStringSecret.ShouldBe( "Histo" );
+            """ );
+        a.Configuration.DefaultDatabaseConnectionString!.Value.SecretName.ShouldBe( "Back:Db" );
+        a.Configuration.Databases.Single().Value.ConnectionString.SecretName.ShouldBe( "Histo" );
 
         a.Apply( TestHelper.Monitor, context, [app] ).ShouldBeTrue();
 
@@ -96,19 +117,12 @@ public class SqlServerAspectTests
     {
         var engine = new EngineConfiguration();
         var app = new AppConfiguration( "Back", "C:/Back.App", "C:/Back.Host", ImmutableConfigurationSection.CreateFromJson( "Apps", "Back", "{}" ), engine.FirstBinPath );
-        var a = new SqlServerAspect( Section( """{ "DefaultDatabaseConnectionString": { "$SECRET": "Back:Db" } }""" ) );
+        var a = Create( """{ "DefaultDatabaseConnectionString": { "$SECRET": "Back:Db" } }""" );
         using( TestHelper.Monitor.CollectTexts( out var texts ) )
         {
             a.Apply( TestHelper.Monitor, new AppBuilderContext( engine, [app] ), [app] ).ShouldBeFalse();
             texts.ShouldContain( t => t.Contains( "The secret 'Back:Db' is required by the build" ) );
         }
-    }
-
-    [TestCase( """{ "DefaultDatabaseConnectionString": { "$SECRET": "Bad Name" } }""" )]
-    [TestCase( """{ "DefaultDatabaseConnectionString": { "$SECRET": "A", "Other": 1 } }""" )]
-    public void an_invalid_handle_throws( string json )
-    {
-        Util.Invokable( () => new SqlServerAspect( Section( json ) ) ).ShouldThrow<CKException>().Message.ShouldContain( "a connection string or a secret handle" );
     }
 
     [Test]
@@ -118,7 +132,7 @@ public class SqlServerAspectTests
         var app = new AppConfiguration( "Back", "C:/Back.App", "C:/Back.Host", ImmutableConfigurationSection.CreateFromJson( "Apps", "Back", "{}" ), engine.FirstBinPath );
         using( TestHelper.Monitor.CollectTexts( out var texts ) )
         {
-            new SqlServerAspect( null ).Apply( TestHelper.Monitor, new AppBuilderContext( engine, [app] ), [app] ).ShouldBeFalse();
+            Create( null ).Apply( TestHelper.Monitor, new AppBuilderContext( engine, [app] ), [app] ).ShouldBeFalse();
             texts.ShouldContain( t => t.Contains( "has no \"DefaultDatabaseConnectionString\"" ) );
         }
     }
