@@ -124,7 +124,7 @@ public sealed class SqlManager : ISqlManager
     /// <returns>True on success.</returns>
     public bool OpenFromConnectionString( string connectionString, bool autoCreate = false )
     {
-        using( _monitor.OpenInfo( $"Connection to {connectionString}." ) )
+        using( _monitor.OpenInfo( $"Connection to {SqlHelper.RemoveSensitiveInformations( connectionString )}." ) )
         {
             try
             {

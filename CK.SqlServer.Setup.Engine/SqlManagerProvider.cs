@@ -17,7 +17,7 @@ class SqlManagerProvider : ISqlManagerProvider, IDisposable
         public ISqlManager Manager;
         public bool AutoCreate;
 
-        public override string ToString() => $"{Manager != null} - {ConnectionString}";
+        public override string ToString() => $"{Manager != null} - {SqlHelper.RemoveSensitiveInformations( ConnectionString )}";
     }
 
     public SqlManagerProvider( IActivityMonitor monitor, Action<ISqlManagerBase> dbConfigurator = null )
@@ -54,7 +54,7 @@ class SqlManagerProvider : ISqlManagerProvider, IDisposable
         SqlManager m = new SqlManager( _monitor );
         if( !m.OpenFromConnectionString( i.ConnectionString, i.AutoCreate ) )
         {
-            throw new CKException( "Unable to {1} database for '{0}'.", i.ConnectionString, i.AutoCreate ? "create" : "open" );
+            throw new CKException( "Unable to {1} database for '{0}'.", SqlHelper.RemoveSensitiveInformations( i.ConnectionString ), i.AutoCreate ? "create" : "open" );
         }
         _dbConfigurator( m );
         i.Manager = m;
