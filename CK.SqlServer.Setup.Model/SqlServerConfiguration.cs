@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace CK.Setup;
 
 /// <summary>
-/// The configuration of the "SqlServer" Builder aspect (see <see cref="SqlServerAspect"/>). The connection strings are
+/// The configuration of the "SqlServer" AppContext aspect (see <see cref="SqlServerAspect"/>). The connection strings are
 /// secrets: their configuration should be a handle (<c>{ "$SECRET": "&lt;Name&gt;" }</c>), resolved from the development
 /// secrets for the setup.
 /// </summary>
@@ -50,7 +50,7 @@ public sealed class SqlServerConfiguration : IConfigurationModel
 }
 
 /// <summary>
-/// The configuration of a database of the "SqlServer" Builder aspect other than the default one.
+/// The configuration of a database of the "SqlServer" AppContext aspect other than the default one.
 /// </summary>
 [ConfigurationModel]
 public sealed class SqlServerDatabaseConfiguration : IConfigurationModel

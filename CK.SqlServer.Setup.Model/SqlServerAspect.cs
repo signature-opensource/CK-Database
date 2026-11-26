@@ -7,9 +7,9 @@ using System.Linq;
 namespace CK.Setup;
 
 /// <summary>
-/// The "SqlServer" Builder aspect: the setup of the SQL Server databases, engine wide (one per engine run, shared by the
-/// Apps of a builder). Present as soon as an App references this model; its section in the root <c>"Aspects"</c> of the
-/// builder's "ckonf.json":
+/// The "SqlServer" AppContext aspect: the setup of the SQL Server databases, engine wide (one per engine run, shared by the
+/// Apps of an AppContext). Present as soon as an App references this model; its section in the <c>"Aspects"</c> of the
+/// AppContext:
 /// <code>
 /// "Aspects": {
 ///   "SqlServer": {
@@ -30,9 +30,9 @@ namespace CK.Setup;
 /// resolve it when they start).
 /// </para>
 /// </summary>
-[AppBuilderAspect( "SqlServer", TypeActivation.ByDefault )]
+[AppContextAspect( "SqlServer", TypeActivation.ByDefault )]
 [Configuration<SqlServerConfiguration>]
-public sealed class SqlServerAspect : IAppBuilderAspectApply
+public sealed class SqlServerAspect : IAppContextAspectApply
 {
     readonly SqlServerConfiguration _configuration;
     readonly string? _connectionStringOrigin;
@@ -61,7 +61,7 @@ public sealed class SqlServerAspect : IAppBuilderAspectApply
         // deployment can't do it (its database is not the one of the build machine, and a build never changes it).
         if( context.Deployment != null )
         {
-            monitor.Error( $"The database of the deployment '{context.Deployment.Name}' can't be set up by its build: the SqlServer aspect sets up the database at build time (the SQL layer can't generate the scripts yet). Leave this builder out of the deployment (\"Deployment\": {{ \"Builders\": [...] }})." );
+            monitor.Error( $"The database of the deployment '{context.Deployment.Name}' can't be set up by its build: the SqlServer aspect sets up the database at build time (the SQL layer can't generate the scripts yet). Leave this AppContext out of the deployment (\"Deployment\": {{ \"AppContexts\": [...] }})." );
             return false;
         }
         // The 3 steps setup is an implementation detail of SQL Server: it has no configuration of its own.
@@ -86,7 +86,7 @@ public sealed class SqlServerAspect : IAppBuilderAspectApply
         sql.IgnoreMissingDependencyIsError |= _configuration.IgnoreMissingDependencyIsError;
         if( sql.DefaultDatabaseConnectionString == null )
         {
-            monitor.Error( $"The \"SqlServer\" aspect has no \"DefaultDatabaseConnectionString\" (in the \"Aspects\" of the builder): {apps.Select( a => a.ToString() ).Concatenate()} need a database." );
+            monitor.Error( $"The \"SqlServer\" aspect has no \"DefaultDatabaseConnectionString\" (in the \"Aspects\" of the AppContext): {apps.Select( a => a.ToString() ).Concatenate()} need a database." );
             return false;
         }
         // The value configured here (not one of a "CKSetup.xml") is projected from its origin: a "$LOCK" on it applies.
