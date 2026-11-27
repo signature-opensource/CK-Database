@@ -7,7 +7,7 @@
     <PackageReference Include="CK.Testing.NUnit" Version="18.0.0-0.uc.1" />
     <PackageReference Include="CK.Testing.SqlTransform" Version="32.0.0-0.uc.1" />
     <ProjectReference Include="..\CK.Testing.Engine.SqlServer\CK.Testing.Engine.SqlServer.csproj" />
-    <PackageReference Include="CK.Cris.Executor.Engine" Version="3.0.0-0.uc.4.ci.214" />
+    <PackageReference Include="CK.Cris.Executor.Engine" Version="3.0.0-0.uc.4.ci.215" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="MSBuild/CK.DB.Tests.NUnit.props">
